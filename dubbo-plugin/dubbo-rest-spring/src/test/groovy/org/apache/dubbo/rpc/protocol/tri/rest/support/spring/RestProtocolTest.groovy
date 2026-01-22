@@ -52,7 +52,8 @@ class RestProtocolTest extends BaseServiceTest {
 
     def "map argument body test"() {
         expect:
-            runner.post(path, body) contains output
+            def actual = runner.post(path, body)
+            actual.contains('1:[2,3]') && actual.contains('4:[5,6]')
         where:
             path                           | body                        | output
             '/spring/mapArgBodyTest?age=2' | '{"1":["2",3],"4":[5,"6"]}' | '{4:[5,6],1:[2,3]}'

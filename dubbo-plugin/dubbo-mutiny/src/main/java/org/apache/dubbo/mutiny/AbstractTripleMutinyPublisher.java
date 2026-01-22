@@ -16,15 +16,15 @@
  */
 package org.apache.dubbo.mutiny;
 
+import org.apache.dubbo.common.stream.CallStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
 
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 /**
- * The middle layer between {@link org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver} and Mutiny API. <p>
+ * The middle layer between {@link org.apache.dubbo.common.stream.CallStreamObserver} and Mutiny API. <p>
  * 1. passing the data received by CallStreamObserver to Mutiny consumer <br>
  * 2. passing the request of Mutiny API to CallStreamObserver
  */

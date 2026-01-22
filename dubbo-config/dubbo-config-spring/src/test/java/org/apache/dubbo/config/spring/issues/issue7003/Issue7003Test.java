@@ -20,6 +20,7 @@ import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ReferenceBean;
+import org.apache.dubbo.config.spring.SysProps;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -51,11 +52,15 @@ class Issue7003Test {
     @BeforeAll
     public static void beforeAll() {
         DubboBootstrap.reset();
+        SysProps.clear();
+        SysProps.setProperty("dubbo.metrics.enabled", "false");
+        SysProps.setProperty("dubbo.metrics.protocol", "disabled");
     }
 
     @AfterAll
     public static void afterAll() {
         DubboBootstrap.reset();
+        SysProps.clear();
     }
 
     @Test

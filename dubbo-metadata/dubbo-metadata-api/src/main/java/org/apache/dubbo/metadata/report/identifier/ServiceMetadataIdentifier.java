@@ -18,6 +18,8 @@ package org.apache.dubbo.metadata.report.identifier;
 
 import org.apache.dubbo.common.URL;
 
+import java.util.Objects;
+
 import static org.apache.dubbo.metadata.MetadataConstants.KEY_REVISION_PREFIX;
 
 /**
@@ -65,6 +67,19 @@ public class ServiceMetadataIdentifier extends BaseServiceMetadataIdentifier imp
 
     public void setProtocol(String protocol) {
         this.protocol = protocol;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof ServiceMetadataIdentifier)) return false;
+        if (!super.equals(o)) return false;
+        ServiceMetadataIdentifier that = (ServiceMetadataIdentifier) o;
+        return Objects.equals(revision, that.revision) && Objects.equals(protocol, that.protocol);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), revision, protocol);
     }
 
     @Override

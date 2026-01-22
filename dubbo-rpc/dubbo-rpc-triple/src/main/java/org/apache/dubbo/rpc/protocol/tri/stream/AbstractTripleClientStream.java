@@ -30,6 +30,7 @@ import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.EndStreamQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.command.InitOnReadyQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.frame.Deframer;
@@ -79,11 +80,16 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
     protected final TripleWriteQueue writeQueue;
     private Deframer deframer;
     private final Channel parent;
-    private final TripleStreamChannelFuture streamChannelFuture;
+    private TripleStreamChannelFuture streamChannelFuture;
     private boolean halfClosed;
     private boolean rst;
 
     private boolean isReturnTriException = false;
+
+    /**
+     * Tracks the last known ready state to detect when the state changes from "not ready" to "ready".
+     */
+    private volatile boolean lastReadyState = false;
 
     protected AbstractTripleClientStream(
             FrameworkModel frameworkModel,
@@ -95,7 +101,6 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         this.parent = http2StreamChannel.parent();
         this.listener = listener;
         this.writeQueue = writeQueue;
-        this.streamChannelFuture = initStreamChannel(http2StreamChannel);
     }
 
     protected AbstractTripleClientStream(
@@ -108,10 +113,36 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         this.parent = parent;
         this.listener = listener;
         this.writeQueue = writeQueue;
-        this.streamChannelFuture = initStreamChannel(parent);
     }
 
-    protected abstract TripleStreamChannelFuture initStreamChannel(Channel parent);
+    @Override
+    public void initStream() {
+        initStreamChannel(this.parent);
+    }
+
+    private TripleStreamChannelFuture initStreamChannel(Channel parent) {
+        TripleStreamChannelFuture tripleStreamChannelFuture = initStreamChannel0(parent);
+        this.streamChannelFuture = tripleStreamChannelFuture;
+        /**
+         * Enqueue InitOnReadyQueueCommand after the stream creation command.
+         * Since WriteQueue executes commands in order within the EventLoop,
+         * this command will run after the stream channel has been created by CreateStreamQueueCommand.
+         *
+         * This is necessary because onReady is only triggered by channelWritabilityChanged,
+         * which won't fire if the channel is always writable from creation.
+         */
+        writeQueue.enqueue(InitOnReadyQueueCommand.create(tripleStreamChannelFuture, this));
+        return tripleStreamChannelFuture;
+    }
+
+    protected abstract TripleStreamChannelFuture initStreamChannel0(Channel parent);
+
+    /**
+     * Get the stream channel future for flow control.
+     */
+    protected TripleStreamChannelFuture getStreamChannelFuture() {
+        return streamChannelFuture;
+    }
 
     public ChannelFuture sendHeader(Http2Headers headers) {
         if (this.writeQueue == null) {
@@ -170,6 +201,9 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                         .withDescription("Client write message failed")
                         .withCause(future.cause()));
                 transportException(future.cause());
+            } else {
+                // After successful write, check if we need to trigger onReady
+                notifyOnReady(false);
             }
         });
     }
@@ -205,6 +239,60 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
      */
     protected H2TransportListener createTransportListener() {
         return new ClientTransportListener();
+    }
+
+    /**
+     * Consume bytes for flow control. This method is called after bytes are read from the stream.
+     * It triggers WINDOW_UPDATE frames to allow more data from the remote peer.
+     * Subclasses can override this method to provide protocol-specific flow control.
+     *
+     * @param numBytes the number of bytes consumed
+     */
+    protected abstract void consumeBytes(int numBytes);
+
+    @Override
+    public boolean isReady() {
+        Channel channel = streamChannelFuture.getNow();
+        if (channel == null) {
+            return false;
+        }
+        return channel.isWritable();
+    }
+
+    /**
+     * Called when the channel writability changes.
+     * This method should be invoked by the transport handler when channelWritabilityChanged is triggered.
+     * It synchronously notifies the listener (TripleClientCall) which is responsible for
+     * asynchronously triggering all necessary callbacks through its executor.
+     */
+    protected void onWritabilityChanged() {
+        notifyOnReady(false);
+    }
+
+    /**
+     * Called by InitOnReadyQueueCommand to trigger the initial onReady notification.
+     */
+    public void triggerInitialOnReady() {
+        notifyOnReady(true);
+    }
+
+    /**
+     * notify listener when stream becomes ready
+     *
+     * @param forceNotify if true, always trigger onReady (for initial notification);
+     *                    if false, only trigger when state changes from "not ready" to "ready"
+     */
+    private synchronized void notifyOnReady(boolean forceNotify) {
+        boolean wasReady = lastReadyState;
+        boolean isNowReady = isReady();
+        lastReadyState = isNowReady;
+
+        // Trigger onReady if:
+        // 1. forceNotify is true (initial notification, spurious is OK), or
+        // 2. state changes from "not ready" to "ready"
+        if (forceNotify || (!wasReady && isNowReady)) {
+            listener.onReady();
+        }
     }
 
     class ClientTransportListener extends AbstractH2TransportListener implements H2TransportListener {
@@ -292,6 +380,12 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                 }
             }
             TriDecoder.Listener listener = new TriDecoder.Listener() {
+
+                @Override
+                public void bytesRead(int numBytes) {
+                    consumeBytes(numBytes);
+                }
+
                 @Override
                 public void onRawMessage(byte[] data) {
                     AbstractTripleClientStream.this.listener.onMessage(data, isReturnTriException);
@@ -473,6 +567,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         @Override
         public void onClose() {
             executor.execute(listener::onClose);
+        }
+
+        @Override
+        public void onWritabilityChanged() {
+            AbstractTripleClientStream.this.onWritabilityChanged();
         }
     }
 }

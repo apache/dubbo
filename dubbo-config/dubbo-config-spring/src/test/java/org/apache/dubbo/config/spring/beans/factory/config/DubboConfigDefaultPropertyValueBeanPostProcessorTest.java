@@ -18,13 +18,31 @@ package org.apache.dubbo.config.spring.beans.factory.config;
 
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.spring.SysProps;
 import org.apache.dubbo.config.spring.context.annotation.provider.ProviderConfiguration;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 class DubboConfigDefaultPropertyValueBeanPostProcessorTest {
+
+    @BeforeEach
+    void setUp() {
+        DubboBootstrap.reset();
+        SysProps.clear();
+        SysProps.setProperty("dubbo.metrics.enabled", "false");
+        SysProps.setProperty("dubbo.metrics.protocol", "disabled");
+    }
+
+    @AfterEach
+    void tearDown() {
+        DubboBootstrap.reset();
+        SysProps.clear();
+    }
 
     @Test
     void test() {
