@@ -205,24 +205,25 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                 newURLs.put(normalizedKey, cachedURL);
             }
         } else {
-            // Reuse or create URLs based on both normalized key and original rawProvider.
-            // The normalized key is used to find potential cache entries for reuse (deduplication),
-            // but we always create a new ServiceAddressURL from the original rawProvider to ensure
-            // the timestamp and other parameters are up-to-date.
-            for (String rawProvider : providers) {
-                // Normalize the rawProvider for cache key matching and deduplication.
-                String normalizedKey = stripOffVariableKeys(rawProvider);
-
-                // Create new URL using the original rawProvider (all parameters preserved including timestamp).
-                ServiceAddressURL cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
-                if (cachedURL == null) {
-                    continue;
-                }
-
-                // Use normalized key for storage: if multiple providers normalize to the same key,
-                // the last one will be kept, ensuring no duplicate instances with outdated timestamps.
-                newURLs.put(normalizedKey, cachedURL);
-            }
+	        // Reuse or create URLs based on both normalized key and original rawProvider.
+	        // The normalized key is used to find potential cache entries for reuse (deduplication),
+	        // but we always create a new ServiceAddressURL from the original rawProvider to ensure
+	        // the timestamp and other parameters are up-to-date.
+	        for (String rawProvider : providers) {
+		        // Normalize the rawProvider for cache key matching and deduplication.
+		        String normalizedKey = stripOffVariableKeys(rawProvider);
+		        ServiceAddressURL cachedURL = oldURLs.remove(normalizedKey);
+		        if (cachedURL == null) {
+			        // Create new URL using the original rawProvider (all parameters preserved including timestamp).
+			        cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
+			        if (cachedURL == null) {
+				        continue;
+			        }
+		        }
+		        // Use normalized key for storage: if multiple providers normalize to the same key,
+		        // the last one will be kept, ensuring no duplicate instances with outdated timestamps.
+		        newURLs.put(normalizedKey, cachedURL);
+	        }
         }
 
         evictURLCache(consumer);
