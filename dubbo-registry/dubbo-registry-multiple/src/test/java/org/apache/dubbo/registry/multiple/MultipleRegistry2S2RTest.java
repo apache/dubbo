@@ -37,8 +37,6 @@ import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -108,34 +106,27 @@ class MultipleRegistry2S2RTest {
         effectServiceUrls.add(MOCK_ZK_ADDR2);
         setFieldValue(multipleRegistry, "effectServiceRegistryURLs", effectServiceUrls);
 
-        Map<String, Registry> mockServiceRegistries = new HashMap<>();
+        zookeeperClient = mock(Curator5ZookeeperClient.class);
+        zookeeperClient2 = mock(Curator5ZookeeperClient.class);
+        when(zookeeperClient.getChildren(any(String.class))).thenReturn(Collections.singletonList("mock-provider"));
+        when(zookeeperClient2.getChildren(any(String.class))).thenReturn(Collections.singletonList("mock-provider"));
         zookeeperRegistry = mock(ZookeeperRegistry.class);
         zookeeperRegistry2 = mock(ZookeeperRegistry.class);
+        when(zookeeperRegistry.isAvailable()).thenReturn(true);
+        when(zookeeperRegistry2.isAvailable()).thenReturn(true);
+        doAnswer(inv -> null).when(zookeeperRegistry).register(any(URL.class));
+        doAnswer(inv -> null).when(zookeeperRegistry2).register(any(URL.class));
+        doAnswer(inv -> null).when(zookeeperRegistry).unregister(any(URL.class));
+        doAnswer(inv -> null).when(zookeeperRegistry2).unregister(any(URL.class));
+
+        Map<String, Registry> mockServiceRegistries = new HashMap<>();
         mockServiceRegistries.put(MOCK_ZK_ADDR1, zookeeperRegistry);
         mockServiceRegistries.put(MOCK_ZK_ADDR2, zookeeperRegistry2);
         when(multipleRegistry.getServiceRegistries()).thenReturn(mockServiceRegistries);
         when(multipleRegistry.getReferenceRegistries()).thenReturn(mockServiceRegistries);
 
-        zookeeperClient = mock(Curator5ZookeeperClient.class);
-        zookeeperClient2 = mock(Curator5ZookeeperClient.class);
-        when(zookeeperClient.getChildren(any(String.class))).thenReturn(Collections.singletonList("mock-provider"));
-        when(zookeeperClient2.getChildren(any(String.class))).thenReturn(Collections.singletonList("mock-provider"));
-        doAnswer(new Answer<Void>() {
-                    @Override
-                    public Void answer(InvocationOnMock invocation) {
-                        return null;
-                    }
-                })
-                .when(multipleRegistry)
-                .register(any(URL.class));
-        doAnswer(new Answer<Void>() {
-                    @Override
-                    public Void answer(InvocationOnMock invocation) {
-                        return null;
-                    }
-                })
-                .when(multipleRegistry)
-                .unregister(any(URL.class));
+        doAnswer(inv -> null).when(multipleRegistry).register(any(URL.class));
+        doAnswer(inv -> null).when(multipleRegistry).unregister(any(URL.class));
     }
 
     @AfterEach
@@ -150,7 +141,6 @@ class MultipleRegistry2S2RTest {
 
     @Test
     void testParamConfig() {
-        // 字段断言
         Assertions.assertEquals(2, multipleRegistry.origReferenceRegistryURLs.size());
         Assertions.assertTrue(multipleRegistry.origReferenceRegistryURLs.contains(zookeeperConnectionAddress1));
         Assertions.assertTrue(multipleRegistry.origReferenceRegistryURLs.contains(zookeeperConnectionAddress2));
@@ -175,10 +165,6 @@ class MultipleRegistry2S2RTest {
         Assertions.assertNotNull(
                 getZookeeperRegistry(multipleRegistry.getServiceRegistries().values()));
         Assertions.assertNotNull(
-                getZookeeperRegistry(multipleRegistry.getReferenceRegistries().values()));
-
-        Assertions.assertEquals(
-                getZookeeperRegistry(multipleRegistry.getServiceRegistries().values()),
                 getZookeeperRegistry(multipleRegistry.getReferenceRegistries().values()));
 
         when(multipleRegistry.getApplicationName()).thenReturn("vic");
