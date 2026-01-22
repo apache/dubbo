@@ -212,13 +212,14 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             for (String rawProvider : providers) {
                 // Normalize the rawProvider for cache key matching and deduplication.
                 String normalizedKey = stripOffVariableKeys(rawProvider);
-
-                // Create new URL using the original rawProvider (all parameters preserved including timestamp).
-                ServiceAddressURL cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
+                ServiceAddressURL cachedURL = oldURLs.remove(normalizedKey);
                 if (cachedURL == null) {
-                    continue;
+                    // Create new URL using the original rawProvider (all parameters preserved including timestamp).
+                    cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
+                    if (cachedURL == null) {
+                        continue;
+                    }
                 }
-
                 // Use normalized key for storage: if multiple providers normalize to the same key,
                 // the last one will be kept, ensuring no duplicate instances with outdated timestamps.
                 newURLs.put(normalizedKey, cachedURL);
