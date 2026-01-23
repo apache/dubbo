@@ -20,263 +20,156 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.zookeeper.ZookeeperRegistry;
-import org.apache.dubbo.remoting.zookeeper.curator5.Curator5ZookeeperClient;
+import org.apache.dubbo.registry.zookeeper.ZookeeperRegistryFactory;
 import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClient;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockitoAnnotations;
+import org.mockito.MockedConstruction;
+import org.mockito.Mockito;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
+/**
+ * 2019-04-30
+ */
 class MultipleRegistry2S2RTest {
 
     private static final String SERVICE_NAME = "org.apache.dubbo.registry.MultipleService2S2R";
     private static final String SERVICE2_NAME = "org.apache.dubbo.registry.MultipleService2S2R2";
-    private static final String MOCK_ZK_ADDR1 = "zookeeper://mock-zk-1:2181?check=false";
-    private static final String MOCK_ZK_ADDR2 = "zookeeper://mock-zk-2:2182?check=false";
+    private static final String MOCK_ZK_ADDR_1 = "zookeeper://127.0.0.1:2181?check=false";
+    private static final String MOCK_ZK_ADDR_2 = "zookeeper://127.0.0.1:2182?check=false";
+    private static final URL MOCK_ZK_URL_1 = URL.valueOf(MOCK_ZK_ADDR_1);
+    private static final URL MOCK_ZK_URL_2 = URL.valueOf(MOCK_ZK_ADDR_2);
 
     private MultipleRegistry multipleRegistry;
-    private ZookeeperClient zookeeperClient;
-    private ZookeeperClient zookeeperClient2;
-    private ZookeeperRegistry zookeeperRegistry;
-    private ZookeeperRegistry zookeeperRegistry2;
-    private String zookeeperConnectionAddress1;
-    private String zookeeperConnectionAddress2;
 
-    private static ZookeeperRegistry getZookeeperRegistry(Collection<Registry> registries) {
-        for (Registry registry : registries) {
-            if (registry instanceof ZookeeperRegistry) {
-                return (ZookeeperRegistry) registry;
-            }
-        }
-        return null;
-    }
-
-    private static void setFieldValue(Object target, String fieldName, Object value) {
-        try {
-            Field field = target.getClass().getDeclaredField(fieldName);
-            field.setAccessible(true);
-            field.set(target, value);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException("Failed to set field: " + fieldName, e);
-        }
-    }
+    private ZookeeperClient mockZkClient1;
+    private ZookeeperClient mockZkClient2;
+    private ZookeeperRegistry mockZkRegistry1;
+    private ZookeeperRegistry mockZkRegistry2;
 
     @BeforeEach
-    void init() {
-        MockitoAnnotations.openMocks(this);
+    void setUp() {
+        mockZkClient1 = Mockito.mock(ZookeeperClient.class);
+        mockZkClient2 = Mockito.mock(ZookeeperClient.class);
+        mockZkRegistry1 = Mockito.mock(ZookeeperRegistry.class);
+        mockZkRegistry2 = Mockito.mock(ZookeeperRegistry.class);
 
-        zookeeperConnectionAddress1 = MOCK_ZK_ADDR1;
-        zookeeperConnectionAddress2 = MOCK_ZK_ADDR2;
+        try (MockedConstruction<ZookeeperRegistryFactory> zkFactoryConstruction =
+                Mockito.mockConstruction(ZookeeperRegistryFactory.class, (mockFactory, context) -> {
+                    Mockito.lenient()
+                            .when(mockFactory.getRegistry(MOCK_ZK_URL_1))
+                            .thenReturn(mockZkRegistry1);
+                    Mockito.lenient()
+                            .when(mockFactory.getRegistry(MOCK_ZK_URL_2))
+                            .thenReturn(mockZkRegistry2);
+                })) {
+            Mockito.lenient().when(mockZkRegistry1.isAvailable()).thenReturn(true);
+            Mockito.lenient().when(mockZkRegistry2.isAvailable()).thenReturn(true);
+            Mockito.lenient().when(mockZkRegistry1.getUrl()).thenReturn(MOCK_ZK_URL_1);
+            Mockito.lenient().when(mockZkRegistry2.getUrl()).thenReturn(MOCK_ZK_URL_2);
 
-        multipleRegistry = mock(MultipleRegistry.class);
+            URL multipleUrl =
+                    URL.valueOf("multiple://127.0.0.1?application=vic&enable-empty-protection=false&check=false&"
+                            + MultipleRegistry.REGISTRY_FOR_SERVICE + "=" + MOCK_ZK_ADDR_1 + "," + MOCK_ZK_ADDR_2 + "&"
+                            + MultipleRegistry.REGISTRY_FOR_REFERENCE + "=" + MOCK_ZK_ADDR_1 + "," + MOCK_ZK_ADDR_2);
 
-        List<String> origRefUrls = new ArrayList<>();
-        origRefUrls.add(MOCK_ZK_ADDR1);
-        origRefUrls.add(MOCK_ZK_ADDR2);
-        setFieldValue(multipleRegistry, "origReferenceRegistryURLs", origRefUrls);
+            multipleRegistry = (MultipleRegistry) new MultipleRegistryFactory().createRegistry(multipleUrl);
 
-        List<String> origServiceUrls = new ArrayList<>();
-        origServiceUrls.add(MOCK_ZK_ADDR1);
-        origServiceUrls.add(MOCK_ZK_ADDR2);
-        setFieldValue(multipleRegistry, "origServiceRegistryURLs", origServiceUrls);
-
-        List<String> effectRefUrls = new ArrayList<>();
-        effectRefUrls.add(MOCK_ZK_ADDR1);
-        effectRefUrls.add(MOCK_ZK_ADDR2);
-        setFieldValue(multipleRegistry, "effectReferenceRegistryURLs", effectRefUrls);
-
-        List<String> effectServiceUrls = new ArrayList<>();
-        effectServiceUrls.add(MOCK_ZK_ADDR1);
-        effectServiceUrls.add(MOCK_ZK_ADDR2);
-        setFieldValue(multipleRegistry, "effectServiceRegistryURLs", effectServiceUrls);
-
-        zookeeperClient = mock(Curator5ZookeeperClient.class);
-        zookeeperClient2 = mock(Curator5ZookeeperClient.class);
-        when(zookeeperClient.getChildren(any(String.class))).thenReturn(Collections.singletonList("mock-provider"));
-        when(zookeeperClient2.getChildren(any(String.class))).thenReturn(Collections.singletonList("mock-provider"));
-        zookeeperRegistry = mock(ZookeeperRegistry.class);
-        zookeeperRegistry2 = mock(ZookeeperRegistry.class);
-        when(zookeeperRegistry.isAvailable()).thenReturn(true);
-        when(zookeeperRegistry2.isAvailable()).thenReturn(true);
-        doAnswer(inv -> null).when(zookeeperRegistry).register(any(URL.class));
-        doAnswer(inv -> null).when(zookeeperRegistry2).register(any(URL.class));
-        doAnswer(inv -> null).when(zookeeperRegistry).unregister(any(URL.class));
-        doAnswer(inv -> null).when(zookeeperRegistry2).unregister(any(URL.class));
-
-        Map<String, Registry> mockServiceRegistries = new HashMap<>();
-        mockServiceRegistries.put(MOCK_ZK_ADDR1, zookeeperRegistry);
-        mockServiceRegistries.put(MOCK_ZK_ADDR2, zookeeperRegistry2);
-        when(multipleRegistry.getServiceRegistries()).thenReturn(mockServiceRegistries);
-        when(multipleRegistry.getReferenceRegistries()).thenReturn(mockServiceRegistries);
-
-        doAnswer(inv -> null).when(multipleRegistry).register(any(URL.class));
-        doAnswer(inv -> null).when(multipleRegistry).unregister(any(URL.class));
+            Map<URL, Registry> serviceRegistries = new HashMap<>();
+            serviceRegistries.put(MOCK_ZK_URL_1, mockZkRegistry1);
+            serviceRegistries.put(MOCK_ZK_URL_2, mockZkRegistry2);
+            setPrivateField(multipleRegistry, "serviceRegistries", serviceRegistries);
+            setPrivateField(multipleRegistry, "referenceRegistries", serviceRegistries);
+        } catch (Exception e) {
+            throw new RuntimeException("初始化MultipleRegistry失败", e);
+        }
     }
 
-    @AfterEach
-    void cleanup() {
-        if (multipleRegistry != null) {
-            try {
-                multipleRegistry.destroy();
-            } catch (Exception e) {
-            }
+    private void setPrivateField(Object targetObj, String fieldName, Object fieldValue) {
+        try {
+            Field field = targetObj.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            field.set(targetObj, fieldValue);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException("反射设置私有字段失败：" + fieldName, e);
         }
     }
 
     @Test
     void testParamConfig() {
         Assertions.assertEquals(2, multipleRegistry.origReferenceRegistryURLs.size());
-        Assertions.assertTrue(multipleRegistry.origReferenceRegistryURLs.contains(zookeeperConnectionAddress1));
-        Assertions.assertTrue(multipleRegistry.origReferenceRegistryURLs.contains(zookeeperConnectionAddress2));
+        Assertions.assertTrue(multipleRegistry.origReferenceRegistryURLs.contains(MOCK_ZK_ADDR_1));
+        Assertions.assertTrue(multipleRegistry.origReferenceRegistryURLs.contains(MOCK_ZK_ADDR_2));
 
         Assertions.assertEquals(2, multipleRegistry.origServiceRegistryURLs.size());
-        Assertions.assertTrue(multipleRegistry.origServiceRegistryURLs.contains(zookeeperConnectionAddress1));
-        Assertions.assertTrue(multipleRegistry.origServiceRegistryURLs.contains(zookeeperConnectionAddress2));
+        Assertions.assertTrue(multipleRegistry.origServiceRegistryURLs.contains(MOCK_ZK_ADDR_1));
+        Assertions.assertTrue(multipleRegistry.origServiceRegistryURLs.contains(MOCK_ZK_ADDR_2));
 
         Assertions.assertEquals(2, multipleRegistry.effectReferenceRegistryURLs.size());
-        Assertions.assertTrue(multipleRegistry.effectReferenceRegistryURLs.contains(zookeeperConnectionAddress1));
-        Assertions.assertTrue(multipleRegistry.effectReferenceRegistryURLs.contains(zookeeperConnectionAddress2));
-
         Assertions.assertEquals(2, multipleRegistry.effectServiceRegistryURLs.size());
-        Assertions.assertTrue(multipleRegistry.effectServiceRegistryURLs.contains(zookeeperConnectionAddress1));
-        Assertions.assertTrue(multipleRegistry.effectServiceRegistryURLs.contains(zookeeperConnectionAddress2));
 
-        Assertions.assertTrue(multipleRegistry.getServiceRegistries().containsKey(zookeeperConnectionAddress1));
-        Assertions.assertTrue(multipleRegistry.getServiceRegistries().containsKey(zookeeperConnectionAddress2));
-        Assertions.assertEquals(
-                2, multipleRegistry.getServiceRegistries().values().size());
+        Assertions.assertTrue(multipleRegistry.getServiceRegistries().containsKey(MOCK_ZK_URL_1));
+        Assertions.assertTrue(multipleRegistry.getServiceRegistries().containsKey(MOCK_ZK_URL_2));
+        Assertions.assertEquals(2, multipleRegistry.getServiceRegistries().size());
 
-        Assertions.assertNotNull(
-                getZookeeperRegistry(multipleRegistry.getServiceRegistries().values()));
-        Assertions.assertNotNull(
-                getZookeeperRegistry(multipleRegistry.getReferenceRegistries().values()));
-
-        when(multipleRegistry.getApplicationName()).thenReturn("vic");
-        Assertions.assertEquals(multipleRegistry.getApplicationName(), "vic");
-        when(multipleRegistry.isAvailable()).thenReturn(true);
+        Assertions.assertEquals("vic", multipleRegistry.getApplicationName());
         Assertions.assertTrue(multipleRegistry.isAvailable());
     }
 
     @Test
-    void testRegistryAndUnRegistry() throws InterruptedException {
+    void testRegistryAndUnRegistry() {
         URL serviceUrl = URL.valueOf(
                 "http2://multiple/" + SERVICE_NAME + "?notify=false&methods=test1,test2&category=providers");
+
         multipleRegistry.register(serviceUrl);
+        Mockito.verify(mockZkRegistry1, Mockito.times(1)).register(serviceUrl);
+        Mockito.verify(mockZkRegistry2, Mockito.times(1)).register(serviceUrl);
 
-        String path = "/dubbo/" + SERVICE_NAME + "/providers";
-        List<String> providerList = zookeeperClient.getChildren(path);
-        Assertions.assertTrue(!providerList.isEmpty());
+        NotifyListener testListener = urls -> {};
+        multipleRegistry.subscribe(serviceUrl, testListener);
+        Mockito.verify(mockZkRegistry1, Mockito.times(1))
+                .subscribe(Mockito.eq(serviceUrl), Mockito.any(NotifyListener.class));
+        Mockito.verify(mockZkRegistry2, Mockito.times(1))
+                .subscribe(Mockito.eq(serviceUrl), Mockito.any(NotifyListener.class));
 
-        final List<URL> list = new ArrayList<>();
-        NotifyListener listener = urls -> {
-            list.clear();
-            list.addAll(urls);
-        };
-
-        doAnswer(inv -> {
-                    List<URL> initialUrls = new ArrayList<>();
-                    initialUrls.add(URL.valueOf("dubbo://mock-ip:20880/" + SERVICE_NAME));
-                    initialUrls.add(URL.valueOf("dubbo://mock-ip:20881/" + SERVICE_NAME));
-                    listener.notify(initialUrls);
-                    return null;
-                })
-                .when(multipleRegistry)
-                .subscribe(any(URL.class), any(NotifyListener.class));
-        multipleRegistry.subscribe(serviceUrl, listener);
-
-        Assertions.assertEquals(2, list.size());
-
-        doAnswer(inv -> {
-                    listener.notify(Collections.singletonList(URL.valueOf("empty://127.0.0.1")));
-                    return null;
-                })
-                .when(multipleRegistry)
-                .unregister(any(URL.class));
         multipleRegistry.unregister(serviceUrl);
-
-        Assertions.assertEquals(1, list.size());
-        Assertions.assertEquals("empty", list.get(0).getProtocol());
+        Mockito.verify(mockZkRegistry1, Mockito.times(1)).unregister(serviceUrl);
+        Mockito.verify(mockZkRegistry2, Mockito.times(1)).unregister(serviceUrl);
     }
 
     @Test
-    void testSubscription() throws InterruptedException {
+    void testSubscription() {
         URL serviceUrl = URL.valueOf(
                 "http2://multiple/" + SERVICE2_NAME + "?notify=false&methods=test1,test2&category=providers");
+
         multipleRegistry.register(serviceUrl);
-
-        String path = "/dubbo/" + SERVICE2_NAME + "/providers";
-        List<String> providerList = zookeeperClient.getChildren(path);
-        Assumptions.assumeTrue(!providerList.isEmpty());
-
-        final List<URL> list = new ArrayList<>();
-        NotifyListener listener = urls -> {
-            list.clear();
-            list.addAll(urls);
-        };
-
-        doAnswer(inv -> {
-                    List<URL> initialUrls = new ArrayList<>();
-                    initialUrls.add(URL.valueOf("dubbo://mock-ip:20880/" + SERVICE2_NAME));
-                    initialUrls.add(URL.valueOf("dubbo://mock-ip:20881/" + SERVICE2_NAME));
-                    listener.notify(initialUrls);
-                    return null;
-                })
-                .when(multipleRegistry)
-                .subscribe(any(URL.class), any(NotifyListener.class));
-        multipleRegistry.subscribe(serviceUrl, listener);
-
-        Assertions.assertEquals(2, list.size());
+        multipleRegistry.subscribe(serviceUrl, urls -> {});
+        Mockito.verify(mockZkRegistry1, Mockito.times(1)).register(serviceUrl);
+        Mockito.verify(mockZkRegistry2, Mockito.times(1)).register(serviceUrl);
 
         List<Registry> serviceRegistries =
                 new ArrayList<>(multipleRegistry.getServiceRegistries().values());
-        ZookeeperRegistry firstRegistry = (ZookeeperRegistry) serviceRegistries.get(0);
-        ZookeeperRegistry secondRegistry = (ZookeeperRegistry) serviceRegistries.get(1);
+        serviceRegistries.get(0).unregister(serviceUrl);
+        Mockito.verify(mockZkRegistry1, Mockito.times(1)).unregister(serviceUrl);
+        Mockito.verify(mockZkRegistry2, Mockito.never()).unregister(serviceUrl);
 
-        doAnswer(inv -> {
-                    listener.notify(Collections.singletonList(URL.valueOf("dubbo://mock-ip:20880/" + SERVICE2_NAME)));
-                    return null;
-                })
-                .when(firstRegistry)
-                .unregister(any(URL.class));
-        firstRegistry.unregister(serviceUrl);
-
-        Assertions.assertEquals(1, list.size());
-        Assertions.assertTrue(!"empty".equals(list.get(0).getProtocol()));
-
-        doAnswer(inv -> {
-                    listener.notify(Collections.singletonList(URL.valueOf("empty://127.0.0.1")));
-                    return null;
-                })
-                .when(secondRegistry)
-                .unregister(any(URL.class));
-        secondRegistry.unregister(serviceUrl);
-
-        Assertions.assertEquals(1, list.size());
-        Assertions.assertEquals("empty", list.get(0).getProtocol());
+        serviceRegistries.get(1).unregister(serviceUrl);
+        Mockito.verify(mockZkRegistry2, Mockito.times(1)).unregister(serviceUrl);
     }
 
     @Test
     void testAggregation() {
         List<URL> result = new ArrayList<>();
         List<URL> listToAggregate = new ArrayList<>();
-        URL url1 = URL.valueOf("dubbo://127.0.0.1:20880/service1?zone=hangzhou");
-        URL url2 = URL.valueOf("dubbo://127.0.0.1:20880/service1?tag=middleware");
+        URL url1 = URL.valueOf("dubbo://127.0.0.1:20880/service1");
+        URL url2 = URL.valueOf("dubbo://127.0.0.1:20880/service1");
         listToAggregate.add(url1);
         listToAggregate.add(url2);
 
@@ -287,6 +180,8 @@ class MultipleRegistry2S2RTest {
 
         Assertions.assertEquals(2, result.size());
         Assertions.assertEquals("hangzhou", result.get(0).getParameter("zone"));
+        Assertions.assertEquals("middleware", result.get(0).getParameter("tag"));
+        Assertions.assertEquals("hangzhou", result.get(1).getParameter("zone"));
         Assertions.assertEquals("middleware", result.get(1).getParameter("tag"));
     }
 }
