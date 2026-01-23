@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.rpc.model;
 
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * A packable method is used to customize serialization for methods. It can provide a common wrapper
@@ -25,14 +25,26 @@ import java.io.InputStream;
  */
 public interface PackableMethod {
 
+    /**
+     * @deprecated use {@link #parseRequest(InputStream)} instead
+     */
+    @Deprecated
     default Object parseRequest(byte[] data) throws Exception {
         return getRequestUnpack().unpack(data);
     }
 
+    /**
+     * @deprecated use {@link #parseResponse(InputStream)} instead
+     */
+    @Deprecated
     default Object parseResponse(byte[] data) throws Exception {
         return parseResponse(data, false);
     }
 
+    /**
+     * @deprecated use {@link #parseResponse(InputStream, boolean)} instead
+     */
+    @Deprecated
     default Object parseResponse(byte[] data, boolean isReturnTriException) throws Exception {
         UnPack unPack = getResponseUnpack();
         if (unPack instanceof WrapperUnPack) {
@@ -42,32 +54,43 @@ public interface PackableMethod {
     }
 
     /**
-     * Parse response from InputStream.
-     * Default implementation reads all bytes and delegates to byte[] version.
-     *
-     * @param inputStream the input stream containing the response data
-     * @param isReturnTriException whether the response is a Triple exception
-     * @return the parsed response object
-     * @throws Exception if parsing fails
+     * @deprecated use {@link #packRequest(Object, OutputStream)} instead
      */
-    default Object parseResponse(InputStream inputStream, boolean isReturnTriException) throws Exception {
-        // Read all bytes from InputStream
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        byte[] tmp = new byte[4096];
-        int len;
-        while ((len = inputStream.read(tmp)) != -1) {
-            buffer.write(tmp, 0, len);
-        }
-        byte[] data = buffer.toByteArray();
-        return parseResponse(data, isReturnTriException);
-    }
-
+    @Deprecated
     default byte[] packRequest(Object request) throws Exception {
         return getRequestPack().pack(request);
     }
 
+    /**
+     * @deprecated use {@link #packResponse(Object, OutputStream)} instead
+     */
+    @Deprecated
     default byte[] packResponse(Object response) throws Exception {
         return getResponsePack().pack(response);
+    }
+
+    default Object parseRequest(InputStream inputStream) throws Exception {
+        return getRequestUnpack().unpack(inputStream);
+    }
+
+    default Object parseResponse(InputStream inputStream) throws Exception {
+        return parseResponse(inputStream, false);
+    }
+
+    default Object parseResponse(InputStream inputStream, boolean isReturnTriException) throws Exception {
+        UnPack unPack = getResponseUnpack();
+        if (unPack instanceof WrapperUnPack) {
+            return ((WrapperUnPack) unPack).unpack(inputStream, isReturnTriException);
+        }
+        return unPack.unpack(inputStream);
+    }
+
+    default void packRequest(Object request, OutputStream outputStream) throws Exception {
+        getRequestPack().pack(request, outputStream);
+    }
+
+    default void packResponse(Object response, OutputStream outputStream) throws Exception {
+        getResponsePack().pack(response, outputStream);
     }
 
     default boolean needWrapper() {

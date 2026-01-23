@@ -19,6 +19,9 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -69,6 +72,36 @@ public class TripleCustomerProtocolWrapper {
         }
         byteBuffer.position(currentPosition + varIntLength);
         return val;
+    }
+
+    public static int readRawVarint32(InputStream inputStream) throws IOException {
+        int result = 0;
+        int shift = 0;
+        while (shift < 35) {
+            int b = inputStream.read();
+            if (b == -1) {
+                throw new IOException("Unexpected end of stream while reading varint");
+            }
+            result |= (b & 0x7F) << shift;
+            if ((b & 0x80) == 0) {
+                return result;
+            }
+            shift += 7;
+        }
+        throw new IOException("Malformed varint");
+    }
+
+    private static byte[] readExactly(InputStream inputStream, int n) throws IOException {
+        byte[] data = new byte[n];
+        int offset = 0;
+        while (offset < n) {
+            int read = inputStream.read(data, offset, n - offset);
+            if (read == -1) {
+                throw new IOException("Unexpected end of stream, expected " + n + " bytes but got " + offset);
+            }
+            offset += read;
+        }
+        return data;
     }
 
     public static int extractFieldNumFromTag(int tag) {
@@ -166,6 +199,54 @@ public class TripleCustomerProtocolWrapper {
             }
             byteBuffer.put(typeTagBytes).put(typeLengthVarIntEncodeBytes).put(typeBytes);
             return byteBuffer.array();
+        }
+
+        public static TripleResponseWrapper parseFrom(InputStream inputStream) throws IOException {
+            TripleResponseWrapper tripleResponseWrapper = new TripleResponseWrapper();
+            int b;
+            while ((b = inputStream.read()) != -1) {
+                int tag = b;
+                if ((b & 0x80) != 0) {
+                    int shift = 7;
+                    tag = b & 0x7F;
+                    while (shift < 35) {
+                        b = inputStream.read();
+                        if (b == -1) {
+                            throw new IOException("Unexpected end of stream while reading tag");
+                        }
+                        tag |= (b & 0x7F) << shift;
+                        if ((b & 0x80) == 0) {
+                            break;
+                        }
+                        shift += 7;
+                    }
+                }
+
+                int fieldNum = extractFieldNumFromTag(tag);
+                int wireType = extractWireTypeFromTag(tag);
+                if (wireType != 2) {
+                    throw new RuntimeException(
+                            String.format("unexpected wireType, expect %d realType %d", 2, wireType));
+                }
+
+                int length = readRawVarint32(inputStream);
+                byte[] fieldData = readExactly(inputStream, length);
+
+                if (fieldNum == 1) {
+                    tripleResponseWrapper.serializeType = new String(fieldData);
+                } else if (fieldNum == 2) {
+                    tripleResponseWrapper.data = fieldData;
+                } else if (fieldNum == 3) {
+                    tripleResponseWrapper.type = new String(fieldData);
+                } else {
+                    throw new RuntimeException("fieldNum should in (1,2,3)");
+                }
+            }
+            return tripleResponseWrapper;
+        }
+
+        public void writeTo(OutputStream outputStream) throws IOException {
+            outputStream.write(toByteArray());
         }
 
         public static final class Builder {
@@ -315,6 +396,56 @@ public class TripleCustomerProtocolWrapper {
                 }
             }
             return byteBuffer.array();
+        }
+
+        public static TripleRequestWrapper parseFrom(InputStream inputStream) throws IOException {
+            TripleRequestWrapper tripleRequestWrapper = new TripleRequestWrapper();
+            tripleRequestWrapper.args = new ArrayList<>();
+            tripleRequestWrapper.argTypes = new ArrayList<>();
+            int b;
+            while ((b = inputStream.read()) != -1) {
+                int tag = b;
+                if ((b & 0x80) != 0) {
+                    int shift = 7;
+                    tag = b & 0x7F;
+                    while (shift < 35) {
+                        b = inputStream.read();
+                        if (b == -1) {
+                            throw new IOException("Unexpected end of stream while reading tag");
+                        }
+                        tag |= (b & 0x7F) << shift;
+                        if ((b & 0x80) == 0) {
+                            break;
+                        }
+                        shift += 7;
+                    }
+                }
+
+                int fieldNum = extractFieldNumFromTag(tag);
+                int wireType = extractWireTypeFromTag(tag);
+                if (wireType != 2) {
+                    throw new RuntimeException(
+                            String.format("unexpected wireType, expect %d realType %d", 2, wireType));
+                }
+
+                int length = readRawVarint32(inputStream);
+                byte[] fieldData = readExactly(inputStream, length);
+
+                if (fieldNum == 1) {
+                    tripleRequestWrapper.serializeType = new String(fieldData);
+                } else if (fieldNum == 2) {
+                    tripleRequestWrapper.args.add(fieldData);
+                } else if (fieldNum == 3) {
+                    tripleRequestWrapper.argTypes.add(new String(fieldData));
+                } else {
+                    throw new RuntimeException("fieldNum should in (1,2,3)");
+                }
+            }
+            return tripleRequestWrapper;
+        }
+
+        public void writeTo(OutputStream outputStream) throws IOException {
+            outputStream.write(toByteArray());
         }
 
         public static final class Builder {
