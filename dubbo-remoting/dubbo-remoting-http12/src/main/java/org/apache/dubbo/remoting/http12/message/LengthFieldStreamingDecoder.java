@@ -301,7 +301,7 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
         }
 
         @Override
-        public int read() throws IOException {
+        public synchronized int read() throws IOException {
             if (remaining <= 0) {
                 return -1;
             }
@@ -313,7 +313,7 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
         }
 
         @Override
-        public int read(byte[] b, int off, int len) throws IOException {
+        public synchronized int read(byte[] b, int off, int len) throws IOException {
             if (remaining <= 0) {
                 return -1;
             }
@@ -326,7 +326,7 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
         }
 
         @Override
-        public int available() throws IOException {
+        public synchronized int available() throws IOException {
             return Math.min(super.available(), remaining);
         }
 
