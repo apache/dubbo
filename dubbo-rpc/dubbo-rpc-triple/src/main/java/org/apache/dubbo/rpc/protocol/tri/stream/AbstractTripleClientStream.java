@@ -586,6 +586,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                 return;
             }
             if (!headerReceived) {
+                ReferenceCountUtil.release(data);
                 handleH2TransportError(TriRpcStatus.INTERNAL.withDescription("headers not received before payload"));
                 return;
             }
