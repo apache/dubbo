@@ -80,14 +80,53 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
 
     @Override
     public final void request(int numMessages) {
+        if (isClosed()) {
+            return;
+        }
         pendingDeliveries += numMessages;
         deliver();
     }
 
+    /**
+     * Marks the decoder for closing. The decoder will actually close when all
+     * requested messages have been delivered and no more data is available (stalled).
+     */
     @Override
     public final void close() {
+        if (isClosed()) {
+            return;
+        }
+        if (isStalled()) {
+            // No more data available, close immediately
+            doClose();
+            return;
+        }
+        // Mark for closing, will close when stalled
         closing = true;
         deliver();
+    }
+
+    /**
+     * Actually close the decoder and notify the listener.
+     */
+    private void doClose() {
+        if (closed) {
+            return;
+        }
+        closed = true;
+        try {
+            accumulate.close();
+        } catch (IOException e) {
+            // ignore
+        }
+        listener.onClose();
+    }
+
+    /**
+     * Returns true if the decoder has been closed.
+     */
+    private boolean isClosed() {
+        return closed;
     }
 
     @Override
@@ -137,18 +176,25 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
                         throw new AssertionError("Invalid state: " + state);
                 }
             }
-            if (closing) {
-                if (!closed) {
-                    closed = true;
-                    accumulate.close();
-                    listener.onClose();
-                }
+            // only close when stalled (no more data available).
+            // This ensures that when disableAutoRequest() is used and more messages are
+            // still buffered, the stream won't close prematurely. The application needs
+            // to call request() to receive remaining messages.
+            if (closing && isStalled()) {
+                doClose();
             }
         } catch (IOException e) {
             throw new DecodeException(e);
         } finally {
             inDelivery = false;
         }
+    }
+
+    /**
+     * Returns true if there's no more data available to process.
+     */
+    private boolean isStalled() {
+        return accumulate.available() == 0;
     }
 
     private void processHeader() throws IOException {

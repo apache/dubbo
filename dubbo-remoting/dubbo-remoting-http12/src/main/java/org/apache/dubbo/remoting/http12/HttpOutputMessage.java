@@ -30,9 +30,21 @@ public interface HttpOutputMessage extends AutoCloseable {
         public OutputStream getBody() {
             return INPUT_STREAM;
         }
+
+        @Override
+        public int messageSize() {
+            return 0;
+        }
     };
 
     OutputStream getBody();
+
+    /**
+     * Returns the size of the message body in bytes.
+     *
+     * @return the size of the message body, or 0 if unknown
+     */
+    int messageSize();
 
     @Override
     default void close() throws IOException {

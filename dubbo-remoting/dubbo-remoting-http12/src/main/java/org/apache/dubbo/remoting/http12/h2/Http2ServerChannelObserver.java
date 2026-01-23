@@ -24,20 +24,46 @@ import org.apache.dubbo.remoting.http12.HttpConstants;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
+import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
 import org.apache.dubbo.remoting.http12.netty4.NettyHttpHeaders;
 import org.apache.dubbo.rpc.CancellationContext;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicLong;
 
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 
 /**
  * HTTP/2 server-side stream observer with flow control and backpressure support.
- * Implements {@link ServerCallStreamObserver} following gRPC's pattern for backpressure.
+ * <p>
+ * Backpressure is implemented using a byte-counting strategy. Outbound messages are
+ * tracked in {@code numSentBytesQueued}, which represents the approximate number of
+ * bytes that have been queued but not yet acknowledged as sent.
+ * <p>
+ * The {@code ON_READY_THRESHOLD} (32KB) defines when this observer is considered "ready":
+ * <ul>
+ *     <li>{@link #isReady()} returns {@code true} when {@code numSentBytesQueued < ON_READY_THRESHOLD}</li>
+ *     <li>When the queued byte count drops from at or above the threshold to below it,
+ *         the registered {@code onReadyHandler} is invoked to signal that more data can be sent</li>
+ * </ul>
  */
 public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserver<H2StreamChannel>
         implements FlowControlStreamObserver<Object>,
                 Http2CancelableStreamObserver<Object>,
                 ServerCallStreamObserver<Object> {
+
+    /**
+     * Number of bytes currently queued, waiting to be sent.
+     * When this falls below ON_READY_THRESHOLD, onReady will be triggered.
+     */
+    private final AtomicLong numSentBytesQueued = new AtomicLong(0);
+
+    /**
+     * The threshold below which isReady() returns true (32KB).
+     */
+    protected static final long ON_READY_THRESHOLD = 32 * 1024;
 
     private CancellationContext cancellationContext;
 
@@ -45,18 +71,36 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
 
     private boolean autoRequestN = true;
 
-    private Runnable onReadyHandler;
+    private volatile Runnable onReadyHandler;
+
+    private volatile Executor executor = Runnable::run;
 
     public Http2ServerChannelObserver(H2StreamChannel h2StreamChannel) {
         super(h2StreamChannel);
     }
 
     /**
+     * Sets the executor for async dispatch of callbacks.
+     */
+    public void setExecutor(Executor executor) {
+        this.executor = executor;
+    }
+
+    /**
      * Returns whether the stream is ready for writing.
-     * If false, the caller should avoid calling onNext to prevent blocking or excessive buffering.
+     * <p>
+     * Ready state is determined by byte counting: returns {@code true} when the number
+     * of queued bytes is below the threshold (32KB). If {@code false}, the caller should
+     * avoid calling {@code onNext} to prevent excessive buffering.
+     *
+     * @return {@code true} if the stream is ready for more data, {@code false} otherwise
      */
     public boolean isReady() {
-        return getHttpChannel().isReady();
+        H2StreamChannel channel = getHttpChannel();
+        if (channel == null) {
+            return false;
+        }
+        return numSentBytesQueued.get() < ON_READY_THRESHOLD;
     }
 
     /**
@@ -67,18 +111,90 @@ public class Http2ServerChannelObserver extends AbstractServerHttpChannelObserve
     }
 
     /**
-     * Called when the channel writability changes.
-     * Triggers the onReadyHandler if the channel is now writable.
+     * Called by the transport layer when the underlying channel's writability changes.
+     * <p>
+     * This serves as an additional trigger point for notifying the {@code onReadyHandler}
+     * when the channel becomes writable again. The actual ready state is still determined
+     * by the byte counting mechanism in {@link #isReady()}.
      */
     public void onWritabilityChanged() {
-        Runnable handler = this.onReadyHandler;
-        if (handler != null && isReady()) {
-            handler.run();
+        if (isReady()) {
+            notifyOnReady();
         }
     }
 
     public void setStreamingDecoder(StreamingDecoder streamingDecoder) {
         this.streamingDecoder = streamingDecoder;
+    }
+
+    /**
+     * Override to add byte counting for backpressure support.
+     */
+    @Override
+    protected CompletableFuture<Void> sendMessage(HttpOutputMessage message) throws Throwable {
+        if (message == null) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        int messageSize = message.messageSize();
+        onSendingBytes(messageSize);
+
+        CompletableFuture<Void> future = super.sendMessage(message);
+
+        future.whenComplete((v, t) -> {
+            if (t == null) {
+                onSentBytes(messageSize);
+            } else {
+                rollbackSendingBytes(messageSize);
+            }
+        });
+
+        return future;
+    }
+
+    /**
+     * Called before bytes are sent to track pending bytes.
+     */
+    protected void onSendingBytes(int numBytes) {
+        numSentBytesQueued.addAndGet(numBytes);
+    }
+
+    /**
+     * Called when sending fails to rollback the pending bytes count.
+     */
+    protected void rollbackSendingBytes(int numBytes) {
+        numSentBytesQueued.addAndGet(-numBytes);
+    }
+
+    /**
+     * Called when bytes have been successfully sent to the remote endpoint.
+     */
+    protected void onSentBytes(int numBytes) {
+        long oldValue = numSentBytesQueued.getAndAdd(-numBytes);
+        long newValue = oldValue - numBytes;
+        // Trigger onReady when transitioning from "not ready" to "ready"
+        if (oldValue >= ON_READY_THRESHOLD && newValue < ON_READY_THRESHOLD) {
+            notifyOnReady();
+        }
+    }
+
+    /**
+     * Returns the number of bytes currently queued for sending.
+     * Visible for testing.
+     */
+    protected long getNumSentBytesQueued() {
+        return numSentBytesQueued.get();
+    }
+
+    /**
+     * Notify the onReadyHandler that the stream is ready for writing.
+     */
+    protected void notifyOnReady() {
+        Runnable handler = this.onReadyHandler;
+        if (handler == null) {
+            return;
+        }
+        executor.execute(handler);
     }
 
     @Override
