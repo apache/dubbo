@@ -127,7 +127,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
         }
 
         @Override
-        public void onFragmentMessage(InputStream rawMessage) {
+        public void onFragmentMessage(InputStream rawMessage, int messageLength) {
             listeningDecoder.decode(rawMessage);
         }
 

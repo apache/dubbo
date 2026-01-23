@@ -42,9 +42,12 @@ public interface StreamingDecoder {
         void bytesRead(int numBytes);
 
         /**
-         * @param rawMessage raw message
+         * Called when a complete message fragment is received.
+         *
+         * @param rawMessage raw message as InputStream
+         * @param messageLength the length of the message payload in bytes
          */
-        void onFragmentMessage(InputStream rawMessage);
+        void onFragmentMessage(InputStream rawMessage, int messageLength);
 
         default void onClose() {}
     }
@@ -59,6 +62,6 @@ public interface StreamingDecoder {
         public void bytesRead(int numBytes) {}
 
         @Override
-        public void onFragmentMessage(InputStream rawMessage) {}
+        public void onFragmentMessage(InputStream rawMessage, int messageLength) {}
     }
 }
