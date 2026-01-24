@@ -592,14 +592,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             }
             // Use ByteBufInputStream to adapt ByteBuf to InputStream
             // The second parameter 'true' means release ByteBuf after reading
-            try (InputStream in = new ByteBufInputStream(data, true)) {
-                deframer.decode(in);
-            } catch (IOException e) {
-                LOGGER.error(PROTOCOL_FAILED_RESPONSE, "", "", "Client deframe message failed", e);
-                handleH2TransportError(TriRpcStatus.INTERNAL
-                        .withDescription("Client deframe message failed")
-                        .withCause(e));
-            }
+            deframer.decode(new ByteBufInputStream(data, true));
         }
 
         @Override
