@@ -596,7 +596,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                 deframer.decode(in);
             } catch (IOException e) {
                 LOGGER.error(PROTOCOL_FAILED_RESPONSE, "", "", "Client deframe message failed", e);
-               handleH2TransportError(TriRpcStatus.INTERNAL
+                handleH2TransportError(TriRpcStatus.INTERNAL
                         .withDescription("Client deframe message failed")
                         .withCause(e));
             }
