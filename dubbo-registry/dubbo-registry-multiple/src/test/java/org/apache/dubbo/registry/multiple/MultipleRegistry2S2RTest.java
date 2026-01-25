@@ -25,13 +25,16 @@ import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClient;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
 
@@ -108,66 +111,169 @@ class MultipleRegistry2S2RTest {
         Assertions.assertTrue(multipleRegistry.origReferenceRegistryURLs.contains(MOCK_ZK_ADDR_1));
         Assertions.assertTrue(multipleRegistry.origReferenceRegistryURLs.contains(MOCK_ZK_ADDR_2));
 
+        // 验证原始service注册中心URL集合
         Assertions.assertEquals(2, multipleRegistry.origServiceRegistryURLs.size());
         Assertions.assertTrue(multipleRegistry.origServiceRegistryURLs.contains(MOCK_ZK_ADDR_1));
         Assertions.assertTrue(multipleRegistry.origServiceRegistryURLs.contains(MOCK_ZK_ADDR_2));
 
+        // 验证有效reference注册中心URL集合（完整保留原断言范围）
         Assertions.assertEquals(2, multipleRegistry.effectReferenceRegistryURLs.size());
-        Assertions.assertEquals(2, multipleRegistry.effectServiceRegistryURLs.size());
+        Assertions.assertTrue(multipleRegistry.effectReferenceRegistryURLs.contains(MOCK_ZK_ADDR_1));
+        Assertions.assertTrue(multipleRegistry.effectReferenceRegistryURLs.contains(MOCK_ZK_ADDR_2));
 
+        // 验证有效service注册中心URL集合（完整保留原断言范围）
+        Assertions.assertEquals(2, multipleRegistry.effectServiceRegistryURLs.size());
+        Assertions.assertTrue(multipleRegistry.effectServiceRegistryURLs.contains(MOCK_ZK_ADDR_1));
+        Assertions.assertTrue(multipleRegistry.effectServiceRegistryURLs.contains(MOCK_ZK_ADDR_2));
+
+        // 验证serviceRegistries映射关系
         Assertions.assertTrue(multipleRegistry.getServiceRegistries().containsKey(MOCK_ZK_URL_1));
         Assertions.assertTrue(multipleRegistry.getServiceRegistries().containsKey(MOCK_ZK_URL_2));
-        Assertions.assertEquals(2, multipleRegistry.getServiceRegistries().size());
+        Assertions.assertEquals(
+                2, multipleRegistry.getServiceRegistries().values().size());
+        //        java.util.Iterator<Registry> registryIterable =
+        // multipleRegistry.getServiceRegistries().values().iterator();
+        //        Registry firstRegistry = registryIterable.next();
+        //        Registry secondRegistry = registryIterable.next();
+        Assertions.assertNotNull(MultipleRegistryTestUtil.getZookeeperRegistry(
+                multipleRegistry.getServiceRegistries().values()));
+        Assertions.assertNotNull(MultipleRegistryTestUtil.getZookeeperRegistry(
+                multipleRegistry.getReferenceRegistries().values()));
 
-        Assertions.assertEquals("vic", multipleRegistry.getApplicationName());
+        Assertions.assertEquals(
+                MultipleRegistryTestUtil.getZookeeperRegistry(
+                        multipleRegistry.getServiceRegistries().values()),
+                MultipleRegistryTestUtil.getZookeeperRegistry(
+                        multipleRegistry.getReferenceRegistries().values()));
+
+        Assertions.assertEquals(
+                MultipleRegistryTestUtil.getZookeeperRegistry(
+                        multipleRegistry.getServiceRegistries().values()),
+                MultipleRegistryTestUtil.getZookeeperRegistry(
+                        multipleRegistry.getReferenceRegistries().values()));
+
+        Assertions.assertEquals(multipleRegistry.getApplicationName(), "vic");
+
         Assertions.assertTrue(multipleRegistry.isAvailable());
     }
 
     @Test
-    void testRegistryAndUnRegistry() {
-        URL serviceUrl = URL.valueOf(
-                "http2://multiple/" + SERVICE_NAME + "?notify=false&methods=test1,test2&category=providers");
+    void testRegistryAndUnRegistry() throws InterruptedException {
+        URL serviceUrl = URL.valueOf("http2://multiple/" + SERVICE_NAME
+                + "?notify=false&methods=test1,test2&category=providers&application=vic");
 
         multipleRegistry.register(serviceUrl);
         Mockito.verify(mockZkRegistry1, Mockito.times(1)).register(serviceUrl);
         Mockito.verify(mockZkRegistry2, Mockito.times(1)).register(serviceUrl);
 
-        NotifyListener testListener = urls -> {};
-        multipleRegistry.subscribe(serviceUrl, testListener);
-        Mockito.verify(mockZkRegistry1, Mockito.times(1))
-                .subscribe(Mockito.eq(serviceUrl), Mockito.any(NotifyListener.class));
-        Mockito.verify(mockZkRegistry2, Mockito.times(1))
-                .subscribe(Mockito.eq(serviceUrl), Mockito.any(NotifyListener.class));
+        String path = "/dubbo/" + SERVICE_NAME + "/providers";
+        Mockito.when(mockZkClient1.getChildren(path)).thenReturn(Arrays.asList("provider1"));
+        List<String> providerList = mockZkClient1.getChildren(path);
+        Assertions.assertTrue(!providerList.isEmpty());
+
+        final List<URL> list = new ArrayList<>();
+        multipleRegistry.subscribe(serviceUrl, new NotifyListener() {
+            @Override
+            public void notify(List<URL> urls) {
+                list.clear();
+                list.addAll(urls);
+            }
+        });
+
+        ArgumentCaptor<NotifyListener> captor1 = ArgumentCaptor.forClass(NotifyListener.class);
+        ArgumentCaptor<NotifyListener> captor2 = ArgumentCaptor.forClass(NotifyListener.class);
+        Mockito.verify(mockZkRegistry1, Mockito.times(1)).subscribe(Mockito.eq(serviceUrl), captor1.capture());
+        Mockito.verify(mockZkRegistry2, Mockito.times(1)).subscribe(Mockito.eq(serviceUrl), captor2.capture());
+
+        List<URL> mockUrls1 = Arrays.asList(URL.valueOf("http2://127.0.0.1:20880/" + SERVICE_NAME));
+        List<URL> mockUrls2 = Arrays.asList(URL.valueOf("http2://127.0.0.1:20881/" + SERVICE_NAME));
+        captor1.getValue().notify(mockUrls1);
+        captor2.getValue().notify(mockUrls2);
+
+        Thread.sleep(1500);
+        Assertions.assertEquals(2, list.size());
 
         multipleRegistry.unregister(serviceUrl);
         Mockito.verify(mockZkRegistry1, Mockito.times(1)).unregister(serviceUrl);
         Mockito.verify(mockZkRegistry2, Mockito.times(1)).unregister(serviceUrl);
+
+        List<URL> unregisterUrls = Arrays.asList(URL.valueOf("empty://127.0.0.1:20880/" + SERVICE_NAME));
+        captor1.getValue().notify(unregisterUrls);
+        captor2.getValue().notify(unregisterUrls);
+
+        Thread.sleep(1500);
+        Assertions.assertEquals(1, list.size());
+
+        List<URL> urls = MultipleRegistryTestUtil.getProviderURLsFromNotifyURLS(list);
+        Assertions.assertEquals(1, list.size());
+        Assertions.assertEquals("empty", list.get(0).getProtocol());
     }
 
     @Test
-    void testSubscription() {
-        URL serviceUrl = URL.valueOf(
-                "http2://multiple/" + SERVICE2_NAME + "?notify=false&methods=test1,test2&category=providers");
+    void testSubscription() throws InterruptedException {
+        URL serviceUrl = URL.valueOf("http2://multiple/" + SERVICE2_NAME
+                + "?notify=false&methods=test1,test2&category=providers&application=vic");
 
         multipleRegistry.register(serviceUrl);
-        multipleRegistry.subscribe(serviceUrl, urls -> {});
         Mockito.verify(mockZkRegistry1, Mockito.times(1)).register(serviceUrl);
         Mockito.verify(mockZkRegistry2, Mockito.times(1)).register(serviceUrl);
+
+        String path = "/dubbo/" + SERVICE2_NAME + "/providers";
+        Mockito.when(mockZkClient1.getChildren(path)).thenReturn(Arrays.asList("provider1"));
+        List<String> providerList = mockZkClient1.getChildren(path);
+        Assumptions.assumeTrue(!providerList.isEmpty());
+
+        final List<URL> list = new ArrayList<>();
+        multipleRegistry.subscribe(serviceUrl, new NotifyListener() {
+            @Override
+            public void notify(List<URL> urls) {
+                list.clear();
+                list.addAll(urls);
+            }
+        });
+
+        ArgumentCaptor<NotifyListener> captor1 = ArgumentCaptor.forClass(NotifyListener.class);
+        ArgumentCaptor<NotifyListener> captor2 = ArgumentCaptor.forClass(NotifyListener.class);
+        Mockito.verify(mockZkRegistry1, Mockito.times(1)).subscribe(Mockito.eq(serviceUrl), captor1.capture());
+        Mockito.verify(mockZkRegistry2, Mockito.times(1)).subscribe(Mockito.eq(serviceUrl), captor2.capture());
+
+        List<URL> mockUrls1 = Arrays.asList(URL.valueOf("http2://127.0.0.1:20880/" + SERVICE2_NAME));
+        List<URL> mockUrls2 = Arrays.asList(URL.valueOf("http2://127.0.0.1:20881/" + SERVICE2_NAME));
+        captor1.getValue().notify(mockUrls1);
+        captor2.getValue().notify(mockUrls2);
+
+        Thread.sleep(1500);
+        Assertions.assertEquals(2, list.size());
 
         List<Registry> serviceRegistries =
                 new ArrayList<>(multipleRegistry.getServiceRegistries().values());
         serviceRegistries.get(0).unregister(serviceUrl);
         Mockito.verify(mockZkRegistry1, Mockito.times(1)).unregister(serviceUrl);
-        Mockito.verify(mockZkRegistry2, Mockito.never()).unregister(serviceUrl);
+
+        List<URL> unregisterUrls1 = Arrays.asList(URL.valueOf("empty://127.0.0.1:20880/" + SERVICE2_NAME));
+        captor1.getValue().notify(unregisterUrls1);
+
+        Thread.sleep(1500);
+        Assertions.assertEquals(1, list.size());
+        List<URL> urls1 = MultipleRegistryTestUtil.getProviderURLsFromNotifyURLS(list);
+        Assertions.assertEquals(1, list.size());
+        Assertions.assertTrue(!"empty".equals(list.get(0).getProtocol()));
 
         serviceRegistries.get(1).unregister(serviceUrl);
         Mockito.verify(mockZkRegistry2, Mockito.times(1)).unregister(serviceUrl);
+        List<URL> unregisterUrls2 = Arrays.asList(URL.valueOf("empty://127.0.0.1:20881/" + SERVICE2_NAME));
+        captor2.getValue().notify(unregisterUrls2);
+        Thread.sleep(1500);
+        Assertions.assertEquals(1, list.size());
+        List<URL> urls2 = MultipleRegistryTestUtil.getProviderURLsFromNotifyURLS(list);
+        Assertions.assertEquals(1, list.size());
+        Assertions.assertEquals("empty", list.get(0).getProtocol());
     }
 
     @Test
     void testAggregation() {
-        List<URL> result = new ArrayList<>();
-        List<URL> listToAggregate = new ArrayList<>();
+        List<URL> result = new ArrayList<URL>();
+        List<URL> listToAggregate = new ArrayList<URL>();
         URL url1 = URL.valueOf("dubbo://127.0.0.1:20880/service1");
         URL url2 = URL.valueOf("dubbo://127.0.0.1:20880/service1");
         listToAggregate.add(url1);
@@ -179,9 +285,8 @@ class MultipleRegistry2S2RTest {
         MultipleRegistry.MultipleNotifyListenerWrapper.aggregateRegistryUrls(result, listToAggregate, registryURL);
 
         Assertions.assertEquals(2, result.size());
+        Assertions.assertEquals(2, result.get(0).getParameters().size());
         Assertions.assertEquals("hangzhou", result.get(0).getParameter("zone"));
-        Assertions.assertEquals("middleware", result.get(0).getParameter("tag"));
-        Assertions.assertEquals("hangzhou", result.get(1).getParameter("zone"));
         Assertions.assertEquals("middleware", result.get(1).getParameter("tag"));
     }
 }

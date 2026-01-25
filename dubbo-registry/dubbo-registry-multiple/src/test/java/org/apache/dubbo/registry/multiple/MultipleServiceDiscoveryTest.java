@@ -45,7 +45,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 
 public class MultipleServiceDiscoveryTest {
 
-    private static String mockZkAddress = "zookeeper://mock-zk:2181?check=false"; // 改用Mock地址
+    private static String mockZkAddress = "zookeeper://mock-zk:2181?check=false";
 
     @Test
     public void testOnEvent() {
@@ -68,8 +68,6 @@ public class MultipleServiceDiscoveryTest {
             ServiceDiscovery mockServiceDiscovery = Mockito.mock(ServiceDiscovery.class);
             Mockito.when(mockServiceDiscovery.getRemoteMetadata(Mockito.anyString(), Mockito.anyList()))
                     .thenReturn(metadataInfo);
-            Mockito.when(mockServiceDiscovery.getUrl()).thenReturn(url);
-            Mockito.when(mockServiceDiscovery.isAvailable()).thenReturn(true);
             Map<String, ServiceDiscovery> mockServiceDiscoveries = new HashMap<>();
             mockServiceDiscoveries.put("child.a1", mockServiceDiscovery);
             serviceDiscoveriesField.set(multipleServiceDiscovery, mockServiceDiscoveries);
