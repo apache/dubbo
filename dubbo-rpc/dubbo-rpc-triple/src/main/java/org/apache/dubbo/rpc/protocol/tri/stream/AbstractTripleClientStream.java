@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
@@ -80,11 +81,22 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
     protected final TripleWriteQueue writeQueue;
     private Deframer deframer;
     private final Channel parent;
-    private final TripleStreamChannelFuture streamChannelFuture;
+    private TripleStreamChannelFuture streamChannelFuture;
     private boolean halfClosed;
     private boolean rst;
 
     private boolean isReturnTriException = false;
+
+    /**
+     * Number of bytes currently queued, waiting to be sent.
+     * When this falls below ON_READY_THRESHOLD, onReady will be triggered.
+     */
+    private final AtomicLong numSentBytesQueued = new AtomicLong(0);
+
+    /**
+     * The threshold below which isReady() returns true (32KB).
+     */
+    protected static final long ON_READY_THRESHOLD = 32 * 1024;
 
     protected AbstractTripleClientStream(
             FrameworkModel frameworkModel,
@@ -96,7 +108,6 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         this.parent = http2StreamChannel.parent();
         this.listener = listener;
         this.writeQueue = writeQueue;
-        this.streamChannelFuture = initStreamChannel(http2StreamChannel);
     }
 
     protected AbstractTripleClientStream(
@@ -109,11 +120,16 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         this.parent = parent;
         this.listener = listener;
         this.writeQueue = writeQueue;
-        this.streamChannelFuture = initStreamChannel(parent);
+    }
+
+    @Override
+    public void initStream() {
+        initStreamChannel(this.parent);
     }
 
     private TripleStreamChannelFuture initStreamChannel(Channel parent) {
         TripleStreamChannelFuture tripleStreamChannelFuture = initStreamChannel0(parent);
+        this.streamChannelFuture = tripleStreamChannelFuture;
         /**
          * Enqueue InitOnReadyQueueCommand after the stream creation command.
          * Since WriteQueue executes commands in order within the EventLoop,
@@ -122,7 +138,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
          * This is necessary because onReady is only triggered by channelWritabilityChanged,
          * which won't fire if the channel is always writable from creation.
          */
-        writeQueue.enqueue(InitOnReadyQueueCommand.create(tripleStreamChannelFuture, listener));
+        writeQueue.enqueue(InitOnReadyQueueCommand.create(tripleStreamChannelFuture, this));
         return tripleStreamChannelFuture;
     }
 
@@ -185,15 +201,62 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         if (!checkResult.isSuccess()) {
             return checkResult;
         }
+
+        final int messageSize = message.length;
+        onSendingBytes(messageSize);
+
         final DataQueueCommand cmd = DataQueueCommand.create(streamChannelFuture, message, false, compressFlag);
         return this.writeQueue.enqueueFuture(cmd, parent.eventLoop()).addListener(future -> {
             if (!future.isSuccess()) {
+                rollbackSendingBytes(messageSize);
                 cancelByLocal(TriRpcStatus.INTERNAL
                         .withDescription("Client write message failed")
                         .withCause(future.cause()));
                 transportException(future.cause());
+            } else {
+                onSentBytes(messageSize);
             }
         });
+    }
+
+    /**
+     * Called before bytes are sent to track pending bytes.
+     *
+     * @param numBytes the number of bytes about to be sent
+     */
+    protected void onSendingBytes(int numBytes) {
+        numSentBytesQueued.addAndGet(numBytes);
+    }
+
+    /**
+     * Called when sending fails to rollback the pending bytes count.
+     *
+     * @param numBytes the number of bytes to rollback
+     */
+    protected void rollbackSendingBytes(int numBytes) {
+        numSentBytesQueued.addAndGet(-numBytes);
+    }
+
+    /**
+     * Called when bytes have been successfully sent to the remote endpoint.
+     *
+     * @param numBytes the number of bytes that were sent
+     */
+    protected void onSentBytes(int numBytes) {
+        long oldValue = numSentBytesQueued.getAndAdd(-numBytes);
+        long newValue = oldValue - numBytes;
+        // Trigger onReady when transitioning from "not ready" to "ready"
+        if (oldValue >= ON_READY_THRESHOLD && newValue < ON_READY_THRESHOLD) {
+            listener.onReady();
+        }
+    }
+
+    /**
+     * Returns the number of bytes currently queued for sending.
+     * Visible for testing.
+     */
+    protected long getNumSentBytesQueued() {
+        return numSentBytesQueued.get();
     }
 
     @Override
@@ -244,21 +307,23 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         if (channel == null) {
             return false;
         }
-        return channel.isWritable();
+        return numSentBytesQueued.get() < ON_READY_THRESHOLD;
     }
 
     /**
      * Called when the channel writability changes.
-     * This method should be invoked by the transport handler when channelWritabilityChanged is triggered.
-     * It synchronously notifies the listener (TripleClientCall) which is responsible for
-     * asynchronously triggering all necessary callbacks through its executor.
      */
     protected void onWritabilityChanged() {
-        Channel channel = streamChannelFuture.getNow();
-        if (channel != null && channel.isWritable()) {
-            // Synchronously call listener.onReady(), which will use executor to run the callback
+        if (isReady()) {
             listener.onReady();
         }
+    }
+
+    /**
+     * Called by InitOnReadyQueueCommand to trigger the initial onReady notification.
+     */
+    public void triggerInitialOnReady() {
+        listener.onReady();
     }
 
     class ClientTransportListener extends AbstractH2TransportListener implements H2TransportListener {

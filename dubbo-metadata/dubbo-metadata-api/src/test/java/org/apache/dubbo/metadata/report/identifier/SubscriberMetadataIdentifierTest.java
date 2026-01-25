@@ -14,40 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http12;
+package org.apache.dubbo.metadata.report.identifier;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.util.concurrent.ConcurrentHashMap;
 
-public interface HttpOutputMessage extends AutoCloseable {
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-    HttpOutputMessage EMPTY_MESSAGE = new HttpOutputMessage() {
+public class SubscriberMetadataIdentifierTest {
 
-        private final OutputStream INPUT_STREAM = new ByteArrayOutputStream(0);
-
-        @Override
-        public OutputStream getBody() {
-            return INPUT_STREAM;
-        }
-
-        @Override
-        public int messageSize() {
-            return 0;
-        }
-    };
-
-    OutputStream getBody();
-
-    /**
-     * Returns the size of the message body in bytes.
-     *
-     * @return the size of the message body, or 0 if unknown
-     */
-    int messageSize();
-
-    @Override
-    default void close() throws IOException {
-        getBody().close();
+    @Test
+    void testPutDuplicateIdentifier() {
+        ConcurrentHashMap<SubscriberMetadataIdentifier, Object> map = new ConcurrentHashMap<>();
+        map.put(new SubscriberMetadataIdentifier("testApp", "1.0.0"), new Object());
+        map.put(new SubscriberMetadataIdentifier("testApp", "1.0.0"), new Object());
+        map.put(new SubscriberMetadataIdentifier("testApp", "1.0.0"), new Object());
+        Assertions.assertEquals(map.size(), 1);
     }
 }

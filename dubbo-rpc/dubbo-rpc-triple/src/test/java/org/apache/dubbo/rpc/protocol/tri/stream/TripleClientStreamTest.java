@@ -88,6 +88,7 @@ class TripleClientStreamTest {
                 writeQueue,
                 listener,
                 http2StreamChannel);
+        stream.initStream();
         verify(writeQueue).enqueue(any(CreateStreamQueueCommand.class));
         verify(writeQueue).enqueue(any(InitOnReadyQueueCommand.class));
 

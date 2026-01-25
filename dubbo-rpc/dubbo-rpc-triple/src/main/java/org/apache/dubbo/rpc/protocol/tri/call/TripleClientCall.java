@@ -168,7 +168,11 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         if (listener == null) {
             return;
         }
-        // ObserverToClientCallListenerAdapter.onReady() triggers the onReadyHandler
+        // ObserverToClientCallListenerAdapter.onReady() triggers the onReadyHandler.
+        // Note: We do NOT check isReady() here because of the async dispatch model.
+        // The handler is always called (following gRPC's "spurious notifications" semantics),
+        // and it should check isReady() internally via while(isReady()) { send(); }.
+        // Subsequent channelWritabilityChanged events will trigger onReady() again if needed.
         executor.execute(() -> {
             try {
                 listener.onReady();
@@ -303,7 +307,12 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         for (ClientStreamFactory factory : frameworkModel.getActivateExtensions(ClientStreamFactory.class)) {
             stream = factory.createClientStream(connectionClient, frameworkModel, executor, this, writeQueue);
             if (stream != null) {
+                // Set this.stream BEFORE initStream() to avoid race condition:
+                // initStream() triggers onReady callback asynchronously, which may execute
+                // in another thread before this.stream is set if we set it after initStream().
+                // This would cause isReady() to return false because it checks stream == null.
                 this.stream = stream;
+                stream.initStream();
                 return;
             }
         }
