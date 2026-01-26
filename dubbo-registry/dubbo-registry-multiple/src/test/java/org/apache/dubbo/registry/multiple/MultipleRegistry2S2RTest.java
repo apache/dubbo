@@ -111,22 +111,18 @@ class MultipleRegistry2S2RTest {
         Assertions.assertTrue(multipleRegistry.origReferenceRegistryURLs.contains(MOCK_ZK_ADDR_1));
         Assertions.assertTrue(multipleRegistry.origReferenceRegistryURLs.contains(MOCK_ZK_ADDR_2));
 
-        // 验证原始service注册中心URL集合
         Assertions.assertEquals(2, multipleRegistry.origServiceRegistryURLs.size());
         Assertions.assertTrue(multipleRegistry.origServiceRegistryURLs.contains(MOCK_ZK_ADDR_1));
         Assertions.assertTrue(multipleRegistry.origServiceRegistryURLs.contains(MOCK_ZK_ADDR_2));
 
-        // 验证有效reference注册中心URL集合（完整保留原断言范围）
         Assertions.assertEquals(2, multipleRegistry.effectReferenceRegistryURLs.size());
         Assertions.assertTrue(multipleRegistry.effectReferenceRegistryURLs.contains(MOCK_ZK_ADDR_1));
         Assertions.assertTrue(multipleRegistry.effectReferenceRegistryURLs.contains(MOCK_ZK_ADDR_2));
 
-        // 验证有效service注册中心URL集合（完整保留原断言范围）
         Assertions.assertEquals(2, multipleRegistry.effectServiceRegistryURLs.size());
         Assertions.assertTrue(multipleRegistry.effectServiceRegistryURLs.contains(MOCK_ZK_ADDR_1));
         Assertions.assertTrue(multipleRegistry.effectServiceRegistryURLs.contains(MOCK_ZK_ADDR_2));
 
-        // 验证serviceRegistries映射关系
         Assertions.assertTrue(multipleRegistry.getServiceRegistries().containsKey(MOCK_ZK_URL_1));
         Assertions.assertTrue(multipleRegistry.getServiceRegistries().containsKey(MOCK_ZK_URL_2));
         Assertions.assertEquals(
