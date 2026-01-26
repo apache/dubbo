@@ -307,8 +307,12 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         for (ClientStreamFactory factory : frameworkModel.getActivateExtensions(ClientStreamFactory.class)) {
             stream = factory.createClientStream(connectionClient, frameworkModel, executor, this, writeQueue);
             if (stream != null) {
-                stream.initStream();
+                // Set this.stream BEFORE initStream() to avoid race condition:
+                // initStream() triggers onReady callback asynchronously, which may execute
+                // in another thread before this.stream is set if we set it after initStream().
+                // This would cause isReady() to return false because it checks stream == null.
                 this.stream = stream;
+                stream.initStream();
                 return;
             }
         }
