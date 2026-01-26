@@ -91,7 +91,7 @@ class MultipleRegistry2S2RTest {
             setPrivateField(multipleRegistry, "serviceRegistries", serviceRegistries);
             setPrivateField(multipleRegistry, "referenceRegistries", serviceRegistries);
         } catch (Exception e) {
-            throw new RuntimeException("初始化MultipleRegistry失败", e);
+            throw new RuntimeException("Failed to initialize MultipleRegistry", e);
         }
     }
 
@@ -101,7 +101,7 @@ class MultipleRegistry2S2RTest {
             field.setAccessible(true);
             field.set(targetObj, fieldValue);
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException("反射设置私有字段失败：" + fieldName, e);
+            throw new RuntimeException("Failed to set private field via Reflection:" + fieldName, e);
         }
     }
 
