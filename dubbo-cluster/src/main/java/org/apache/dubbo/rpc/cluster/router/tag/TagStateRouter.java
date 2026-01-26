@@ -36,6 +36,9 @@ import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRuleParser;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -54,6 +57,7 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(TagStateRouter.class);
     private static final String RULE_SUFFIX = ".tag-router";
     public static final char TAG_SEPERATOR = '|';
+    private static final String TAGS_SUPPORT = "tags.support";
 
     private volatile TagRouterRule tagRouterRule;
     private String application;
@@ -137,8 +141,7 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
             } else {
                 // dynamic tag group doesn't have any item about the requested app OR it's null after filtered by
                 // dynamic tag group but force=false. check static tag
-                result = filterInvoker(
-                        invokers, invoker -> tag.equals(invoker.getUrl().getParameter(TAG_KEY)));
+                result = filterInvoker(invokers, predicateEqual(tag, url.getParameter(TAGS_SUPPORT, false)));
             }
             // If there's no tagged providers that can match the current tagged request. force.tag is set by default
             // to false, which means it will invoke any providers without a tag unless it's explicitly disallowed.
@@ -196,10 +199,9 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
      * @param invokers
      * @param url
      * @param invocation
-     * @param <T>
      * @return
      */
-    private <T> BitList<Invoker<T>> filterUsingStaticTag(BitList<Invoker<T>> invokers, URL url, Invocation invocation) {
+    private BitList<Invoker<T>> filterUsingStaticTag(BitList<Invoker<T>> invokers, URL url, Invocation invocation) {
         BitList<Invoker<T>> result;
         // Dynamic param
         String tag = StringUtils.isEmpty(invocation.getAttachment(TAG_KEY))
@@ -207,8 +209,7 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
                 : invocation.getAttachment(TAG_KEY);
         // Tag request
         if (!StringUtils.isEmpty(tag)) {
-            result = filterInvoker(
-                    invokers, invoker -> tag.equals(invoker.getUrl().getParameter(TAG_KEY)));
+            result = filterInvoker(invokers, predicateEqual(tag, url.getParameter(TAGS_SUPPORT, false)));
             if (CollectionUtils.isEmpty(result) && !isForceUseTag(invocation)) {
                 result = filterInvoker(
                         invokers,
@@ -219,6 +220,26 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
                     invokers, invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(TAG_KEY)));
         }
         return result;
+    }
+
+    private Predicate<Invoker<T>> predicateEqual(String tag, boolean tagsEnable) {
+        return invoker -> {
+            List<String> consumerTags;
+            List<String> providerTags;
+            if (tagsEnable) {
+                consumerTags = StringUtils.splitToList(tag, ',');
+            } else {
+                consumerTags = tag != null ? Arrays.asList(tag) : Collections.emptyList();
+            }
+            boolean providerTagEnable = invoker.getUrl().getParameter(TAGS_SUPPORT, false);
+            if (providerTagEnable) {
+                providerTags = StringUtils.splitToList(invoker.getUrl().getParameter(TAG_KEY), ',');
+            } else {
+                String providerTag = invoker.getUrl().getParameter(TAG_KEY);
+                providerTags = providerTag != null ? Arrays.asList(providerTag) : Collections.emptyList();
+            }
+            return !Collections.disjoint(consumerTags, providerTags);
+        };
     }
 
     @Override
@@ -237,7 +258,7 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
                 invocation.getAttachment(FORCE_USE_TAG, this.getUrl().getParameter(FORCE_USE_TAG, "false")));
     }
 
-    private <T> BitList<Invoker<T>> filterInvoker(BitList<Invoker<T>> invokers, Predicate<Invoker<T>> predicate) {
+    private BitList<Invoker<T>> filterInvoker(BitList<Invoker<T>> invokers, Predicate<Invoker<T>> predicate) {
         if (invokers.stream().allMatch(predicate)) {
             return invokers;
         }

@@ -298,4 +298,37 @@ class TagStateRouterTest {
         Set<String> selectedAddresses = TagStateRouter.selectAddressByTagLevel(tagAddresses, "beta", true);
         Assertions.assertEquals(addresses, selectedAddresses);
     }
+
+    @Test
+    void testTagsRoutePickInvokers() {
+        StateRouter router = new TagStateRouterFactory().getRouter(TagRouterRule.class, url);
+
+        List<Invoker<String>> originInvokers = new ArrayList<>();
+
+        URL url1 = URL.valueOf("test://127.0.0.1:7777/DemoInterface?dubbo.tag=tag2,tag1")
+                .setScopeModel(moduleModel);
+        url1 = url1.addParameter("tags.support", "true");
+        URL url2 = URL.valueOf("test://127.0.0.1:7778/DemoInterface?dubbo.tag=tag1")
+                .setScopeModel(moduleModel);
+        URL url3 = URL.valueOf("test://127.0.0.1:7779/DemoInterface?dubbo.tag=tag2")
+                .setScopeModel(moduleModel);
+        URL url4 = URL.valueOf("test://127.0.0.1:7779/DemoInterface").setScopeModel(moduleModel);
+        Invoker<String> invoker1 = new MockInvoker<>(url1, true);
+        Invoker<String> invoker2 = new MockInvoker<>(url2, true);
+        Invoker<String> invoker3 = new MockInvoker<>(url3, true);
+        Invoker<String> invoker4 = new MockInvoker<>(url4, true);
+
+        originInvokers.add(invoker1);
+        originInvokers.add(invoker2);
+        originInvokers.add(invoker3);
+        originInvokers.add(invoker4);
+        BitList<Invoker<String>> invokers = new BitList<>(originInvokers);
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setAttachment(TAG_KEY, "tag2");
+        List<Invoker<String>> filteredInvokers =
+                router.route(invokers.clone(), invokers.get(0).getUrl(), invocation, false, new Holder<>());
+        Assertions.assertEquals(2, filteredInvokers.size());
+        Assertions.assertTrue(filteredInvokers.contains(invoker1));
+        Assertions.assertTrue(filteredInvokers.contains(invoker3));
+    }
 }
