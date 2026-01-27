@@ -214,4 +214,45 @@ class AdaptiveLoadBalanceTest extends LoadBalanceBaseTest {
         field.setAccessible(true);
         field.set(obj, value);
     }
+
+    @Test
+    @Order(3)
+    void testAdaptiveMetricsDecayHighQps() throws Exception {
+        AdaptiveMetrics metrics = new AdaptiveMetrics();
+
+        String id = "highQpsTest";
+        int timeout = 100;
+
+        Map<String, String> map = new HashMap<>();
+        map.put("curTime", String.valueOf(System.currentTimeMillis()));
+        map.put("rt", "300");
+        map.put("load", "1");
+
+        metrics.setProviderMetrics(id, map);
+
+        AdaptiveMetrics status = metrics.getStatus(id);
+
+        long past = System.currentTimeMillis() - 1000;
+        setLongField(status, "currentTime", past);
+        setLongField(status, "currentProviderTime", past);
+
+        long before = getLongField(status, "lastLatency");
+
+        // simulate high QPS: many rapid getLoad calls without provider updates
+        for (int i = 0; i < 1000; i++) {
+            metrics.getLoad(id, 100, timeout);
+        }
+
+        Thread.sleep(120);
+
+        for (int i = 0; i < 1000; i++) {
+            metrics.getLoad(id, 100, timeout);
+        }
+
+        long after = getLongField(status, "lastLatency");
+
+        Assertions.assertTrue(after > 0);
+        Assertions.assertNotEquals(before, after);
+        Assertions.assertNotEquals(timeout * 2L, after);
+    }
 }
