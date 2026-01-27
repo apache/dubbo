@@ -25,8 +25,8 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREAD_NAME;
-import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VT_THREADS_KEY;
 
 /**
  * Creates a thread pool that use virtual thread
@@ -38,7 +38,7 @@ public class VirtualThreadPool implements ThreadPool {
     public Executor getExecutor(URL url) {
         String name =
                 url.getParameter(THREAD_NAME_KEY, (String) url.getAttribute(THREAD_NAME_KEY, DEFAULT_THREAD_NAME));
-        int threads = url.getParameter(THREADS_KEY, 0);
+        int threads = url.getParameter(VT_THREADS_KEY, 0);
         if (threads > 0) {
             return new ThreadPoolExecutor(
                     threads,
