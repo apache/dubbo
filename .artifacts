@@ -53,6 +53,7 @@ dubbo-metrics-api
 dubbo-metrics-default
 dubbo-metrics-metadata
 dubbo-metrics-prometheus
+dubbo-metrics-otlp
 dubbo-metrics-registry
 dubbo-metrics-config-center
 dubbo-metrics-netty
