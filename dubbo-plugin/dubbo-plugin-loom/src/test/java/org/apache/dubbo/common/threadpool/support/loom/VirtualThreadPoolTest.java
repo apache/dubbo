@@ -21,6 +21,8 @@ import org.apache.dubbo.common.threadpool.ThreadPool;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -28,8 +30,10 @@ import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.condition.JRE;
 
 import static org.apache.dubbo.common.constants.CommonConstants.QUEUES_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADS_VIRTUAL_CORE;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -63,5 +67,31 @@ public class VirtualThreadPoolTest {
         assertThat(
                 threadPool.getExecutor(url).getClass().getName(),
                 Matchers.is("java.util.concurrent.ThreadPerTaskExecutor"));
+    }
+
+    @Test
+    @EnabledForJreRange(min = JRE.JAVA_21)
+    void getExecutor3() throws Exception {
+        URL url = URL.valueOf(
+                "dubbo://10.20.130.230:20880/context/path?" + THREADS_VIRTUAL_CORE + "=2&" + THREAD_NAME_KEY + "=demo");
+        ThreadPool threadPool = new VirtualThreadPool();
+        Executor executor = threadPool.getExecutor(url);
+
+        assertThat(executor, instanceOf(ThreadPoolExecutor.class));
+        ThreadPoolExecutor tpe = (ThreadPoolExecutor) executor;
+        assertThat(tpe.getCorePoolSize(), is(2));
+        assertThat(tpe.getMaximumPoolSize(), is(Integer.MAX_VALUE));
+        assertThat(tpe.getQueue(), instanceOf(SynchronousQueue.class));
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        executor.execute(() -> {
+            Thread thread = Thread.currentThread();
+            assertTrue(thread.isVirtual());
+            assertThat(thread.getName(), startsWith("demo"));
+            latch.countDown();
+        });
+
+        latch.await();
+        assertThat(latch.getCount(), is(0L));
     }
 }
