@@ -30,8 +30,8 @@ import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.condition.JRE;
 
 import static org.apache.dubbo.common.constants.CommonConstants.QUEUES_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADS_VIRTUAL_CORE;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VT_THREADS_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
@@ -73,7 +73,7 @@ public class VirtualThreadPoolTest {
     @EnabledForJreRange(min = JRE.JAVA_21)
     void getExecutor3() throws Exception {
         URL url = URL.valueOf(
-                "dubbo://10.20.130.230:20880/context/path?" + VT_THREADS_KEY + "=2&" + THREAD_NAME_KEY + "=demo");
+                "dubbo://10.20.130.230:20880/context/path?" + THREADS_VIRTUAL_CORE + "=2&" + THREAD_NAME_KEY + "=demo");
         ThreadPool threadPool = new VirtualThreadPool();
         Executor executor = threadPool.getExecutor(url);
 
