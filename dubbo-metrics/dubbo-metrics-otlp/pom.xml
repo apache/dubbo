@@ -15,53 +15,60 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.dubbo</groupId>
-    <artifactId>dubbo-registry</artifactId>
+    <artifactId>dubbo-metrics</artifactId>
     <version>${revision}</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
-  <artifactId>dubbo-registry-multiple</artifactId>
+
+  <artifactId>dubbo-metrics-otlp</artifactId>
   <packaging>jar</packaging>
   <name>${project.artifactId}</name>
-  <description>The multiple registry module of dubbo project</description>
+  <description>The otlp metrics module of dubbo project</description>
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>
   </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-registry-api</artifactId>
+      <artifactId>dubbo-common</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
-      <artifactId>dubbo-registry-zookeeper</artifactId>
+      <artifactId>dubbo-metrics-default</artifactId>
       <version>${project.parent.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <scope>test</scope>
     </dependency>
 
     <dependency>
-      <groupId>org.apache.curator</groupId>
-      <artifactId>curator-framework</artifactId>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.curator</groupId>
-      <artifactId>curator-recipes</artifactId>
-      <scope>test</scope>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-qos-api</artifactId>
+      <version>${project.parent.version}</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.zookeeper</groupId>
-      <artifactId>zookeeper</artifactId>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-otlp</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-metrics-default</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>mockwebserver</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
+
 </project>
