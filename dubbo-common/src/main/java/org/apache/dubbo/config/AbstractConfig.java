@@ -1096,6 +1096,10 @@ public abstract class AbstractConfig implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
+        return equalsWithId(obj, false);
+    }
+
+    public boolean equalsWithId(Object obj, boolean ignoreId) {
         if (obj == null || obj.getClass() != this.getClass()) {
             return false;
         }
@@ -1104,11 +1108,10 @@ public abstract class AbstractConfig implements Serializable {
         }
 
         for (Method method : getAttributedMethods()) {
-            // ignore compare 'id' value
-            if ("getId".equals(method.getName())) {
-                continue;
-            }
             try {
+                if (ignoreId && "getId".equals(method.getName())) {
+                    continue;
+                }
                 Object value1 = method.invoke(this);
                 Object value2 = method.invoke(obj);
                 if (!Objects.equals(value1, value2)) {

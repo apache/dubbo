@@ -170,7 +170,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         // fast check duplicated equivalent config before write lock
         if (!(config instanceof ReferenceConfigBase || config instanceof ServiceConfigBase)) {
             for (AbstractConfig value : configsMap.values()) {
-                if (value.equals(config)) {
+                if (value.equalsWithId(config, true)) {
                     return (T) value;
                 }
             }
@@ -404,7 +404,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
                 newOne.refresh();
             }
         }
-        return oldOne.equals(newOne);
+        return oldOne.equalsWithId(newOne, true);
     }
 
     protected <C extends AbstractConfig> String generateConfigId(C config) {
