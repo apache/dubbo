@@ -80,6 +80,11 @@ public final class Http3Exchanger {
     }
 
     public static RemotingServer bind(URL url) {
+
+        if (isRestServletMode(url)) {
+            return null;
+        }
+
         if (isEnabled(url)) {
             return ConcurrentHashMapUtils.computeIfAbsent(SERVERS, url.getAddress(), addr -> {
                 try {
@@ -135,6 +140,10 @@ public final class Http3Exchanger {
             pipeline.addLast(new IdleStateHandler(heartbeat, 0, 0, TimeUnit.MILLISECONDS));
             pipeline.addLast(new TriplePingPongHandler(closeTimeout));
         };
+    }
+
+    private static boolean isRestServletMode(URL url) {
+        return "rest".equalsIgnoreCase(url.getProtocol()) && "servlet".equalsIgnoreCase(url.getParameter("server"));
     }
 
     public static void close() {
