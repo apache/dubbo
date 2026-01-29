@@ -369,6 +369,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         }
 
         void onHeaderReceived(Http2Headers headers) {
+
             if (transportError != null) {
                 transportError.appendDescription("headers:" + headers);
                 return;
@@ -387,6 +388,13 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             }
             headerReceived = true;
             transportError = validateHeaderStatus(headers);
+
+            if (transportError != null) {
+                // stop stream immediately if response is not valid gRPC
+                writeQueue.enqueue(CancelQueueCommand.createCommand(streamChannelFuture, Http2Error.NO_ERROR));
+                rst = true;
+                return;
+            }
 
             // todo support full payload compressor
             CharSequence messageEncoding = headers.get(TripleHeaderEnum.GRPC_ENCODING.getKey());
@@ -571,6 +579,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         }
 
         private void doOnData(ByteBuf data, boolean endStream) {
+
             if (transportError != null) {
                 transportError.appendDescription("Data:" + data.toString(StandardCharsets.UTF_8));
                 ReferenceCountUtil.release(data);
