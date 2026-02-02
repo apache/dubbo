@@ -153,7 +153,7 @@
     <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
     <log4j2_version>2.25.3</log4j2_version>
     <commons_io_version>2.21.0</commons_io_version>
-    <commons-codec_version>1.20.0</commons-codec_version>
+    <commons-codec_version>1.21.0</commons-codec_version>
     <groovy_version>4.0.30</groovy_version>
 
     <!-- Test libs -->
