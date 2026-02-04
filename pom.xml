@@ -150,7 +150,7 @@
     <maven_surefire_version>3.5.4</maven_surefire_version>
     <maven_deploy_version>3.1.4</maven_deploy_version>
     <maven_shade_version>3.6.1</maven_shade_version>
-    <maven_compiler_version>3.14.1</maven_compiler_version>
+    <maven_compiler_version>3.15.0</maven_compiler_version>
     <maven_source_version>3.4.0</maven_source_version>
     <maven_javadoc_version>3.12.0</maven_javadoc_version>
     <maven_checkstyle_version>3.6.0</maven_checkstyle_version>
@@ -166,11 +166,12 @@
     <!-- For unify spring boot 3 version -->
     <spring-6.version>6.2.15</spring-6.version>
     <spring-security-6.version>6.5.7</spring-security-6.version>
-    <spring-boot-3.version>3.5.9</spring-boot-3.version>
+    <spring-boot-3.version>3.5.10</spring-boot-3.version>
 
-    <protobuf-protoc_version>3.22.3</protobuf-protoc_version>
+    <!-- protobuf-java_version should be same as protobuf-java_version at dubbo-dependencies-bom -->
+    <protobuf-java_version>4.33.4</protobuf-java_version>
     <!-- grpc_version should be same as grpc.version at dubbo-dependencies-bom -->
-    <grpc_version>1.73.0</grpc_version>
+    <grpc_version>1.78.0</grpc_version>
     <spotless-maven-plugin.version>2.46.1</spotless-maven-plugin.version>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>

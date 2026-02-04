@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
+import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
@@ -33,8 +34,7 @@ import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.InitOnReadyQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
-import org.apache.dubbo.rpc.protocol.tri.frame.Deframer;
-import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
+import org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcStreamingDecoder;
 import org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcUtils;
 import org.apache.dubbo.rpc.protocol.tri.transport.AbstractH2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
@@ -43,6 +43,7 @@ import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 import javax.net.ssl.SSLSession;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -56,6 +57,7 @@ import com.google.rpc.DebugInfo;
 import com.google.rpc.ErrorInfo;
 import com.google.rpc.Status;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.handler.codec.http2.Http2Error;
@@ -79,7 +81,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
     private final ClientStream.Listener listener;
     protected final TripleWriteQueue writeQueue;
-    private Deframer deframer;
+    private StreamingDecoder deframer;
     private final Channel parent;
     private TripleStreamChannelFuture streamChannelFuture;
     private boolean halfClosed;
@@ -410,7 +412,7 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                     }
                 }
             }
-            TriDecoder.Listener listener = new TriDecoder.Listener() {
+            StreamingDecoder.FragmentListener fragmentListener = new StreamingDecoder.FragmentListener() {
 
                 @Override
                 public void bytesRead(int numBytes) {
@@ -418,15 +420,19 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                 }
 
                 @Override
-                public void onRawMessage(byte[] data) {
-                    AbstractTripleClientStream.this.listener.onMessage(data, isReturnTriException);
+                public void onFragmentMessage(InputStream rawMessage, int messageLength) {
+                    AbstractTripleClientStream.this.listener.onMessage(rawMessage, messageLength, isReturnTriException);
                 }
 
-                public void close() {
+                @Override
+                public void onClose() {
                     finishProcess(statusFromTrailers(trailers), trailers, isReturnTriException);
                 }
             };
-            deframer = new TriDecoder(decompressor, listener);
+            GrpcStreamingDecoder grpcDecoder = new GrpcStreamingDecoder();
+            grpcDecoder.setDeCompressor(decompressor);
+            grpcDecoder.setFragmentListener(fragmentListener);
+            deframer = grpcDecoder;
             AbstractTripleClientStream.this.listener.onStart();
         }
 
@@ -580,10 +586,13 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                 return;
             }
             if (!headerReceived) {
+                ReferenceCountUtil.release(data);
                 handleH2TransportError(TriRpcStatus.INTERNAL.withDescription("headers not received before payload"));
                 return;
             }
-            deframer.deframe(data);
+            // Use ByteBufInputStream to adapt ByteBuf to InputStream
+            // The second parameter 'true' means release ByteBuf after reading
+            deframer.decode(new ByteBufInputStream(data, true));
         }
 
         @Override

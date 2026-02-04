@@ -32,7 +32,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +45,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 
 public class MultipleServiceDiscoveryTest {
 
-    private static String zookeeperConnectionAddress1, zookeeperConnectionAddress2;
+    private static String mockZkAddress = "zookeeper://mock-zk:2181?check=false";
 
     @Test
     public void testOnEvent() {
@@ -57,34 +56,36 @@ public class MultipleServiceDiscoveryTest {
             MetadataInfo metadataInfo = JsonUtils.toJavaObject(metadata_111, MetadataInfo.class);
             ApplicationModel applicationModel = ApplicationModel.defaultModel();
             applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("app2"));
-            zookeeperConnectionAddress1 =
-                    "multiple://127.0.0.1:2181?reference-registry=127.0.0.1:2181?enableEmptyProtection=false&child.a1=zookeeper://127.0.0.1:2181";
-            List<Object> urlsSameRevision = new ArrayList<>();
-            urlsSameRevision.add("127.0.0.1:20880?revision=111");
-            urlsSameRevision.add("127.0.0.2:20880?revision=111");
-            urlsSameRevision.add("127.0.0.3:20880?revision=111");
-            URL url = URL.valueOf(zookeeperConnectionAddress1);
+            String multipleUrl = String.format(
+                    "multiple://mock-registry:2181?reference-registry=%s&child.a1=%s&check=false",
+                    mockZkAddress, mockZkAddress);
+            URL url = URL.valueOf(multipleUrl);
             url.setScopeModel(applicationModel);
             MultipleServiceDiscovery multipleServiceDiscovery = new MultipleServiceDiscovery(url);
-            Class<MultipleServiceDiscovery> multipleServiceDiscoveryClass = MultipleServiceDiscovery.class;
-            Field serviceDiscoveries = multipleServiceDiscoveryClass.getDeclaredField("serviceDiscoveries");
-            serviceDiscoveries.setAccessible(true);
-            ServiceDiscovery serviceDiscoveryMock = Mockito.mock(ServiceDiscovery.class);
-            Mockito.when(serviceDiscoveryMock.getRemoteMetadata(Mockito.anyString(), Mockito.anyList()))
+            Class<MultipleServiceDiscovery> msdClass = MultipleServiceDiscovery.class;
+            Field serviceDiscoveriesField = msdClass.getDeclaredField("serviceDiscoveries");
+            serviceDiscoveriesField.setAccessible(true);
+            ServiceDiscovery mockServiceDiscovery = Mockito.mock(ServiceDiscovery.class);
+            Mockito.when(mockServiceDiscovery.getRemoteMetadata(Mockito.anyString(), Mockito.anyList()))
                     .thenReturn(metadataInfo);
-            serviceDiscoveries.set(
-                    multipleServiceDiscovery, Collections.singletonMap("child.a1", serviceDiscoveryMock));
+            Map<String, ServiceDiscovery> mockServiceDiscoveries = new HashMap<>();
+            mockServiceDiscoveries.put("child.a1", mockServiceDiscovery);
+            serviceDiscoveriesField.set(multipleServiceDiscovery, mockServiceDiscoveries);
             MultipleServiceDiscovery.MultiServiceInstancesChangedListener listener =
                     (MultipleServiceDiscovery.MultiServiceInstancesChangedListener)
                             multipleServiceDiscovery.createListener(Sets.newHashSet("app1"));
             multipleServiceDiscovery.addServiceInstancesChangedListener(listener);
-            MultipleServiceDiscovery.SingleServiceInstancesChangedListener singleServiceInstancesChangedListener =
+
+            MultipleServiceDiscovery.SingleServiceInstancesChangedListener singleListener =
                     listener.getAndComputeIfAbsent("child.a1", (a1) -> null);
-            Assert.notNull(
-                    singleServiceInstancesChangedListener, "singleServiceInstancesChangedListener can not be null");
-            singleServiceInstancesChangedListener.onEvent(
-                    new ServiceInstancesChangedEvent("app1", buildInstances(urlsSameRevision)));
-            Mockito.verify(serviceDiscoveryMock, Mockito.times(1))
+            Assert.notNull(singleListener, "singleServiceInstancesChangedListener can not be null");
+
+            List<Object> urlsSameRevision = new ArrayList<>();
+            urlsSameRevision.add("127.0.0.1:20880?revision=111");
+            urlsSameRevision.add("127.0.0.2:20880?revision=111");
+            urlsSameRevision.add("127.0.0.3:20880?revision=111");
+            singleListener.onEvent(new ServiceInstancesChangedEvent("app1", buildInstances(urlsSameRevision)));
+            Mockito.verify(mockServiceDiscovery, Mockito.times(1))
                     .getRemoteMetadata(Mockito.anyString(), Mockito.anyList());
             Field serviceUrlsField = ServiceInstancesChangedListener.class.getDeclaredField("serviceUrls");
             serviceUrlsField.setAccessible(true);

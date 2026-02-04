@@ -14,24 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.frame;
+package org.apache.dubbo.metrics.otlp;
 
-public class RecordListener implements TriDecoder.Listener {
-    byte[] lastData;
-    int dataCount;
-    boolean close;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metrics.report.AbstractMetricsReporterFactory;
+import org.apache.dubbo.metrics.report.MetricsReporter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
-    @Override
-    public void bytesRead(int numBytes) {}
+public class OtlpMetricsReporterFactory extends AbstractMetricsReporterFactory {
 
-    @Override
-    public void onRawMessage(byte[] data) {
-        dataCount += 1;
-        lastData = data;
+    public OtlpMetricsReporterFactory(ApplicationModel applicationModel) {
+        super(applicationModel);
     }
 
     @Override
-    public void close() {
-        close = true;
+    public MetricsReporter createMetricsReporter(URL url) {
+        return new OtlpMetricsReporter(url, getApplicationModel());
     }
 }

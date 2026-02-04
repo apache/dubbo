@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+
 /**
  * A packable method is used to customize serialization for methods. It can provide a common wrapper
  * for RESP / Protobuf.
@@ -36,6 +39,27 @@ public interface PackableMethod {
             return ((WrapperUnPack) unPack).unpack(data, isReturnTriException);
         }
         return unPack.unpack(data);
+    }
+
+    /**
+     * Parse response from InputStream.
+     * Default implementation reads all bytes and delegates to byte[] version.
+     *
+     * @param inputStream the input stream containing the response data
+     * @param isReturnTriException whether the response is a Triple exception
+     * @return the parsed response object
+     * @throws Exception if parsing fails
+     */
+    default Object parseResponse(InputStream inputStream, boolean isReturnTriException) throws Exception {
+        // Read all bytes from InputStream
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        byte[] tmp = new byte[4096];
+        int len;
+        while ((len = inputStream.read(tmp)) != -1) {
+            buffer.write(tmp, 0, len);
+        }
+        byte[] data = buffer.toByteArray();
+        return parseResponse(data, isReturnTriException);
     }
 
     default byte[] packRequest(Object request) throws Exception {
