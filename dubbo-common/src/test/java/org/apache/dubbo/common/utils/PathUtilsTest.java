@@ -14,21 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.frame;
+package org.apache.dubbo.common.utils;
 
-public class RecordListener implements TriDecoder.Listener {
-    byte[] lastData;
-    int dataCount;
-    boolean close;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-    @Override
-    public void onRawMessage(byte[] data) {
-        dataCount += 1;
-        lastData = data;
+class PathUtilsTest {
+    @Test
+    void testBuildPath() {
+        Assertions.assertEquals("a/b/c", PathUtils.buildPath("a", "b", "c"));
+        Assertions.assertEquals("root/sub", PathUtils.buildPath("root", "sub"));
     }
 
-    @Override
-    public void close() {
-        close = true;
+    @Test
+    void testNormalize() {
+        Assertions.assertEquals("/path", PathUtils.normalize("//path"));
+        Assertions.assertEquals("/api/v1", PathUtils.normalize("/api/v1?name=dubbo"));
+        // Empty and Null handling (The "Edge Cases")
+        Assertions.assertEquals("/", PathUtils.normalize(""));
+        Assertions.assertEquals("/", PathUtils.normalize(null));
+        // Multiple slashes
+        Assertions.assertEquals("/a/b/c", PathUtils.normalize("/a//b///c"));
     }
 }

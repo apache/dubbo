@@ -51,7 +51,7 @@ public class DefaultStreamingDecoder implements StreamingDecoder {
                 return;
             }
             closed = true;
-            listener.onFragmentMessage(accumulate);
+            listener.onFragmentMessage(accumulate, accumulate.available());
             accumulate.close();
             listener.onClose();
         } catch (IOException e) {

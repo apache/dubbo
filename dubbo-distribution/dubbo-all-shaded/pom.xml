@@ -207,7 +207,13 @@
       <scope>compile</scope>
       <optional>true</optional>
     </dependency>
-
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-metrics-otlp</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+      <optional>true</optional>
+    </dependency>
     <!-- tracing -->
     <dependency>
       <groupId>org.apache.dubbo</groupId>
@@ -508,6 +514,7 @@
                   <include>org.apache.dubbo:dubbo-metrics-config-center</include>
                   <include>org.apache.dubbo:dubbo-metrics-netty</include>
                   <include>org.apache.dubbo:dubbo-metrics-prometheus</include>
+                  <include>org.apache.dubbo:dubbo-metrics-otlp</include>
                   <include>org.apache.dubbo:dubbo-tracing</include>
                   <include>org.apache.dubbo:dubbo-qos</include>
                   <include>org.apache.dubbo:dubbo-qos-api</include>
@@ -541,6 +548,7 @@
                   <include>org.apache.dubbo:dubbo-serialization-hessian2</include>
                   <include>org.apache.dubbo:dubbo-serialization-fastjson2</include>
                   <include>org.apache.dubbo:dubbo-plugin-loom</include>
+
                   <include>io.netty:*</include>
                 </includes>
               </artifactSet>

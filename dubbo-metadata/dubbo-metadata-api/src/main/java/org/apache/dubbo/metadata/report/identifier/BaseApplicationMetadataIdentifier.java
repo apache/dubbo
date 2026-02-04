@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.metadata.report.identifier;
 
+import java.util.Objects;
+
 import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_PATH_TAG;
 
 /**
@@ -44,5 +46,22 @@ public class BaseApplicationMetadataIdentifier {
     private String getFilePathKey(String pathTag, String... params) {
         String prefix = KeyTypeEnum.PATH.build(pathTag, application);
         return KeyTypeEnum.PATH.build(prefix, params);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof BaseApplicationMetadataIdentifier)) return false;
+        BaseApplicationMetadataIdentifier that = (BaseApplicationMetadataIdentifier) o;
+        return Objects.equals(application, that.application);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(application);
+    }
+
+    @Override
+    public String toString() {
+        return "BaseApplicationMetadataIdentifier{" + "application='" + application + '\'' + '}';
     }
 }

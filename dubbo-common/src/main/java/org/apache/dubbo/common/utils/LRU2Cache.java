@@ -16,7 +16,9 @@
  */
 package org.apache.dubbo.common.utils;
 
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
@@ -142,8 +144,24 @@ public class LRU2Cache<K, V> extends LinkedHashMap<K, V> {
     }
 
     public void setMaxCapacity(int maxCapacity) {
-        preCache.setMaxCapacity(maxCapacity);
-        this.maxCapacity = maxCapacity;
+        lock.lock();
+        try {
+            this.maxCapacity = maxCapacity;
+            preCache.setMaxCapacity(maxCapacity);
+            trimMainCache();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private void trimMainCache() {
+        while (super.size() > maxCapacity) {
+            Iterator<Map.Entry<K, V>> it = super.entrySet().iterator();
+            if (it.hasNext()) {
+                it.next();
+                it.remove();
+            }
+        }
     }
 
     static class PreCache<K, V> extends LinkedHashMap<K, V> {
@@ -166,6 +184,17 @@ public class LRU2Cache<K, V> extends LinkedHashMap<K, V> {
 
         public void setMaxCapacity(int maxCapacity) {
             this.maxCapacity = maxCapacity;
+            trimToSize();
+        }
+
+        private void trimToSize() {
+            while (super.size() > maxCapacity) {
+                Iterator<Map.Entry<K, V>> it = super.entrySet().iterator();
+                if (it.hasNext()) {
+                    it.next();
+                    it.remove();
+                }
+            }
         }
     }
 }

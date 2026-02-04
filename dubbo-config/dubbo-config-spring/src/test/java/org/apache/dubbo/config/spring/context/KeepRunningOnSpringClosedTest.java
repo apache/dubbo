@@ -25,10 +25,19 @@ import org.apache.dubbo.config.spring.SysProps;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 class KeepRunningOnSpringClosedTest {
+
+    @BeforeEach
+    void setUp() {
+        DubboBootstrap.reset();
+        SysProps.clear();
+        SysProps.setProperty("dubbo.metrics.enabled", "false");
+        SysProps.setProperty("dubbo.metrics.protocol", "disabled");
+    }
 
     @Test
     void test() {

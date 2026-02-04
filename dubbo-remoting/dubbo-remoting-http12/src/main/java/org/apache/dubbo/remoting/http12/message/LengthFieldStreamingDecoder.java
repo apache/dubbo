@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -80,14 +81,55 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
 
     @Override
     public final void request(int numMessages) {
+        if (isClosed()) {
+            return;
+        }
         pendingDeliveries += numMessages;
         deliver();
     }
 
+    /**
+     * Marks the decoder for closing. The decoder will actually close when all
+     * requested messages have been delivered and no more data is available (stalled).
+     */
     @Override
     public final void close() {
+        if (isClosed()) {
+            return;
+        }
+        if (isStalled()) {
+            // No more data available, close immediately
+            doClose();
+            return;
+        }
+        // Mark for closing, will close when stalled
         closing = true;
         deliver();
+    }
+
+    /**
+     * Actually close the decoder and notify the listener.
+     */
+    private void doClose() {
+        if (closed) {
+            return;
+        }
+        closed = true;
+        try {
+            accumulate.close();
+        } catch (IOException e) {
+            // ignore
+        }
+        if (listener != null) {
+            listener.onClose();
+        }
+    }
+
+    /**
+     * Returns true if the decoder has been closed.
+     */
+    private boolean isClosed() {
+        return closed;
     }
 
     @Override
@@ -137,18 +179,25 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
                         throw new AssertionError("Invalid state: " + state);
                 }
             }
-            if (closing) {
-                if (!closed) {
-                    closed = true;
-                    accumulate.close();
-                    listener.onClose();
-                }
+            // only close when stalled (no more data available).
+            // This ensures that when disableAutoRequest() is used and more messages are
+            // still buffered, the stream won't close prematurely. The application needs
+            // to call request() to receive remaining messages.
+            if (closing && isStalled()) {
+                doClose();
             }
         } catch (IOException e) {
             throw new DecodeException(e);
         } finally {
             inDelivery = false;
         }
+    }
+
+    /**
+     * Returns true if there's no more data available to process.
+     */
+    private boolean isStalled() {
+        return accumulate.available() == 0;
     }
 
     private void processHeader() throws IOException {
@@ -184,23 +233,118 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
     }
 
     private void processBody() throws IOException {
-        byte[] rawMessage = readRawMessage(accumulate, requiredLength);
-        InputStream inputStream = new ByteArrayInputStream(rawMessage);
-        invokeListener(inputStream);
+        // Calculate total bytes read: header (offset + length field) + payload
+        int totalBytesRead = lengthFieldOffset + lengthFieldLength + requiredLength;
+
+        MessageStream messageStream;
+        try {
+            messageStream = readMessageStream(accumulate, requiredLength);
+        } finally {
+            // Notify listener about bytes read for flow control immediately after reading bytes
+            // This must be in finally block to ensure flow control works even if reading fails
+            // Following gRPC's pattern: bytesRead is called as soon as bytes are consumed from input
+            listener.bytesRead(totalBytesRead);
+        }
+
+        invokeListener(messageStream.inputStream, messageStream.length);
 
         // Done with this frame, begin processing the next header.
         state = DecodeState.HEADER;
         requiredLength = lengthFieldOffset + lengthFieldLength;
     }
 
-    public void invokeListener(InputStream inputStream) {
-        this.listener.onFragmentMessage(inputStream);
+    public void invokeListener(InputStream inputStream, int messageLength) {
+        this.listener.onFragmentMessage(inputStream, messageLength);
+    }
+
+    /**
+     * Read message from the input stream and return it as a MessageStream.
+     */
+    protected MessageStream readMessageStream(InputStream inputStream, int length) throws IOException {
+        InputStream boundedStream = new BoundedInputStream(inputStream, length);
+        return new MessageStream(boundedStream, length);
     }
 
     protected byte[] readRawMessage(InputStream inputStream, int length) throws IOException {
         byte[] data = new byte[length];
         inputStream.read(data, 0, length);
         return data;
+    }
+
+    protected static class MessageStream {
+
+        public final InputStream inputStream;
+        public final int length;
+
+        public MessageStream(InputStream inputStream, int length) {
+            this.inputStream = inputStream;
+            this.length = length;
+        }
+    }
+
+    /**
+     * A bounded InputStream that reads at most 'limit' bytes from the source stream.
+     * Extends BufferedInputStream to support mark/reset, which is required by
+     * deserializers like Hessian2.
+     */
+    private static class BoundedInputStream extends BufferedInputStream {
+
+        private final int limit;
+        private int remaining;
+        private int markedRemaining;
+
+        public BoundedInputStream(InputStream source, int limit) {
+            super(source, limit);
+            this.limit = limit;
+            this.remaining = limit;
+            this.markedRemaining = limit;
+        }
+
+        @Override
+        public synchronized int read() throws IOException {
+            if (remaining <= 0) {
+                return -1;
+            }
+            int result = super.read();
+            if (result != -1) {
+                remaining--;
+            }
+            return result;
+        }
+
+        @Override
+        public synchronized int read(byte[] b, int off, int len) throws IOException {
+            if (remaining <= 0) {
+                return -1;
+            }
+            int toRead = Math.min(len, remaining);
+            int result = super.read(b, off, toRead);
+            if (result > 0) {
+                remaining -= result;
+            }
+            return result;
+        }
+
+        @Override
+        public synchronized int available() throws IOException {
+            return Math.min(super.available(), remaining);
+        }
+
+        @Override
+        public synchronized void mark(int readlimit) {
+            // Force readlimit to be at least the remaining message length.
+            // This ensures mark is always valid within the bounded stream,
+            // regardless of what readlimit is passed by the deserializer (e.g., Hessian2).
+            super.mark(Math.max(readlimit, limit));
+            markedRemaining = remaining;
+        }
+
+        @Override
+        public synchronized void reset() throws IOException {
+            super.reset();
+            // Restore the remaining count to the value at mark time
+            remaining = markedRemaining;
+        }
     }
 
     private boolean hasEnoughBytes() {

@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.spring.context.annotation;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.spring.SysProps;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.consumer.ConsumerConfiguration;
 import org.apache.dubbo.config.spring.context.annotation.provider.DemoServiceImpl;
@@ -42,10 +43,16 @@ class DubboComponentScanRegistrarTest {
     @BeforeEach
     public void setUp() {
         DubboBootstrap.reset();
+        SysProps.clear();
+        SysProps.setProperty("dubbo.metrics.enabled", "false");
+        SysProps.setProperty("dubbo.metrics.protocol", "disabled");
     }
 
     @AfterEach
-    public void tearDown() {}
+    public void tearDown() {
+        DubboBootstrap.reset();
+        SysProps.clear();
+    }
 
     @Test
     void test() {

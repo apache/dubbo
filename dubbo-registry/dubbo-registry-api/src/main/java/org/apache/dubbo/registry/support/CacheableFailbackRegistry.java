@@ -37,6 +37,7 @@ import org.apache.dubbo.rpc.model.ScopeModel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -176,6 +177,8 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         Map<String, ServiceAddressURL> oldURLs = stringUrls.get(consumer);
 
         // create new urls
+        // The key of newURLs is the normalized rawProvider (variable keys removed for deduplication),
+        // but the cached ServiceAddressURL is built from the original rawProvider (with all parameters preserved).
         Map<String, ServiceAddressURL> newURLs = new HashMap<>((int) (providers.size() / 0.75f + 1));
 
         // remove 'release', 'dubbo', 'methods', timestamp, 'dubbo.tag' parameter
@@ -184,28 +187,42 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
 
         if (oldURLs == null) {
             for (String rawProvider : providers) {
-                // remove VARIABLE_KEYS(timestamp,pid..) in provider url.
-                rawProvider = stripOffVariableKeys(rawProvider);
+                // Normalize the rawProvider by removing VARIABLE_KEYS(timestamp, pid..) for deduplication purposes.
+                // The normalized key is used to avoid duplicate instances of the same provider.
+                String normalizedKey = stripOffVariableKeys(rawProvider);
 
-                // create DubboServiceAddress object using provider url, consumer url, and extra parameters.
+                // Create DubboServiceAddress object using the ORIGINAL rawProvider (with all parameters intact),
+                // so that timestamp and other parameters are preserved for correct parameter parsing.
+                // This ensures that when multiple providers normalize to the same key (e.g., different timestamps),
+                // the latest one's timestamp will be used.
                 ServiceAddressURL cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
                 if (cachedURL == null) {
                     continue;
                 }
-                newURLs.put(rawProvider, cachedURL);
+
+                // Use normalized key for deduplication: if multiple providers normalize to the same key,
+                // the last one (with the latest timestamp) will be kept.
+                newURLs.put(normalizedKey, cachedURL);
             }
         } else {
-            // maybe only default, or "env" + default
+            // Reuse or create URLs based on both normalized key and original rawProvider.
+            // The normalized key is used to find potential cache entries for reuse (deduplication),
+            // but we always create a new ServiceAddressURL from the original rawProvider to ensure
+            // the timestamp and other parameters are up-to-date.
             for (String rawProvider : providers) {
-                rawProvider = stripOffVariableKeys(rawProvider);
-                ServiceAddressURL cachedURL = oldURLs.remove(rawProvider);
+                // Normalize the rawProvider for cache key matching and deduplication.
+                String normalizedKey = stripOffVariableKeys(rawProvider);
+                ServiceAddressURL cachedURL = oldURLs.remove(normalizedKey);
                 if (cachedURL == null) {
+                    // Create new URL using the original rawProvider (all parameters preserved including timestamp).
                     cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
                     if (cachedURL == null) {
                         continue;
                     }
                 }
-                newURLs.put(rawProvider, cachedURL);
+                // Use normalized key for storage: if multiple providers normalize to the same key,
+                // the last one will be kept, ensuring no duplicate instances with outdated timestamps.
+                newURLs.put(normalizedKey, cachedURL);
             }
         }
 
@@ -323,29 +340,81 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             return rawProvider;
         }
 
+        int encodedIdx = rawProvider.indexOf(ENCODED_QUESTION_MARK);
+        int plainIdx = rawProvider.indexOf('?');
+        boolean encoded;
+        int questionIdx;
+        if (encodedIdx >= 0 && (plainIdx < 0 || encodedIdx < plainIdx)) {
+            encoded = true;
+            questionIdx = encodedIdx;
+        } else if (plainIdx >= 0) {
+            encoded = false;
+            questionIdx = plainIdx;
+        } else {
+            return rawProvider;
+        }
+
+        String prefix = rawProvider.substring(0, questionIdx);
+        String params = rawProvider.substring(questionIdx + (encoded ? ENCODED_QUESTION_MARK.length() : 1));
+        if (params.isEmpty()) {
+            return rawProvider;
+        }
+
+        String andMark = encoded ? ENCODED_AND_MARK : "&";
+        String eqMark = encoded ? "%3D" : "=";
+
+        // Build a set of normalized variable names for efficient matching.
+        HashSet<String> variableNames = new HashSet<>(keys.length);
         for (String key : keys) {
-            int idxStart = rawProvider.indexOf(key);
-            if (idxStart == -1) {
+            if (key != null) {
+                variableNames.add(normalizeVariableName(key));
+            }
+        }
+
+        List<String> remaining = new ArrayList<>();
+        boolean removed = false;
+        for (String param : params.split(andMark)) {
+            if (param.isEmpty()) {
                 continue;
             }
-            int idxEnd = rawProvider.indexOf(ENCODED_AND_MARK, idxStart);
-            String part1 = rawProvider.substring(0, idxStart);
-            if (idxEnd == -1) {
-                rawProvider = part1;
-            } else {
-                String part2 = rawProvider.substring(idxEnd + ENCODED_AND_MARK.length());
-                rawProvider = part1 + part2;
+            int eqIdx = param.indexOf(eqMark);
+            if (eqIdx < 0) {
+                remaining.add(param);
+                continue;
             }
+            String name = param.substring(0, eqIdx);
+            String normalizedName = normalizeVariableName(name);
+
+            // Check if this parameter name exactly matches a variable key that should be removed.
+            // Only exact match is performed (e.g., "timestamp" matches "timestamp", but not "remote.timestamp").
+            if (variableNames.contains(normalizedName)) {
+                removed = true;
+                continue;
+            }
+            remaining.add(param);
         }
 
-        if (rawProvider.endsWith(ENCODED_AND_MARK)) {
-            rawProvider = rawProvider.substring(0, rawProvider.length() - ENCODED_AND_MARK.length());
+        if (!removed) {
+            return rawProvider;
         }
-        if (rawProvider.endsWith(ENCODED_QUESTION_MARK)) {
-            rawProvider = rawProvider.substring(0, rawProvider.length() - ENCODED_QUESTION_MARK.length());
+        if (remaining.isEmpty()) {
+            return prefix;
         }
 
-        return rawProvider;
+        return prefix + (encoded ? ENCODED_QUESTION_MARK : "?") + String.join(andMark, remaining);
+    }
+
+    private String normalizeVariableName(String key) {
+        if (key == null) {
+            return null;
+        }
+        if (key.endsWith("%3D")) {
+            return key.substring(0, key.length() - 3);
+        }
+        if (key.endsWith("=")) {
+            return key.substring(0, key.length() - 1);
+        }
+        return key;
     }
 
     private List<URL> toConfiguratorsWithoutEmpty(URL consumer, Collection<String> configurators) {

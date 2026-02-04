@@ -125,6 +125,7 @@ public final class DescriptorUtils {
             ServiceDescriptor serviceDescriptor, String methodName, InputStream rawMessage) throws IOException {
         MethodDescriptor methodDescriptor = findReflectionMethodDescriptor(serviceDescriptor, methodName);
         if (methodDescriptor == null) {
+            rawMessage.mark(Integer.MAX_VALUE);
             byte[] data = StreamUtils.readBytes(rawMessage);
             List<MethodDescriptor> methodDescriptors = serviceDescriptor.getMethods(methodName);
             TripleRequestWrapper request = TripleRequestWrapper.parseFrom(data);

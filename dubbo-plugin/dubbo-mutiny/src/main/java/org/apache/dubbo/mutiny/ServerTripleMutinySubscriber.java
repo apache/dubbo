@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.mutiny;
 
+import org.apache.dubbo.common.stream.CallStreamObserver;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
 
 import java.util.ArrayList;
 import java.util.List;

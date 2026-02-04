@@ -40,6 +40,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 class TripleInvokerTest {
@@ -59,8 +60,8 @@ class TripleInvokerTest {
                 .createExecutorIfAbsent(url);
         TripleClientCall call = Mockito.mock(TripleClientCall.class);
         StreamObserver streamObserver = Mockito.mock(StreamObserver.class);
-        when(call.start(any(RequestMetadata.class), any(ClientCall.Listener.class)))
-                .thenReturn(streamObserver);
+        // start() now returns void, just verify it's called
+        doNothing().when(call).start(any(RequestMetadata.class), any(ClientCall.Listener.class));
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("test");
         invocation.setArguments(new Object[] {streamObserver, streamObserver});
