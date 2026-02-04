@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -67,7 +68,8 @@ public class TripleCustomerProtocolWrapper {
             val = val << 7;
             val = val | (byteBuffer.get(index) & 0x7F);
         }
-        byteBuffer.position(currentPosition + varIntLength);
+        // be compatible with jdk8 by casting byteBuffer's type to its parent class - `java.nio.Buffer`.
+        ((Buffer) byteBuffer).position(currentPosition + varIntLength);
         return val;
     }
 

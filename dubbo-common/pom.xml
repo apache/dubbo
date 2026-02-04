@@ -99,6 +99,11 @@
       <groupId>javax.annotation</groupId>
       <artifactId>javax.annotation-api</artifactId>
     </dependency>
+    <!-- JCTools core -->
+    <dependency>
+      <groupId>org.jctools</groupId>
+      <artifactId>jctools-core</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>cglib</groupId>

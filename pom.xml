@@ -812,22 +812,7 @@
       </build>
     </profile>
 
-    <profile>
-      <id>jdk9-compile</id>
-      <activation>
-        <jdk>[1.9,)</jdk>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <release>8</release>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
+    <!-- does not set maven.compiler.release to avoid `Unsafe` compilation ERROR at jdk9+ -->
 
     <profile>
       <id>jdk9-jdk11-spotless</id>
