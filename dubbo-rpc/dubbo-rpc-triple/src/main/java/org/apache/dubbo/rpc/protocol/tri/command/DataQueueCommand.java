@@ -19,20 +19,21 @@ package org.apache.dubbo.rpc.protocol.tri.command;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleStreamChannelFuture;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 
 public class DataQueueCommand extends StreamQueueCommand {
 
-    private final byte[] data;
+    private final ByteBuf data;
 
     private final int compressFlag;
 
     private final boolean endStream;
 
     private DataQueueCommand(
-            TripleStreamChannelFuture streamChannelFuture, byte[] data, int compressFlag, boolean endStream) {
+            TripleStreamChannelFuture streamChannelFuture, ByteBuf data, int compressFlag, boolean endStream) {
         super(streamChannelFuture);
         this.data = data;
         this.compressFlag = compressFlag;
@@ -40,7 +41,7 @@ public class DataQueueCommand extends StreamQueueCommand {
     }
 
     public static DataQueueCommand create(
-            TripleStreamChannelFuture streamChannelFuture, byte[] data, boolean endStream, int compressFlag) {
+            TripleStreamChannelFuture streamChannelFuture, ByteBuf data, boolean endStream, int compressFlag) {
         return new DataQueueCommand(streamChannelFuture, data, compressFlag, endStream);
     }
 
@@ -49,16 +50,19 @@ public class DataQueueCommand extends StreamQueueCommand {
         if (data == null) {
             ctx.write(new DefaultHttp2DataFrame(endStream), promise);
         } else {
-            ByteBuf buf = ctx.alloc().buffer();
-            buf.writeByte(compressFlag);
-            buf.writeInt(data.length);
-            buf.writeBytes(data);
-            ctx.write(new DefaultHttp2DataFrame(buf, endStream), promise);
+            ByteBuf header = ctx.alloc().buffer(5);
+            header.writeByte(compressFlag);
+            header.writeByte(data.readableBytes());
+
+            CompositeByteBuf composite = ctx.alloc().compositeBuffer();
+            composite.addComponents(true, header, this.data);
+
+            ctx.write(new DefaultHttp2DataFrame(composite, endStream), promise);
         }
     }
 
     // for test
-    public byte[] getData() {
+    public ByteBuf getData() {
         return data;
     }
 

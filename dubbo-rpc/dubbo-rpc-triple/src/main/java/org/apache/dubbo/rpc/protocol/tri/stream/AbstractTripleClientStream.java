@@ -205,7 +205,8 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         final int messageSize = message.length;
         onSendingBytes(messageSize);
 
-        final DataQueueCommand cmd = DataQueueCommand.create(streamChannelFuture, message, false, compressFlag);
+        final DataQueueCommand cmd = DataQueueCommand.create(
+                streamChannelFuture, io.netty.buffer.Unpooled.wrappedBuffer(message), false, compressFlag);
         return this.writeQueue.enqueueFuture(cmd, parent.eventLoop()).addListener(future -> {
             if (!future.isSuccess()) {
                 rollbackSendingBytes(messageSize);
