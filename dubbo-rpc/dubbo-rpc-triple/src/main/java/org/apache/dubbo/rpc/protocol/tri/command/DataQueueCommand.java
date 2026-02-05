@@ -21,6 +21,7 @@ import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleStreamChannelFuture;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -85,10 +86,11 @@ public class DataQueueCommand extends StreamQueueCommand {
             buf.writeInt(0);
             try {
                 // Compress and write data directly into ByteBuf using decorator pattern
-                ByteBufOutputStream bbos = new ByteBufOutputStream(buf);
-                OutputStream compressedOut = compressor.decorate(bbos);
-                StreamUtils.copy(dataStream, compressedOut);
-                compressedOut.close();
+                // Use try-with-resources to ensure proper resource cleanup
+                try (ByteBufOutputStream bbos = new ByteBufOutputStream(buf);
+                        OutputStream compressedOut = compressor.decorate(bbos)) {
+                    StreamUtils.copy(dataStream, compressedOut);
+                }
                 // Calculate actual message length: total written bytes minus the 4-byte length field itself
                 int written = buf.writerIndex() - lengthIndex - 4;
                 buf.setInt(lengthIndex, written);
@@ -96,8 +98,21 @@ public class DataQueueCommand extends StreamQueueCommand {
                 buf.release();
                 promise.setFailure(e);
                 return;
+            } finally {
+                // Always close the dataStream to prevent resource leaks
+                closeQuietly(dataStream);
             }
             ctx.write(new DefaultHttp2DataFrame(buf, endStream), promise);
+        }
+    }
+
+    private static void closeQuietly(InputStream stream) {
+        if (stream != null) {
+            try {
+                stream.close();
+            } catch (IOException ignored) {
+                // Ignore close exception
+            }
         }
     }
 

@@ -106,7 +106,7 @@ class TripleClientStreamTest {
         verify(writeQueue).enqueueFuture(any(HeaderQueueCommand.class), any(Executor.class));
         // enqueue should have been called twice: CreateStreamQueueCommand and InitOnReadyQueueCommand
         verify(writeQueue, times(2)).enqueue(any(QueuedCommand.class));
-        stream.sendMessage(new ByteArrayInputStream(new byte[0]), Compressor.NONE);
+        stream.sendMessage(new ByteArrayInputStream(new byte[0]), 0, Compressor.NONE);
         verify(writeQueue).enqueueFuture(any(DataQueueCommand.class), any(Executor.class));
         verify(writeQueue, times(2)).enqueueFuture(any(QueuedCommand.class), any(Executor.class));
         // After sendHeader and sendMessage, enqueue should have been called twice:

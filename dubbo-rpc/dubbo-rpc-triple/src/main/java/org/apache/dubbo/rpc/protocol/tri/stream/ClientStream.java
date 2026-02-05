@@ -78,11 +78,12 @@ public interface ClientStream extends Stream {
      * Send message to remote peer with zero-copy compression.
      * The compressor decorates the output stream to compress data directly into ByteBuf.
      *
-     * @param message    raw message stream (uncompressed)
-     * @param compressor compressor to use for compression
+     * @param message     raw message stream (uncompressed)
+     * @param messageSize size of the message in bytes for flow control accounting
+     * @param compressor  compressor to use for compression
      * @return future to callback when send is done
      */
-    Future<?> sendMessage(InputStream message, Compressor compressor);
+    Future<?> sendMessage(InputStream message, int messageSize, Compressor compressor);
 
     /**
      * No more data will be sent, half close this stream to wait server response.

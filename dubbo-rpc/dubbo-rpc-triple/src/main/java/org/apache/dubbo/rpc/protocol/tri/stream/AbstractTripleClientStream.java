@@ -199,20 +199,12 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
     }
 
     @Override
-    public ChannelFuture sendMessage(InputStream message, Compressor compressor) {
+    public ChannelFuture sendMessage(InputStream message, int messageSize, Compressor compressor) {
         ChannelFuture checkResult = preCheck();
         if (!checkResult.isSuccess()) {
             return checkResult;
         }
 
-        // Estimate message size for flow control
-        int estimatedSize;
-        try {
-            estimatedSize = message.available();
-        } catch (IOException e) {
-            estimatedSize = 0;
-        }
-        final int messageSize = estimatedSize;
         onSendingBytes(messageSize);
 
         final DataQueueCommand cmd = DataQueueCommand.create(streamChannelFuture, message, false, compressor);

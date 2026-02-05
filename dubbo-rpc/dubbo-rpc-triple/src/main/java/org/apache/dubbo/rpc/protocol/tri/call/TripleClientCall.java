@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.call;
 
+import org.apache.dubbo.common.io.UnsafeByteArrayOutputStream;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
@@ -28,8 +29,6 @@ import org.apache.dubbo.rpc.protocol.tri.stream.ClientStreamFactory;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -250,17 +249,20 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
             stream.sendHeader(requestMetadata.toHeaders());
         }
         try {
-            // Serialize to stream (raw data, uncompressed)
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            // Serialize to stream using UnsafeByteArrayOutputStream for zero-copy
+            UnsafeByteArrayOutputStream baos = new UnsafeByteArrayOutputStream();
             requestMetadata.packableMethod.packRequest(message, baos);
-            InputStream rawDataStream = new ByteArrayInputStream(baos.toByteArray());
+            int messageSize = baos.size();
+            // Use toInputStream() to avoid array copy - directly wraps internal buffer
+            InputStream rawDataStream = baos.toInputStream();
 
-            // Pass raw stream and compressor to stream layer for zero-copy compression
-            stream.sendMessage(rawDataStream, requestMetadata.compressor).addListener(f -> {
-                if (!f.isSuccess()) {
-                    cancelByLocal(f.cause());
-                }
-            });
+            // Pass raw stream, size, and compressor to stream layer for zero-copy compression
+            stream.sendMessage(rawDataStream, messageSize, requestMetadata.compressor)
+                    .addListener(f -> {
+                        if (!f.isSuccess()) {
+                            cancelByLocal(f.cause());
+                        }
+                    });
         } catch (Throwable t) {
             LOGGER.error(
                     PROTOCOL_FAILED_SERIALIZE_TRIPLE,
