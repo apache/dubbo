@@ -82,7 +82,11 @@ class WriteQueueTest {
         TripleStreamChannelFuture tripleStreamChannelFuture = new TripleStreamChannelFuture(embeddedChannel);
         writeQueue.enqueue(HeaderQueueCommand.createHeaders(tripleStreamChannelFuture, new DefaultHttp2Headers())
                 .channel(channel));
-        writeQueue.enqueue(DataQueueCommand.create(tripleStreamChannelFuture, new byte[0], false, 0)
+        writeQueue.enqueue(DataQueueCommand.create(
+                        tripleStreamChannelFuture,
+                        new java.io.ByteArrayInputStream(new byte[0]),
+                        false,
+                        org.apache.dubbo.rpc.protocol.tri.compressor.Identity.IDENTITY)
                 .channel(channel));
         TriRpcStatus status =
                 TriRpcStatus.UNKNOWN.withCause(new RpcException()).withDescription("Encode Response data error");

@@ -49,7 +49,9 @@ public interface ClientCall {
          * Callback when message received.
          *
          * @param message             message received
-         * @param actualContentLength actual content length from body
+         * @param actualContentLength actual content length from body.
+         *                            For compressed messages, this may be -1 to indicate unknown length
+         *                            since decompressed size cannot be known until all bytes are read.
          */
         void onMessage(Object message, int actualContentLength);
 

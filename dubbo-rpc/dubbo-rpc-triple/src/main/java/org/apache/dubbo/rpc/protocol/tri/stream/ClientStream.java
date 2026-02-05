@@ -17,7 +17,9 @@
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.rpc.TriRpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 
+import java.io.InputStream;
 import java.util.Map;
 
 import io.netty.util.concurrent.Future;
@@ -73,12 +75,14 @@ public interface ClientStream extends Stream {
     void initStream();
 
     /**
-     * Send message to remote peer.
+     * Send message to remote peer with zero-copy compression.
+     * The compressor decorates the output stream to compress data directly into ByteBuf.
      *
-     * @param message message to send to remote peer
-     * @return future to callback when send message is done
+     * @param message    raw message stream (uncompressed)
+     * @param compressor compressor to use for compression
+     * @return future to callback when send is done
      */
-    Future<?> sendMessage(byte[] message, int compressFlag);
+    Future<?> sendMessage(InputStream message, Compressor compressor);
 
     /**
      * No more data will be sent, half close this stream to wait server response.

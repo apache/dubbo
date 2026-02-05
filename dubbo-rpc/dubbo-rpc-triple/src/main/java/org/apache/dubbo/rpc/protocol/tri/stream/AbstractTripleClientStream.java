@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.EndStreamQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.InitOnReadyQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcStreamingDecoder;
@@ -198,16 +199,23 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
     }
 
     @Override
-    public ChannelFuture sendMessage(byte[] message, int compressFlag) {
+    public ChannelFuture sendMessage(InputStream message, Compressor compressor) {
         ChannelFuture checkResult = preCheck();
         if (!checkResult.isSuccess()) {
             return checkResult;
         }
 
-        final int messageSize = message.length;
+        // Estimate message size for flow control
+        int estimatedSize;
+        try {
+            estimatedSize = message.available();
+        } catch (IOException e) {
+            estimatedSize = 0;
+        }
+        final int messageSize = estimatedSize;
         onSendingBytes(messageSize);
 
-        final DataQueueCommand cmd = DataQueueCommand.create(streamChannelFuture, message, false, compressFlag);
+        final DataQueueCommand cmd = DataQueueCommand.create(streamChannelFuture, message, false, compressor);
         return this.writeQueue.enqueueFuture(cmd, parent.eventLoop()).addListener(future -> {
             if (!future.isSuccess()) {
                 rollbackSendingBytes(messageSize);

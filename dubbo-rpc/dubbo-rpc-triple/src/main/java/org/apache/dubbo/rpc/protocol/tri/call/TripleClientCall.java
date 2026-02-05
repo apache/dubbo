@@ -23,12 +23,13 @@ import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
-import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStreamFactory;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -248,12 +249,14 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
             headerSent = true;
             stream.sendHeader(requestMetadata.toHeaders());
         }
-        final byte[] data;
         try {
-            data = requestMetadata.packableMethod.packRequest(message);
-            int compressed = Identity.MESSAGE_ENCODING.equals(requestMetadata.compressor.getMessageEncoding()) ? 0 : 1;
-            final byte[] compress = requestMetadata.compressor.compress(data);
-            stream.sendMessage(compress, compressed).addListener(f -> {
+            // Serialize to stream (raw data, uncompressed)
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            requestMetadata.packableMethod.packRequest(message, baos);
+            InputStream rawDataStream = new ByteArrayInputStream(baos.toByteArray());
+
+            // Pass raw stream and compressor to stream layer for zero-copy compression
+            stream.sendMessage(rawDataStream, requestMetadata.compressor).addListener(f -> {
                 if (!f.isSuccess()) {
                     cancelByLocal(f.cause());
                 }
