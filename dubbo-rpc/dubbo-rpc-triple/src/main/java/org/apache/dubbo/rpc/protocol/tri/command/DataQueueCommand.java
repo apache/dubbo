@@ -57,23 +57,39 @@ public class DataQueueCommand extends StreamQueueCommand {
         return new DataQueueCommand(streamChannelFuture, dataStream, compressor, endStream);
     }
 
+    /**
+     * Send data frame to the channel.
+     *
+     * <p>gRPC message frame format:
+     * <pre>
+     * +----------------------+
+     * | Compressed-Flag (1B) |  0 = uncompressed, 1 = compressed
+     * +----------------------+
+     * | Message-Length  (4B) |  big-endian unsigned integer
+     * +----------------------+
+     * | Message Data    (N)  |  compressed or uncompressed payload
+     * +----------------------+
+     * </pre>
+     */
     @Override
     public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {
         if (dataStream == null) {
             ctx.write(new DefaultHttp2DataFrame(endStream), promise);
         } else {
             ByteBuf buf = ctx.alloc().buffer();
+            // Write compression flag (1 byte): 0 for identity, 1 for compressed
             int compressFlag = Identity.MESSAGE_ENCODING.equals(compressor.getMessageEncoding()) ? 0 : 1;
             buf.writeByte(compressFlag);
+            // Record position for length field, write placeholder (4 bytes)
             int lengthIndex = buf.writerIndex();
-            buf.writeInt(0); // length placeholder
+            buf.writeInt(0);
             try {
-                // Zero-copy: compress directly into ByteBuf using decorator pattern
+                // Compress and write data directly into ByteBuf using decorator pattern
                 ByteBufOutputStream bbos = new ByteBufOutputStream(buf);
                 OutputStream compressedOut = compressor.decorate(bbos);
                 StreamUtils.copy(dataStream, compressedOut);
                 compressedOut.close();
-                // Calculate actual written length (excluding header)
+                // Calculate actual message length: total written bytes minus the 4-byte length field itself
                 int written = buf.writerIndex() - lengthIndex - 4;
                 buf.setInt(lengthIndex, written);
             } catch (Exception e) {
