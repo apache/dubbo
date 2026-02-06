@@ -199,7 +199,7 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
         }
 
         @Override
-        public void onFragmentMessage(InputStream rawMessage) {
+        public void onFragmentMessage(InputStream rawMessage, int messageLength) {
             try {
                 RpcInvocationBuildContext context = getContext();
                 if (context.getMethodDescriptor() == null) {
@@ -209,7 +209,7 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
                     setHttpMessageListener(GrpcHttp2ServerTransportListener.super.buildHttpMessageListener());
                 }
 
-                ((GrpcStreamingDecoder) getStreamingDecoder()).invokeListener(rawMessage);
+                ((GrpcStreamingDecoder) getStreamingDecoder()).invokeListener(rawMessage, messageLength);
             } catch (IOException e) {
                 throw new DecodeException(e);
             }

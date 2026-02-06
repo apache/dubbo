@@ -50,12 +50,13 @@ public class GrpcStreamingDecoder extends LengthFieldStreamingDecoder {
     }
 
     @Override
-    protected byte[] readRawMessage(InputStream inputStream, int length) throws IOException {
-        byte[] rawMessage = super.readRawMessage(inputStream, length);
-        return compressedFlag ? deCompressedMessage(rawMessage) : rawMessage;
-    }
-
-    private byte[] deCompressedMessage(byte[] rawMessage) {
-        return deCompressor.decompress(rawMessage);
+    protected MessageStream readMessageStream(InputStream inputStream, int length) throws IOException {
+        if (compressedFlag) {
+            // For compressed messages, we need to read bytes first, then decompress
+            byte[] rawMessage = readRawMessage(inputStream, length);
+            byte[] decompressed = deCompressor.decompress(rawMessage);
+            return new MessageStream(new java.io.ByteArrayInputStream(decompressed), decompressed.length);
+        }
+        return super.readMessageStream(inputStream, length);
     }
 }

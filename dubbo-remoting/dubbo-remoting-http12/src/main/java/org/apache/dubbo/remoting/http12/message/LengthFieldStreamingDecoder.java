@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -119,7 +120,9 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
         } catch (IOException e) {
             // ignore
         }
-        listener.onClose();
+        if (listener != null) {
+            listener.onClose();
+        }
     }
 
     /**
@@ -233,9 +236,9 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
         // Calculate total bytes read: header (offset + length field) + payload
         int totalBytesRead = lengthFieldOffset + lengthFieldLength + requiredLength;
 
-        byte[] rawMessage;
+        MessageStream messageStream;
         try {
-            rawMessage = readRawMessage(accumulate, requiredLength);
+            messageStream = readMessageStream(accumulate, requiredLength);
         } finally {
             // Notify listener about bytes read for flow control immediately after reading bytes
             // This must be in finally block to ensure flow control works even if reading fails
@@ -243,23 +246,105 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
             listener.bytesRead(totalBytesRead);
         }
 
-        // Process the message after notifying about bytes read
-        InputStream inputStream = new ByteArrayInputStream(rawMessage);
-        invokeListener(inputStream);
+        invokeListener(messageStream.inputStream, messageStream.length);
 
         // Done with this frame, begin processing the next header.
         state = DecodeState.HEADER;
         requiredLength = lengthFieldOffset + lengthFieldLength;
     }
 
-    public void invokeListener(InputStream inputStream) {
-        this.listener.onFragmentMessage(inputStream);
+    public void invokeListener(InputStream inputStream, int messageLength) {
+        this.listener.onFragmentMessage(inputStream, messageLength);
+    }
+
+    /**
+     * Read message from the input stream and return it as a MessageStream.
+     */
+    protected MessageStream readMessageStream(InputStream inputStream, int length) throws IOException {
+        InputStream boundedStream = new BoundedInputStream(inputStream, length);
+        return new MessageStream(boundedStream, length);
     }
 
     protected byte[] readRawMessage(InputStream inputStream, int length) throws IOException {
         byte[] data = new byte[length];
         inputStream.read(data, 0, length);
         return data;
+    }
+
+    protected static class MessageStream {
+
+        public final InputStream inputStream;
+        public final int length;
+
+        public MessageStream(InputStream inputStream, int length) {
+            this.inputStream = inputStream;
+            this.length = length;
+        }
+    }
+
+    /**
+     * A bounded InputStream that reads at most 'limit' bytes from the source stream.
+     * Extends BufferedInputStream to support mark/reset, which is required by
+     * deserializers like Hessian2.
+     */
+    private static class BoundedInputStream extends BufferedInputStream {
+
+        private final int limit;
+        private int remaining;
+        private int markedRemaining;
+
+        public BoundedInputStream(InputStream source, int limit) {
+            super(source, limit);
+            this.limit = limit;
+            this.remaining = limit;
+            this.markedRemaining = limit;
+        }
+
+        @Override
+        public synchronized int read() throws IOException {
+            if (remaining <= 0) {
+                return -1;
+            }
+            int result = super.read();
+            if (result != -1) {
+                remaining--;
+            }
+            return result;
+        }
+
+        @Override
+        public synchronized int read(byte[] b, int off, int len) throws IOException {
+            if (remaining <= 0) {
+                return -1;
+            }
+            int toRead = Math.min(len, remaining);
+            int result = super.read(b, off, toRead);
+            if (result > 0) {
+                remaining -= result;
+            }
+            return result;
+        }
+
+        @Override
+        public synchronized int available() throws IOException {
+            return Math.min(super.available(), remaining);
+        }
+
+        @Override
+        public synchronized void mark(int readlimit) {
+            // Force readlimit to be at least the remaining message length.
+            // This ensures mark is always valid within the bounded stream,
+            // regardless of what readlimit is passed by the deserializer (e.g., Hessian2).
+            super.mark(Math.max(readlimit, limit));
+            markedRemaining = remaining;
+        }
+
+        @Override
+        public synchronized void reset() throws IOException {
+            super.reset();
+            // Restore the remaining count to the value at mark time
+            remaining = markedRemaining;
+        }
     }
 
     private boolean hasEnoughBytes() {
