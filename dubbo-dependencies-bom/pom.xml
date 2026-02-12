@@ -95,7 +95,7 @@
     <javassist_version>3.30.2-GA</javassist_version>
     <byte-buddy_version>1.18.4</byte-buddy_version>
     <netty_version>3.2.10.Final</netty_version>
-    <netty4_version>4.2.9.Final</netty4_version>
+    <netty4_version>4.2.10.Final</netty4_version>
     <httpclient_version>4.5.14</httpclient_version>
     <httpcore_version>4.4.16</httpcore_version>
     <fastjson_version>1.2.83_noneautotype</fastjson_version>
@@ -122,7 +122,7 @@
     <commons_lang3_version>3.20.0</commons_lang3_version>
     <envoy_api_version>0.1.35</envoy_api_version>
     <micrometer.version>1.16.2</micrometer.version>
-    <opentelemetry.version>1.58.0</opentelemetry.version>
+    <opentelemetry.version>1.59.0</opentelemetry.version>
     <zipkin-reporter.version>3.5.1</zipkin-reporter.version>
     <zipkin.version>3.5.1</zipkin.version>
     <micrometer-tracing.version>1.6.2</micrometer-tracing.version>
@@ -141,7 +141,7 @@
     <nacos_version>2.5.2</nacos_version>
     <sentinel.version>1.8.9</sentinel.version>
     <seata.version>1.8.0</seata.version>
-    <grpc.version>1.78.0</grpc.version>
+    <grpc.version>1.79.0</grpc.version>
     <grpc_contrib_verdion>0.8.1</grpc_contrib_verdion>
     <jprotoc_version>1.2.2</jprotoc_version>
     <mustache_version>0.9.14</mustache_version>
@@ -186,7 +186,7 @@
     <spotless.action>check</spotless.action>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
     <palantirJavaFormat.version>2.38.0</palantirJavaFormat.version>
-    <jakarta.xml.bind-api.version>4.0.4</jakarta.xml.bind-api.version>
+    <jakarta.xml.bind-api.version>4.0.5</jakarta.xml.bind-api.version>
     <jaxb-runtime.version>2.4.0-b180830.0438</jaxb-runtime.version>
     <!-- Spring boot buddy is lower than the delivery dependency package version and can only show the defined dependency version -->
     <byte-buddy.version>1.15.1</byte-buddy.version>
