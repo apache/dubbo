@@ -26,7 +26,7 @@
 
   <artifactId>dubbo-mcp</artifactId>
   <properties>
-    <mcp.version>0.11.2</mcp.version>
+    <mcp.version>0.18.1</mcp.version>
     <skip_maven_deploy>false</skip_maven_deploy>
   </properties>
 
