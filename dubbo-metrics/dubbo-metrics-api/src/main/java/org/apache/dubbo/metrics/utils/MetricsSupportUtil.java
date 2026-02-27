@@ -28,7 +28,7 @@ public class MetricsSupportUtil {
         // Micrometer package changed in newer versions:
         // io.micrometer.prometheus.* -> io.micrometer.prometheusmetrics.*
         boolean micrometerPrometheusPresent = isClassPresent("io.micrometer.prometheus.PrometheusConfig")
-                || isClassPresent("io.micrometer.prometheusmetrics.PrometheusConfig");
+                | isClassPresent("io.micrometer.prometheusmetrics.PrometheusConfig");
 
         // PushGateway classes are optional for exporter-only usage and differ across versions,
         // so do not hard-fail prometheus support on them.
