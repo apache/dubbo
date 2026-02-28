@@ -139,7 +139,7 @@ public class ConfigUtils {
             return expression;
         }
         Matcher matcher = VARIABLE_PATTERN.matcher(expression);
-        StringBuilder sb = new StringBuilder();
+        StringBuffer sb = new StringBuffer();
         while (matcher.find()) {
             String key = matcher.group(1);
             String value = System.getProperty(key);
