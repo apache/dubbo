@@ -139,7 +139,7 @@ public class ConfigUtils {
             return expression;
         }
         Matcher matcher = VARIABLE_PATTERN.matcher(expression);
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         while (matcher.find()) {
             String key = matcher.group(1);
             String value = System.getProperty(key);
@@ -281,16 +281,10 @@ public class ConfigUtils {
         for (java.net.URL url : set) {
             try {
                 Properties p = new Properties();
-                InputStream input = url.openStream();
-                if (input != null) {
-                    try {
+                try (InputStream input = url.openStream()) {
+                    if (input != null) {
                         p.load(input);
                         properties.putAll(p);
-                    } finally {
-                        try {
-                            input.close();
-                        } catch (Throwable t) {
-                        }
                     }
                 }
             } catch (Throwable e) {
@@ -331,9 +325,10 @@ public class ConfigUtils {
             for (Set<URL> urls : ClassLoaderResourceLoader.loadResources(fileName, classLoadersToLoad)
                     .values()) {
                 for (URL url : urls) {
-                    InputStream is = url.openStream();
-                    if (is != null) {
-                        return readString(is);
+                    try (InputStream is = url.openStream()) {
+                        if (is != null) {
+                            return readString(is);
+                        }
                     }
                 }
             }
