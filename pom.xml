@@ -165,7 +165,7 @@
 
     <!-- For unify spring boot 3 version -->
     <spring-6.version>6.2.16</spring-6.version>
-    <spring-security-6.version>6.5.7</spring-security-6.version>
+    <spring-security-6.version>6.5.8</spring-security-6.version>
     <spring-boot-3.version>3.5.11</spring-boot-3.version>
 
     <!-- protobuf-java_version should be same as protobuf-java_version at dubbo-dependencies-bom -->
