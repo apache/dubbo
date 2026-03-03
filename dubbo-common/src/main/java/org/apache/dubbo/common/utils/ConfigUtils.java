@@ -257,8 +257,10 @@ public class ConfigUtils {
             }
 
             // fall back to use method getResourceAsStream
-            try {
-                properties.load(ClassUtils.getClassLoader().getResourceAsStream(fileName));
+            try (InputStream input = ClassUtils.getClassLoader().getResourceAsStream(fileName)) {
+                if (input != null) {
+                    properties.load(input);
+                }
             } catch (Throwable e) {
                 logger.warn(
                         COMMON_IO_EXCEPTION,
