@@ -52,13 +52,10 @@ public class SpringCloudServiceInstanceNotificationCustomizer implements Service
                         @Override
                         public List<ServiceInfo> getMatchedServiceInfos(ProtocolServiceKey consumerProtocolServiceKey) {
                             String consumerProtocol = consumerProtocolServiceKey.getProtocol();
-                            if (consumerProtocol != null && !REST_PROTOCOL.equalsIgnoreCase(consumerProtocol)) {
+                            // When consumer protocol is null or not REST, skip Spring Cloud instances.
+                            // Only match when consumer explicitly requests REST protocol.
+                            if (!REST_PROTOCOL.equalsIgnoreCase(consumerProtocol)) {
                                 return Collections.emptyList();
-                            }
-
-                            String protocol = consumerProtocol;
-                            if (protocol == null) {
-                                protocol = REST_PROTOCOL;
                             }
 
                             getServices()
@@ -68,7 +65,7 @@ public class SpringCloudServiceInstanceNotificationCustomizer implements Service
                                                     consumerProtocolServiceKey.getInterfaceName(),
                                                     consumerProtocolServiceKey.getGroup(),
                                                     consumerProtocolServiceKey.getVersion(),
-                                                    protocol,
+                                                    consumerProtocol,
                                                     instance.getPort(),
                                                     consumerProtocolServiceKey.getInterfaceName(),
                                                     new HashMap<>()));

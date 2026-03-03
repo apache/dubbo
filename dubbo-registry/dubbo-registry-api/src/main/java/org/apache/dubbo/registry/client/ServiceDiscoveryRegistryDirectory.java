@@ -340,17 +340,6 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 return;
             }
 
-            int originSize = invokerUrls.size();
-            invokerUrls = invokerUrls.stream().distinct().collect(Collectors.toList());
-            if (invokerUrls.size() != originSize) {
-                logger.info("Received duplicated invoker urls changed event from registry. "
-                        + "Registry type: instance. "
-                        + "Service Key: "
-                        + getConsumerUrl().getServiceKey() + ". "
-                        + "Notify Urls Size : " + originSize + ". "
-                        + "Distinct Urls Size: " + invokerUrls.size() + ".");
-            }
-
             // use local reference to avoid NPE as this.urlInvokerMap will be set null concurrently at
             // destroyAllInvokers().
             Map<ProtocolServiceKeyWithAddress, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap;
@@ -368,13 +357,31 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             logger.info(String.format("Refreshed invoker size %s from registry %s", newUrlInvokerMap.size(), this));
 
             if (CollectionUtils.isEmptyMap(newUrlInvokerMap)) {
-                logger.error(
-                        PROTOCOL_UNSUPPORTED,
-                        "",
-                        "",
-                        "Unsupported protocol.",
-                        new IllegalStateException(String.format(
-                                "Cannot create invokers from url address list (total %s)", invokerUrls.size())));
+                // Check if all instances are Spring Cloud instances (no Dubbo metadata)
+                boolean allSpringCloud = !invokerUrls.isEmpty()
+                        && invokerUrls.stream().allMatch(url -> {
+                    if (url instanceof InstanceAddressURL) {
+                        ServiceInstance si = ((InstanceAddressURL) url).getInstance();
+                        return si != null && "SPRING_CLOUD".equals(si.getMetadata("preserved.register.source"));
+                    }
+                    return false;
+                });
+                if (allSpringCloud) {
+                    logger.warn(
+                            PROTOCOL_UNSUPPORTED,
+                            "",
+                            "",
+                            "No matching Dubbo protocol invokers found. All discovered instances are Spring Cloud instances, "
+                                    + "which cannot be invoked via Dubbo protocol. Waiting for Dubbo provider instances to register.");
+                } else {
+                    logger.error(
+                            PROTOCOL_UNSUPPORTED,
+                            "",
+                            "",
+                            "Unsupported protocol.",
+                            new IllegalStateException(String.format(
+                                    "Cannot create invokers from url address list (total %s)", invokerUrls.size())));
+                }
                 return;
             }
             List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
