@@ -360,12 +360,12 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 // Check if all instances are Spring Cloud instances (no Dubbo metadata)
                 boolean allSpringCloud = !invokerUrls.isEmpty()
                         && invokerUrls.stream().allMatch(url -> {
-                    if (url instanceof InstanceAddressURL) {
-                        ServiceInstance si = ((InstanceAddressURL) url).getInstance();
-                        return si != null && "SPRING_CLOUD".equals(si.getMetadata("preserved.register.source"));
-                    }
-                    return false;
-                });
+                            if (url instanceof InstanceAddressURL) {
+                                ServiceInstance si = ((InstanceAddressURL) url).getInstance();
+                                return si != null && "SPRING_CLOUD".equals(si.getMetadata("preserved.register.source"));
+                            }
+                            return false;
+                        });
                 if (allSpringCloud) {
                     logger.warn(
                             PROTOCOL_UNSUPPORTED,
