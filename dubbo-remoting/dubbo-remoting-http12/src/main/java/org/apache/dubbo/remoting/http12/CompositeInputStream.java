@@ -103,9 +103,21 @@ public class CompositeInputStream extends InputStream {
 
     @Override
     public void close() throws IOException {
+        IOException first = null;
         InputStream inputStream;
         while ((inputStream = inputStreams.poll()) != null) {
-            inputStream.close();
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                if (first == null) {
+                    first = e;
+                } else {
+                    first.addSuppressed(e);
+                }
+            }
+        }
+        if (first != null) {
+            throw first;
         }
     }
 
