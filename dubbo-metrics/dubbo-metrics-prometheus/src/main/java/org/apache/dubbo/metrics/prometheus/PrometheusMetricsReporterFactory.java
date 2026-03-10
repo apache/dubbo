@@ -74,9 +74,14 @@ public class PrometheusMetricsReporterFactory extends AbstractMetricsReporterFac
         if (msg == null) {
             return false;
         }
-        if (msg.contains("io/micrometer/core/instrument/composite/CompositeMeterRegistry")) {
+        // Micrometer core classes
+        if (msg.contains("io/micrometer/") || msg.contains("io.micrometer.")) {
             return true;
         }
-        return msg.contains("io.micrometer.core.instrument.composite.CompositeMeterRegistry");
+        // Prometheus client classes (old simpleclient or new client)
+        if (msg.contains("io/prometheus/") || msg.contains("io.prometheus.")) {
+            return true;
+        }
+        return false;
     }
 }

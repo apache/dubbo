@@ -25,10 +25,16 @@ public class MetricsSupportUtil {
     }
 
     public static boolean isSupportPrometheus() {
-        return isClassPresent("io.micrometer.prometheus.PrometheusConfig")
-                && isClassPresent("io.prometheus.client.exporter.BasicAuthHttpConnectionFactory")
-                && isClassPresent("io.prometheus.client.exporter.HttpConnectionFactory")
-                && isClassPresent("io.prometheus.client.exporter.PushGateway");
+        // Micrometer 1.13+ renamed the prometheus package:
+        // io.micrometer.prometheus.* -> io.micrometer.prometheusmetrics.*
+        // Accept either package to support both old and new versions.
+        boolean hasPrometheusConfig = isClassPresent("io.micrometer.prometheus.PrometheusConfig")
+                || isClassPresent("io.micrometer.prometheusmetrics.PrometheusConfig");
+
+        // PushGateway classes (io.prometheus.client.exporter.*) are only needed
+        // when pushgateway mode is enabled, not for the default scrape endpoint.
+        // Do not require them here to avoid blocking reporter initialization.
+        return hasPrometheusConfig;
     }
 
     private static boolean isClassPresent(String className) {

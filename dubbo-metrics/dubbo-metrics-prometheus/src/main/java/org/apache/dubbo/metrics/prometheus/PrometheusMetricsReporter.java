@@ -71,22 +71,33 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
     private void schedulePushJob() {
         boolean pushEnabled = url.getParameter(PROMETHEUS_PUSHGATEWAY_ENABLED_KEY, false);
         if (pushEnabled) {
-            String baseUrl = url.getParameter(PROMETHEUS_PUSHGATEWAY_BASE_URL_KEY);
-            String job = url.getParameter(PROMETHEUS_PUSHGATEWAY_JOB_KEY, PROMETHEUS_DEFAULT_JOB_NAME);
-            int pushInterval =
-                    url.getParameter(PROMETHEUS_PUSHGATEWAY_PUSH_INTERVAL_KEY, PROMETHEUS_DEFAULT_PUSH_INTERVAL);
-            String username = url.getParameter(PROMETHEUS_PUSHGATEWAY_USERNAME_KEY);
-            String password = url.getParameter(PROMETHEUS_PUSHGATEWAY_PASSWORD_KEY);
+            try {
+                String baseUrl = url.getParameter(PROMETHEUS_PUSHGATEWAY_BASE_URL_KEY);
+                String job = url.getParameter(PROMETHEUS_PUSHGATEWAY_JOB_KEY, PROMETHEUS_DEFAULT_JOB_NAME);
+                int pushInterval =
+                        url.getParameter(PROMETHEUS_PUSHGATEWAY_PUSH_INTERVAL_KEY, PROMETHEUS_DEFAULT_PUSH_INTERVAL);
+                String username = url.getParameter(PROMETHEUS_PUSHGATEWAY_USERNAME_KEY);
+                String password = url.getParameter(PROMETHEUS_PUSHGATEWAY_PASSWORD_KEY);
 
-            NamedThreadFactory threadFactory = new NamedThreadFactory("prometheus-push-job", true);
-            pushJobExecutor = Executors.newScheduledThreadPool(1, threadFactory);
-            PushGateway pushGateway = new PushGateway(baseUrl);
-            if (!StringUtils.isBlank(username)) {
-                pushGateway.setConnectionFactory(new BasicAuthHttpConnectionFactory(username, password));
+                NamedThreadFactory threadFactory = new NamedThreadFactory("prometheus-push-job", true);
+                pushJobExecutor = Executors.newScheduledThreadPool(1, threadFactory);
+                PushGateway pushGateway = new PushGateway(baseUrl);
+                if (!StringUtils.isBlank(username)) {
+                    pushGateway.setConnectionFactory(new BasicAuthHttpConnectionFactory(username, password));
+                }
+
+                pushJobExecutor.scheduleWithFixedDelay(
+                        () -> push(pushGateway, job), pushInterval, pushInterval, TimeUnit.SECONDS);
+            } catch (NoClassDefFoundError e) {
+                logger.warn(
+                        COMMON_METRICS_COLLECTOR_EXCEPTION,
+                        "",
+                        "",
+                        "PushGateway classes not found on classpath. "
+                                + "Add simpleclient_pushgateway dependency to use pushgateway mode. "
+                                + "Scrape endpoint will still work.",
+                        e);
             }
-
-            pushJobExecutor.scheduleWithFixedDelay(
-                    () -> push(pushGateway, job), pushInterval, pushInterval, TimeUnit.SECONDS);
         }
     }
 
