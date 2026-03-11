@@ -273,4 +273,88 @@ mvn test -pl dubbo-common
 
 ---
 
+## 架构设计
+
+### 核心组件
+
+| 组件 | 职责 | 关键类 |
+|------|------|--------|
+| Invoker | 调用抽象 | Invoker, AbstractInvoker |
+| Protocol | 协议扩展 | Protocol, ProtocolFilterWrapper |
+| Exporter | 服务导出 | Exporter, AbstractExporter |
+| Cluster | 集群容错 | Cluster, FailoverCluster |
+| LoadBalance | 负载均衡 | LoadBalance, RandomLoadBalance |
+| Registry | 注册中心 | Registry, AbstractRegistry |
+
+### 扩展机制
+
+Dubbo 使用 SPI (Service Provider Interface) 机制:
+
+```java
+// 1. 定义扩展接口
+@SPI("default")
+public interface MyExtension {
+    void doSomething();
+}
+
+// 2. 实现扩展
+public class MyExtensionImpl implements MyExtension {
+    @Override
+    public void doSomething() {
+        // implementation
+    }
+}
+
+// 3. 注册扩展
+// META-INF/dubbo/org.apache.dubbo.MyExtension
+// myImpl=org.apache.dubbo.MyExtensionImpl
+
+// 4. 使用扩展
+ExtensionLoader.getExtensionLoader(MyExtension.class)
+    .getExtension("myImpl");
+```
+
+## 故障排查
+
+### 服务调用超时
+
+排查步骤:
+1. 检查网络连通性
+2. 查看 provider 是否存活
+3. 调整 timeout 配置
+4. 检查 provider 性能
+
+### 注册中心连接失败
+
+排查步骤:
+1. 确认注册中心地址正确
+2. 检查网络防火墙
+3. 查看注册中心日志
+4. 验证账号权限
+
+### 序列化异常
+
+排查步骤:
+1. 确认序列化方式一致
+2. 检查类路径是否包含序列化类
+3. 验证类版本兼容性
+
+## 社区贡献
+
+### 如何开始
+
+1. **Good First Issues**: https://github.com/apache/dubbo/labels/good%20first%20issue
+2. **Help Wanted**: https://github.com/apache/dubbo/labels/help%20wanted
+3. **Documentation**: https://github.com/apache/dubbo/labels/type%2Fdocumentation
+
+### 代码审查流程
+
+1. 提交 PR
+2. CI 自动化测试
+3. Committer Review
+4. 处理反馈
+5. Merge
+
+---
+
 感谢你对 Apache Dubbo 的贡献！🎉
