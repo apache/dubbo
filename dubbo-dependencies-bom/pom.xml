@@ -128,6 +128,7 @@
     <micrometer-tracing.version>1.6.3</micrometer-tracing.version>
     <t_digest.version>3.3</t_digest.version>
     <prometheus_client.version>0.16.0</prometheus_client.version>
+    <prometheus_metrics.version>1.5.0</prometheus_metrics.version>
     <reactive.version>1.0.4</reactive.version>
     <reactor.version>3.8.3</reactor.version>
     <mutiny.version>2.9.5</mutiny.version>
@@ -257,6 +258,13 @@
         <groupId>io.prometheus</groupId>
         <artifactId>simpleclient_bom</artifactId>
         <version>${prometheus-client.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.prometheus</groupId>
+        <artifactId>prometheus-metrics-bom</artifactId>
+        <version>${prometheus_metrics.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -944,6 +952,11 @@
         <groupId>io.prometheus</groupId>
         <artifactId>simpleclient_pushgateway</artifactId>
         <version>${prometheus_client.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.prometheus</groupId>
+        <artifactId>prometheus-metrics-exporter-pushgateway</artifactId>
+        <version>${prometheus_metrics.version}</version>
       </dependency>
       <!-- reactive related dependencies -->
       <dependency>
