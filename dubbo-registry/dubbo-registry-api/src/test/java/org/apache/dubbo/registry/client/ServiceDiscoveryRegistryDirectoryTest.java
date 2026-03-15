@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.client;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.registry.client.metadata.SpringCloudServiceInstanceNotificationCustomizer;
 import org.apache.dubbo.registry.integration.DemoService;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -31,6 +32,7 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -46,6 +48,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -92,6 +95,44 @@ class ServiceDiscoveryRegistryDirectoryTest {
         assertEquals(1, directory.getInvokers().size());
     }
 
+    @Test
+    void testNotifyIgnoresEmptyInstanceUrlList() {
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ModuleModel moduleModel = applicationModel.getDefaultModule();
+        ServiceDiscoveryRegistryDirectory<DemoService> directory =
+                new ServiceDiscoveryRegistryDirectory<>(DemoService.class, createDirectoryUrl(moduleModel));
+
+        Protocol protocol = mock(Protocol.class);
+        directory.setProtocol(protocol);
+
+        directory.notify(Collections.emptyList());
+
+        verify(protocol, never()).refer(eq(DemoService.class), any(InstanceAddressURL.class));
+        assertEquals(0, directory.getInvokers().size());
+    }
+
+    @Test
+    void testNotifySkipsSpringCloudInstancesForNonRestConsumer() {
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ModuleModel moduleModel = applicationModel.getDefaultModule();
+        ServiceDiscoveryRegistryDirectory<DemoService> directory =
+                new ServiceDiscoveryRegistryDirectory<>(DemoService.class, createDirectoryUrl(moduleModel));
+
+        Protocol protocol = mock(Protocol.class);
+        directory.setProtocol(protocol);
+
+        List<ServiceInstance> instances = Collections.singletonList(
+                createSpringCloudInstance(applicationModel, "demo-provider", "127.0.0.1", 8080));
+        SpringCloudServiceInstanceNotificationCustomizer customizer =
+                new SpringCloudServiceInstanceNotificationCustomizer();
+        customizer.customize(instances);
+
+        directory.notify(Collections.singletonList(instances.get(0).toURL(TEST_PROTOCOL)));
+
+        verify(protocol, never()).refer(eq(DemoService.class), any(InstanceAddressURL.class));
+        assertEquals(0, directory.getInvokers().size());
+    }
+
     private URL createDirectoryUrl(ModuleModel moduleModel) {
         Map<String, String> params = new HashMap<>();
         params.put(INTERFACE_KEY, DemoService.class.getName());
@@ -132,6 +173,22 @@ class ServiceDiscoveryRegistryDirectoryTest {
                 "rev-1",
                 new ConcurrentHashMap<>(Collections.singletonMap(serviceInfo.getMatchKey(), serviceInfo)));
         instance.setServiceMetadata(metadataInfo);
+        return instance;
+    }
+
+    private DefaultServiceInstance createSpringCloudInstance(
+            ApplicationModel applicationModel, String serviceName, String host, int port) {
+        DefaultServiceInstance instance = new DefaultServiceInstance();
+        instance.setServiceName(serviceName);
+        instance.setHost(host);
+        instance.setPort(port);
+        instance.setEnabled(true);
+        instance.setHealthy(true);
+        instance.setApplicationModel(applicationModel);
+
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put("preserved.register.source", "SPRING_CLOUD");
+        instance.setMetadata(metadata);
         return instance;
     }
 }

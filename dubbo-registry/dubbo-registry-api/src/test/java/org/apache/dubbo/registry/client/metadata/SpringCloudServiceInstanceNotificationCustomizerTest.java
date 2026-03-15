@@ -165,6 +165,21 @@ class SpringCloudServiceInstanceNotificationCustomizerTest {
     }
 
     @Test
+    void testGetMatchedServiceInfos_consumerProtocolUppercaseRest_returnsMatched() {
+        DefaultServiceInstance instance = createSpringCloudInstance("app1", "192.168.1.1", 8080);
+        customizer.customize(Collections.singletonList(instance));
+
+        MetadataInfo metadata = instance.getServiceMetadata();
+        assertNotNull(metadata);
+
+        ProtocolServiceKey consumerKey = new ProtocolServiceKey("com.example.DemoService", null, null, "REST");
+
+        List<MetadataInfo.ServiceInfo> matched = metadata.getMatchedServiceInfos(consumerKey);
+        assertEquals(1, matched.size(), "Should return matched service info when consumer protocol is REST");
+        assertEquals("REST", matched.get(0).getProtocol());
+    }
+
+    @Test
     void testCustomizeMultipleSpringCloudInstances() {
         DefaultServiceInstance instance1 = createSpringCloudInstance("app1", "192.168.1.1", 8080);
         DefaultServiceInstance instance2 = createSpringCloudInstance("app1", "192.168.1.2", 8081);
