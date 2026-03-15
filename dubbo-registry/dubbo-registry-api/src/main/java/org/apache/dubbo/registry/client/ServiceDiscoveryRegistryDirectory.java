@@ -340,6 +340,17 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 return;
             }
 
+            int originSize = invokerUrls.size();
+            invokerUrls = invokerUrls.stream().distinct().collect(Collectors.toList());
+            if (invokerUrls.size() != originSize) {
+                logger.info("Received duplicated invoker urls changed event from registry. "
+                        + "Registry type: instance. "
+                        + "Service Key: "
+                        + getConsumerUrl().getServiceKey() + ". "
+                        + "Notify Urls Size : " + originSize + ". "
+                        + "Distinct Urls Size: " + invokerUrls.size() + ".");
+            }
+
             // use local reference to avoid NPE as this.urlInvokerMap will be set null concurrently at
             // destroyAllInvokers().
             Map<ProtocolServiceKeyWithAddress, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap;
