@@ -69,14 +69,11 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
 
         Class<?> realInterfaceClass = null;
         if (generic) {
-            try {
-                // find the real interface from url
-                String realInterface = invoker.getUrl().getParameter(Constants.INTERFACE);
-                realInterfaceClass = ReflectUtils.forName(classLoader, realInterface);
-                interfaces.add(realInterfaceClass);
-            } catch (Throwable e) {
-                // ignore
-            }
+            // In generic mode, ensure GenericService is the first interface so that
+            // Spring bean type resolution treats the proxy as GenericService.
+            // This prevents BeanNotOfRequiredTypeException when the real interface
+            // class exists on the classpath and would otherwise take priority.
+            interfaces.add(invoker.getInterface());
 
             if (GenericService.class.isAssignableFrom(invoker.getInterface())
                     && Dubbo2CompactUtils.isEnabled()
@@ -89,6 +86,15 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
                 } else {
                     interfaces.add(org.apache.dubbo.rpc.service.GenericService.class);
                 }
+            }
+
+            try {
+                // find the real interface from url
+                String realInterface = invoker.getUrl().getParameter(Constants.INTERFACE);
+                realInterfaceClass = ReflectUtils.forName(classLoader, realInterface);
+                interfaces.add(realInterfaceClass);
+            } catch (Throwable e) {
+                // ignore
             }
         }
 
