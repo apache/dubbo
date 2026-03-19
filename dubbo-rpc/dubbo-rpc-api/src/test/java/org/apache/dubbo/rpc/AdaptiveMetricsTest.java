@@ -51,33 +51,43 @@ class AdaptiveMetricsTest {
     }
 
     /**
-     * Bug 1 regression: after setProviderMetrics, getLoad should use the real RT,
-     * not overwrite it with timeout * 2. A fast server (10ms) must have strictly
-     * lower load than a slow server (200ms).
+     * Bug 1 core regression: simulate the real request cycle where each
+     * setProviderMetrics() is immediately followed by a getLoad() call.
+     * This is the exact path that triggers the penalty bug on main branch.
+     *
+     * <p>With the bug: penalty overwrites all RTs to timeout*2, so after
+     * 20 rounds fast(10ms) EWMA ≈ 137 and slow(200ms) EWMA ≈ 200, ratio < 1.5x.
+     * With the fix: fast EWMA stays near 10, slow near 200, ratio > 5x.
      */
     @Test
     void freshMetrics_usesRealLatency_notPenalty() {
         AdaptiveMetrics am = new AdaptiveMetrics();
-        long now = System.currentTimeMillis();
 
-        // Fast server: 10ms RT
-        am.addConsumerReq(FAST_KEY);
-        am.setProviderMetrics(FAST_KEY, metricsMap(now, 10, "0.5"));
-        am.addConsumerSuccess(FAST_KEY);
+        // 20 rounds: each round = setProviderMetrics + immediate getLoad (the bug path)
+        double fastLoad = 0;
+        double slowLoad = 0;
+        for (int i = 0; i < 20; i++) {
+            long now = System.currentTimeMillis();
 
-        double fastLoad = am.getLoad(FAST_KEY, WEIGHT, TIMEOUT);
+            am.addConsumerReq(FAST_KEY);
+            am.setProviderMetrics(FAST_KEY, metricsMap(now, 10, "0.5"));
+            am.addConsumerSuccess(FAST_KEY);
+            fastLoad = am.getLoad(FAST_KEY, WEIGHT, TIMEOUT);
 
-        // Slow server: 200ms RT
-        am.addConsumerReq(SLOW_KEY);
-        am.setProviderMetrics(SLOW_KEY, metricsMap(now, 200, "0.5"));
-        am.addConsumerSuccess(SLOW_KEY);
+            am.addConsumerReq(SLOW_KEY);
+            am.setProviderMetrics(SLOW_KEY, metricsMap(now, 200, "0.5"));
+            am.addConsumerSuccess(SLOW_KEY);
+            slowLoad = am.getLoad(SLOW_KEY, WEIGHT, TIMEOUT);
+        }
 
-        double slowLoad = am.getLoad(SLOW_KEY, WEIGHT, TIMEOUT);
-
-        // With the penalty bug, both would converge to timeout*2 → loads nearly equal
-        assertTrue(fastLoad < slowLoad,
-                "Fast server (10ms) should have lower load than slow server (200ms), "
-                        + "got fast=" + fastLoad + " slow=" + slowLoad);
+        // Strong assertion: the ratio must be > 2x.
+        // With penalty bug: ratio ≈ 1.46 (136.7 vs 200.0 EWMA). Fails.
+        // With fix: ratio ≈ 20x (10 vs 200 EWMA). Passes easily.
+        assertTrue(fastLoad > 0, "fastLoad should be > 0");
+        assertTrue(slowLoad / fastLoad > 2.0,
+                "Slow/fast load ratio should be > 2x to prove real RT is used, "
+                        + "got ratio=" + (slowLoad / fastLoad)
+                        + " (fast=" + fastLoad + " slow=" + slowLoad + ")");
     }
 
     /**
@@ -103,38 +113,42 @@ class AdaptiveMetricsTest {
             load = am.getLoad(FAST_KEY, WEIGHT, TIMEOUT);
         }
 
-        // With the bug: lastLatency >> large_multiple = 0, ewma → 0, load → 0
+        // With the bug: lastLatency >> large_multiple = 0, ewma -> 0, load -> 0
         assertTrue(load > 0, "Load should not decay to zero after idle period, got " + load);
     }
 
     /**
-     * End-to-end: with 3 servers at different RTs, adaptive metrics should
-     * consistently rank them correctly after multiple rounds.
+     * End-to-end: with 3 servers at different RTs, simulate the real request
+     * cycle (setProviderMetrics + getLoad each round). After 20 rounds the
+     * ordering must be strictly fast < medium < slow.
      */
     @Test
     void multipleServers_fastServerPreferred() {
         AdaptiveMetrics am = new AdaptiveMetrics();
 
-        // Simulate 20 rounds of traffic
+        double loadFast = 0;
+        double loadMedium = 0;
+        double loadSlow = 0;
+
+        // Each round: report metrics then immediately call getLoad (the real path)
         for (int round = 0; round < 20; round++) {
             long now = System.currentTimeMillis();
 
             am.addConsumerReq(FAST_KEY);
             am.setProviderMetrics(FAST_KEY, metricsMap(now, 10, "0.5"));
             am.addConsumerSuccess(FAST_KEY);
+            loadFast = am.getLoad(FAST_KEY, WEIGHT, TIMEOUT);
 
             am.addConsumerReq(MEDIUM_KEY);
             am.setProviderMetrics(MEDIUM_KEY, metricsMap(now, 50, "0.5"));
             am.addConsumerSuccess(MEDIUM_KEY);
+            loadMedium = am.getLoad(MEDIUM_KEY, WEIGHT, TIMEOUT);
 
             am.addConsumerReq(SLOW_KEY);
             am.setProviderMetrics(SLOW_KEY, metricsMap(now, 200, "0.5"));
             am.addConsumerSuccess(SLOW_KEY);
+            loadSlow = am.getLoad(SLOW_KEY, WEIGHT, TIMEOUT);
         }
-
-        double loadFast = am.getLoad(FAST_KEY, WEIGHT, TIMEOUT);
-        double loadMedium = am.getLoad(MEDIUM_KEY, WEIGHT, TIMEOUT);
-        double loadSlow = am.getLoad(SLOW_KEY, WEIGHT, TIMEOUT);
 
         // Strict ordering: fast < medium < slow
         assertTrue(loadFast < loadMedium,
@@ -145,32 +159,35 @@ class AdaptiveMetricsTest {
 
     /**
      * A server that degrades (RT jumps from 10ms to 500ms) should see its
-     * load score increase, so the algorithm can shift traffic away.
+     * load score increase. CPU load is held constant to isolate the RT signal.
      */
     @Test
     void degradedServer_loadIncreases() {
         AdaptiveMetrics am = new AdaptiveMetrics();
 
-        // Warm up with fast responses
+        // Warm up with fast responses (CPU fixed at 0.5)
         for (int i = 0; i < 10; i++) {
             long now = System.currentTimeMillis();
             am.addConsumerReq(FAST_KEY);
             am.setProviderMetrics(FAST_KEY, metricsMap(now, 10, "0.5"));
             am.addConsumerSuccess(FAST_KEY);
+            am.getLoad(FAST_KEY, WEIGHT, TIMEOUT);
         }
         double loadBefore = am.getLoad(FAST_KEY, WEIGHT, TIMEOUT);
 
-        // Server degrades: RT jumps to 500ms, CPU load spikes
+        // Server degrades: RT jumps to 500ms, CPU stays at 0.5
         for (int i = 0; i < 10; i++) {
             long now = System.currentTimeMillis();
             am.addConsumerReq(FAST_KEY);
-            am.setProviderMetrics(FAST_KEY, metricsMap(now, 500, "0.9"));
+            am.setProviderMetrics(FAST_KEY, metricsMap(now, 500, "0.5"));
             am.addConsumerSuccess(FAST_KEY);
+            am.getLoad(FAST_KEY, WEIGHT, TIMEOUT);
         }
         double loadAfter = am.getLoad(FAST_KEY, WEIGHT, TIMEOUT);
 
         assertTrue(loadAfter > loadBefore,
-                "Load should increase after degradation: before=" + loadBefore + " after=" + loadAfter);
+                "Load should increase after RT degradation (CPU held constant): "
+                        + "before=" + loadBefore + " after=" + loadAfter);
     }
 
     /**
@@ -195,7 +212,6 @@ class AdaptiveMetricsTest {
         double loadAfterStale = am.getLoad(FAST_KEY, WEIGHT, TIMEOUT);
 
         // The stale update should have been discarded — load should not spike
-        // (if the stale 999ms RT were accepted, loadAfterStale would be much higher)
         assertTrue(loadAfterStale <= loadAfterFresh,
                 "Stale metrics should be discarded: loadAfterFresh=" + loadAfterFresh
                         + " loadAfterStale=" + loadAfterStale);
@@ -214,7 +230,7 @@ class AdaptiveMetricsTest {
         am.setProviderMetrics(FAST_KEY, metricsMap(now, 50, "0.5"));
         am.addConsumerSuccess(FAST_KEY);
 
-        // Set pickTime far in the past → triggers forced pick (return 0)
+        // Set pickTime far in the past -> triggers forced pick (return 0)
         am.setPickTime(FAST_KEY, now - TIMEOUT * 3);
 
         double load = am.getLoad(FAST_KEY, WEIGHT, TIMEOUT);
