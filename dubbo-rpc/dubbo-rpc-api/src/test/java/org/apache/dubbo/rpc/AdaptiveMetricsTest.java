@@ -84,7 +84,8 @@ class AdaptiveMetricsTest {
         // With penalty bug: ratio ≈ 1.46 (136.7 vs 200.0 EWMA). Fails.
         // With fix: ratio ≈ 20x (10 vs 200 EWMA). Passes easily.
         assertTrue(fastLoad > 0, "fastLoad should be > 0");
-        assertTrue(slowLoad / fastLoad > 2.0,
+        assertTrue(
+                slowLoad / fastLoad > 2.0,
                 "Slow/fast load ratio should be > 2x to prove real RT is used, "
                         + "got ratio=" + (slowLoad / fastLoad)
                         + " (fast=" + fastLoad + " slow=" + slowLoad + ")");
@@ -151,10 +152,8 @@ class AdaptiveMetricsTest {
         }
 
         // Strict ordering: fast < medium < slow
-        assertTrue(loadFast < loadMedium,
-                "fast(" + loadFast + ") should be < medium(" + loadMedium + ")");
-        assertTrue(loadMedium < loadSlow,
-                "medium(" + loadMedium + ") should be < slow(" + loadSlow + ")");
+        assertTrue(loadFast < loadMedium, "fast(" + loadFast + ") should be < medium(" + loadMedium + ")");
+        assertTrue(loadMedium < loadSlow, "medium(" + loadMedium + ") should be < slow(" + loadSlow + ")");
     }
 
     /**
@@ -185,9 +184,10 @@ class AdaptiveMetricsTest {
         }
         double loadAfter = am.getLoad(FAST_KEY, WEIGHT, TIMEOUT);
 
-        assertTrue(loadAfter > loadBefore,
-                "Load should increase after RT degradation (CPU held constant): "
-                        + "before=" + loadBefore + " after=" + loadAfter);
+        assertTrue(
+                loadAfter > loadBefore,
+                "Load should increase after RT degradation (CPU held constant): " + "before=" + loadBefore + " after="
+                        + loadAfter);
     }
 
     /**
@@ -212,9 +212,10 @@ class AdaptiveMetricsTest {
         double loadAfterStale = am.getLoad(FAST_KEY, WEIGHT, TIMEOUT);
 
         // The stale update should have been discarded — load should not spike
-        assertTrue(loadAfterStale <= loadAfterFresh,
-                "Stale metrics should be discarded: loadAfterFresh=" + loadAfterFresh
-                        + " loadAfterStale=" + loadAfterStale);
+        assertTrue(
+                loadAfterStale <= loadAfterFresh,
+                "Stale metrics should be discarded: loadAfterFresh=" + loadAfterFresh + " loadAfterStale="
+                        + loadAfterStale);
     }
 
     /**
