@@ -580,6 +580,69 @@ class BitListTest {
     }
 
     @Test
+    void testEmptyListReturnsIndependentInstances() {
+        // Verify that emptyList() returns separate instances to prevent shared mutable state
+        BitList<String> empty1 = BitList.emptyList();
+        BitList<String> empty2 = BitList.emptyList();
+
+        Assertions.assertNotSame(empty1, empty2, "emptyList() must return distinct instances");
+    }
+
+    @Test
+    void testEmptyListMutationDoesNotAffectOtherEmptyList() {
+        // This test reproduces the bug from issue #16131:
+        // When emptyList() returned a shared singleton, adding elements to one
+        // empty list would contaminate all other empty lists.
+        BitList<String> empty1 = BitList.emptyList();
+        BitList<String> empty2 = BitList.emptyList();
+
+        // Simulate what AbstractDirectory does: start with emptyList, then add invokers
+        empty1.add("InvokerA");
+        empty1.add("InvokerB");
+
+        // empty2 must remain empty - this was the core bug
+        Assertions.assertTrue(empty2.isEmpty(), "Mutating one emptyList must not affect another");
+        Assertions.assertEquals(0, empty2.size());
+    }
+
+    @Test
+    void testEmptyListTailListMutationDoesNotAffectOtherEmptyList() {
+        // Test that addToTailList on one emptyList doesn't leak to another
+        BitList<String> empty1 = BitList.emptyList();
+        BitList<String> empty2 = BitList.emptyList();
+
+        empty1.addToTailList("X");
+        empty1.addToTailList("Y");
+
+        Assertions.assertEquals(2, empty1.size());
+        Assertions.assertTrue(empty2.isEmpty());
+        Assertions.assertFalse(empty2.hasMoreElementInTailList());
+    }
+
+    @Test
+    void testEmptyListAndOperationDoesNotAffectOtherEmptyList() {
+        // The and() method is used in AbstractStateRouter.route() to mutate invokers in-place.
+        // This test verifies that and() on one emptyList doesn't contaminate another.
+        BitList<String> source = new BitList<>(Arrays.asList("A", "B", "C"));
+        BitList<String> empty1 = BitList.emptyList();
+        BitList<String> empty2 = BitList.emptyList();
+
+        // and() mutates rootSet and may add tailList elements in-place
+        empty1.and(source);
+
+        Assertions.assertTrue(empty2.isEmpty(), "and() on one emptyList must not affect another");
+        Assertions.assertEquals(0, empty2.size());
+    }
+
+    @Test
+    void testEmptyListIsInitiallyEmpty() {
+        BitList<String> empty = BitList.emptyList();
+        Assertions.assertTrue(empty.isEmpty());
+        Assertions.assertEquals(0, empty.size());
+        Assertions.assertFalse(empty.iterator().hasNext());
+    }
+
+    @Test
     void testConcurrent() throws InterruptedException {
         for (int i = 0; i < 100000; i++) {
             BitList<String> bitList = new BitList<>(Collections.singletonList("test"));
