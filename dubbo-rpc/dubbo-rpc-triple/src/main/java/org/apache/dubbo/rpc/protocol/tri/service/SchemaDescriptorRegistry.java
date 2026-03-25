@@ -18,8 +18,6 @@ package org.apache.dubbo.rpc.protocol.tri.service;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,7 +33,7 @@ public class SchemaDescriptorRegistry {
 
     private static final Map<String, Map<Integer, FileDescriptor>> EXTENSIONS = new ConcurrentHashMap<>();
 
-    private static final Set<String> SERVICES = new HashSet<>();
+    private static final Set<String> SERVICES = ConcurrentHashMap.newKeySet();
 
     public static void addSchemaDescriptor(String serviceName, FileDescriptor fd) {
         SERVICES.add(serviceName);
@@ -58,11 +56,7 @@ public class SchemaDescriptorRegistry {
     private static void addExtension(FieldDescriptor extension, FileDescriptor fd) {
         String name = extension.getContainingType().getFullName();
         int number = extension.getNumber();
-        if (!EXTENSIONS.containsKey(name)) {
-            EXTENSIONS.put(name, new HashMap<>());
-        }
-        Map<Integer, FileDescriptor> fdMap = EXTENSIONS.get(name);
-        fdMap.put(number, fd);
+        EXTENSIONS.computeIfAbsent(name, k -> new ConcurrentHashMap<>()).put(number, fd);
     }
 
     public static FileDescriptor getFileDescriptorByExtensionAndNumber(String extension, int number) {
