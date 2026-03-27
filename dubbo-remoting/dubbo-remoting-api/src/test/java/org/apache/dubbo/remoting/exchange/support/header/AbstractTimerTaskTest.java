@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.remoting.Channel;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -106,6 +107,31 @@ class AbstractTimerTaskTest {
         Assertions.assertTrue(taskExecutionCount.get() > 1,
                 "Task should keep executing when channel is open");
         Assertions.assertFalse(task.cancel, "Task should not be cancelled when channel is open");
+
+        task.cancel();
+    }
+
+    @Test
+    void testTaskNotCancelledWhenChannelCollectionIsEmpty() throws Exception {
+        long tick = 1000 / HEARTBEAT_CHECK_TICK;
+        // Server-side scenario: ChannelProvider returns empty collection when no clients are connected
+        AbstractTimerTask task = new AbstractTimerTask(
+                ArrayList::new, timer, tick) {
+            @Override
+            protected void doTask(Channel channel) {
+                taskExecutionCount.incrementAndGet();
+            }
+        };
+        task.start();
+
+        // Let the task run several ticks with empty channel collection
+        Thread.sleep(2000L);
+
+        // Task should NOT be cancelled — empty collection is not the same as all-closed
+        Assertions.assertFalse(task.cancel,
+                "Task should not be cancelled when channel collection is empty");
+        Assertions.assertEquals(0, taskExecutionCount.get(),
+                "doTask should not be called when there are no channels");
 
         task.cancel();
     }
