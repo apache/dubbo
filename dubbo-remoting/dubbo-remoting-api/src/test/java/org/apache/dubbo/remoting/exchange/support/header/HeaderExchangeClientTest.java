@@ -47,7 +47,8 @@ public class HeaderExchangeClientTest {
 
         HeaderExchangeClient headerExchangeClient = new HeaderExchangeClient(mockClient, false);
 
-        Assertions.assertTrue(headerExchangeClient.isClosed(),
+        Assertions.assertTrue(
+                headerExchangeClient.isClosed(),
                 "HeaderExchangeClient should report closed when underlying client is closed");
     }
 
@@ -59,7 +60,8 @@ public class HeaderExchangeClientTest {
 
         HeaderExchangeClient headerExchangeClient = new HeaderExchangeClient(mockClient, false);
 
-        Assertions.assertFalse(headerExchangeClient.isClosed(),
+        Assertions.assertFalse(
+                headerExchangeClient.isClosed(),
                 "HeaderExchangeClient should report open when both channel and client are open");
     }
 }

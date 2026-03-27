@@ -88,8 +88,8 @@ class ReconnectTimerTaskTest {
         // Let the task attempt reconnection while client is open and disconnected
         Thread.sleep(1500L);
         int reconnectCountBeforeClose = channel.getReconnectCount();
-        Assertions.assertTrue(reconnectCountBeforeClose > 0,
-                "Should have attempted reconnection while channel is not connected");
+        Assertions.assertTrue(
+                reconnectCountBeforeClose > 0, "Should have attempted reconnection while channel is not connected");
 
         // Close the client - simulates provider going offline and client being destroyed
         channel.close();
@@ -98,12 +98,13 @@ class ReconnectTimerTaskTest {
         Thread.sleep(1500L);
 
         // After closing, reconnect count should not increase
-        Assertions.assertEquals(reconnectCountBeforeClose, channel.getReconnectCount(),
+        Assertions.assertEquals(
+                reconnectCountBeforeClose,
+                channel.getReconnectCount(),
                 "Should stop reconnecting after client is closed");
 
         // The timer task should have been cancelled
-        Assertions.assertTrue(reconnectTimerTask.cancel,
-                "Timer task should be cancelled when client is closed");
+        Assertions.assertTrue(reconnectTimerTask.cancel, "Timer task should be cancelled when client is closed");
     }
 
     @Test
@@ -119,7 +120,7 @@ class ReconnectTimerTaskTest {
         int count2 = channel.getReconnectCount();
         Assertions.assertTrue(count2 > count1, "Should keep trying to reconnect");
 
-        Assertions.assertFalse(reconnectTimerTask.cancel,
-                "Timer task should not be cancelled when client is still open");
+        Assertions.assertFalse(
+                reconnectTimerTask.cancel, "Timer task should not be cancelled when client is still open");
     }
 }

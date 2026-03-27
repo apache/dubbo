@@ -59,8 +59,7 @@ class AbstractTimerTaskTest {
     @Test
     void testAutoCancelWhenAllChannelsClosed() throws Exception {
         long tick = 1000 / HEARTBEAT_CHECK_TICK;
-        AbstractTimerTask task = new AbstractTimerTask(
-                () -> Collections.singleton(channel), timer, tick) {
+        AbstractTimerTask task = new AbstractTimerTask(() -> Collections.singleton(channel), timer, tick) {
             @Override
             protected void doTask(Channel channel) {
                 taskExecutionCount.incrementAndGet();
@@ -83,8 +82,8 @@ class AbstractTimerTaskTest {
         int countAfterClose = taskExecutionCount.get();
 
         // Task should not have executed after channel was closed
-        Assertions.assertEquals(countBeforeClose, countAfterClose,
-                "Task should not execute after all channels are closed");
+        Assertions.assertEquals(
+                countBeforeClose, countAfterClose, "Task should not execute after all channels are closed");
 
         // Verify the task was cancelled
         Assertions.assertTrue(task.cancel, "Task should be cancelled when all channels are closed");
@@ -93,8 +92,7 @@ class AbstractTimerTaskTest {
     @Test
     void testTaskContinuesWhenChannelIsOpen() throws Exception {
         long tick = 1000 / HEARTBEAT_CHECK_TICK;
-        AbstractTimerTask task = new AbstractTimerTask(
-                () -> Collections.singleton(channel), timer, tick) {
+        AbstractTimerTask task = new AbstractTimerTask(() -> Collections.singleton(channel), timer, tick) {
             @Override
             protected void doTask(Channel channel) {
                 taskExecutionCount.incrementAndGet();
@@ -104,8 +102,7 @@ class AbstractTimerTaskTest {
 
         Thread.sleep(2000L);
 
-        Assertions.assertTrue(taskExecutionCount.get() > 1,
-                "Task should keep executing when channel is open");
+        Assertions.assertTrue(taskExecutionCount.get() > 1, "Task should keep executing when channel is open");
         Assertions.assertFalse(task.cancel, "Task should not be cancelled when channel is open");
 
         task.cancel();
@@ -115,8 +112,7 @@ class AbstractTimerTaskTest {
     void testTaskNotCancelledWhenChannelCollectionIsEmpty() throws Exception {
         long tick = 1000 / HEARTBEAT_CHECK_TICK;
         // Server-side scenario: ChannelProvider returns empty collection when no clients are connected
-        AbstractTimerTask task = new AbstractTimerTask(
-                ArrayList::new, timer, tick) {
+        AbstractTimerTask task = new AbstractTimerTask(ArrayList::new, timer, tick) {
             @Override
             protected void doTask(Channel channel) {
                 taskExecutionCount.incrementAndGet();
@@ -128,10 +124,8 @@ class AbstractTimerTaskTest {
         Thread.sleep(2000L);
 
         // Task should NOT be cancelled — empty collection is not the same as all-closed
-        Assertions.assertFalse(task.cancel,
-                "Task should not be cancelled when channel collection is empty");
-        Assertions.assertEquals(0, taskExecutionCount.get(),
-                "doTask should not be called when there are no channels");
+        Assertions.assertFalse(task.cancel, "Task should not be cancelled when channel collection is empty");
+        Assertions.assertEquals(0, taskExecutionCount.get(), "doTask should not be called when there are no channels");
 
         task.cancel();
     }
