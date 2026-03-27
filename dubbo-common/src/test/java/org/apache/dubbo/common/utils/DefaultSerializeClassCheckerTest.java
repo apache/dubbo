@@ -58,7 +58,8 @@ class DefaultSerializeClassCheckerTest {
             defaultSerializeClassChecker.loadClass(Thread.currentThread().getContextClassLoader(), int.class.getName());
         }
 
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+        // In WARN mode, disallowed classes should be loaded with a warning, not throw
+        Assertions.assertDoesNotThrow(() -> {
             defaultSerializeClassChecker.loadClass(
                     Thread.currentThread().getContextClassLoader(), Socket.class.getName());
         });
@@ -115,6 +116,54 @@ class DefaultSerializeClassCheckerTest {
                     .getWarnedClasses()
                     .contains(Thread.class.getName()));
         }
+
+        SystemPropertyConfigUtils.clearSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST);
+    }
+
+    @Test
+    void testDisallowedClassInWarnModeDoesNotThrow() throws ClassNotFoundException {
+        SystemPropertyConfigUtils.setSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST,
+                Runtime.class.getName());
+
+        SerializeSecurityManager ssm = FrameworkModel.defaultModel()
+                .getBeanFactory()
+                .getBean(SerializeSecurityManager.class);
+        ssm.setCheckStatus(SerializeCheckStatus.WARN);
+
+        DefaultSerializeClassChecker checker = DefaultSerializeClassChecker.getInstance();
+
+        // WARN mode: disallowed class should be loaded with warning, not throw
+        Assertions.assertDoesNotThrow(() -> {
+            checker.loadClass(Thread.currentThread().getContextClassLoader(), Runtime.class.getName());
+        });
+        Assertions.assertTrue(FrameworkModel.defaultModel()
+                .getBeanFactory()
+                .getBean(SerializeSecurityManager.class)
+                .getWarnedClasses()
+                .contains(Runtime.class.getName()));
+
+        SystemPropertyConfigUtils.clearSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST);
+    }
+
+    @Test
+    void testDisallowedClassInStrictModeThrows() {
+        SystemPropertyConfigUtils.setSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST,
+                Runtime.class.getName());
+
+        SerializeSecurityManager ssm = FrameworkModel.defaultModel()
+                .getBeanFactory()
+                .getBean(SerializeSecurityManager.class);
+        // Default is STRICT - non-allowed classes should throw
+        Assertions.assertEquals(SerializeCheckStatus.STRICT, AllowClassNotifyListener.DEFAULT_STATUS);
+
+        DefaultSerializeClassChecker checker = DefaultSerializeClassChecker.getInstance();
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            checker.loadClass(Thread.currentThread().getContextClassLoader(), Runtime.class.getName());
+        });
 
         SystemPropertyConfigUtils.clearSystemProperty(
                 CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST);

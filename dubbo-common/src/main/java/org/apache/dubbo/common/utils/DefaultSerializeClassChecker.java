@@ -111,12 +111,18 @@ public class DefaultSerializeClassChecker implements AllowClassNotifyListener {
             String msg = "[Serialization Security] Serialized class " + className
                     + " has not implement Serializable interface. "
                     + "Current mode is strict check, will disallow to deserialize it by default. ";
-            if (serializeSecurityManager.getWarnedClasses().add(className)) {
-                logger.error(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "", msg);
+            if (checkSerializable && checkStatus != SerializeCheckStatus.WARN
+                    && checkStatus != SerializeCheckStatus.DISABLE) {
+                if (serializeSecurityManager.getWarnedClasses().add(className)) {
+                    logger.error(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "", msg);
+                }
+                throw new IllegalArgumentException(msg);
             }
 
-            if (checkSerializable) {
-                throw new IllegalArgumentException(msg);
+            if (checkStatus == SerializeCheckStatus.WARN) {
+                if (serializeSecurityManager.getWarnedClasses().add(className)) {
+                    logger.warn(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "", msg);
+                }
             }
         }
 
@@ -164,13 +170,14 @@ public class DefaultSerializeClassChecker implements AllowClassNotifyListener {
 
             if (Arrays.binarySearch(disAllowPrefixes, hash) >= 0) {
                 String msg = "[Serialization Security] Serialized class " + className + " is in disallow list. "
-                        + "Current mode is `WARN`, will disallow to deserialize it by default. "
+                        + "Current mode is `WARN`, will allow to deserialize it by default. "
+                        + "Dubbo will set to `STRICT` mode by default in the future. "
                         + "Please add it into security/serialize.allowlist or follow FAQ to configure it.";
                 if (serializeSecurityManager.getWarnedClasses().add(className)) {
                     logger.warn(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "", msg);
                 }
 
-                throw new IllegalArgumentException(msg);
+                return classForName(classLoader, className);
             }
         }
 
@@ -185,13 +192,14 @@ public class DefaultSerializeClassChecker implements AllowClassNotifyListener {
 
             if (Arrays.binarySearch(disAllowPrefixes, hash) >= 0) {
                 String msg = "[Serialization Security] Serialized class " + className + " is in disallow list. "
-                        + "Current mode is `WARN`, will disallow to deserialize it by default. "
+                        + "Current mode is `WARN`, will allow to deserialize it by default. "
+                        + "Dubbo will set to `STRICT` mode by default in the future. "
                         + "Please add it into security/serialize.allowlist or follow FAQ to configure it.";
                 if (serializeSecurityManager.getWarnedClasses().add(className)) {
                     logger.warn(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "", msg);
                 }
 
-                throw new IllegalArgumentException(msg);
+                return classForName(classLoader, className);
             }
         }
 
