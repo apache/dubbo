@@ -111,7 +111,8 @@ public class DefaultSerializeClassChecker implements AllowClassNotifyListener {
             String msg = "[Serialization Security] Serialized class " + className
                     + " has not implement Serializable interface. "
                     + "Current mode is strict check, will disallow to deserialize it by default. ";
-            if (checkSerializable && checkStatus != SerializeCheckStatus.WARN
+            if (checkSerializable
+                    && checkStatus != SerializeCheckStatus.WARN
                     && checkStatus != SerializeCheckStatus.DISABLE) {
                 if (serializeSecurityManager.getWarnedClasses().add(className)) {
                     logger.error(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "", msg);

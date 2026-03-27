@@ -124,12 +124,10 @@ class DefaultSerializeClassCheckerTest {
     @Test
     void testDisallowedClassInWarnModeDoesNotThrow() throws ClassNotFoundException {
         SystemPropertyConfigUtils.setSystemProperty(
-                CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST,
-                Runtime.class.getName());
+                CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST, Runtime.class.getName());
 
-        SerializeSecurityManager ssm = FrameworkModel.defaultModel()
-                .getBeanFactory()
-                .getBean(SerializeSecurityManager.class);
+        SerializeSecurityManager ssm =
+                FrameworkModel.defaultModel().getBeanFactory().getBean(SerializeSecurityManager.class);
         ssm.setCheckStatus(SerializeCheckStatus.WARN);
 
         DefaultSerializeClassChecker checker = DefaultSerializeClassChecker.getInstance();
@@ -151,12 +149,10 @@ class DefaultSerializeClassCheckerTest {
     @Test
     void testDisallowedClassInStrictModeThrows() {
         SystemPropertyConfigUtils.setSystemProperty(
-                CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST,
-                Runtime.class.getName());
+                CommonConstants.DubboProperty.DUBBO_CLASS_DESERIALIZE_BLOCKED_LIST, Runtime.class.getName());
 
-        SerializeSecurityManager ssm = FrameworkModel.defaultModel()
-                .getBeanFactory()
-                .getBean(SerializeSecurityManager.class);
+        SerializeSecurityManager ssm =
+                FrameworkModel.defaultModel().getBeanFactory().getBean(SerializeSecurityManager.class);
         // Default is STRICT - non-allowed classes should throw
         Assertions.assertEquals(SerializeCheckStatus.STRICT, AllowClassNotifyListener.DEFAULT_STATUS);
 
