@@ -150,7 +150,7 @@ public class HeaderExchangeClient implements ExchangeClient {
 
     @Override
     public boolean isClosed() {
-        return channel.isClosed();
+        return channel.isClosed() || client.isClosed();
     }
 
     @Override

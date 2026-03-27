@@ -85,10 +85,16 @@ public abstract class AbstractTimerTask implements TimerTask {
     @Override
     public synchronized void run(Timeout timeout) throws Exception {
         Collection<Channel> channels = channelProvider.getChannels();
+        boolean allChannelsClosed = true;
         for (Channel channel : channels) {
             if (!channel.isClosed()) {
+                allChannelsClosed = false;
                 doTask(channel);
             }
+        }
+        if (allChannelsClosed) {
+            cancel();
+            return;
         }
         reput(timeout);
     }

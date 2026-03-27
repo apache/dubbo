@@ -37,4 +37,29 @@ public class HeaderExchangeClientTest {
         Assertions.assertFalse(headerExchangeClient.shouldReconnect(URL.valueOf("localhost?reconnect=false")));
         Assertions.assertFalse(headerExchangeClient.shouldReconnect(URL.valueOf("localhost?reconnect=FALSE")));
     }
+
+    @Test
+    void testIsClosedWhenUnderlyingClientClosed() {
+        Client mockClient = Mockito.mock(Client.class);
+        // Underlying client is closed, but HeaderExchangeChannel is not
+        Mockito.when(mockClient.isClosed()).thenReturn(true);
+        Mockito.when(mockClient.getUrl()).thenReturn(URL.valueOf("dubbo://localhost:20880"));
+
+        HeaderExchangeClient headerExchangeClient = new HeaderExchangeClient(mockClient, false);
+
+        Assertions.assertTrue(headerExchangeClient.isClosed(),
+                "HeaderExchangeClient should report closed when underlying client is closed");
+    }
+
+    @Test
+    void testIsNotClosedWhenBothOpen() {
+        Client mockClient = Mockito.mock(Client.class);
+        Mockito.when(mockClient.isClosed()).thenReturn(false);
+        Mockito.when(mockClient.getUrl()).thenReturn(URL.valueOf("dubbo://localhost:20880"));
+
+        HeaderExchangeClient headerExchangeClient = new HeaderExchangeClient(mockClient, false);
+
+        Assertions.assertFalse(headerExchangeClient.isClosed(),
+                "HeaderExchangeClient should report open when both channel and client are open");
+    }
 }

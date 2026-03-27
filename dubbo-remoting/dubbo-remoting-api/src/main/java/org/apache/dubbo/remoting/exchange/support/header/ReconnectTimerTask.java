@@ -44,6 +44,12 @@ public class ReconnectTimerTask extends AbstractTimerTask {
     @Override
     protected void doTask(Channel channel) {
         try {
+            if (channel instanceof Client && ((Client) channel).isClosed()) {
+                logger.info("Client " + channel + " has been closed, cancel reconnect task.");
+                cancel();
+                return;
+            }
+
             Long lastRead = lastRead(channel);
             Long now = now();
 
