@@ -51,7 +51,7 @@
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
-      <version>3.6.0</version>
+      <version>4.0.3</version>
     </dependency>
 
     <dependency>
