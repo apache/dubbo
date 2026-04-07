@@ -33,7 +33,12 @@ import static java.lang.Thread.State.WAITING;
 public class JVMUtil {
     public static void jstack(OutputStream stream) throws Exception {
         ThreadMXBean threadMxBean = ManagementFactory.getThreadMXBean();
-        for (ThreadInfo threadInfo : threadMxBean.dumpAllThreads(true, true)) {
+        // Pass lockedSynchronizers=false to avoid a full heap scan at safepoint.
+        // With lockedSynchronizers=true, the JVM iterates the entire heap to find all
+        // AbstractOwnableSynchronizer instances. On ZGC with large heaps, this causes
+        // tens-of-seconds safepoint pauses due to load barrier overhead on every reference.
+        // See: https://github.com/apache/dubbo/issues/16194
+        for (ThreadInfo threadInfo : threadMxBean.dumpAllThreads(true, false)) {
             stream.write(getThreadDumpString(threadInfo).getBytes(StandardCharsets.UTF_8));
         }
     }
