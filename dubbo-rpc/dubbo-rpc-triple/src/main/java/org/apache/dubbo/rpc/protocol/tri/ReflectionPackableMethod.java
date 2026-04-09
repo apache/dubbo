@@ -114,7 +114,8 @@ public class ReflectionPackableMethod implements PackableMethod {
 
             // server
             this.responsePack = new WrapResponsePack(serialization, url, serializeName, actualResponseType);
-            this.requestUnpack = new WrapRequestUnpack(serialization, url, allSerialize, actualRequestTypes);
+            this.requestUnpack = new WrapRequestUnpack(
+                    serialization, url, allSerialize, actualRequestTypes, method.getGenericParameterTypes());
         }
         this.allSerialize = allSerialize;
     }
@@ -442,16 +443,20 @@ public class ReflectionPackableMethod implements PackableMethod {
 
         private final Class<?>[] actualRequestTypes;
 
+        private final Type[] genericParameterTypes;
+
         private final Collection<String> allSerialize;
 
         private WrapRequestUnpack(
                 MultipleSerialization serialization,
                 URL url,
                 Collection<String> allSerialize,
-                Class<?>[] actualRequestTypes) {
+                Class<?>[] actualRequestTypes,
+                Type[] genericParameterTypes) {
             this.serialization = serialization;
             this.url = url;
             this.actualRequestTypes = actualRequestTypes;
+            this.genericParameterTypes = genericParameterTypes;
             this.allSerialize = allSerialize;
         }
 
@@ -467,7 +472,14 @@ public class ReflectionPackableMethod implements PackableMethod {
             for (int i = 0; i < wrapper.getArgs().size(); i++) {
                 ByteArrayInputStream bais =
                         new ByteArrayInputStream(wrapper.getArgs().get(i));
-                ret[i] = serialization.deserialize(url, wrapper.getSerializeType(), actualRequestTypes[i], bais);
+                if (genericParameterTypes != null
+                        && i < genericParameterTypes.length
+                        && genericParameterTypes[i] != actualRequestTypes[i]) {
+                    ret[i] = serialization.deserialize(
+                            url, wrapper.getSerializeType(), actualRequestTypes[i], genericParameterTypes[i], bais);
+                } else {
+                    ret[i] = serialization.deserialize(url, wrapper.getSerializeType(), actualRequestTypes[i], bais);
+                }
             }
             return ret;
         }

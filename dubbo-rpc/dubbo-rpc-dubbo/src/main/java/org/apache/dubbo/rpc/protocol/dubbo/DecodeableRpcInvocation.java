@@ -46,6 +46,7 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -78,6 +79,8 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
     protected volatile boolean hasDecoded;
 
     protected final FrameworkModel frameworkModel;
+
+    private Type[] genericParameterTypes;
 
     protected final transient Supplier<CallbackServiceCodec> callbackServiceCodecFactory;
 
@@ -236,6 +239,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(getMethodName(), desc);
             if (methodDescriptor != null) {
                 pts = methodDescriptor.getParameterClasses();
+                this.genericParameterTypes = methodDescriptor.getGenericParameterTypes();
                 this.setReturnTypes(methodDescriptor.getReturnTypes());
 
                 // switch TCCL
@@ -270,10 +274,15 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
     }
 
     protected Object[] drawArgs(ObjectInput in, Class<?>[] pts) throws IOException, ClassNotFoundException {
-        Object[] args;
-        args = new Object[pts.length];
+        Object[] args = new Object[pts.length];
         for (int i = 0; i < args.length; i++) {
-            args[i] = in.readObject(pts[i]);
+            if (genericParameterTypes != null
+                    && i < genericParameterTypes.length
+                    && genericParameterTypes[i] != pts[i]) {
+                args[i] = in.readObject(pts[i], genericParameterTypes[i]);
+            } else {
+                args[i] = in.readObject(pts[i]);
+            }
         }
         return args;
     }
