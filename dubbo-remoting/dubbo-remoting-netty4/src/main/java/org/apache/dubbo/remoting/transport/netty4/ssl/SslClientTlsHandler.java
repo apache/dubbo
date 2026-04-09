@@ -70,7 +70,7 @@ public class SslClientTlsHandler extends ChannelInboundHandlerAdapter {
                         "",
                         "TLS negotiation failed when trying to accept new connection.",
                         handshakeEvent.cause());
-                ctx.fireExceptionCaught(handshakeEvent.cause());
+                ctx.close();
             }
         }
     }
