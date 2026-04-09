@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.remoting.transport.netty4.ssl;
 
+import javax.net.ssl.SSLHandshakeException;
+
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import org.junit.jupiter.api.Test;
-
-import javax.net.ssl.SSLHandshakeException;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -41,8 +41,8 @@ class SslHandlerExceptionTest {
         when(ctx.pipeline()).thenReturn(pipeline);
 
         SslServerTlsHandler handler = new SslServerTlsHandler(null, true);
-        NoClassDefFoundError error = new NoClassDefFoundError(
-                "Could not initialize class io.netty.buffer.PooledUnsafeDirectByteBuf");
+        NoClassDefFoundError error =
+                new NoClassDefFoundError("Could not initialize class io.netty.buffer.PooledUnsafeDirectByteBuf");
 
         handler.exceptionCaught(ctx, error);
 
@@ -54,8 +54,8 @@ class SslHandlerExceptionTest {
         ChannelHandlerContext ctx = mock(ChannelHandlerContext.class);
 
         SslClientTlsHandler handler = new SslClientTlsHandler(mock(SslContext.class));
-        SslHandshakeCompletionEvent failureEvent = new SslHandshakeCompletionEvent(
-                new SSLHandshakeException("TLS handshake timeout"));
+        SslHandshakeCompletionEvent failureEvent =
+                new SslHandshakeCompletionEvent(new SSLHandshakeException("TLS handshake timeout"));
 
         handler.userEventTriggered(ctx, failureEvent);
 
