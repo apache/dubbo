@@ -24,15 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
 
 import com.alibaba.com.caucho.hessian.io.Hessian2Input;
 
@@ -136,88 +128,15 @@ public class Hessian2ObjectInput implements ObjectInput, Cleanable {
             mH2i.setSerializerFactory(hessian2FactoryManager.getSerializerFactory(
                     Thread.currentThread().getContextClassLoader()));
         }
-        T result = readObject(cls);
-        if (type instanceof ParameterizedType && result != null) {
-            result = (T) convertCollectionElementsIfNeeded(result, (ParameterizedType) type);
-        }
-        return result;
-    }
-
-    private Object convertCollectionElementsIfNeeded(Object obj, ParameterizedType type) {
-        Type[] typeArgs = type.getActualTypeArguments();
-
-        if (obj instanceof Collection && typeArgs.length >= 1 && typeArgs[0] instanceof Class) {
-            Class<?> elementType = (Class<?>) typeArgs[0];
-            if (isNarrowNumberType(elementType)) {
-                Collection<?> src = (Collection<?>) obj;
-                Collection<Object> converted = createCompatibleCollection(src, src.size());
-                for (Object e : src) {
-                    converted.add(convertNumber(e, elementType));
-                }
-                return converted;
+        if (type instanceof ParameterizedType) {
+            Type[] typeArgs = ((ParameterizedType) type).getActualTypeArguments();
+            Class<?>[] expectedTypes = new Class<?>[typeArgs.length];
+            for (int i = 0; i < typeArgs.length; i++) {
+                expectedTypes[i] = typeArgs[i] instanceof Class ? (Class<?>) typeArgs[i] : Object.class;
             }
+            return (T) mH2i.readObject(cls, expectedTypes);
         }
-
-        if (obj instanceof Map && typeArgs.length >= 2) {
-            Class<?> keyType = typeArgs[0] instanceof Class ? (Class<?>) typeArgs[0] : null;
-            Class<?> valType = typeArgs[1] instanceof Class ? (Class<?>) typeArgs[1] : null;
-            boolean convertKey = keyType != null && isNarrowNumberType(keyType);
-            boolean convertVal = valType != null && isNarrowNumberType(valType);
-            if (convertKey || convertVal) {
-                Map<Object, Object> src = (Map<Object, Object>) obj;
-                Map<Object, Object> converted = new java.util.LinkedHashMap<>(src.size());
-                for (Map.Entry<Object, Object> entry : src.entrySet()) {
-                    Object k = convertKey ? convertNumber(entry.getKey(), keyType) : entry.getKey();
-                    Object v = convertVal ? convertNumber(entry.getValue(), valType) : entry.getValue();
-                    converted.put(k, v);
-                }
-                return converted;
-            }
-        }
-        return obj;
-    }
-
-    private static boolean isNarrowNumberType(Class<?> type) {
-        return type == Byte.class
-                || type == byte.class
-                || type == Short.class
-                || type == short.class
-                || type == Float.class
-                || type == float.class;
-    }
-
-    private static Object convertNumber(Object value, Class<?> targetType) {
-        if (!(value instanceof Number)) {
-            return value;
-        }
-        Number num = (Number) value;
-        if (targetType == Byte.class || targetType == byte.class) {
-            return num.byteValue();
-        }
-        if (targetType == Short.class || targetType == short.class) {
-            return num.shortValue();
-        }
-        if (targetType == Float.class || targetType == float.class) {
-            return num.floatValue();
-        }
-        return value;
-    }
-
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private static Collection<Object> createCompatibleCollection(Collection<?> source, int size) {
-        if (source instanceof LinkedList) {
-            return new LinkedList<>();
-        }
-        if (source instanceof LinkedHashSet) {
-            return new LinkedHashSet<>(size);
-        }
-        if (source instanceof TreeSet) {
-            return new TreeSet(((TreeSet) source).comparator());
-        }
-        if (source instanceof Set) {
-            return new HashSet<>(size);
-        }
-        return new ArrayList<>(size);
+        return readObject(cls);
     }
 
     public InputStream readInputStream() throws IOException {
