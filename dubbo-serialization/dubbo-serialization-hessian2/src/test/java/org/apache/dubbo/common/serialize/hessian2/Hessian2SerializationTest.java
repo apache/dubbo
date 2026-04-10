@@ -683,6 +683,56 @@ class Hessian2SerializationTest {
     }
 
     @Test
+    void testReadObjectWithGenericType_pojoWithNarrowNumberFields() throws Exception {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        Serialization serialization =
+                frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+        URL url = URL.valueOf("").setScopeModel(frameworkModel);
+
+        List<Byte> scores = Arrays.asList((byte) 90, (byte) 85);
+        Map<String, Byte> attrs = new HashMap<>();
+        attrs.put("level", (byte) 5);
+        attrs.put("rank", (byte) 3);
+        NarrowNumberPojo original = new NarrowNumberPojo("Alice", (byte) 30, (short) 170, 12345.67f, scores, attrs);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ObjectOutput objectOutput = serialization.serialize(url, outputStream);
+        objectOutput.writeObject(original);
+        objectOutput.flushBuffer();
+
+        byte[] bytes = outputStream.toByteArray();
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+        ObjectInput objectInput = serialization.deserialize(url, inputStream);
+
+        NarrowNumberPojo result = objectInput.readObject(NarrowNumberPojo.class, NarrowNumberPojo.class);
+
+        Assertions.assertEquals("Alice", result.getName());
+        Assertions.assertEquals((byte) 30, result.getAge());
+        Assertions.assertEquals((short) 170, result.getHeight());
+        Assertions.assertEquals(12345.67f, result.getSalary(), 0.01f);
+
+        Assertions.assertNotNull(result.getScores());
+        Assertions.assertEquals(2, result.getScores().size());
+        for (Object elem : result.getScores()) {
+            Assertions.assertInstanceOf(Byte.class, elem, "Score element should be Byte but was " + elem.getClass());
+        }
+        Assertions.assertEquals((byte) 90, result.getScores().get(0));
+        Assertions.assertEquals((byte) 85, result.getScores().get(1));
+
+        Assertions.assertNotNull(result.getAttributes());
+        for (Map.Entry<String, Byte> entry : result.getAttributes().entrySet()) {
+            Assertions.assertInstanceOf(
+                    Byte.class,
+                    entry.getValue(),
+                    "Attribute value should be Byte but was " + entry.getValue().getClass());
+        }
+        Assertions.assertEquals((byte) 5, result.getAttributes().get("level"));
+        Assertions.assertEquals((byte) 3, result.getAttributes().get("rank"));
+
+        frameworkModel.destroy();
+    }
+
+    @Test
     void testLimit1() throws IOException, ClassNotFoundException {
         FrameworkModel frameworkModel = new FrameworkModel();
         Serialization serialization =
