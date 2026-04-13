@@ -48,10 +48,9 @@ public class ZookeeperClientManager {
     public ZookeeperClientManager() {}
 
     public static ZookeeperClientManager getInstance(ApplicationModel applicationModel) {
-        if (!managerMap.containsKey(applicationModel) || managerMap.get(applicationModel) == null) {
+        return managerMap.computeIfAbsent(applicationModel, model -> {
             ZookeeperClientManager clientManager = new ZookeeperClientManager();
-            applicationModel.addDestroyListener(m -> {
-                // destroy zookeeper clients if any
+            model.addDestroyListener(m -> {
                 try {
                     clientManager.destroy();
                 } catch (Exception e) {
@@ -63,9 +62,8 @@ public class ZookeeperClientManager {
                             e);
                 }
             });
-            managerMap.put(applicationModel, clientManager);
-        }
-        return managerMap.get(applicationModel);
+            return clientManager;
+        });
     }
 
     public ZookeeperClient connect(URL url) {
