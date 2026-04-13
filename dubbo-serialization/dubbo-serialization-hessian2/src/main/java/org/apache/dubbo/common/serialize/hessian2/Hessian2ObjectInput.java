@@ -131,12 +131,27 @@ public class Hessian2ObjectInput implements ObjectInput, Cleanable {
         if (type instanceof ParameterizedType) {
             Type[] typeArgs = ((ParameterizedType) type).getActualTypeArguments();
             Class<?>[] expectedTypes = new Class<?>[typeArgs.length];
+            boolean hasNarrowType = false;
             for (int i = 0; i < typeArgs.length; i++) {
-                expectedTypes[i] = typeArgs[i] instanceof Class ? (Class<?>) typeArgs[i] : Object.class;
+                if (typeArgs[i] instanceof Class && isNarrowNumberType((Class<?>) typeArgs[i])) {
+                    expectedTypes[i] = (Class<?>) typeArgs[i];
+                    hasNarrowType = true;
+                }
             }
-            return (T) mH2i.readObject(cls, expectedTypes);
+            if (hasNarrowType) {
+                return (T) mH2i.readObject(cls, expectedTypes);
+            }
         }
         return readObject(cls);
+    }
+
+    private static boolean isNarrowNumberType(Class<?> type) {
+        return type == Byte.class
+                || type == byte.class
+                || type == Short.class
+                || type == short.class
+                || type == Float.class
+                || type == float.class;
     }
 
     public InputStream readInputStream() throws IOException {
