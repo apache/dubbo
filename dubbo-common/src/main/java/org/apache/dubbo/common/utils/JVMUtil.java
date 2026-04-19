@@ -32,7 +32,7 @@ import static java.lang.Thread.State.WAITING;
 public class JVMUtil {
     public static void jstack(OutputStream stream) throws Exception {
         ThreadMXBean threadMxBean = ManagementFactory.getThreadMXBean();
-        for (ThreadInfo threadInfo : threadMxBean.dumpAllThreads(true, true)) {
+        for (ThreadInfo threadInfo : threadMxBean.dumpAllThreads(true, false)) {
             stream.write(getThreadDumpString(threadInfo).getBytes());
         }
     }
