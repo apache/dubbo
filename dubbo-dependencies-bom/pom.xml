@@ -92,7 +92,7 @@
     <spring_version>5.3.39</spring_version>
     <spring_boot_version>2.7.18</spring_boot_version>
     <spring_security_version>5.8.16</spring_security_version>
-    <javassist_version>3.30.2-GA</javassist_version>
+    <javassist_version>3.31.0-GA</javassist_version>
     <byte-buddy_version>1.18.7</byte-buddy_version>
     <netty_version>3.2.10.Final</netty_version>
     <netty4_version>4.2.12.Final</netty4_version>
@@ -125,11 +125,11 @@
     <opentelemetry.version>1.60.1</opentelemetry.version>
     <zipkin-reporter.version>3.5.1</zipkin-reporter.version>
     <zipkin.version>3.5.1</zipkin.version>
-    <micrometer-tracing.version>1.6.4</micrometer-tracing.version>
+    <micrometer-tracing.version>1.6.5</micrometer-tracing.version>
     <t_digest.version>3.3</t_digest.version>
     <prometheus_client.version>0.16.0</prometheus_client.version>
     <reactive.version>1.0.4</reactive.version>
-    <reactor.version>3.8.4</reactor.version>
+    <reactor.version>3.8.5</reactor.version>
     <mutiny.version>2.9.5</mutiny.version>
     <rxjava.version>2.2.21</rxjava.version>
     <okhttp_version>4.12.0</okhttp_version>
@@ -174,7 +174,7 @@
     <swagger_version>1.6.16</swagger_version>
 
     <snappy_java_version>1.1.10.8</snappy_java_version>
-    <bouncycastle-bcprov_version>1.83</bouncycastle-bcprov_version>
+    <bouncycastle-bcprov_version>1.84</bouncycastle-bcprov_version>
     <metrics_version>2.0.6</metrics_version>
     <gson_version>2.13.2</gson_version>
     <jackson_version>2.21.2</jackson_version>
