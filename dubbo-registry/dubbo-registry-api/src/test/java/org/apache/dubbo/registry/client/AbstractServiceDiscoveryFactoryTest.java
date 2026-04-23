@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.List;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -50,5 +51,10 @@ class AbstractServiceDiscoveryFactoryTest {
         Assertions.assertEquals(2, allServiceDiscoveries.size());
         Assertions.assertTrue(allServiceDiscoveries.contains(serviceDiscovery1));
         Assertions.assertTrue(allServiceDiscoveries.contains(serviceDiscovery3));
+    }
+
+    @AfterAll
+    public static void clearUp() {
+        ApplicationModel.reset();
     }
 }
