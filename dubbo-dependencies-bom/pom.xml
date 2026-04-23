@@ -121,13 +121,14 @@
     <snakeyaml_version>2.6</snakeyaml_version>
     <commons_lang3_version>3.20.0</commons_lang3_version>
     <envoy_api_version>0.1.35</envoy_api_version>
-    <micrometer.version>1.16.4</micrometer.version>
+    <micrometer.version>1.16.5</micrometer.version>
     <opentelemetry.version>1.60.1</opentelemetry.version>
     <zipkin-reporter.version>3.5.1</zipkin-reporter.version>
     <zipkin.version>3.5.1</zipkin.version>
     <micrometer-tracing.version>1.6.5</micrometer-tracing.version>
     <t_digest.version>3.3</t_digest.version>
     <prometheus_client.version>0.16.0</prometheus_client.version>
+    <prometheus_metrics.version>1.5.0</prometheus_metrics.version>
     <reactive.version>1.0.4</reactive.version>
     <reactor.version>3.8.5</reactor.version>
     <mutiny.version>2.9.5</mutiny.version>
@@ -257,6 +258,13 @@
         <groupId>io.prometheus</groupId>
         <artifactId>simpleclient_bom</artifactId>
         <version>${prometheus-client.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.prometheus</groupId>
+        <artifactId>prometheus-metrics-bom</artifactId>
+        <version>${prometheus_metrics.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -944,6 +952,11 @@
         <groupId>io.prometheus</groupId>
         <artifactId>simpleclient_pushgateway</artifactId>
         <version>${prometheus_client.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.prometheus</groupId>
+        <artifactId>prometheus-metrics-exporter-pushgateway</artifactId>
+        <version>${prometheus_metrics.version}</version>
       </dependency>
       <!-- reactive related dependencies -->
       <dependency>
