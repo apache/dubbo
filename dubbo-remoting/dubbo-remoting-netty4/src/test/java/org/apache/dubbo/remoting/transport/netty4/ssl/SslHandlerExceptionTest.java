@@ -19,14 +19,12 @@ package org.apache.dubbo.remoting.transport.netty4.ssl;
 import javax.net.ssl.SSLHandshakeException;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPipeline;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import org.junit.jupiter.api.Test;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * Verify that TLS handlers properly close channels on exceptions,
@@ -37,8 +35,6 @@ class SslHandlerExceptionTest {
     @Test
     void serverTlsHandler_exceptionCaught_shouldCloseChannel() throws Exception {
         ChannelHandlerContext ctx = mock(ChannelHandlerContext.class);
-        ChannelPipeline pipeline = mock(ChannelPipeline.class);
-        when(ctx.pipeline()).thenReturn(pipeline);
 
         SslServerTlsHandler handler = new SslServerTlsHandler(null, true);
         NoClassDefFoundError error =
