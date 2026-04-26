@@ -92,8 +92,8 @@
     <spring_version>5.3.39</spring_version>
     <spring_boot_version>2.7.18</spring_boot_version>
     <spring_security_version>5.8.16</spring_security_version>
-    <javassist_version>3.30.2-GA</javassist_version>
-    <byte-buddy_version>1.18.7</byte-buddy_version>
+    <javassist_version>3.31.0-GA</javassist_version>
+    <byte-buddy_version>1.18.8</byte-buddy_version>
     <netty_version>3.2.10.Final</netty_version>
     <netty4_version>4.2.12.Final</netty4_version>
     <httpclient_version>4.5.14</httpclient_version>
@@ -121,15 +121,16 @@
     <snakeyaml_version>2.6</snakeyaml_version>
     <commons_lang3_version>3.20.0</commons_lang3_version>
     <envoy_api_version>0.1.35</envoy_api_version>
-    <micrometer.version>1.16.4</micrometer.version>
-    <opentelemetry.version>1.60.1</opentelemetry.version>
-    <zipkin-reporter.version>3.5.1</zipkin-reporter.version>
-    <zipkin.version>3.5.1</zipkin.version>
-    <micrometer-tracing.version>1.6.4</micrometer-tracing.version>
+    <micrometer.version>1.16.5</micrometer.version>
+    <opentelemetry.version>1.61.0</opentelemetry.version>
+    <zipkin-reporter.version>3.5.3</zipkin-reporter.version>
+    <zipkin.version>3.6.1</zipkin.version>
+    <micrometer-tracing.version>1.6.5</micrometer-tracing.version>
     <t_digest.version>3.3</t_digest.version>
     <prometheus_client.version>0.16.0</prometheus_client.version>
+    <prometheus_metrics.version>1.5.0</prometheus_metrics.version>
     <reactive.version>1.0.4</reactive.version>
-    <reactor.version>3.8.4</reactor.version>
+    <reactor.version>3.8.5</reactor.version>
     <mutiny.version>2.9.5</mutiny.version>
     <rxjava.version>2.2.21</rxjava.version>
     <okhttp_version>4.12.0</okhttp_version>
@@ -137,7 +138,7 @@
     <rs_api_version>2.1.1</rs_api_version>
     <resteasy_version>3.15.6.Final</resteasy_version>
     <codehaus-jackson_version>1.9.13</codehaus-jackson_version>
-    <tomcat_embed_version>9.0.115</tomcat_embed_version>
+    <tomcat_embed_version>9.0.117</tomcat_embed_version>
     <nacos_version>2.5.2</nacos_version>
     <sentinel.version>1.8.9</sentinel.version>
     <seata.version>1.8.0</seata.version>
@@ -154,7 +155,7 @@
     <log4j2_version>2.25.4</log4j2_version>
     <commons_io_version>2.21.0</commons_io_version>
     <commons-codec_version>1.21.0</commons-codec_version>
-    <groovy_version>4.0.30</groovy_version>
+    <groovy_version>4.0.31</groovy_version>
 
     <!-- Test libs -->
     <junit_jupiter_version>5.14.3</junit_jupiter_version>
@@ -174,7 +175,7 @@
     <swagger_version>1.6.16</swagger_version>
 
     <snappy_java_version>1.1.10.8</snappy_java_version>
-    <bouncycastle-bcprov_version>1.83</bouncycastle-bcprov_version>
+    <bouncycastle-bcprov_version>1.84</bouncycastle-bcprov_version>
     <metrics_version>2.0.6</metrics_version>
     <gson_version>2.13.2</gson_version>
     <jackson_version>2.21.2</jackson_version>
@@ -257,6 +258,13 @@
         <groupId>io.prometheus</groupId>
         <artifactId>simpleclient_bom</artifactId>
         <version>${prometheus-client.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.prometheus</groupId>
+        <artifactId>prometheus-metrics-bom</artifactId>
+        <version>${prometheus_metrics.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -944,6 +952,11 @@
         <groupId>io.prometheus</groupId>
         <artifactId>simpleclient_pushgateway</artifactId>
         <version>${prometheus_client.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.prometheus</groupId>
+        <artifactId>prometheus-metrics-exporter-pushgateway</artifactId>
+        <version>${prometheus_metrics.version}</version>
       </dependency>
       <!-- reactive related dependencies -->
       <dependency>

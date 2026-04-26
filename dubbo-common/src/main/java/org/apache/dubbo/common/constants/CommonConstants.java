@@ -607,6 +607,8 @@ public interface CommonConstants {
      */
     String DUBBO_JSTACK_MAXLINE = "dubbo.jstack-dump.max-line";
 
+    String DUBBO_JSTACK_LOCKED_SYNCHRONIZERS = "dubbo.jstack-dump.locked-synchronizers";
+
     String ENCODE_IN_IO_THREAD_KEY = "encode.in.io";
 
     boolean DEFAULT_ENCODE_IN_IO_THREAD = false;
@@ -723,6 +725,8 @@ public interface CommonConstants {
          * used in JVMUtil.java ,Control stack print lines, default is 32 lines
          */
         String DUBBO_JSTACK_MAXLINE = "dubbo.jstack-dump.max-line";
+
+        String DUBBO_JSTACK_LOCKED_SYNCHRONIZERS = "dubbo.jstack-dump.locked-synchronizers";
 
         /**
          * The property name for {@link NetworkInterface#getDisplayName() the name of network interface} that the Dubbo
