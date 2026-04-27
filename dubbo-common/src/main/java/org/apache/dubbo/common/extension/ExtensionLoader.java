@@ -1033,7 +1033,7 @@ public class ExtensionLoader<T> {
         }
 
         if (debugEnabled) {
-            Long costMillis = (System.nanoTime() - startNanos) / 1_000_000L;
+            long costMillis = (System.nanoTime() - startNanos) / 1_000_000L;
             List<String> wrapperClassNames = cachedWrapperClasses == null
                     ? Collections.emptyList()
                     : cachedWrapperClasses.stream().map(Class::getName).collect(Collectors.toList());
