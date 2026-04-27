@@ -297,7 +297,7 @@ public class LoggerFactory {
 
     /**
      * Get the current adapter
-     * 
+     *
      * @return current adapter
      */
     public static LoggerAdapter getCurrentLoggerAdapter() {
