@@ -771,6 +771,7 @@ public class ExtensionLoader<T> {
 
     @SuppressWarnings("unchecked")
     private T createExtension(String name, boolean wrap) {
+        final boolean debugEnabled = logger.isDebugEnabled();
         Class<?> clazz = getExtensionClasses().get(name);
         if (clazz == null || unacceptableExceptions.contains(name)) {
             throw findException(name);
@@ -795,7 +796,7 @@ public class ExtensionLoader<T> {
                 }
 
                 if (CollectionUtils.isNotEmpty(wrapperClassesList)) {
-                    if (logger.isDebugEnabled()) {
+                    if (debugEnabled) {
                         appliedWrapperClasses = new ArrayList<>(wrapperClassesList.size());
                     }
                     for (Class<?> wrapperClass : wrapperClassesList) {
@@ -805,7 +806,7 @@ public class ExtensionLoader<T> {
                                                 || ArrayUtils.contains(wrapper.matches(), name))
                                         && !ArrayUtils.contains(wrapper.mismatches(), name));
                         if (match) {
-                            if (logger.isDebugEnabled()) {
+                            if (debugEnabled) {
                                 appliedWrapperClasses.add(wrapperClass);
                             }
                             instance = (T) wrapperClass.getConstructor(type).newInstance(instance);
@@ -820,7 +821,7 @@ public class ExtensionLoader<T> {
             // Warning: After an instance of Lifecycle is wrapped by cachedWrapperClasses, it may not still be Lifecycle
             // instance, this application may not invoke the lifecycle.initialize hook.
             initExtension(instance);
-            if (logger.isDebugEnabled()) {
+            if (debugEnabled) {
                 logExtensionInstanceLoaded(name, instance, wrap, appliedWrapperClasses);
             }
             return instance;
@@ -1006,11 +1007,12 @@ public class ExtensionLoader<T> {
      */
     @SuppressWarnings("deprecation")
     private Map<String, Class<?>> loadExtensionClasses() throws InterruptedException {
+        final boolean debugEnabled = logger.isDebugEnabled();
         checkDestroyed();
         cacheDefaultExtensionName();
 
         long startNanos = -1;
-        if (logger.isDebugEnabled()) {
+        if (debugEnabled) {
             startNanos = System.nanoTime();
             logger.debug(
                     "Start loading extension classes, type={}, scopeModel={}, defaultName={}",
@@ -1030,7 +1032,7 @@ public class ExtensionLoader<T> {
             }
         }
 
-        if (logger.isDebugEnabled()) {
+        if (debugEnabled) {
             Long costMillis = (System.nanoTime() - startNanos) / 1_000_000L;
             List<String> wrapperClassNames = cachedWrapperClasses == null
                     ? Collections.emptyList()
@@ -1317,6 +1319,7 @@ public class ExtensionLoader<T> {
             Class<?> clazz,
             String name,
             boolean overridden) {
+        final boolean debugEnabled = logger.isDebugEnabled();
         if (!type.isAssignableFrom(clazz)) {
             throw new IllegalStateException(
                     "Error occurred when loading extension class (interface: " + type + ", class line: "
@@ -1326,7 +1329,7 @@ public class ExtensionLoader<T> {
         List<String> missingOnClass = findMissingOnClass(classLoader, clazz);
 
         if (missingOnClass != null && !missingOnClass.isEmpty()) {
-            if (logger.isDebugEnabled()) {
+            if (debugEnabled) {
                 logger.debug(
                         "Skip inactive extension class, type={}, scopeModel={}, class={}, resourceURL={}, missingOnClass={}",
                         type.getName(),
@@ -1340,12 +1343,12 @@ public class ExtensionLoader<T> {
 
         if (clazz.isAnnotationPresent(Adaptive.class)) {
             cacheAdaptiveClass(clazz, overridden);
-            if (logger.isDebugEnabled()) {
+            if (debugEnabled) {
                 logLoadedExtensionClass("adaptive", clazz, null, resourceURL, overridden);
             }
         } else if (isWrapperClass(clazz)) {
             cacheWrapperClass(clazz);
-            if (logger.isDebugEnabled()) {
+            if (debugEnabled) {
                 logLoadedExtensionClass("wrapper", clazz, null, resourceURL, overridden);
             }
         } else {
@@ -1364,7 +1367,7 @@ public class ExtensionLoader<T> {
                     cacheName(clazz, n);
                     saveInExtensionClass(extensionClasses, clazz, n, overridden);
                 }
-                if (logger.isDebugEnabled()) {
+                if (debugEnabled) {
                     logLoadedExtensionClass("extension", clazz, names, resourceURL, overridden);
                 }
             }
