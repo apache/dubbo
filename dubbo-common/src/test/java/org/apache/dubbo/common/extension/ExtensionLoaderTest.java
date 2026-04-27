@@ -67,6 +67,9 @@ import org.apache.dubbo.common.extension.wrapper.Demo;
 import org.apache.dubbo.common.extension.wrapper.impl.DemoImpl;
 import org.apache.dubbo.common.extension.wrapper.impl.DemoWrapper;
 import org.apache.dubbo.common.extension.wrapper.impl.DemoWrapper2;
+import org.apache.dubbo.common.logger.LoggerAdapter;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.logger.log4j2.Log4j2LoggerAdapter;
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -202,18 +205,30 @@ class ExtensionLoaderTest {
 
     @Test
     void test_getExtension_logsDebugWhenExtensionCreated() {
-        try (ExtensionLoaderTestContext<WrappedExt> testContext = createExtensionLoaderTestContext(WrappedExt.class);
-                LogCollector logCollector = LogCollector.attach(ExtensionLoader.class)) {
-            WrappedExt impl1 = testContext.extensionLoader.getExtension("impl1");
+        LoggerAdapter preLoggerAdapter = LoggerFactory.getCurrentLoggerAdapter();
+        if (!(preLoggerAdapter instanceof Log4j2LoggerAdapter)) {
+            LoggerFactory.setLoggerAdapter(new Log4j2LoggerAdapter());
+        }
 
-            assertNotNull(impl1);
-            assertTrue(logCollector.contains("Loaded extension instance, type=" + WrappedExt.class.getName()));
-            assertTrue(logCollector.contains("name=impl1"));
-            assertTrue(logCollector.contains("instanceClass=" + Ext6Wrapper1.class.getName())
-                    || logCollector.contains("instanceClass=" + Ext6Wrapper2.class.getName()));
-            assertTrue(logCollector.contains("wrapperClasses=["));
-            assertTrue(logCollector.contains(Ext6Wrapper1.class.getName()));
-            assertTrue(logCollector.contains(Ext6Wrapper2.class.getName()));
+        try {
+            try (ExtensionLoaderTestContext<WrappedExt> testContext =
+                            createExtensionLoaderTestContext(WrappedExt.class);
+                    LogCollector logCollector = LogCollector.attach(ExtensionLoader.class)) {
+                WrappedExt impl1 = testContext.extensionLoader.getExtension("impl1");
+
+                assertNotNull(impl1);
+                assertTrue(logCollector.contains("Loaded extension instance, type=" + WrappedExt.class.getName()));
+                assertTrue(logCollector.contains("name=impl1"));
+                assertTrue(logCollector.contains("instanceClass=" + Ext6Wrapper1.class.getName())
+                        || logCollector.contains("instanceClass=" + Ext6Wrapper2.class.getName()));
+                assertTrue(logCollector.contains("wrapperClasses=["));
+                assertTrue(logCollector.contains(Ext6Wrapper1.class.getName()));
+                assertTrue(logCollector.contains(Ext6Wrapper2.class.getName()));
+            }
+        } finally {
+            if (!(preLoggerAdapter instanceof Log4j2LoggerAdapter)) {
+                LoggerFactory.setLoggerAdapter(preLoggerAdapter);
+            }
         }
     }
 
