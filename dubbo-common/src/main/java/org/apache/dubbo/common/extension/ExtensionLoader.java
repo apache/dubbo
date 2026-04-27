@@ -795,7 +795,9 @@ public class ExtensionLoader<T> {
                 }
 
                 if (CollectionUtils.isNotEmpty(wrapperClassesList)) {
-                    appliedWrapperClasses = new ArrayList<>(wrapperClassesList.size());
+                    if (logger.isDebugEnabled()) {
+                        appliedWrapperClasses = new ArrayList<>(wrapperClassesList.size());
+                    }
                     for (Class<?> wrapperClass : wrapperClassesList) {
                         Wrapper wrapper = wrapperClass.getAnnotation(Wrapper.class);
                         boolean match = (wrapper == null)
@@ -803,7 +805,9 @@ public class ExtensionLoader<T> {
                                                 || ArrayUtils.contains(wrapper.matches(), name))
                                         && !ArrayUtils.contains(wrapper.mismatches(), name));
                         if (match) {
-                            appliedWrapperClasses.add(wrapperClass);
+                            if (logger.isDebugEnabled()) {
+                                appliedWrapperClasses.add(wrapperClass);
+                            }
                             instance = (T) wrapperClass.getConstructor(type).newInstance(instance);
                             instance = postProcessBeforeInitialization(instance, name);
                             injectExtension(instance);
@@ -1005,7 +1009,7 @@ public class ExtensionLoader<T> {
         checkDestroyed();
         cacheDefaultExtensionName();
 
-        long startNanos;
+        long startNanos = -1;
         if (logger.isDebugEnabled()) {
             startNanos = System.nanoTime();
             logger.debug(
@@ -1336,10 +1340,14 @@ public class ExtensionLoader<T> {
 
         if (clazz.isAnnotationPresent(Adaptive.class)) {
             cacheAdaptiveClass(clazz, overridden);
-            logLoadedExtensionClass("adaptive", clazz, null, resourceURL, overridden);
+            if (logger.isDebugEnabled()) {
+                logLoadedExtensionClass("adaptive", clazz, null, resourceURL, overridden);
+            }
         } else if (isWrapperClass(clazz)) {
             cacheWrapperClass(clazz);
-            logLoadedExtensionClass("wrapper", clazz, null, resourceURL, overridden);
+            if (logger.isDebugEnabled()) {
+                logLoadedExtensionClass("wrapper", clazz, null, resourceURL, overridden);
+            }
         } else {
             if (StringUtils.isEmpty(name)) {
                 name = findAnnotationName(clazz);
@@ -1356,16 +1364,15 @@ public class ExtensionLoader<T> {
                     cacheName(clazz, n);
                     saveInExtensionClass(extensionClasses, clazz, n, overridden);
                 }
-                logLoadedExtensionClass("extension", clazz, names, resourceURL, overridden);
+                if (logger.isDebugEnabled()) {
+                    logLoadedExtensionClass("extension", clazz, names, resourceURL, overridden);
+                }
             }
         }
     }
 
     private void logLoadedExtensionClass(
             String kind, Class<?> clazz, String[] names, java.net.URL resourceURL, boolean overridden) {
-        if (!logger.isDebugEnabled()) {
-            return;
-        }
         logger.debug(
                 "Loaded SPI {} class, type={}, scopeModel={}, names={}, class={}, resourceURL={}, overridden={}",
                 kind,
