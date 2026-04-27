@@ -943,12 +943,14 @@ class ExtensionLoaderTest {
                 Configuration configuration,
                 String loggerName,
                 LoggerConfig loggerConfig,
-                TestAppender appender) {
+                TestAppender appender,
+                LoggerConfig preLoggerConfig) {
             this.context = context;
             this.configuration = configuration;
             this.loggerName = loggerName;
             this.loggerConfig = loggerConfig;
             this.appender = appender;
+            this.preLoggerConfig = preLoggerConfig;
         }
 
         static LogCollector attach(Class<?> loggerType) {
@@ -964,7 +966,7 @@ class ExtensionLoaderTest {
             loggerConfig.addAppender(appender, org.apache.logging.log4j.Level.DEBUG, null);
             configuration.addLogger(loggerName, loggerConfig);
             context.updateLoggers();
-            return new LogCollector(context, configuration, loggerName, loggerConfig, appender);
+            return new LogCollector(context, configuration, loggerName, loggerConfig, appender, preLoggerConfig);
         }
 
         boolean contains(String expected) {
