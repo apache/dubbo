@@ -294,4 +294,13 @@ public class LoggerFactory {
         }
         return name;
     }
+
+    /**
+     * Get the current adapter
+     * 
+     * @return current adapter
+     */
+    public static LoggerAdapter getCurrentLoggerAdapter() {
+        return loggerAdapter;
+    }
 }
