@@ -244,4 +244,39 @@ class CollectionUtilsTest {
         expectedSet.add("C");
         assertEquals(expectedSet, set);
     }
+
+    @Test
+    void sortShouldSupportComparableSuperType() {
+        List<Student> students = new ArrayList<>(Arrays.asList(new Student("b"), new Student("a")));
+
+        List<Student> sorted = CollectionUtils.sort(students);
+
+        assertEquals("a", sorted.get(0).getName());
+        assertEquals("b", sorted.get(1).getName());
+    }
+
+    private static class Person implements Comparable<Person> {
+
+        private final String name;
+
+        private Person(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return this.name;
+        }
+
+        @Override
+        public int compareTo(Person other) {
+            return this.name.compareTo(other.name);
+        }
+    }
+
+    private static class Student extends Person {
+
+        private Student(String name) {
+            super(name);
+        }
+    }
 }
