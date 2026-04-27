@@ -78,12 +78,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.appender.AbstractAppender;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.LoggerConfig;
-import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -936,6 +930,7 @@ class ExtensionLoaderTest {
         private final String loggerName;
         private final LoggerConfig loggerConfig;
         private final TestAppender appender;
+        private final LoggerConfig preLoggerConfig;
 
         private LogCollector(
                 LoggerContext context,
@@ -958,6 +953,7 @@ class ExtensionLoaderTest {
             appender.start();
             configuration.addAppender(appender);
 
+            LoggerConfig preLoggerConfig = configuration.getLoggerConfig(loggerName);
             LoggerConfig loggerConfig = new LoggerConfig(loggerName, org.apache.logging.log4j.Level.DEBUG, false);
             loggerConfig.addAppender(appender, org.apache.logging.log4j.Level.DEBUG, null);
             configuration.addLogger(loggerName, loggerConfig);
@@ -975,6 +971,9 @@ class ExtensionLoaderTest {
             configuration.removeLogger(loggerName);
             appender.stop();
             configuration.getAppenders().remove(appender.getName());
+            if (preLoggerConfig != null) {
+                configuration.addLogger(loggerName, preLoggerConfig);
+            }
             context.updateLoggers();
         }
     }
