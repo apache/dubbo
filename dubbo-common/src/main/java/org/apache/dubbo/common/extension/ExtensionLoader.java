@@ -816,7 +816,9 @@ public class ExtensionLoader<T> {
             // Warning: After an instance of Lifecycle is wrapped by cachedWrapperClasses, it may not still be Lifecycle
             // instance, this application may not invoke the lifecycle.initialize hook.
             initExtension(instance);
-            logExtensionInstanceLoaded(name, instance, wrap, appliedWrapperClasses);
+            if (logger.isDebugEnabled()) {
+                logExtensionInstanceLoaded(name, instance, wrap, appliedWrapperClasses);
+            }
             return instance;
         } catch (Throwable t) {
             throw new IllegalStateException(
@@ -827,9 +829,6 @@ public class ExtensionLoader<T> {
     }
 
     private void logExtensionInstanceLoaded(String name, T instance, boolean wrap, List<Class<?>> wrapperClasses) {
-        if (!logger.isDebugEnabled()) {
-            return;
-        }
         logger.debug(
                 "Loaded extension instance, type={}, scopeModel={}, name={}, instanceClass={}, wrap={}, wrapperClasses={}",
                 type.getName(),
@@ -1006,8 +1005,9 @@ public class ExtensionLoader<T> {
         checkDestroyed();
         cacheDefaultExtensionName();
 
-        long startNanos = logger.isDebugEnabled() ? System.nanoTime() : -1;
-        if (startNanos != -1) {
+        long startNanos;
+        if (logger.isDebugEnabled()) {
+            startNanos = System.nanoTime();
             logger.debug(
                     "Start loading extension classes, type={}, scopeModel={}, defaultName={}",
                     type.getName(),
@@ -1027,7 +1027,7 @@ public class ExtensionLoader<T> {
         }
 
         if (logger.isDebugEnabled()) {
-            Long costMillis = startNanos != -1 ? (System.nanoTime() - startNanos) / 1_000_000L : null;
+            Long costMillis = (System.nanoTime() - startNanos) / 1_000_000L;
             List<String> wrapperClassNames = cachedWrapperClasses == null
                     ? Collections.emptyList()
                     : cachedWrapperClasses.stream().map(Class::getName).collect(Collectors.toList());
