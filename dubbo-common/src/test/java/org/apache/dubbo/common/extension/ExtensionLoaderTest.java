@@ -961,7 +961,7 @@ class ExtensionLoaderTest {
             appender.start();
             configuration.addAppender(appender);
 
-            LoggerConfig preLoggerConfig = configuration.getLoggerConfig(loggerName);
+            LoggerConfig preLoggerConfig = configuration.getLoggers().get(loggerName);
             LoggerConfig loggerConfig = new LoggerConfig(loggerName, org.apache.logging.log4j.Level.DEBUG, false);
             loggerConfig.addAppender(appender, org.apache.logging.log4j.Level.DEBUG, null);
             configuration.addLogger(loggerName, loggerConfig);
