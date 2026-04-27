@@ -263,6 +263,68 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         }
     }
 
+    /**
+     * Resolve the dual-registration mode tag for a registry URL so observers can distinguish
+     * which arm of the dual registration a log line or outcome report belongs to.
+     */
+    private static String resolveRegisterModeTag(URL registryUrl) {
+        return SERVICE_REGISTRY_PROTOCOL.equals(registryUrl.getProtocol()) ? "INSTANCE_REGISTER" : "INTERFACE_REGISTER";
+    }
+
+    /**
+     * Register with independent failure handling for the dual registration mode. When the user
+     * has enabled both interface-level and instance-level registration (register-mode=all), a
+     * failure on one arm must not silently bring down the other; instead the failure is tagged
+     * with its mode, reported to the framework status service, and only rethrown when the
+     * registry URL explicitly asks for check=true.
+     */
+    private static boolean registerWithModeTag(Registry registry, URL registryUrl, URL registeredProviderUrl) {
+        String mode = resolveRegisterModeTag(registryUrl);
+        String registryAddress = registryUrl.getAddress();
+        try {
+            register(registry, registeredProviderUrl);
+            reportRegistrationOutcome(registeredProviderUrl, mode, registryAddress, true, null);
+            return true;
+        } catch (RuntimeException e) {
+            reportRegistrationOutcome(registeredProviderUrl, mode, registryAddress, false, e.getMessage());
+            boolean check = registryUrl.getParameter(CHECK_KEY, true);
+            if (check) {
+                logger.error(
+                        org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REGISTER_INSTANCE_ERROR,
+                        "the registry is unreachable or refused the registration",
+                        "check the registry address, credentials, and permissions on the target path",
+                        "[" + mode + "] failed to register " + registeredProviderUrl + " to registry " + registryAddress
+                                + ", propagating because check=true. cause: " + e.getMessage(),
+                        e);
+                throw e;
+            }
+            logger.warn(
+                    org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REGISTER_INSTANCE_ERROR,
+                    "one registration arm failed while the other may still succeed",
+                    "dual registration (register-mode=all) isolates failures per arm; verify the failing registry and retry",
+                    "[" + mode + "] failed to register " + registeredProviderUrl + " to registry " + registryAddress
+                            + ", the other registration arm (if any) is unaffected. cause: " + e.getMessage(),
+                    e);
+            return false;
+        }
+    }
+
+    private static void reportRegistrationOutcome(
+            URL registeredProviderUrl, String mode, String registryAddress, boolean success, String errorMessage) {
+        try {
+            org.apache.dubbo.common.status.reporter.FrameworkStatusReportService reportService =
+                    ScopeModelUtil.getApplicationModel(registeredProviderUrl.getScopeModel())
+                            .getBeanFactory()
+                            .getBean(org.apache.dubbo.common.status.reporter.FrameworkStatusReportService.class);
+            if (reportService != null) {
+                reportService.reportRegistrationOutcome(
+                        mode, registryAddress, registeredProviderUrl.getServiceKey(), success, errorMessage);
+            }
+        } catch (Throwable ignore) {
+            // reporting must never affect the registration flow
+        }
+    }
+
     private void registerStatedUrl(URL registryUrl, URL registeredProviderUrl, boolean registered) {
         ProviderModel model = (ProviderModel) registeredProviderUrl.getServiceModel();
         model.addStatedUrl(new ProviderModel.RegisterStatedURL(registeredProviderUrl, registryUrl, registered));
@@ -296,7 +358,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         // decide if we need to delay publish (provider itself and registry should both need to register)
         boolean register = providerUrl.getParameter(REGISTER_KEY, true) && registryUrl.getParameter(REGISTER_KEY, true);
         if (register) {
-            register(registry, registeredProviderUrl);
+            registerWithModeTag(registry, registryUrl, registeredProviderUrl);
         }
 
         // register stated url on provider model
@@ -1065,7 +1127,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             if (registered.compareAndSet(false, true)) {
                 URL registryUrl = getRegistryUrl(originInvoker);
                 Registry registry = getRegistry(registryUrl);
-                RegistryProtocol.register(registry, getRegisterUrl());
+                RegistryProtocol.registerWithModeTag(registry, registryUrl, getRegisterUrl());
 
                 ProviderModel providerModel = frameworkModel
                         .getServiceRepository()
@@ -1078,7 +1140,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                                         .getProtocol()
                                         .equals(getRegisterUrl().getProtocol()))
                         .forEach(u -> u.setRegistered(true));
-                logger.info("[INSTANCE_REGISTER] Registered dubbo service "
+                logger.info("[" + RegistryProtocol.resolveRegisterModeTag(registryUrl) + "] Registered dubbo service "
                         + getRegisterUrl().getServiceKey() + " url " + getRegisterUrl() + " to registry "
                         + registryUrl);
             }

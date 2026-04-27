@@ -80,6 +80,32 @@ public class FrameworkStatusReportService implements ScopeModelAware {
         return JsonUtils.toJson(registration);
     }
 
+    /**
+     * Report a registration outcome tagged with the register mode (INTERFACE / INSTANCE), the
+     * registry address it targets, and a success flag. Used to surface partial-failure cases when
+     * Dubbo is running in dual registration mode, so observers can tell which side succeeded.
+     */
+    public void reportRegistrationOutcome(
+            String mode, String registryAddress, String serviceKey, boolean success, String errorMessage) {
+        doReport(
+                REGISTRATION_STATUS,
+                createRegistrationOutcomeReport(mode, registryAddress, serviceKey, success, errorMessage));
+    }
+
+    public String createRegistrationOutcomeReport(
+            String mode, String registryAddress, String serviceKey, boolean success, String errorMessage) {
+        HashMap<String, String> registration = new HashMap<>();
+        registration.put("application", applicationModel.getApplicationName());
+        registration.put("mode", mode);
+        registration.put("registry", registryAddress);
+        registration.put("service", serviceKey);
+        registration.put("status", success ? "SUCCESS" : "FAILED");
+        if (errorMessage != null) {
+            registration.put("error", errorMessage);
+        }
+        return JsonUtils.toJson(registration);
+    }
+
     public String createConsumptionReport(String interfaceName, String version, String group, String status) {
         HashMap<String, String> migrationStatus = new HashMap<>();
         migrationStatus.put("type", "consumption");
