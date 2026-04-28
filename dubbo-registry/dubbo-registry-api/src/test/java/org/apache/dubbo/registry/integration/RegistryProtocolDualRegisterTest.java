@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.integration;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
+import org.apache.dubbo.common.status.reporter.FrameworkStatusReporter;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -54,14 +55,33 @@ class RegistryProtocolDualRegisterTest {
     private ApplicationModel applicationModel;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         CapturingFrameworkStatusReporter.clear();
         frameworkModel = new FrameworkModel();
         applicationModel = frameworkModel.newApplication();
         ApplicationConfig app = new ApplicationConfig("APP");
         applicationModel.getApplicationConfigManager().setApplication(app);
-        // Ensure FrameworkStatusReportService is initialized and wires up reporters
-        applicationModel.getBeanFactory().getBean(FrameworkStatusReportService.class);
+
+        // Register CapturingFrameworkStatusReporter programmatically. We avoid shipping an SPI file
+        // in test resources because that would leak the reporter into every other test in this
+        // module (e.g. MigrationRuleHandlerTest, whose URL has no ApplicationConfig and whose
+        // migration path would then trigger applicationModel.getApplicationName() → ISE).
+        applicationModel
+                .getExtensionLoader(FrameworkStatusReporter.class)
+                .addExtension("capturing", CapturingFrameworkStatusReporter.class);
+
+        // FrameworkStatusReportService snapshots its `reporters` set during setApplicationModel,
+        // which may have fired already (e.g. by ApplicationModel init) before our addExtension
+        // above. Reload its reporters field from the extension loader so the capturer is present.
+        FrameworkStatusReportService svc =
+                applicationModel.getBeanFactory().getBean(FrameworkStatusReportService.class);
+        java.lang.reflect.Field reportersField = FrameworkStatusReportService.class.getDeclaredField("reporters");
+        reportersField.setAccessible(true);
+        reportersField.set(
+                svc,
+                applicationModel
+                        .getExtensionLoader(FrameworkStatusReporter.class)
+                        .getSupportedExtensionInstances());
 
         // registerWithModeTag calls register() which touches ApplicationDeployer
         ApplicationDeployer deployer = Mockito.mock(ApplicationDeployer.class);
