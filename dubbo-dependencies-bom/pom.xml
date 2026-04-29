@@ -154,11 +154,11 @@
     <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
     <log4j2_version>2.25.4</log4j2_version>
     <commons_io_version>2.22.0</commons_io_version>
-    <commons-codec_version>1.21.0</commons-codec_version>
+    <commons-codec_version>1.22.0</commons-codec_version>
     <groovy_version>4.0.31</groovy_version>
 
     <!-- Test libs -->
-    <junit_jupiter_version>5.14.3</junit_jupiter_version>
+    <junit_jupiter_version>5.14.4</junit_jupiter_version>
     <junit_platform_version>1.14.4</junit_platform_version>
     <awaitility_version>4.3.0</awaitility_version>
     <hamcrest_version>2.2</hamcrest_version>
