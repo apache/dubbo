@@ -23,13 +23,18 @@ import org.apache.dubbo.common.status.reporter.FrameworkStatusReporter;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.support.FailbackRegistry;
+import org.apache.dubbo.rpc.Exporter;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
@@ -41,12 +46,14 @@ import org.mockito.Mockito;
 import static org.apache.dubbo.common.status.reporter.FrameworkStatusReportService.REGISTRATION_STATUS;
 
 /**
- * Covers the dual-registration failure-isolation path introduced in
+ * Covers the dual-registration failure-isolation path and outcome propagation in
  * {@link RegistryProtocol#registerWithModeTag(Registry, URL, URL)}:
  * <ul>
- *   <li>success case reports SUCCESS tagged with INTERFACE_REGISTER / INSTANCE_REGISTER</li>
+ *   <li>SUCCESS case reports SUCCESS tagged with INTERFACE_REGISTER / INSTANCE_REGISTER</li>
  *   <li>check=true rethrows but still reports FAILED with the mode tag</li>
- *   <li>check=false swallows the failure, reports FAILED, and returns false</li>
+ *   <li>check=false swallows the failure, reports FAILED, and returns FAILED</li>
+ *   <li>FailbackRegistry silent-retry path (check=false, doRegister threw, URL queued for retry)
+ *       reports PENDING_RETRY and returns PENDING_RETRY so caller-side state stays un-registered</li>
  * </ul>
  */
 class RegistryProtocolDualRegisterTest {
@@ -101,9 +108,9 @@ class RegistryProtocolDualRegisterTest {
         Registry registry = Mockito.mock(Registry.class);
         Mockito.when(registry.getUrl()).thenReturn(registryUrl);
 
-        boolean result = invokeRegisterWithModeTag(registry, registryUrl, providerUrl);
+        String outcome = invokeRegisterWithModeTag(registry, registryUrl, providerUrl);
 
-        Assertions.assertTrue(result, "registerWithModeTag must return true on success");
+        Assertions.assertEquals("SUCCESS", outcome);
         Mockito.verify(registry).register(providerUrl);
         Map<String, String> payload = latestRegistrationPayload();
         Assertions.assertEquals("INTERFACE_REGISTER", payload.get("mode"));
@@ -118,9 +125,9 @@ class RegistryProtocolDualRegisterTest {
         Registry registry = Mockito.mock(Registry.class);
         Mockito.when(registry.getUrl()).thenReturn(registryUrl);
 
-        boolean result = invokeRegisterWithModeTag(registry, registryUrl, providerUrl);
+        String outcome = invokeRegisterWithModeTag(registry, registryUrl, providerUrl);
 
-        Assertions.assertTrue(result);
+        Assertions.assertEquals("SUCCESS", outcome);
         Assertions.assertEquals("INSTANCE_REGISTER", latestRegistrationPayload().get("mode"));
     }
 
@@ -145,7 +152,7 @@ class RegistryProtocolDualRegisterTest {
     }
 
     @Test
-    void checkFalseSwallowsFailureAndReturnsFalse() throws Exception {
+    void checkFalseSwallowsFailureAndReturnsFailed() throws Exception {
         URL registryUrl = registryUrl("service-discovery-registry", false);
         URL providerUrl = providerUrl();
         Registry registry = Mockito.mock(Registry.class);
@@ -154,13 +161,41 @@ class RegistryProtocolDualRegisterTest {
                 .when(registry)
                 .register(providerUrl);
 
-        boolean result = invokeRegisterWithModeTag(registry, registryUrl, providerUrl);
+        String outcome = invokeRegisterWithModeTag(registry, registryUrl, providerUrl);
 
-        Assertions.assertFalse(result, "registerWithModeTag must swallow and return false when check=false");
+        Assertions.assertEquals(
+                "FAILED",
+                outcome,
+                "registerWithModeTag must swallow and return FAILED when check=false on a directly-throwing Registry");
         Map<String, String> payload = latestRegistrationPayload();
         Assertions.assertEquals("INSTANCE_REGISTER", payload.get("mode"));
         Assertions.assertEquals("FAILED", payload.get("status"));
         Assertions.assertEquals("metadata center unreachable", payload.get("error"));
+    }
+
+    /**
+     * FailbackRegistry silent-retry path: {@code doRegister} throws, {@code check=false}, so the
+     * exception is swallowed and the URL is queued for retry. {@code register()} returns normally.
+     * The dual-register path must NOT classify this as SUCCESS — observers and caller-side state
+     * need to see it as PENDING_RETRY so they don't prematurely treat the URL as published.
+     */
+    @Test
+    void failbackSilentRetryReportsPendingRetry() throws Exception {
+        URL registryUrl = registryUrl("zookeeper", false);
+        URL providerUrl = providerUrl();
+        FailingFailbackRegistry registry = new FailingFailbackRegistry(registryUrl);
+
+        String outcome = invokeRegisterWithModeTag(registry, registryUrl, providerUrl);
+
+        Assertions.assertEquals("PENDING_RETRY", outcome);
+        Assertions.assertTrue(
+                registry.isPendingFailedRegistration(providerUrl),
+                "the URL should now be sitting in FailbackRegistry's retry queue");
+        Map<String, String> payload = latestRegistrationPayload();
+        Assertions.assertEquals("INTERFACE_REGISTER", payload.get("mode"));
+        Assertions.assertEquals("PENDING_RETRY", payload.get("status"));
+        Assertions.assertNotNull(
+                payload.get("error"), "pending-retry payload should describe why the initial attempt failed");
     }
 
     private URL registryUrl(String protocol, boolean check) {
@@ -183,17 +218,168 @@ class RegistryProtocolDualRegisterTest {
         return JsonUtils.toJavaObject(String.valueOf(raw), Map.class);
     }
 
-    private boolean invokeRegisterWithModeTag(Registry registry, URL registryUrl, URL providerUrl) throws Exception {
+    /**
+     * Invokes the private static {@code registerWithModeTag} and returns the enum name of the
+     * resulting {@code RegisterOutcome}, so test assertions can string-compare regardless of the
+     * enum's package-private visibility.
+     */
+    private String invokeRegisterWithModeTag(Registry registry, URL registryUrl, URL providerUrl) throws Exception {
         Method m =
                 RegistryProtocol.class.getDeclaredMethod("registerWithModeTag", Registry.class, URL.class, URL.class);
         m.setAccessible(true);
         try {
-            return (boolean) m.invoke(null, registry, registryUrl, providerUrl);
+            Object outcome = m.invoke(null, registry, registryUrl, providerUrl);
+            return ((Enum<?>) outcome).name();
         } catch (InvocationTargetException e) {
             if (e.getCause() instanceof RuntimeException) {
                 throw (RuntimeException) e.getCause();
             }
             throw e;
         }
+    }
+
+    /**
+     * Minimal FailbackRegistry whose {@link #doRegister(URL)} always throws. Drives the real
+     * {@code FailbackRegistry.register(URL)} body so {@link FailbackRegistry#isPendingFailedRegistration}
+     * actually reflects the silent-retry queue, exactly like ZookeeperRegistry / NacosRegistry do
+     * in production.
+     */
+    private static final class FailingFailbackRegistry extends FailbackRegistry {
+        private final RuntimeException failure;
+
+        FailingFailbackRegistry(URL registryUrl) {
+            super(registryUrl);
+            this.failure = new IllegalStateException("doRegister failed: ZK session expired");
+        }
+
+        @Override
+        public void doRegister(URL url) {
+            throw failure;
+        }
+
+        @Override
+        public void doUnregister(URL url) {}
+
+        @Override
+        public void doSubscribe(URL url, NotifyListener listener) {}
+
+        @Override
+        public void doUnsubscribe(URL url, NotifyListener listener) {}
+
+        @Override
+        public boolean isAvailable() {
+            return true;
+        }
+
+        // The following overrides keep the retry timer from firing during the short test window.
+        @SuppressWarnings("unused")
+        public List<URL> lookup(URL url) {
+            return java.util.Collections.emptyList();
+        }
+    }
+
+    /**
+     * ExporterChangeableWrapper.register() must leave {@code registered=false} when the underlying
+     * registration outcome is not SUCCESS. Otherwise a later manual register/re-register call is a
+     * no-op and the wrapper permanently believes it is live. This test covers the PENDING_RETRY
+     * branch (FailbackRegistry silent-retry under check=false).
+     */
+    @Test
+    void exporterWrapperRegisterResetsFlagOnPendingRetry() throws Exception {
+        URL registryUrl = registryUrl("zookeeper", false);
+        URL providerUrl = providerUrl();
+        FailingFailbackRegistry registry = new FailingFailbackRegistry(registryUrl);
+
+        Object wrapper = newWrapperWith(registry, registryUrl, providerUrl);
+        invokeWrapperRegister(wrapper);
+
+        Assertions.assertFalse(
+                readAtomicRegistered(wrapper),
+                "wrapper.registered must be reset to false when registration is PENDING_RETRY");
+    }
+
+    /**
+     * When {@code check=true} and {@code registry.register} throws, the wrapper must rethrow AND
+     * reset its CAS flag. Without the reset, a follow-up register() call short-circuits on the CAS
+     * and silently does nothing.
+     */
+    @Test
+    void exporterWrapperRegisterResetsFlagOnCheckTrueException() throws Exception {
+        URL registryUrl = registryUrl("zookeeper", true);
+        URL providerUrl = providerUrl();
+        Registry throwing = Mockito.mock(Registry.class);
+        Mockito.when(throwing.getUrl()).thenReturn(registryUrl);
+        Mockito.doThrow(new IllegalStateException("NoNode for /dubbo/..."))
+                .when(throwing)
+                .register(providerUrl);
+
+        Object wrapper = newWrapperWith(throwing, registryUrl, providerUrl);
+        Assertions.assertThrows(IllegalStateException.class, () -> invokeWrapperRegister(wrapper));
+        Assertions.assertFalse(
+                readAtomicRegistered(wrapper), "wrapper.registered must be reset to false after check=true rethrow");
+    }
+
+    /**
+     * Constructs an {@code ExporterChangeableWrapper} via reflection and installs an outer
+     * {@code RegistryProtocol} spy whose {@code getRegistry(URL)} returns the supplied fake. This
+     * lets us exercise the wrapper's {@code register()} body without standing up the full
+     * ReferenceCountExporter / RegistryFactory machinery.
+     */
+    private Object newWrapperWith(Registry registry, URL registryUrl, URL providerUrl) throws Exception {
+        RegistryProtocol outer = new RegistryProtocol() {
+            @Override
+            protected Registry getRegistry(URL url) {
+                return registry;
+            }
+
+            @Override
+            protected URL getRegistryUrl(Invoker<?> originInvoker) {
+                return registryUrl;
+            }
+        };
+        java.lang.reflect.Field fmField = RegistryProtocol.class.getDeclaredField("frameworkModel");
+        fmField.setAccessible(true);
+        fmField.set(outer, frameworkModel);
+
+        Invoker<?> originInvoker = Mockito.mock(Invoker.class);
+        Mockito.when(originInvoker.getUrl()).thenReturn(providerUrl);
+
+        Exporter<?> innerExporter = Mockito.mock(Exporter.class);
+        ReferenceCountExporter<?> refExporter =
+                new ReferenceCountExporter<>(innerExporter, providerUrl.getServiceKey(), null);
+
+        Class<?> wrapperCls =
+                Class.forName("org.apache.dubbo.registry.integration.RegistryProtocol$ExporterChangeableWrapper");
+        java.lang.reflect.Constructor<?> ctor =
+                wrapperCls.getDeclaredConstructor(RegistryProtocol.class, ReferenceCountExporter.class, Invoker.class);
+        ctor.setAccessible(true);
+        Object wrapper = ctor.newInstance(outer, refExporter, originInvoker);
+
+        // The wrapper's register() reads getRegisterUrl() — stub it by setting the field directly.
+        java.lang.reflect.Field registerUrlField = wrapperCls.getDeclaredField("registerUrl");
+        registerUrlField.setAccessible(true);
+        registerUrlField.set(wrapper, providerUrl);
+
+        return wrapper;
+    }
+
+    private void invokeWrapperRegister(Object wrapper) throws Exception {
+        java.lang.reflect.Method m = wrapper.getClass().getDeclaredMethod("register");
+        m.setAccessible(true);
+        try {
+            m.invoke(wrapper);
+        } catch (InvocationTargetException e) {
+            if (e.getCause() instanceof RuntimeException) {
+                throw (RuntimeException) e.getCause();
+            }
+            throw e;
+        }
+    }
+
+    private boolean readAtomicRegistered(Object wrapper) throws Exception {
+        java.lang.reflect.Field f = wrapper.getClass().getDeclaredField("registered");
+        f.setAccessible(true);
+        java.util.concurrent.atomic.AtomicBoolean ab = (java.util.concurrent.atomic.AtomicBoolean) f.get(wrapper);
+        return ab.get();
     }
 }

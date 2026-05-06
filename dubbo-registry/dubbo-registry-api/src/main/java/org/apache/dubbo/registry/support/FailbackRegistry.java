@@ -197,6 +197,16 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         return failedRegistered;
     }
 
+    /**
+     * Whether the given URL is currently queued for retry because an immediate registration
+     * attempt failed under {@code check=false}. Used by callers outside this package to
+     * distinguish the silent-retry path ({@link #register(URL)} returning normally after
+     * {@code doRegister} threw) from a truly successful registration.
+     */
+    public boolean isPendingFailedRegistration(URL url) {
+        return failedRegistered.containsKey(url);
+    }
+
     ConcurrentMap<URL, FailedUnregisteredTask> getFailedUnregistered() {
         return failedUnregistered;
     }

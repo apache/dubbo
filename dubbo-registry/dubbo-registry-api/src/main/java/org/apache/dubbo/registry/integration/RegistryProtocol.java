@@ -42,6 +42,7 @@ import org.apache.dubbo.registry.client.ServiceDiscoveryRegistryDirectory;
 import org.apache.dubbo.registry.client.migration.MigrationClusterInvoker;
 import org.apache.dubbo.registry.client.migration.ServiceDiscoveryMigrationInvoker;
 import org.apache.dubbo.registry.retry.ReExportTask;
+import org.apache.dubbo.registry.support.FailbackRegistry;
 import org.apache.dubbo.registry.support.SkipFailbackWrapperException;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -272,21 +273,55 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     }
 
     /**
+     * Three-state outcome for a dual-registration arm. {@link #PENDING_RETRY} distinguishes the
+     * FailbackRegistry silent-retry path ({@code check=false}, {@code doRegister} threw, URL
+     * queued for retry) from a truly successful registration — they were previously conflated
+     * because {@link Registry#register(URL)} returns normally in both cases.
+     */
+    enum RegisterOutcome {
+        SUCCESS,
+        PENDING_RETRY,
+        FAILED
+    }
+
+    /**
      * Register with independent failure handling for the dual registration mode. When the user
      * has enabled both interface-level and instance-level registration (register-mode=all), a
      * failure on one arm must not silently bring down the other; instead the failure is tagged
      * with its mode, reported to the framework status service, and only rethrown when the
      * registry URL explicitly asks for check=true.
      */
-    private static boolean registerWithModeTag(Registry registry, URL registryUrl, URL registeredProviderUrl) {
+    private static RegisterOutcome registerWithModeTag(Registry registry, URL registryUrl, URL registeredProviderUrl) {
         String mode = resolveRegisterModeTag(registryUrl);
         String registryAddress = registryUrl.getAddress();
         try {
             register(registry, registeredProviderUrl);
-            reportRegistrationOutcome(registeredProviderUrl, mode, registryAddress, true, null);
-            return true;
+            if (registry instanceof FailbackRegistry
+                    && ((FailbackRegistry) registry).isPendingFailedRegistration(registeredProviderUrl)) {
+                // FailbackRegistry swallowed doRegister's exception under check=false and queued
+                // the URL for retry. The caller-side "registered" state must NOT claim success.
+                reportRegistrationOutcome(
+                        registeredProviderUrl,
+                        mode,
+                        registryAddress,
+                        org.apache.dubbo.common.status.reporter.FrameworkStatusReportService.OUTCOME_PENDING_RETRY,
+                        "initial registration attempt failed; waiting for retry");
+                return RegisterOutcome.PENDING_RETRY;
+            }
+            reportRegistrationOutcome(
+                    registeredProviderUrl,
+                    mode,
+                    registryAddress,
+                    org.apache.dubbo.common.status.reporter.FrameworkStatusReportService.OUTCOME_SUCCESS,
+                    null);
+            return RegisterOutcome.SUCCESS;
         } catch (RuntimeException e) {
-            reportRegistrationOutcome(registeredProviderUrl, mode, registryAddress, false, e.getMessage());
+            reportRegistrationOutcome(
+                    registeredProviderUrl,
+                    mode,
+                    registryAddress,
+                    org.apache.dubbo.common.status.reporter.FrameworkStatusReportService.OUTCOME_FAILED,
+                    e.getMessage());
             boolean check = registryUrl.getParameter(CHECK_KEY, true);
             if (check) {
                 logger.error(
@@ -305,12 +340,12 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                     "[" + mode + "] failed to register " + registeredProviderUrl + " to registry " + registryAddress
                             + ", the other registration arm (if any) is unaffected. cause: " + e.getMessage(),
                     e);
-            return false;
+            return RegisterOutcome.FAILED;
         }
     }
 
     private static void reportRegistrationOutcome(
-            URL registeredProviderUrl, String mode, String registryAddress, boolean success, String errorMessage) {
+            URL registeredProviderUrl, String mode, String registryAddress, String status, String errorMessage) {
         try {
             org.apache.dubbo.common.status.reporter.FrameworkStatusReportService reportService =
                     ScopeModelUtil.getApplicationModel(registeredProviderUrl.getScopeModel())
@@ -318,7 +353,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                             .getBean(org.apache.dubbo.common.status.reporter.FrameworkStatusReportService.class);
             if (reportService != null) {
                 reportService.reportRegistrationOutcome(
-                        mode, registryAddress, registeredProviderUrl.getServiceKey(), success, errorMessage);
+                        mode, registryAddress, registeredProviderUrl.getServiceKey(), status, errorMessage);
             }
         } catch (Throwable ignore) {
             // reporting must never affect the registration flow
@@ -357,17 +392,21 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
         // decide if we need to delay publish (provider itself and registry should both need to register)
         boolean register = providerUrl.getParameter(REGISTER_KEY, true) && registryUrl.getParameter(REGISTER_KEY, true);
-        if (register) {
-            registerWithModeTag(registry, registryUrl, registeredProviderUrl);
-        }
+        RegisterOutcome outcome =
+                register ? registerWithModeTag(registry, registryUrl, registeredProviderUrl) : RegisterOutcome.SUCCESS;
+        // Caller-side state must reflect the real outcome, not the intent. PENDING_RETRY means the
+        // URL is queued for a later attempt and is NOT live yet; FAILED under check=false means we
+        // swallowed the exception but the URL was never published. Either way, downstream readers
+        // of isRegistered() / RegisterStatedURL.registered should not believe the URL is live.
+        boolean actuallyRegistered = register && outcome == RegisterOutcome.SUCCESS;
 
         // register stated url on provider model
-        registerStatedUrl(registryUrl, registeredProviderUrl, register);
+        registerStatedUrl(registryUrl, registeredProviderUrl, actuallyRegistered);
 
         exporter.setRegisterUrl(registeredProviderUrl);
         exporter.setSubscribeUrl(overrideSubscribeUrl);
         exporter.setNotifyListener(overrideSubscribeListener);
-        exporter.setRegistered(register);
+        exporter.setRegistered(actuallyRegistered);
 
         ApplicationModel applicationModel = getApplicationModel(providerUrl.getScopeModel());
         if (applicationModel
@@ -1127,7 +1166,21 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             if (registered.compareAndSet(false, true)) {
                 URL registryUrl = getRegistryUrl(originInvoker);
                 Registry registry = getRegistry(registryUrl);
-                RegistryProtocol.registerWithModeTag(registry, registryUrl, getRegisterUrl());
+                RegisterOutcome outcome;
+                try {
+                    outcome = RegistryProtocol.registerWithModeTag(registry, registryUrl, getRegisterUrl());
+                } catch (RuntimeException e) {
+                    // check=true path rethrew. The CAS already flipped to true; reset it so a later
+                    // manual retry is not a no-op.
+                    registered.set(false);
+                    throw e;
+                }
+                if (outcome != RegisterOutcome.SUCCESS) {
+                    // Silent-retry or swallowed failure: do not mark stated URLs live, and let a
+                    // subsequent register() call try again.
+                    registered.set(false);
+                    return;
+                }
 
                 ProviderModel providerModel = frameworkModel
                         .getServiceRepository()

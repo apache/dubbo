@@ -162,4 +162,31 @@ class FrameworkStatusReportServiceTest {
 
         frameworkModel.destroy();
     }
+
+    @Test
+    void testReportRegistrationOutcomePendingRetry() {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        ApplicationConfig app = new ApplicationConfig("APP");
+        applicationModel.getApplicationConfigManager().setApplication(app);
+        FrameworkStatusReportService reportService =
+                applicationModel.getBeanFactory().getBean(FrameworkStatusReportService.class);
+
+        reportService.reportRegistrationOutcome(
+                "INTERFACE_REGISTER",
+                "127.0.0.1:2181",
+                "GroupA/DemoService:1.0.0",
+                FrameworkStatusReportService.OUTCOME_PENDING_RETRY,
+                "initial registration attempt failed; waiting for retry");
+
+        MockFrameworkStatusReporter statusReporter =
+                (MockFrameworkStatusReporter) applicationModel.getExtension(FrameworkStatusReporter.class, "mock");
+        Map<String, String> payload = JsonUtils.toJavaObject(
+                String.valueOf(statusReporter.getReportContent().get(REGISTRATION_STATUS)), Map.class);
+        Assertions.assertEquals("INTERFACE_REGISTER", payload.get("mode"));
+        Assertions.assertEquals("PENDING_RETRY", payload.get("status"));
+        Assertions.assertEquals("initial registration attempt failed; waiting for retry", payload.get("error"));
+
+        frameworkModel.destroy();
+    }
 }
