@@ -193,8 +193,16 @@ public final class RequestUtils {
         if (decoder == null) {
             return null;
         }
-        if (decoder.mediaType().isPureText()) {
+        MediaType mediaType = decoder.mediaType();
+        if (mediaType.isPureText()) {
             type = String.class;
+        } else {
+            String subType = mediaType.getSubType();
+            if (!subType.contains(MediaType.JSON) && !subType.contains(MediaType.XML)
+                    && !subType.contains(MediaType.YAML)) {
+                throw new DecodeException(
+                        "Content type not supported for REST body deserialization: " + mediaType.getName());
+            }
         }
 
         InputStream is = request.inputStream();
