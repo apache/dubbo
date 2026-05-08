@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -354,6 +355,37 @@ class ProtocolConfigTest {
 
             Assertions.assertEquals("rest", protocol.getName());
             Assertions.assertEquals(port1, protocol.getPort());
+        } finally {
+            DubboBootstrap.getInstance().stop();
+        }
+    }
+
+    @Test
+    void testCreateNonDefaultConfigFromPropsWithName() {
+        int port = NetUtils.getAvailablePort();
+        SysProps.setProperty("dubbo.protocols.rest.port", String.valueOf(port));
+        SysProps.setProperty("dubbo.protocols.rest.default", "false");
+
+        try {
+
+            DubboBootstrap bootstrap = DubboBootstrap.getInstance();
+            bootstrap.application("test-app").initialize();
+
+            ConfigManager configManager = bootstrap.getConfigManager();
+            Collection<ProtocolConfig> protocols = configManager.getProtocols();
+            Assertions.assertFalse(protocols.isEmpty());
+
+            ProtocolConfig protocol = configManager.getProtocol("rest").get();
+
+            Assertions.assertEquals("rest", protocol.getName());
+            Assertions.assertEquals(port, protocol.getPort());
+            Assertions.assertFalse(protocol.isDefault());
+            Assertions.assertTrue(
+                    configManager.getDefaultProtocols().stream().noneMatch(p -> "rest".equals(p.getName())));
+
+            Map<String, String> parameters = new HashMap<>();
+            ProtocolConfig.appendParameters(parameters, protocol);
+            Assertions.assertFalse(parameters.containsKey(DEFAULT_KEY));
         } finally {
             DubboBootstrap.getInstance().stop();
         }
