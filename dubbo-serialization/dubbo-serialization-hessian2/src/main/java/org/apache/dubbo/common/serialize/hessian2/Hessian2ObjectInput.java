@@ -22,7 +22,15 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import com.alibaba.com.caucho.hessian.io.Hessian2Input;
@@ -126,7 +134,120 @@ public class Hessian2ObjectInput implements ObjectInput, Cleanable {
             mH2i.setSerializerFactory(hessian2FactoryManager.getSerializerFactory(
                     Thread.currentThread().getContextClassLoader()));
         }
-        return readObject(cls);
+        T result = readObject(cls);
+        if (result != null && type instanceof ParameterizedType) {
+            result = convertGenericType(result, (ParameterizedType) type);
+        }
+        return result;
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T convertGenericType(T result, ParameterizedType parameterizedType) {
+        Type[] actualTypeArgs = parameterizedType.getActualTypeArguments();
+        Type rawType = parameterizedType.getRawType();
+
+        if (actualTypeArgs.length == 0) {
+            return result;
+        }
+
+        // Handle Collection types (List, Set, etc.)
+        if (result instanceof Collection && actualTypeArgs.length == 1) {
+            Class<?> elementType = extractClass(actualTypeArgs[0]);
+            if (elementType != null) {
+                return (T) convertCollection((Collection<?>) result, elementType);
+            }
+        }
+
+        // Handle Map types
+        if (result instanceof Map && actualTypeArgs.length == 2) {
+            Class<?> keyType = extractClass(actualTypeArgs[0]);
+            Class<?> valueType = extractClass(actualTypeArgs[1]);
+            if (keyType != null || valueType != null) {
+                return (T) convertMap((Map<?, ?>) result, keyType, valueType);
+            }
+        }
+
+        return result;
+    }
+
+    private Class<?> extractClass(Type type) {
+        if (type instanceof Class) {
+            return (Class<?>) type;
+        }
+        if (type instanceof ParameterizedType) {
+            return (Class<?>) ((ParameterizedType) type).getRawType();
+        }
+        return null;
+    }
+
+    private Collection<?> convertCollection(Collection<?> source, Class<?> elementType) {
+        List<Object> result = new ArrayList<>(source.size());
+        for (Object item : source) {
+            result.add(convertValue(item, elementType));
+        }
+        return result;
+    }
+
+    private Map<?, ?> convertMap(Map<?, ?> source, Class<?> keyType, Class<?> valueType) {
+        Map<Object, Object> result = new LinkedHashMap<>(source.size());
+        for (Map.Entry<?, ?> entry : source.entrySet()) {
+            Object key = keyType != null ? convertValue(entry.getKey(), keyType) : entry.getKey();
+            Object value = valueType != null ? convertValue(entry.getValue(), valueType) : entry.getValue();
+            result.put(key, value);
+        }
+        return result;
+    }
+
+    private Object convertValue(Object value, Class<?> targetType) {
+        if (value == null) {
+            return null;
+        }
+        Class<?> actualType = value.getClass();
+        if (targetType.isAssignableFrom(actualType)) {
+            return value;
+        }
+
+        // Handle numeric type narrowing (hessian2 deserializes all small integers as Integer)
+        if (targetType == Byte.class && value instanceof Number) {
+            return ((Number) value).byteValue();
+        }
+        if (targetType == Short.class && value instanceof Number) {
+            return ((Number) value).shortValue();
+        }
+        if (targetType == Float.class && value instanceof Number) {
+            return ((Number) value).floatValue();
+        }
+        if (targetType == Long.class && value instanceof Number) {
+            return ((Number) value).longValue();
+        }
+        if (targetType == Double.class && value instanceof Number) {
+            return ((Number) value).doubleValue();
+        }
+        if (targetType == Integer.class && value instanceof Number) {
+            return ((Number) value).intValue();
+        }
+
+        // Handle primitive types
+        if (targetType == byte.class && value instanceof Number) {
+            return ((Number) value).byteValue();
+        }
+        if (targetType == short.class && value instanceof Number) {
+            return ((Number) value).shortValue();
+        }
+        if (targetType == float.class && value instanceof Number) {
+            return ((Number) value).floatValue();
+        }
+        if (targetType == long.class && value instanceof Number) {
+            return ((Number) value).longValue();
+        }
+        if (targetType == double.class && value instanceof Number) {
+            return ((Number) value).doubleValue();
+        }
+        if (targetType == int.class && value instanceof Number) {
+            return ((Number) value).intValue();
+        }
+
+        return value;
     }
 
     public InputStream readInputStream() throws IOException {

@@ -48,6 +48,19 @@ public interface MethodDescriptor {
 
     Class<?>[] getParameterClasses();
 
+    /**
+     * Retrieves the generic parameter types of the method.
+     * Unlike {@link #getParameterClasses()} which returns erased raw classes,
+     * this method preserves generic type information (e.g., {@code List<Byte>} instead of just {@code List}).
+     * This is critical for correct deserialization of collections/maps with narrow number types
+     * like Byte, Short, Float.
+     *
+     * @return the generic parameter types
+     */
+    default Type[] getGenericParameterTypes() {
+        return getParameterClasses();
+    }
+
     Class<?> getReturnClass();
 
     Type[] getReturnTypes();
