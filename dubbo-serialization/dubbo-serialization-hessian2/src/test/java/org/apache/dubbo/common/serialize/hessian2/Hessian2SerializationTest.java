@@ -696,7 +696,9 @@ class Hessian2SerializationTest {
             List<?> result = objectInput.readObject(List.class, listByteType);
             Assertions.assertNotNull(result);
             Assertions.assertEquals(3, result.size());
-            Assertions.assertInstanceOf(Byte.class, result.get(0),
+            Assertions.assertInstanceOf(
+                    Byte.class,
+                    result.get(0),
                     "Expected Byte but got " + result.get(0).getClass().getName());
             Assertions.assertEquals((byte) 1, result.get(0));
             Assertions.assertEquals((byte) 2, result.get(1));
@@ -736,7 +738,9 @@ class Hessian2SerializationTest {
             List<?> result = objectInput.readObject(List.class, listShortType);
             Assertions.assertNotNull(result);
             Assertions.assertEquals(3, result.size());
-            Assertions.assertInstanceOf(Short.class, result.get(0),
+            Assertions.assertInstanceOf(
+                    Short.class,
+                    result.get(0),
                     "Expected Short but got " + result.get(0).getClass().getName());
             Assertions.assertEquals((short) 100, result.get(0));
             Assertions.assertEquals((short) 200, result.get(1));
@@ -775,7 +779,9 @@ class Hessian2SerializationTest {
             Map<?, ?> result = objectInput.readObject(Map.class, mapStringByteType);
             Assertions.assertNotNull(result);
             Assertions.assertEquals(2, result.size());
-            Assertions.assertInstanceOf(Byte.class, result.get("a"),
+            Assertions.assertInstanceOf(
+                    Byte.class,
+                    result.get("a"),
                     "Expected Byte but got " + result.get("a").getClass().getName());
             Assertions.assertEquals((byte) 10, result.get("a"));
             Assertions.assertEquals((byte) 20, result.get("b"));
@@ -813,7 +819,9 @@ class Hessian2SerializationTest {
             Map<?, ?> result = objectInput.readObject(Map.class, mapStringShortType);
             Assertions.assertNotNull(result);
             Assertions.assertEquals(2, result.size());
-            Assertions.assertInstanceOf(Short.class, result.get("x"),
+            Assertions.assertInstanceOf(
+                    Short.class,
+                    result.get("x"),
                     "Expected Short but got " + result.get("x").getClass().getName());
             Assertions.assertEquals((short) 1000, result.get("x"));
             Assertions.assertEquals((short) 2000, result.get("y"));
@@ -851,7 +859,9 @@ class Hessian2SerializationTest {
             List<?> result = objectInput.readObject(List.class, listFloatType);
             Assertions.assertNotNull(result);
             Assertions.assertEquals(2, result.size());
-            Assertions.assertInstanceOf(Float.class, result.get(0),
+            Assertions.assertInstanceOf(
+                    Float.class,
+                    result.get(0),
                     "Expected Float but got " + result.get(0).getClass().getName());
             Assertions.assertEquals(1.5f, result.get(0));
             Assertions.assertEquals(2.5f, result.get(1));

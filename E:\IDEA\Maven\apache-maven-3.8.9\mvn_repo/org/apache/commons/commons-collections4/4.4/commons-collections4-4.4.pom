@@ -1,0 +1,763 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-parent</artifactId>
+    <version>48</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>commons-collections4</artifactId>
+  <version>4.4</version>
+  <name>Apache Commons Collections</name>
+
+  <inceptionYear>2001</inceptionYear>
+  <description>The Apache Commons Collections package contains types that extend and augment the Java Collections Framework.</description>
+
+  <url>https://commons.apache.org/proper/commons-collections/</url>
+
+  <issueManagement>
+    <system>jira</system>
+    <url>http://issues.apache.org/jira/browse/COLLECTIONS</url>
+  </issueManagement>
+
+  <scm>
+    <connection>scm:git:http://git-wip-us.apache.org/repos/asf/commons-collections.git</connection>
+    <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/commons-collections.git</developerConnection>
+    <url>https://git-wip-us.apache.org/repos/asf?p=commons-collections.git</url>
+  </scm>
+
+  <developers>
+    <developer>
+      <name>Matt Benson</name>
+      <id>mbenson</id>
+    </developer>
+    <developer>
+      <name>James Carman</name>
+      <id>jcarman</id>
+    </developer>
+    <developer>
+      <name>Stephen Colebourne</name>
+      <id>scolebourne</id>
+    </developer>
+    <developer>
+      <name>Robert Burrell Donkin</name>
+      <id>rdonkin</id>
+    </developer>
+    <developer>
+      <name>Morgan Delagrange</name>
+      <id>morgand</id>
+    </developer>
+    <developer>
+      <name>Gary Gregory</name>
+      <id>ggregory</id>
+    </developer>
+    <developer>
+      <name>Matthew Hawthorne</name>
+      <id>matth</id>
+    </developer>
+    <developer>
+      <name>Dipanjan Laha</name>
+      <id>dlaha</id>
+    </developer>
+    <developer>
+      <name>Geir Magnusson</name>
+      <id>geirm</id>
+    </developer>
+    <developer>
+      <name>Luc Maisonobe</name>
+      <id>luc</id>
+    </developer>
+    <developer>
+      <name>Craig McClanahan</name>
+      <id>craigmcc</id>
+    </developer>
+    <developer>
+      <name>Thomas Neidhart</name>
+      <id>tn</id>
+    </developer>
+    <developer>
+      <name>Adrian Nistor</name>
+      <id>adriannistor</id>
+    </developer>
+    <developer>
+      <name>Arun M. Thomas</name>
+      <id>amamment</id>
+    </developer>
+    <developer>
+      <name>Rodney Waldhoff</name>
+      <id>rwaldhoff</id>
+    </developer>
+    <developer>
+      <name>Henri Yandell</name>
+      <id>bayard</id>
+    </developer>
+    <developer>
+      <name>Rob Tompkins</name>
+      <id>chtompki</id>
+    </developer>
+  </developers>
+
+  <contributors>
+    <contributor>
+      <name>Rafael U. C. Afonso</name>
+    </contributor>
+    <contributor>
+      <name>Max Rydahl Andersen</name>
+    </contributor>
+    <contributor>
+      <name>Avalon</name>
+    </contributor>
+    <contributor>
+      <name>Federico Barbieri</name>
+    </contributor>
+    <contributor>
+      <name>Jeffrey Barnes</name>
+    </contributor>
+    <contributor>
+      <name>Nicola Ken Barozzi</name>
+    </contributor>
+    <contributor>
+      <name>Arron Bates</name>
+    </contributor>
+    <contributor>
+      <name>Sebastian Bazley</name>
+    </contributor>
+    <contributor>
+      <name>Benjamin Bentmann</name>
+    </contributor>
+    <contributor>
+      <name>Ola Berg</name>
+    </contributor>
+    <contributor>
+      <name>Sam Berlin</name>
+    </contributor>
+    <contributor>
+      <name>Christopher Berry</name>
+    </contributor>
+    <contributor>
+      <name>Nathan Beyer</name>
+    </contributor>
+    <contributor>
+      <name>Rune Peter Bjørnstad</name>
+    </contributor>
+    <contributor>
+      <name>Janek Bogucki</name>
+    </contributor>
+    <contributor>
+      <name>Maarten Brak</name>
+    </contributor>
+    <contributor>
+      <name>Dave Bryson</name>
+    </contributor>
+    <contributor>
+      <name>Chuck Burdick</name>
+    </contributor>
+    <contributor>
+      <name>Julien Buret</name>
+    </contributor>
+    <contributor>
+      <name>Josh Cain</name>
+    </contributor>
+    <contributor>
+      <name>Jonathan Carlson</name>
+    </contributor>
+    <contributor>
+      <name>Ram Chidambaram</name>
+    </contributor>
+    <contributor>
+      <name>Steve Clark</name>
+    </contributor>
+    <contributor>
+      <name>Benoit Corne</name>
+    </contributor>
+    <contributor>
+      <name>Eric Crampton</name>
+    </contributor>
+    <contributor>
+      <name>Dimiter Dimitrov</name>
+    </contributor>
+    <contributor>
+      <name>Peter Donald</name>
+    </contributor>
+    <contributor>
+      <name>Steve Downey</name>
+    </contributor>
+    <contributor>
+      <name>Rich Dougherty</name>
+    </contributor>
+    <contributor>
+      <name>Tom Dunham</name>
+    </contributor>
+    <contributor>
+      <name>Stefano Fornari</name>
+    </contributor>
+    <contributor>
+      <name>Andrew Freeman</name>
+    </contributor>
+    <contributor>
+      <name>Gerhard Froehlich</name>
+    </contributor>
+    <contributor>
+      <name>Goran Hacek</name>
+    </contributor>
+    <contributor>
+      <name>David Hay</name>
+    </contributor>
+    <contributor>
+      <name>Mario Ivankovits</name>
+    </contributor>
+    <contributor>
+      <name>Paul Jack</name>
+    </contributor>
+    <contributor>
+      <name>Eric Johnson</name>
+    </contributor>
+    <contributor>
+      <name>Kent Johnson</name>
+    </contributor>
+    <contributor>
+      <name>Marc Johnson</name>
+    </contributor>
+    <contributor>
+      <name>Roger Kapsi</name>
+    </contributor>
+    <contributor>
+      <name>Nissim Karpenstein</name>
+    </contributor>
+    <contributor>
+      <name>Shinobu Kawai</name>
+    </contributor>
+    <contributor>
+      <name>Stephen Kestle</name>
+    </contributor>
+    <contributor>
+      <name>Mohan Kishore</name>
+    </contributor>
+    <contributor>
+      <name>Simon Kitching</name>
+    </contributor>
+    <contributor>
+      <name>Thomas Knych</name>
+    </contributor>
+    <contributor>
+      <name>Serge Knystautas</name>
+    </contributor>
+    <contributor>
+      <name>Peter KoBek</name>
+    </contributor>
+    <contributor>
+      <name>Jordan Krey</name>
+    </contributor>
+    <contributor>
+      <name>Olaf Krische</name>
+    </contributor>
+    <contributor>
+      <name>Guilhem Lavaux</name>
+    </contributor>
+    <contributor>
+      <name>Paul Legato</name>
+    </contributor>
+    <contributor>
+      <name>David Leppik</name>
+    </contributor>
+    <contributor>
+      <name>Berin Loritsch</name>
+    </contributor>
+    <contributor>
+      <name>Hendrik Maryns</name>
+    </contributor>
+    <contributor>
+      <name>Stefano Mazzocchi</name>
+    </contributor>
+    <contributor>
+      <name>Brian McCallister</name>
+    </contributor>
+    <contributor>
+      <name>David Meikle</name>
+    </contributor>
+    <contributor>
+      <name>Steven Melzer</name>
+    </contributor>
+    <contributor>
+      <name>Leon Messerschmidt</name>
+    </contributor>
+    <contributor>
+      <name>Mauricio S. Moura</name>
+    </contributor>
+    <contributor>
+      <name>Kasper Nielsen</name>
+    </contributor>
+    <contributor>
+      <name>Stanislaw Osinski</name>
+    </contributor>
+    <contributor>
+      <name>Alban Peignier</name>
+    </contributor>
+    <contributor>
+      <name>Mike Pettypiece</name>
+    </contributor>
+    <contributor>
+      <name>Steve Phelps</name>
+    </contributor>
+    <contributor>
+      <name>Ilkka Priha</name>
+    </contributor>
+    <contributor>
+      <name>Jonas Van Poucke</name>
+    </contributor>
+    <contributor>
+      <name>Will Pugh</name>
+    </contributor>
+    <contributor>
+      <name>Herve Quiroz</name>
+    </contributor>
+    <contributor>
+      <name>Daniel Rall</name>
+    </contributor>
+    <contributor>
+      <name>Robert Ribnitz</name>
+    </contributor>
+    <contributor>
+      <name>Huw Roberts</name>
+    </contributor>
+    <contributor>
+      <name>Henning P. Schmiedehausen</name>
+    </contributor>
+    <contributor>
+      <name>Joerg Schmuecker</name>
+    </contributor>
+    <contributor>
+      <name>Howard Lewis Ship</name>
+    </contributor>
+    <contributor>
+      <name>Joe Raysa</name>
+    </contributor>
+    <contributor>
+      <name>Jeff Rodriguez</name>
+    </contributor>
+    <contributor>
+      <name>Ashwin S</name>
+    </contributor>
+    <contributor>
+      <name>Jordane Sarda</name>
+    </contributor>
+    <contributor>
+      <name>Thomas Schapitz</name>
+    </contributor>
+    <contributor>
+      <name>Jon Schewe</name>
+    </contributor>
+    <contributor>
+      <name>Andreas Schlosser</name>
+    </contributor>
+    <contributor>
+      <name>Christian Siefkes</name>
+    </contributor>
+    <contributor>
+      <name>Michael Smith</name>
+    </contributor>
+    <contributor>
+      <name>Stephen Smith</name>
+    </contributor>
+    <contributor>
+      <name>Jan Sorensen</name>
+    </contributor>
+    <contributor>
+      <name>Jon S. Stevens</name>
+    </contributor>
+    <contributor>
+      <name>James Strachan</name>
+    </contributor>
+    <contributor>
+      <name>Leo Sutic</name>
+    </contributor>
+    <contributor>
+      <name>Radford Tam</name>
+    </contributor>
+    <contributor>
+      <name>Chris Tilden</name>
+    </contributor>
+    <contributor>
+      <name>Neil O'Toole</name>
+    </contributor>
+    <contributor>
+      <name>Jeff Turner</name>
+    </contributor>
+    <contributor>
+      <name>Kazuya Ujihara</name>
+    </contributor>
+    <contributor>
+      <name>Thomas Vahrst</name>
+    </contributor>
+    <contributor>
+      <name>Jeff Varszegi</name>
+    </contributor>
+    <contributor>
+      <name>Ralph Wagner</name>
+    </contributor>
+    <contributor>
+      <name>Hollis Waite</name>
+    </contributor>
+    <contributor>
+      <name>David Weinrich</name>
+    </contributor>
+    <contributor>
+      <name>Dieter Wimberger</name>
+    </contributor>
+    <contributor>
+      <name>Serhiy Yevtushenko</name>
+    </contributor>
+    <contributor>
+      <name>Sai Zhang</name>
+    </contributor>
+    <contributor>
+      <name>Jason van Zyl</name>
+    </contributor>
+    <contributor>
+      <name>Geoff Schoeman</name>
+    </contributor>
+    <contributor>
+      <name>Goncalo Marques</name>
+    </contributor>
+    <contributor>
+      <name>Vamsi Kavuri</name>
+    </contributor>
+  </contributors>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.easymock</groupId>
+      <artifactId>easymock</artifactId>
+      <version>4.0.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.9</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <distributionManagement>
+    <site>
+      <id>apache.website</id>
+      <name>Apache Commons Site</name>
+      <url>${commons.deployment.protocol}://people.apache.org/www/commons.apache.org/${commons.componentid}</url>
+    </site>
+  </distributionManagement>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+
+    <!--
+       This is also used to generate download_xxx file name.
+       To override this when generating the download page:
+
+       mvn commons:download-page -Dcommons.componentid=collections
+
+       The above seems to change the download page name but not any other
+       properties that depend on the componentid.
+    -->
+    <commons.componentid>collections</commons.componentid>
+    <commons.module.name>org.apache.commons.collections4</commons.module.name>
+
+    <!-- Current 4.x release series -->
+    <commons.release.version>4.4</commons.release.version>
+    <commons.release.desc>(Requires Java 8 or later)</commons.release.desc>
+
+    <!-- Previous 4.2 release on Java 7 -->
+    <commons.release.2.version>4.2</commons.release.2.version>
+    <commons.release.2.desc>(Requires Java 7 or later)</commons.release.2.desc>
+    <!-- Override generated name -->
+    <commons.release.2.name>commons-collections4-${commons.release.2.version}</commons.release.2.name>
+
+    <!-- Previous 4.1 release on Java 6-->
+    <commons.release.3.version>4.1</commons.release.3.version>
+    <commons.release.3.desc>(Requires Java 6 or later)</commons.release.3.desc>
+    <!-- Override generated name -->
+    <commons.release.3.name>commons-collections4-${commons.release.3.version}</commons.release.3.name>
+
+    <!-- Previous 3.x release on Java 1.3 -->
+    <commons.release.4.version>3.2.2</commons.release.4.version>
+    <commons.release.4.desc>(Requires Java 1.3 or later)</commons.release.4.desc>
+    <!-- Override generated name -->
+    <commons.release.4.name>commons-collections-${commons.release.3.version}</commons.release.4.name>
+
+    <commons.jira.id>COLLECTIONS</commons.jira.id>
+    <commons.jira.pid>12310465</commons.jira.pid>
+    <!-- The RC version used in the staging repository URL. -->
+    <commons.rc.version>RC1</commons.rc.version>
+    <checkstyle.version>3.0.0</checkstyle.version>
+
+    <commons.site.path>collections</commons.site.path>
+    <commons.scmPubUrl>https://svn.apache.org/repos/infra/websites/production/commons/content/proper/commons-collections</commons.scmPubUrl>
+    <commons.scmPubCheckoutDirectory>site-content</commons.scmPubCheckoutDirectory>
+
+    <!-- Override clirr version to enable clirr on Java 8 -->
+    <commons.clirr.version>2.8</commons.clirr.version>
+    <commons.jacoco.version>0.8.4</commons.jacoco.version>
+    
+    <!--Commons Release Plugin -->
+    <commons.bc.version>4.3</commons.bc.version>
+    <commons.release.isDistModule>true</commons.release.isDistModule>
+    <commons.releaseManagerName>Gary Gregory</commons.releaseManagerName>    
+    <commons.releaseManagerKey>86fdc7e2a11262cb</commons.releaseManagerKey>
+    
+  </properties>
+
+
+  <build>
+    <defaultGoal>clean verify apache-rat:check clirr:check javadoc:javadoc</defaultGoal>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <includes>
+              <include>**/*Test.java</include>
+            </includes>
+            <excludes>
+              <exclude>**/*$*</exclude>
+              <exclude>**/TestUtils.java</exclude>
+              <exclude>**/Abstract*.java</exclude>
+              <exclude>**/BulkTest.java</exclude>
+            </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptors>
+            <descriptor>src/assembly/bin.xml</descriptor>
+            <descriptor>src/assembly/src.xml</descriptor>
+          </descriptors>
+          <tarLongFileMode>gnu</tarLongFileMode>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>site-content/**/*</exclude>
+            <exclude>src/test/resources/data/test/*</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${checkstyle.version}</version>
+        <configuration>
+          <configLocation>${basedir}/src/conf/checkstyle.xml</configLocation>
+          <enableRulesSummary>false</enableRulesSummary>
+          <suppressionsLocation>${basedir}/src/conf/checkstyle-suppressions.xml</suppressionsLocation>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-scm-publish-plugin</artifactId>
+        <configuration>
+          <ignorePathsToDelete>
+            <ignorePathToDelete>javadocs</ignorePathToDelete>
+          </ignorePathsToDelete>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
+        <!-- Temporary fix for COLLECTIONS-658, remove this after this has implemented in parent pom -->
+        <configuration>
+          <archive combine.children="append">
+            <manifestEntries>
+              <Automatic-Module-Name>org.apache.commons.collections4</Automatic-Module-Name>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+            <source>8</source>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-changes-plugin</artifactId>
+        <version>${commons.changes.version}</version>
+        <configuration>
+          <issueLinkTemplatePerSystem>
+            <default>%URL%/%ISSUE%</default>
+          </issueLinkTemplatePerSystem>
+          <!--  Add sample JIRA report - 'mvn changes:jira-report' or 'mvn site' -->
+          <onlyCurrentVersion>false</onlyCurrentVersion>
+          <columnNames>Fix Version,Key,Summary,Type,Resolution,Status</columnNames>
+          <!-- Sort cols have to be reversed in JIRA 4 -->
+          <sortColumnNames>Key DESC,Type,Fix Version DESC</sortColumnNames>
+          <resolutionIds>Fixed</resolutionIds>
+          <statusIds>Resolved,Closed</statusIds>
+          <!-- Don't include sub-task -->
+          <typeIds>Bug,New Feature,Task,Improvement,Wish,Test</typeIds>
+          <fixVersionIds>${commons.release.version}</fixVersionIds>
+          <maxEntries>500</maxEntries>
+        </configuration>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>changes-report</report>
+              <report>jira-report</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      <plugin>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${checkstyle.version}</version>
+        <configuration>
+          <configLocation>${basedir}/src/conf/checkstyle.xml</configLocation>
+          <enableRulesSummary>false</enableRulesSummary>
+	      <suppressionsLocation>${basedir}/src/conf/checkstyle-suppressions.xml</suppressionsLocation>
+        </configuration>
+	    <reportSets>
+          <reportSet>
+            <reports>
+              <report>checkstyle</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>clirr-maven-plugin</artifactId>
+        <version>${commons.clirr.version}</version>
+        <configuration>
+          <minSeverity>${minSeverity}</minSeverity>
+         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <version>${commons.findbugs.version}</version>
+        <configuration>
+          <threshold>Normal</threshold>
+          <effort>Default</effort>
+          <excludeFilterFile>${basedir}/src/conf/findbugs-exclude-filter.xml</excludeFilterFile>
+       </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <version>3.12.0</version>
+        <configuration>
+          <targetJdk>${maven.compiler.target}</targetJdk>
+        </configuration>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>pmd</report>
+              <report>cpd</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+    </plugins>
+  </reporting>
+
+  <profiles>
+    <profile>
+      <id>setup-checkout</id>
+      <activation>
+        <file>
+          <missing>site-content</missing>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <version>1.8</version>
+            <executions>
+              <execution>
+                <id>prepare-checkout</id>
+                <phase>pre-site</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <tasks>
+                    <exec executable="svn">
+                      <arg line="checkout --depth immediates ${commons.scmPubUrl} ${commons.scmPubCheckoutDirectory}" />
+                    </exec>
+
+                    <exec executable="svn">
+                      <arg line="update --set-depth exclude ${commons.scmPubCheckoutDirectory}/javadocs" />
+                    </exec>
+
+                    <pathconvert pathsep=" " property="dirs">
+                      <dirset dir="${commons.scmPubCheckoutDirectory}" includes="*" />
+                    </pathconvert>
+                    <exec executable="svn">
+                      <arg line="update --set-depth infinity ${dirs}" />
+                    </exec>
+                  </tasks>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>java9</id>
+      <activation>
+        <jdk>9</jdk>
+      </activation>
+      <properties>
+        <!-- versions below 3.0.0 do not work with java 9 -->
+        <commons.javadoc.version>3.0.1</commons.javadoc.version>
+        <!-- coverall version 4.3.0 does not work with java 9, see https://github.com/trautonen/coveralls-maven-plugin/issues/112 -->
+        <coveralls.skip>true</coveralls.skip>
+      </properties>
+    </profile>
+  </profiles>
+
+</project>
+

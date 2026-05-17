@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.codehaus.plexus</groupId>
+    <artifactId>plexus</artifactId>
+    <version>20</version>
+  </parent>
+
+  <artifactId>plexus-interpolation</artifactId>
+  <version>1.28</version>
+  <packaging>bundle</packaging>
+
+  <name>Plexus Interpolation API</name>
+
+  <scm>
+    <connection>scm:git:https://github.com/codehaus-plexus/plexus-interpolation.git</connection>
+    <developerConnection>scm:git:https://github.com/codehaus-plexus/plexus-interpolation.git</developerConnection>
+    <tag>plexus-interpolation-1.28</tag>
+    <url>http://github.com/codehaus-plexus/plexus-interpolation/tree/${project.scm.tag}/</url>
+  </scm>
+
+  <issueManagement>
+    <system>Github</system>
+    <url>https://github.com/codehaus-plexus/plexus-interpolation/issues</url>
+  </issueManagement>
+  <distributionManagement>
+    <site>
+      <id>github:gh-pages</id>
+      <url>${project.scm.developerConnection}</url>
+    </site>
+  </distributionManagement>
+
+  <properties>
+    <project.build.outputTimestamp>2025-04-05T08:27:19Z</project.build.outputTimestamp>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <!-- remove with parent update, fix for ${localRepository} -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-project-info-reports-plugin</artifactId>
+          <version>3.9.0</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <version>5.1.9</version>
+        <extensions>true</extensions>
+        <configuration>
+          <instructions>
+            <Export-Package>org.codehaus.plexus.*</Export-Package>
+          </instructions>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-scm-publish-plugin</artifactId>
+        <configuration>
+          <content>${project.reporting.outputDirectory}</content>
+          <!-- mono-module doesn't require site:stage -->
+        </configuration>
+        <executions>
+          <execution>
+            <id>scm-publish</id>
+            <!-- deploy site with maven-scm-publish-plugin -->
+            <goals>
+              <goal>publish-scm</goal>
+            </goals>
+            <phase>site-deploy</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <configuration>
+          <!-- olamy: exclude files with strange names as failed here on osx -->
+          <checkModificationExcludes>
+            <checkModificationExclude>**/src/test/resources/utf8/**</checkModificationExclude>
+          </checkModificationExcludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

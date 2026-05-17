@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.functionaljava</groupId>
+  <artifactId>functionaljava</artifactId>
+  <version>4.8</version>
+  <name>Functional Java</name>
+  <description>Functional Java is an open source library that supports closures for the Java programming language</description>
+  <url>http://functionaljava.org/</url>
+  <organization>
+    <name>Functional Java</name>
+    <url>http://functionaljava.org/</url>
+  </organization>
+  <licenses>
+    <license>
+      <name>The BSD3 License</name>
+      <url>https://github.com/functionaljava/functionaljava/blob/master/etc/LICENCE</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <email>functionaljava@googlegroups.com</email>
+    </developer>
+  </developers>
+  <scm>
+    <url>git://github.com/functionaljava/functionaljava.git</url>
+  </scm>
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <version>5.2.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>1.4.197</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>commons-dbutils</groupId>
+      <artifactId>commons-dbutils</artifactId>
+      <version>1.7</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>

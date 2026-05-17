@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.codehaus.plexus</groupId>
+    <artifactId>plexus</artifactId>
+    <version>5.1</version>
+  </parent>
+
+  <artifactId>plexus-containers</artifactId>
+  <version>2.0.0</version>
+  <packaging>pom</packaging>
+
+  <name>Plexus Containers</name>
+  <description>
+    Plexus IoC Container core with companion tools.
+  </description>
+
+  <modules>
+    <module>plexus-component-annotations</module>
+    <module>plexus-component-metadata</module>
+    <module>plexus-container-default</module>
+  </modules>
+
+  <scm>
+    <connection>scm:git:https://github.com/codehaus-plexus/plexus-containers.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/codehaus-plexus/plexus-containers.git</developerConnection>
+    <url>https://github.com/codehaus-plexus/plexus-containers</url>
+    <tag>plexus-containers-2.0.0</tag>
+  </scm>
+  <issueManagement>
+    <system>github</system>
+    <url>http://github.com/codehaus-plexus/plexus-containers/issues</url>
+  </issueManagement>
+  <distributionManagement>
+    <site>
+      <id>github:gh-pages</id>
+      <url>${scm.url}</url>
+    </site>
+  </distributionManagement>
+
+  <properties>
+    <scm.url>scm:git:git@github.com:codehaus-plexus/plexus-containers.git</scm.url>
+    <classWorldsVersion>2.6.0</classWorldsVersion>
+    <plexusUtilsVersion>3.1.1</plexusUtilsVersion>
+    <xbeanReflectVersion>3.7</xbeanReflectVersion>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <javaVersion>6</javaVersion>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-container-default</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-component-annotations</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-component-metadata</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-classworlds</artifactId>
+        <version>${classWorldsVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-utils</artifactId>
+        <version>${plexusUtilsVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.xbean</groupId>
+        <artifactId>xbean-reflect</artifactId>
+        <version>${xbeanReflectVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.thoughtworks.qdox</groupId>
+        <artifactId>qdox</artifactId>
+        <version>2.0-M10</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jdom</groupId>
+        <artifactId>jdom2</artifactId>
+        <version>2.0.6</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-plugin-api</artifactId>
+        <version>3.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-model</artifactId>
+        <version>3.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-core</artifactId>
+        <version>3.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.collections</groupId>
+        <artifactId>google-collections</artifactId>
+        <version>1.0</version>
+      </dependency>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.11</version>
+        <scope>provided</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>2.5.3</version>
+          <configuration>
+            <autoVersionSubmodules>true</autoVersionSubmodules>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <configuration>
+          <topSiteURL>${scm.url}</topSiteURL>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.apache.maven.shared</groupId>
+    <artifactId>maven-shared-components</artifactId>
+    <version>39</version>
+    <relativePath />
+  </parent>
+
+  <artifactId>maven-dependency-analyzer</artifactId>
+  <version>1.13.2</version>
+  <packaging>jar</packaging>
+
+  <name>Apache Maven Dependency Analyzer</name>
+  <description>Analyzes the dependencies of a project for undeclared or unused artifacts.</description>
+
+  <scm>
+    <connection>scm:git:https://gitbox.apache.org/repos/asf/maven-dependency-analyzer.git</connection>
+    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-dependency-analyzer.git</developerConnection>
+    <tag>maven-dependency-analyzer-1.13.2</tag>
+    <url>https://github.com/apache/maven-dependency-analyzer/tree/${project.scm.tag}</url>
+  </scm>
+  <issueManagement>
+    <system>jira</system>
+    <url>https://issues.apache.org/jira/issues/?jql=project%20%3D%20MSHARED%20AND%20component%20%3D%20maven-dependency-analyzer</url>
+  </issueManagement>
+  <ciManagement>
+    <system>Jenkins</system>
+    <url>https://ci-maven.apache.org/job/Maven/job/maven-box/job/maven-dependency-analyzer/</url>
+  </ciManagement>
+  <distributionManagement>
+    <site>
+      <id>apache.website</id>
+      <url>scm:svn:https://svn.apache.org/repos/asf/maven/website/components/${maven.site.path}</url>
+    </site>
+  </distributionManagement>
+
+  <properties>
+    <mavenVersion>3.2.5</mavenVersion>
+    <slf4jVersion>1.7.36</slf4jVersion>
+    <javaVersion>8</javaVersion>
+    <project.build.outputTimestamp>2023-04-30T22:19:36Z</project.build.outputTimestamp>
+    <!-- TODO check with next parent -->
+    <maven.plugin.tools.version>3.8.1</maven.plugin.tools.version>
+  </properties>
+
+  <dependencies>
+
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-core</artifactId>
+      <version>${mavenVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-artifact</artifactId>
+      <version>${mavenVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-model</artifactId>
+      <version>${mavenVersion}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.inject</groupId>
+      <artifactId>javax.inject</artifactId>
+      <version>1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+      <version>9.5</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4jVersion}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.11.0</version>
+    </dependency>
+
+    <!-- testing support -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>5.9.3</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>3.24.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>${slf4jVersion}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.eclipse.sisu</groupId>
+        <artifactId>sisu-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <configuration>
+          <excludes combine.children="append">
+            <!-- binary class for unit test -->
+            <exclude>**/*.classx</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>run-its</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-invoker-plugin</artifactId>
+            <!-- TODO check with next parent -->
+            <version>3.5.1</version>
+            <configuration>
+              <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
+              <localRepositoryPath>target/local-repo</localRepositoryPath>
+              <settingsFile>src/it/settings.xml</settingsFile>
+              <postBuildHookScript>verify</postBuildHookScript>
+              <goals>
+                <goal>verify</goal>
+              </goals>
+              <properties>
+                <maven.compiler.source>${java.specification.version}</maven.compiler.source>
+                <maven.compiler.target>${java.specification.version}</maven.compiler.target>
+                <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+              </properties>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>install</goal>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

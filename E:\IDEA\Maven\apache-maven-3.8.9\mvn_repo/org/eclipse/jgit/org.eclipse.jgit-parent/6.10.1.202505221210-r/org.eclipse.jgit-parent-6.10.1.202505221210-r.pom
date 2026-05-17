@@ -1,0 +1,1194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (C) 2009-2010, Google Inc.
+  Copyright (C) 2012, Matthias Sohn <matthias.sohn@sap.com> and others
+
+  This program and the accompanying materials are made available under the
+  terms of the Eclipse Distribution License v. 1.0 which is available at
+  http://www.eclipse.org/org/documents/edl-v10.php.
+
+  SPDX-License-Identifier: BSD-3-Clause
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.eclipse.jgit</groupId>
+  <artifactId>org.eclipse.jgit-parent</artifactId>
+  <packaging>pom</packaging>
+  <version>6.10.1.202505221210-r</version>
+
+  <name>JGit - Parent</name>
+  <url>${jgit-url}</url>
+
+  <organization>
+    <name>Eclipse JGit Project</name>
+    <url>http://www.eclipse.org/jgit</url>
+  </organization>
+
+  <description>
+    Pure Java implementation of Git
+  </description>
+
+  <scm>
+    <url>https://git.eclipse.org/r/plugins/gitiles/jgit/jgit</url>
+    <connection>scm:git:https://git.eclipse.org/r/jgit/jgit</connection>
+  </scm>
+
+  <ciManagement>
+    <system>Jenkins</system>
+    <url>https://ci.eclipse.org/jgit</url>
+  </ciManagement>
+
+  <developers>
+    <developer>
+      <name>Andrey Loskutov</name>
+    </developer>
+    <developer>
+      <name>Christian Halstrick</name>
+    </developer>
+    <developer>
+      <name>Dave Borowitz</name>
+    </developer>
+    <developer>
+      <name>David Pursehouse</name>
+    </developer>
+    <developer>
+      <name>Gunnar Wagenknecht</name>
+    </developer>
+    <developer>
+      <name>Jonathan Nieder</name>
+    </developer>
+    <developer>
+      <name>Jonathan Tan</name>
+    </developer>
+    <developer>
+      <name>Matthias Sohn</name>
+    </developer>
+    <developer>
+      <name>Sasa Zivkov</name>
+    </developer>
+    <developer>
+      <name>Terry Parker</name>
+    </developer>
+    <developer>
+      <name>Thomas Wolf</name>
+    </developer>
+  </developers>
+
+  <mailingLists>
+    <mailingList>
+      <name>jgit-dev Mailing List</name>
+      <post>jgit-dev@eclipse.org</post>
+      <subscribe>https://dev.eclipse.org/mailman/listinfo/jgit-dev</subscribe>
+      <unsubscribe>https://dev.eclipse.org/mailman/listinfo/jgit-dev</unsubscribe>
+      <archive>http://dev.eclipse.org/mhonarc/lists/jgit-dev</archive>
+    </mailingList>
+
+    <mailingList>
+      <name>GIT Mailing List</name>
+      <post>git@vger.kernel.org</post>
+      <archive>http://marc.info/?l=git</archive>
+    </mailingList>
+  </mailingLists>
+
+  <issueManagement>
+    <url>https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced;component=JGit;product=JGit;classification=Technology</url>
+    <system>Bugzilla</system>
+  </issueManagement>
+
+  <licenses>
+    <license>
+      <name>BSD-3-Clause</name>
+      <url>https://www.eclipse.org/org/documents/edl-v10.php</url>
+    </license>
+  </licenses>
+
+  <properties>
+    <jgit-url>https://www.eclipse.org/jgit/</jgit-url>
+    <jgit-copyright>Copyright (c) 2005, 2009 Shawn Pearce, Robin Rosenberg, et.al.</jgit-copyright>
+    <jgit.website.url>scp://build.eclipse.org/home/data/httpd/download.eclipse.org/jgit/site/${project.version}/</jgit.website.url>
+
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <java.version>11</java.version>
+    <bundle-manifest>${project.build.directory}/META-INF/MANIFEST.MF</bundle-manifest>
+
+    <project.build.outputTimestamp>${commit.time.iso}</project.build.outputTimestamp>
+
+    <jgit-last-release-version>6.9.0.202403050737-r</jgit-last-release-version>
+    <ant-version>1.10.14</ant-version>
+    <apache-sshd-version>2.14.0</apache-sshd-version>
+    <jsch-version>0.1.55</jsch-version>
+    <jzlib-version>1.1.3</jzlib-version>
+    <javaewah-version>1.2.3</javaewah-version>
+    <junit-version>4.13.2</junit-version>
+    <test-fork-count>1C</test-fork-count>
+    <args4j-version>2.37</args4j-version>
+    <commons-compress-version>1.26.2</commons-compress-version>
+    <osgi-core-version>6.0.0</osgi-core-version>
+    <servlet-api-version>4.0.4</servlet-api-version>
+    <jetty-version>10.0.21</jetty-version>
+    <japicmp-version>0.21.2</japicmp-version>
+    <httpclient-version>4.5.14</httpclient-version>
+    <httpcore-version>4.4.16</httpcore-version>
+    <slf4j-version>1.7.36</slf4j-version>
+    <maven-javadoc-plugin-version>3.6.3</maven-javadoc-plugin-version>
+    <gson-version>2.11.0</gson-version>
+    <bouncycastle-version>1.78.1</bouncycastle-version>
+    <spotbugs-maven-plugin-version>4.8.5.0</spotbugs-maven-plugin-version>
+    <maven-project-info-reports-plugin-version>3.5.1</maven-project-info-reports-plugin-version>
+    <maven-jxr-plugin-version>3.3.2</maven-jxr-plugin-version>
+    <maven-surefire-plugin-version>3.2.5</maven-surefire-plugin-version>
+    <maven-surefire-report-plugin-version>${maven-surefire-plugin-version}</maven-surefire-report-plugin-version>
+    <maven-compiler-plugin-version>3.13.0</maven-compiler-plugin-version>
+    <plexus-compiler-version>2.13.0</plexus-compiler-version>
+    <hamcrest-version>2.2</hamcrest-version>
+    <assertj-version>3.26.0</assertj-version>
+    <jna-version>5.14.0</jna-version>
+    <byte-buddy-version>1.14.16</byte-buddy-version>
+
+    <!-- Properties to enable jacoco code coverage analysis -->
+    <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
+    <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+    <sonar.jacoco.reportPath>${project.build.directory}/jacoco.exec</sonar.jacoco.reportPath>
+
+    <!-- license check -->
+    <dash.fail>true</dash.fail>
+    <dash.projectId>technology.jgit</dash.projectId>
+  </properties>
+
+  <repositories>
+    <repository>
+      <id>jgit-repository</id>
+      <url>https://repo.eclipse.org/content/repositories/jgit-releases/</url>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>repo.eclipse.org.cbi-releases</id>
+      <url>https://repo.eclipse.org/content/repositories/cbi-releases/</url>
+    </pluginRepository>
+    <pluginRepository>
+      <id>repo.eclipse.org.dash-releases</id>
+      <url>https://repo.eclipse.org/content/repositories/dash-licenses-releases/</url>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.4.1</version>
+          <configuration>
+            <archive>
+              <manifestEntries>
+                <Implementation-Title>JGit ${project.artifactId}</Implementation-Title>
+                <Implementation-Version>${project.version}</Implementation-Version>
+                <Implementation-Vendor>Eclipse.org - JGit</Implementation-Vendor>
+                <Implementation-Vendor-Id>org.eclipse.jgit</Implementation-Vendor-Id>
+                <Implementation-Vendor-URL>${jgit-url}</Implementation-Vendor-URL>
+                <git-describe>${git.commit.id.describe}</git-describe>
+                <git-commit-id>${git.commit.id}</git-commit-id>
+                <git-commit-time>${git.commit.time}</git-commit-time>
+                <git-tags>${git.tags}</git-tags>
+                <git-remote-origin-url>${git.remote.origin.url}</git-remote-origin-url>
+              </manifestEntries>
+            </archive>
+            <!-- TODO: uncomment this in order to skip empty artifact of test modules as soon as bug 416299 is fixed
+            <skipIfEmpty>true</skipIfEmpty>
+            -->
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>3.3.2</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>3.5.3</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>3.1.0</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>3.6.1</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>3.3.1</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>${maven-javadoc-plugin-version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven-surefire-plugin-version}</version>
+          <configuration>
+            <forkCount>${test-fork-count}</forkCount>
+            <reuseForks>true</reuseForks>
+            <argLine>@{argLine}</argLine>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>3.6.0</version>
+        </plugin>
+
+        <plugin>
+          <groupId>com.github.spotbugs</groupId>
+          <artifactId>spotbugs-maven-plugin</artifactId>
+          <version>${spotbugs-maven-plugin-version}</version>
+          <configuration>
+            <failOnError>false</failOnError>
+          </configuration>
+          <executions>
+            <execution>
+              <goals>
+                <goal>check</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-pmd-plugin</artifactId>
+          <version>3.22.0</version>
+          <configuration>
+            <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
+            <minimumTokens>100</minimumTokens>
+            <targetJdk>${java.version}</targetJdk>
+            <format>xml</format>
+            <failOnViolation>false</failOnViolation>
+            <excludes>
+              <exclude>**/UbcCheck.java</exclude>
+            </excludes>
+          </configuration>
+          <executions>
+            <execution>
+              <goals>
+                <goal>cpd-check</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+        <plugin>
+          <groupId>org.eclipse.cbi.maven.plugins</groupId>
+          <artifactId>eclipse-jarsigner-plugin</artifactId>
+          <version>1.4.3</version>
+        </plugin>
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>0.8.12</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>4.0.0-M14</version>
+          <dependencies>
+            <dependency><!-- add support for ssh/scp -->
+              <groupId>org.apache.maven.wagon</groupId>
+              <artifactId>wagon-ssh-external</artifactId>
+              <version>3.5.3</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-report-plugin</artifactId>
+          <version>${maven-surefire-report-plugin-version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jxr-plugin</artifactId>
+          <version>${maven-jxr-plugin-version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-project-info-reports-plugin</artifactId>
+          <version>${maven-project-info-reports-plugin-version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>3.1.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>3.1.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${maven-compiler-plugin-version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>3.3.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <version>2.7.18</version>
+        </plugin>
+        <plugin>
+          <groupId>org.eclipse.dash</groupId>
+          <artifactId>license-tool-plugin</artifactId>
+          <version>1.1.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.cyclonedx</groupId>
+          <artifactId>cyclonedx-maven-plugin</artifactId>
+          <version>2.8.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-artifact-plugin</artifactId>
+          <version>3.5.1</version>
+          <configuration>
+            <ignore>**/*cyclonedx.json</ignore>
+            <reproducible>true</reproducible>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>3.4.1</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-maven</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <version>3.6.3</version>
+                </requireMavenVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>translate-qualifier</id>
+            <phase>generate-resources</phase>
+            <configuration>
+              <target if="${translate-qualifier}">
+                <copy file="META-INF/MANIFEST.MF" tofile="${bundle-manifest}" overwrite="true"/>
+                <replace file="${bundle-manifest}">
+                  <replacefilter token=".qualifier" value=".${commit.time.version}"/>
+                </replace>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>copy-osgi</id>
+            <phase>generate-resources</phase>
+            <configuration>
+              <target>
+                <copy todir="${project.build.outputDirectory}" >
+                  <fileset dir="." includes="OSGI-INF/**"/>
+                </copy>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Build helper maven plugin sets the parsedVersion.osgiVersion property -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>set-osgi-version</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>parse-version</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <!-- We check javadoc when compiling with ecj (option -Pecj) and configurations
+          set in .settings/org.eclipse.jdt.core.prefs. This allows more fine grained
+          configuration and fails the build on missing javadoc for protected and
+          public but not for private classes, methods and fields. We don't want
+          to check javadoc on tests. We can reconsider to configure this on javadoc
+          when it starts supporting access specifiers so that we can set
+          -Xdoclint:all,-missing/private -->
+          <additionalJOption>-Xdoclint:none</additionalJOption>
+          <encoding>${project.build.sourceEncoding}</encoding>
+          <quiet>true</quiet>
+          <failOnWarnings>true</failOnWarnings>
+          <excludePackageNames>org.eclipse.jgit.http.test</excludePackageNames>
+          <links>
+            <link>https://docs.oracle.com/en/java/javase/11/docs/api</link>
+          </links>
+          <tags>
+            <tag>
+              <name>apiNote</name>
+              <placement>a</placement>
+              <head>API Note:</head>
+            </tag>
+            <tag>
+              <name>implSpec</name>
+              <placement>a</placement>
+              <head>Implementation Requirements:</head>
+            </tag>
+            <tag>
+              <name>implNote</name>
+              <placement>a</placement>
+              <head>Implementation Note:</head>
+            </tag>
+          </tags>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <inherited>true</inherited>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>default-prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+            <configuration>
+              <destFile>${sonar.jacoco.reportPath}</destFile>
+              <includes>
+                <include>org.eclipse.jgit.*</include>
+              </includes>
+              <excludes>
+                <exclude>**/*Test*.*</exclude>
+              </excludes>
+              <append>true</append>
+            </configuration>
+          </execution>
+          <execution>
+            <id>default-report</id>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>default-check</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <configuration>
+            <haltOnFailure>false</haltOnFailure>
+            <rules>
+              <rule>
+                <element>BUNDLE</element>
+                  <limits>
+                    <limit>
+                      <counter>INSTRUCTION</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>50%</minimum>
+                    </limit>
+                    <limit>
+                      <counter>CLASS</counter>
+                      <value>MISSEDCOUNT</value>
+                      <maximum>10</maximum>
+                    </limit>
+                  </limits>
+                </rule>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.eclipse.dash</groupId>
+        <artifactId>license-tool-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>license-check</id>
+            <goals>
+              <goal>license-check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.cyclonedx</groupId>
+        <artifactId>cyclonedx-maven-plugin</artifactId>
+        <configuration>
+          <projectType>library</projectType>
+          <schemaVersion>1.4</schemaVersion>
+          <includeBomSerialNumber>true</includeBomSerialNumber>
+          <includeCompileScope>true</includeCompileScope>
+          <includeProvidedScope>true</includeProvidedScope>
+          <includeRuntimeScope>true</includeRuntimeScope>
+          <includeSystemScope>true</includeSystemScope>
+          <includeTestScope>false</includeTestScope>
+          <includeLicenseText>false</includeLicenseText>
+          <outputReactorProjects>true</outputReactorProjects>
+          <outputFormat>json</outputFormat>
+          <outputName>cyclonedx</outputName>
+          <outputDirectory>${project.build.directory}</outputDirectory>
+          <verbose>false</verbose>
+          <detectUnusedForOptionalScope>true</detectUnusedForOptionalScope>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>makeAggregateBom</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>io.github.git-commit-id</groupId>
+        <artifactId>git-commit-id-maven-plugin</artifactId>
+        <version>8.0.2</version>
+        <executions>
+          <execution>
+            <id>get-the-git-infos</id>
+            <goals>
+              <goal>revision</goal>
+            </goals>
+            <phase>initialize</phase>
+          </execution>
+        </executions>
+        <configuration>
+          <generateGitPropertiesFile>false</generateGitPropertiesFile>
+          <injectAllReactorProjects>true</injectAllReactorProjects>
+          <dateFormatTimeZone>UTC</dateFormatTimeZone>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.gmavenplus</groupId>
+        <artifactId>gmavenplus-plugin</artifactId>
+        <version>3.0.2</version>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy</artifactId>
+            <version>4.0.21</version>
+            <scope>runtime</scope>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy-ant</artifactId>
+            <version>4.0.21</version>
+            <scope>runtime</scope>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <id>add-dynamic-properties</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>execute</goal>
+            </goals>
+            <configuration>
+              <bindAllProjectProperties>true</bindAllProjectProperties>
+              <bindAllSessionUserProperties>true</bindAllSessionUserProperties>
+              <scripts>
+                <script><![CDATA[
+                  @Grapes([
+                    @Grab(group='org.eclipse.jgit', module='org.eclipse.jgit', version='6.7.0.202309050840-r')
+                  ])
+                  import java.time.Instant
+                  import java.time.ZoneId
+                  import java.time.format.DateTimeFormatter
+                  import org.eclipse.jgit.lib.Constants
+                  import org.eclipse.jgit.lib.ObjectId
+                  import org.eclipse.jgit.lib.Repository
+                  import org.eclipse.jgit.lib.RepositoryBuilder
+                  import org.eclipse.jgit.revwalk.RevCommit
+                  import org.eclipse.jgit.revwalk.RevObject
+                  import org.eclipse.jgit.revwalk.RevTag
+                  import org.eclipse.jgit.revwalk.RevWalk
+
+                  try {
+                    RepositoryBuilder rb = new RepositoryBuilder().setGitDir().readEnvironment().findGitDir()
+                    if (rb.getGitDir() == null) {
+                      throw new Exception("Can't find .git directory")
+                    }
+                    Repository repo = rb.build()
+                    ObjectId objectId = repo.resolve(Constants.HEAD)
+                    try (RevWalk rw = new RevWalk(repo)) {
+                      RevObject obj = rw.parseAny(objectId)
+                      while (obj instanceof RevTag) {
+                        obj = ((RevTag) obj).getObject()
+                        rw.parseBody(obj)
+                      }
+
+                      switch (obj.getType()) {
+                      case Constants.OBJ_COMMIT:
+                        RevCommit c = (RevCommit) obj
+                        Instant time = c.getCommitterIdent().getWhenAsInstant()
+                        DateTimeFormatter iso8601Fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneId.of("UTC"))
+                        DateTimeFormatter versionFmt = DateTimeFormatter.ofPattern("yyyyMMddHHmm").withZone(ZoneId.of("UTC"))
+                        String isoTime = iso8601Fmt.format(time)
+                        String versionTime = versionFmt.format(time)
+                        project.properties.setProperty("commit.time.iso", isoTime)
+                        project.properties.setProperty("commit.time.version", versionTime)
+                        break
+                      default:
+                        throw new Exception("Didn't expect " + obj.name() + ", " + obj.getType())
+                      }
+                    }
+                  } catch (Exception e) {
+                    e.printStackTrace()
+                  }
+                ]]></script>
+              </scripts>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>${maven-javadoc-plugin-version}</version>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>javadoc</report>
+            </reports>
+          </reportSet>
+          <reportSet>
+            <id>aggregate</id>
+            <inherited>false</inherited>
+            <reports>
+              <report>aggregate</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+        <configuration>
+          <failOnWarnings>false</failOnWarnings>
+          <additionalJOption>-Xdoclint:none</additionalJOption>
+          <encoding>${project.build.sourceEncoding}</encoding>
+          <quiet>true</quiet>
+          <failOnWarnings>false</failOnWarnings>
+          <excludePackageNames>org.eclipse.jgit.http.test</excludePackageNames>
+          <links>
+            <link>https://docs.oracle.com/en/java/javase/11/docs/api</link>
+          </links>
+          <tags>
+            <tag>
+              <name>apiNote</name>
+              <placement>a</placement>
+              <head>API Note:</head>
+            </tag>
+            <tag>
+              <name>implSpec</name>
+              <placement>a</placement>
+              <head>Implementation Requirements:</head>
+            </tag>
+            <tag>
+              <name>implNote</name>
+              <placement>a</placement>
+              <head>Implementation Note:</head>
+            </tag>
+          </tags>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jxr-plugin</artifactId>
+        <version>${maven-jxr-plugin-version}</version>
+      </plugin>
+      <plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+        <version>${spotbugs-maven-plugin-version}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+        <version>${maven-surefire-report-plugin-version}</version>
+        <configuration>
+          <aggregate>true</aggregate>
+          <alwaysGenerateSurefireReport>false</alwaysGenerateSurefireReport>
+          <reportsDirectories>
+            <reportsDirectories>${project.build.directory}/surefire-reports</reportsDirectories>
+          </reportsDirectories>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>${maven-project-info-reports-plugin-version}</version>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>dependencies</report>
+              <report>dependency-convergence</report>
+              <report>dependency-management</report>
+              <report>index</report>
+              <report>summary</report>
+              <report>team</report>
+              <report>mailing-lists</report>
+              <report>ci-management</report>
+              <report>issue-management</report>
+              <report>licenses</report>
+              <report>scm</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>report</report>
+            </reports>
+          </reportSet>
+          <reportSet>
+            <id>aggregate</id>
+            <inherited>false</inherited>
+            <reports>
+              <report>report-aggregate</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+    </plugins>
+  </reporting>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.jcraft</groupId>
+        <artifactId>jsch</artifactId>
+        <version>${jsch-version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.jcraft</groupId>
+        <artifactId>jzlib</artifactId>
+        <version>${jzlib-version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.googlecode.javaewah</groupId>
+        <artifactId>JavaEWAH</artifactId>
+        <version>${javaewah-version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>args4j</groupId>
+        <artifactId>args4j</artifactId>
+        <version>${args4j-version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${junit-version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>jakarta.servlet</groupId>
+        <artifactId>jakarta.servlet-api</artifactId>
+        <version>${servlet-api-version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.ant</groupId>
+        <artifactId>ant</artifactId>
+        <version>${ant-version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.17.0</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>${commons-compress-version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>2.16.1</version>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-logging</groupId>
+        <artifactId>commons-logging</artifactId>
+        <version>1.3.2</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.tukaani</groupId>
+        <artifactId>xz</artifactId>
+        <version>1.9</version>
+        <optional>true</optional>
+      </dependency>
+
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-servlet</artifactId>
+        <version>${jetty-version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.core</artifactId>
+        <version>${osgi-core-version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient</artifactId>
+        <version>${httpclient-version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpcore</artifactId>
+        <version>${httpcore-version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j-version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${slf4j-version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.google.code.gson</groupId>
+        <artifactId>gson</artifactId>
+        <version>${gson-version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcpg-jdk18on</artifactId>
+        <version>${bouncycastle-version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcprov-jdk18on</artifactId>
+        <version>${bouncycastle-version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcutil-jdk18on</artifactId>
+        <version>${bouncycastle-version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcpkix-jdk18on</artifactId>
+        <version>${bouncycastle-version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>${assertj-version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>net.java.dev.jna</groupId>
+        <artifactId>jna</artifactId>
+        <version>${jna-version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>net.java.dev.jna</groupId>
+        <artifactId>jna-platform</artifactId>
+        <version>${jna-version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>5.12.0</version>
+      </dependency>
+
+      <dependency>
+        <groupId>net.bytebuddy</groupId>
+        <artifactId>byte-buddy</artifactId>
+        <version>${byte-buddy-version}</version>
+        <scope>compile</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>net.bytebuddy</groupId>
+        <artifactId>byte-buddy-agent</artifactId>
+        <version>${byte-buddy-version}</version>
+        <scope>compile</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <distributionManagement>
+    <repository>
+      <id>repo.eclipse.org</id>
+      <name>JGit Maven Repository - Releases</name>
+      <url>https://repo.eclipse.org/content/repositories/jgit-releases/</url>
+    </repository>
+    <snapshotRepository>
+      <id>repo.eclipse.org</id>
+      <name>JGit Maven Repository - Snapshots</name>
+      <url>https://repo.eclipse.org/content/repositories/jgit-snapshots/</url>
+      <uniqueVersion>true</uniqueVersion>
+    </snapshotRepository>
+    <site>
+      <id>jgit.website</id>
+      <name>JGit Website</name>
+      <url>${jgit.website.url}</url>
+    </site>
+  </distributionManagement>
+
+  <profiles>
+    <profile>
+      <id>javac</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <encoding>UTF-8</encoding>
+              <release>${java.version}</release>
+              <fork>true</fork>
+              <compilerArgs>
+                <arg>-XDcompilePolicy=simple</arg>
+                <arg>-Xplugin:ErrorProne</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+                <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+                <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+                <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
+              </compilerArgs>
+              <annotationProcessorPaths>
+                <path>
+                  <groupId>com.google.errorprone</groupId>
+                  <artifactId>error_prone_core</artifactId>
+                  <version>2.9.0</version>
+                </path>
+              </annotationProcessorPaths>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>ecj</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <compilerId>eclipse</compilerId>
+              <encoding>UTF-8</encoding>
+              <release>${java.version}</release>
+              <!-- Passing arguments is a trainwreck, see https://issues.apache.org/jira/browse/MCOMPILER-123 -->
+              <compilerArguments>
+                <properties>${project.basedir}/.settings/org.eclipse.jdt.core.prefs</properties>
+              </compilerArguments>
+              <showWarnings>true</showWarnings>
+              <showDeprecation>true</showDeprecation>
+            </configuration>
+            <dependencies>
+              <dependency>
+                <groupId>org.codehaus.plexus</groupId>
+                <artifactId>plexus-compiler-eclipse</artifactId>
+                <version>${plexus-compiler-version}</version>
+              </dependency>
+              <dependency>
+                <groupId>org.codehaus.plexus</groupId>
+                <artifactId>plexus-compiler-api</artifactId>
+                <version>${plexus-compiler-version}</version>
+              </dependency>
+              <dependency>
+                <groupId>org.eclipse.jdt</groupId>
+                <artifactId>ecj</artifactId>
+                <version>3.37.0</version>
+              </dependency>
+            </dependencies>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>static-checks</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-maven-plugin</artifactId>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-pmd-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>eclipse-sign</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.eclipse.cbi.maven.plugins</groupId>
+            <artifactId>eclipse-jarsigner-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>sign</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>build-server</id>
+      <properties>
+        <jgit.website.url>file:///home/data/httpd/download.eclipse.org/jgit/site/${project.version}/</jgit.website.url>
+      </properties>
+    </profile>
+  </profiles>
+
+  <modules>
+    <module>org.eclipse.jgit</module>
+    <module>org.eclipse.jgit.ant</module>
+    <module>org.eclipse.jgit.archive</module>
+    <module>org.eclipse.jgit.ui</module>
+    <module>org.eclipse.jgit.gpg.bc</module>
+    <module>org.eclipse.jgit.http.apache</module>
+    <module>org.eclipse.jgit.http.server</module>
+    <module>org.eclipse.jgit.ssh.apache</module>
+    <module>org.eclipse.jgit.ssh.apache.agent</module>
+    <module>org.eclipse.jgit.ssh.jsch</module>
+    <module>org.eclipse.jgit.pgm</module>
+    <module>org.eclipse.jgit.lfs</module>
+    <module>org.eclipse.jgit.lfs.server</module>
+    <module>org.eclipse.jgit.junit</module>
+    <module>org.eclipse.jgit.junit.http</module>
+    <module>org.eclipse.jgit.junit.ssh</module>
+
+    <module>org.eclipse.jgit.test</module>
+    <module>org.eclipse.jgit.ant.test</module>
+    <module>org.eclipse.jgit.gpg.bc.test</module>
+    <module>org.eclipse.jgit.http.test</module>
+    <module>org.eclipse.jgit.pgm.test</module>
+    <module>org.eclipse.jgit.lfs.test</module>
+    <module>org.eclipse.jgit.lfs.server.test</module>
+    <module>org.eclipse.jgit.ssh.apache.test</module>
+    <module>org.eclipse.jgit.ssh.jsch.test</module>
+    <module>org.eclipse.jgit.coverage</module>
+    <module>org.eclipse.jgit.benchmarks</module>
+  </modules>
+
+</project>

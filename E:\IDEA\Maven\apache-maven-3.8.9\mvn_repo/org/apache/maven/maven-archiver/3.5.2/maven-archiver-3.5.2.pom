@@ -1,0 +1,155 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.apache.maven.shared</groupId>
+    <artifactId>maven-shared-components</artifactId>
+    <version>34</version>
+    <relativePath />
+  </parent>
+
+  <groupId>org.apache.maven</groupId>
+  <artifactId>maven-archiver</artifactId>
+  <version>3.5.2</version>
+
+  <name>Apache Maven Archiver</name>
+  <description>Provides utility methods for creating JARs and other archive files from a Maven project.</description>
+
+  <properties>
+    <mavenVersion>3.1.1</mavenVersion>
+    <javaVersion>7</javaVersion>
+    <surefire.version>2.22.2</surefire.version>
+    <project.build.outputTimestamp>2022-01-02T12:42:56Z</project.build.outputTimestamp>
+  </properties>
+
+  <scm>
+    <connection>scm:git:https://gitbox.apache.org/repos/asf/maven-archiver.git</connection>
+    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-archiver.git</developerConnection>
+    <url>https://github.com/apache/maven-archiver/tree/${project.scm.tag}</url>
+    <tag>maven-archiver-3.5.2</tag>
+  </scm>
+  <issueManagement>
+    <system>jira</system>
+    <url>https://issues.apache.org/jira/issues/?jql=project%3DMSHARED+AND+component%3Dmaven-archiver</url>
+  </issueManagement>
+  <ciManagement>
+    <system>Jenkins</system>
+    <url>https://ci-builds.apache.org/job/Maven/job/maven-box/job/maven-archiver/</url>
+  </ciManagement>
+  <distributionManagement>
+    <site>
+      <id>apache.website</id>
+      <url>scm:svn:https://svn.apache.org/repos/asf/maven/website/components/${maven.site.path}</url>
+    </site>
+  </distributionManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-artifact</artifactId>
+      <version>${mavenVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-model</artifactId>
+      <version>${mavenVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-core</artifactId>
+      <version>${mavenVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-shared-utils</artifactId>
+      <version>3.3.3</version>
+    </dependency>
+    <!--
+      ! Pulled in as a direct dependency to resolve conflicts.
+      ! We want the most recent commons-io/commons-compress compatible to the target JDK.
+    -->
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.6</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
+      <version>1.20</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-archiver</artifactId>
+      <version>4.2.7</version>
+    </dependency>
+    <!--
+      ! plexus-archiver needs this, or else maven-artifact will
+      ! pull in a version from the pliocene era
+    -->
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
+      <version>3.3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-interpolation</artifactId>
+      <version>1.26</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>2.9.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <pluginManagement>
+      <plugins>
+        <!-- remove with next parent upgrade -->
+        <plugin>
+          <artifactId>maven-project-info-reports-plugin</artifactId>
+          <version>3.1.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>3.0.0-M3</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>3.2.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.9.1</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+</project>

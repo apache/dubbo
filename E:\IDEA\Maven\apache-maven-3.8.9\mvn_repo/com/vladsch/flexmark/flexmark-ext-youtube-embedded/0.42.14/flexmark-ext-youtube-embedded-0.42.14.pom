@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>flexmark-java</artifactId>
+        <groupId>com.vladsch.flexmark</groupId>
+        <version>0.42.14</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>flexmark-ext-youtube-embedded</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>com.vladsch.flexmark</groupId>
+            <artifactId>flexmark</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.vladsch.flexmark</groupId>
+            <artifactId>flexmark-test-util</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

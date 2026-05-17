@@ -1,0 +1,215 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.apache.maven.shared</groupId>
+    <artifactId>maven-shared-components</artifactId>
+    <version>34</version>
+    <relativePath />
+  </parent>
+
+  <groupId>org.apache.maven.reporting</groupId>
+  <artifactId>maven-reporting-impl</artifactId>
+  <version>3.2.0</version>
+
+  <name>Apache Maven Reporting Implementation</name>
+  <description>Abstract classes to manage report generation.</description>
+
+  <developers>
+    <developer>
+      <id>vsiveton</id>
+      <name>Vincent Siveton</name>
+      <email>vincent.siveton@gmail.com</email>
+      <roles>
+        <role>Java Developer</role>
+      </roles>
+      <timezone>-5</timezone>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:https://gitbox.apache.org/repos/asf/maven-reporting-impl.git</connection>
+    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-reporting-impl.git</developerConnection>
+    <url>https://github.com/apache/maven-reporting-impl/tree/${project.scm.tag}</url>
+    <tag>maven-reporting-impl-3.2.0</tag>
+  </scm>
+  <issueManagement>
+    <system>jira</system>
+    <url>https://issues.apache.org/jira/issues/?jql=project%20%3D%20MSHARED%20AND%20component%20in%20(maven-reporting-impl)</url>
+  </issueManagement>
+  <ciManagement>
+    <system>Jenkins</system>
+    <url>https://ci-maven.apache.org/job/Maven/job/maven-box/job/maven-reporting-impl/</url>
+  </ciManagement>
+  <distributionManagement>
+    <site>
+      <id>apache.website</id>
+      <url>scm:svn:https://svn.apache.org/repos/asf/maven/website/components/${maven.site.path}</url>
+    </site>
+  </distributionManagement>
+
+  <properties>
+    <javaVersion>7</javaVersion>
+    <mavenVersion>3.1.0</mavenVersion>
+    <doxiaVersion>1.11.1</doxiaVersion>
+    <doxiaSitetoolsVersion>1.11.1</doxiaSitetoolsVersion>
+    <reportingApiVersion>3.1.1</reportingApiVersion>
+    <project.build.outputTimestamp>2022-08-06T21:51:47Z</project.build.outputTimestamp>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.maven.reporting</groupId>
+      <artifactId>maven-reporting-api</artifactId>
+      <version>${reportingApiVersion}</version>
+    </dependency>
+
+    <!-- Maven -->
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-core</artifactId>
+      <version>${mavenVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-artifact</artifactId>
+      <version>${mavenVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-api</artifactId>
+      <version>${mavenVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-shared-utils</artifactId>
+      <version>3.3.4</version>
+    </dependency>
+
+    <!-- Doxia -->
+    <dependency>
+      <groupId>org.apache.maven.doxia</groupId>
+      <artifactId>doxia-sink-api</artifactId>
+      <version>${doxiaVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.doxia</groupId>
+      <artifactId>doxia-decoration-model</artifactId>
+      <version>${doxiaSitetoolsVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.doxia</groupId>
+      <artifactId>doxia-core</artifactId>
+      <version>${doxiaVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.doxia</groupId>
+      <artifactId>doxia-integration-tools</artifactId>
+      <version>${doxiaSitetoolsVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.doxia</groupId>
+      <artifactId>doxia-site-renderer</artifactId>
+      <version>${doxiaSitetoolsVersion}</version>
+    </dependency>
+
+    <!-- misc -->
+    <dependency>
+      <groupId>org.apache.maven.plugin-tools</groupId>
+      <artifactId>maven-plugin-annotations</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
+      <version>3.3.1</version>
+    </dependency>
+
+    <!-- test -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit-addons</groupId>
+      <artifactId>junit-addons</artifactId>
+      <version>1.4</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-invoker-plugin</artifactId>
+        <configuration>
+          <debug>true</debug>
+          <projectsDirectory>src/it</projectsDirectory>
+          <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
+          <preBuildHookScript>setup</preBuildHookScript>
+          <postBuildHookScript>verify</postBuildHookScript>
+          <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
+          <settingsFile>src/it/settings.xml</settingsFile>
+          <pomIncludes>
+            <pomInclude>*/pom.xml</pomInclude>
+          </pomIncludes>
+          <properties>
+            <maven.compiler.source>${maven.compiler.source}</maven.compiler.source>
+            <maven.compiler.target>${maven.compiler.target}</maven.compiler.target>
+            <!-- e.g. ensure that Java7 picks up TLSv1.2 when connecting with Central -->
+            <https.protocols>${https.protocols}</https.protocols>
+          </properties>
+        </configuration>
+        <executions>
+          <execution>
+            <id>integration-test</id>
+            <goals>
+              <goal>install</goal>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>reporting</id>
+      <reporting>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>clirr-maven-plugin</artifactId>
+            <configuration>
+              <comparisonVersion>2.0.4.1</comparisonVersion>
+            </configuration>
+          </plugin>
+        </plugins>
+      </reporting>
+    </profile>
+  </profiles>
+</project>

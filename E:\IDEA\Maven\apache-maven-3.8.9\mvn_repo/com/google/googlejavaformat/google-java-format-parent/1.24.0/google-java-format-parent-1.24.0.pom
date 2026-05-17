@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2015 Google Inc.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.google.googlejavaformat</groupId>
+  <artifactId>google-java-format-parent</artifactId>
+  <packaging>pom</packaging>
+  <version>1.24.0</version>
+
+  <modules>
+    <module>core</module>
+  </modules>
+
+  <name>Google Java Format Parent</name>
+
+  <description>
+    A Java source code formatter that follows Google Java Style.
+  </description>
+
+  <url>https://github.com/google/google-java-format</url>
+
+  <inceptionYear>2015</inceptionYear>
+
+  <organization>
+    <name>Google Inc.</name>
+    <url>http://www.google.com/</url>
+  </organization>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>jdd</id>
+      <name>John DeTreville</name>
+      <email>jdd@google.com</email>
+      <organization>Google Inc.</organization>
+      <organizationUrl>http://www.google.com/</organizationUrl>
+      <roles>
+        <role>owner</role>
+        <role>developer</role>
+      </roles>
+      <timezone>-8</timezone>
+    </developer>
+  </developers>
+
+  <scm>
+    <url>http://github.com/google/google-java-format/</url>
+    <connection>scm:git:git://github.com/google/google-java-format.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/google/google-java-format.git</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
+
+  <issueManagement>
+    <system>GitHub Issues</system>
+    <url>http://github.com/google/google-java-format/issues</url>
+  </issueManagement>
+
+  <prerequisites>
+    <maven>3.0.3</maven>
+  </prerequisites>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <java.version>1.8</java.version>
+    <guava.version>32.1.3-jre</guava.version>
+    <truth.version>1.4.0</truth.version>
+    <jspecify.version>1.0.0</jspecify.version>
+    <errorprone.version>2.28.0</errorprone.version>
+    <auto-value.version>1.9</auto-value.version>
+    <auto-service.version>1.0.1</auto-service.version>
+    <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
+    <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- Required runtime dependencies -->
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>${guava.version}</version>
+      </dependency>
+
+      <!-- Compile-time dependencies -->
+      <dependency>
+        <groupId>org.jspecify</groupId>
+        <artifactId>jspecify</artifactId>
+        <version>${jspecify.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.errorprone</groupId>
+        <artifactId>error_prone_annotations</artifactId>
+        <version>${errorprone.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.auto.value</groupId>
+        <artifactId>auto-value-annotations</artifactId>
+        <version>${auto-value.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.auto.service</groupId>
+        <artifactId>auto-service-annotations</artifactId>
+        <version>${auto-service.version}</version>
+      </dependency>
+
+      <!-- Test dependencies -->
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.13.2</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava-testlib</artifactId>
+        <version>${guava.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.google.truth</groupId>
+        <artifactId>truth</artifactId>
+        <version>${truth.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.google.truth.extensions</groupId>
+        <artifactId>truth-java8-extension</artifactId>
+        <version>${truth.version}</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.9.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.2.2</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>3.2.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>${maven-javadoc-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>3.0.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.felix</groupId>
+          <artifactId>maven-bundle-plugin</artifactId>
+          <version>5.1.4</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+          <encoding>UTF-8</encoding>
+          <compilerArgs>
+            <!-- compile-time arguments for google-java-format -->
+            <arg>-XDcompilePolicy=simple</arg>
+            <arg>-Xplugin:ErrorProne</arg>
+            <arg>--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+            <arg>--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+            <arg>--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+            <arg>--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
+            <arg>--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
+            <arg>--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+            <arg>--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+          </compilerArgs>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>com.google.errorprone</groupId>
+              <artifactId>error_prone_core</artifactId>
+              <version>${errorprone.version}</version>
+            </path>
+            <path>
+              <groupId>com.google.auto.value</groupId>
+              <artifactId>auto-value</artifactId>
+              <version>${auto-value.version}</version>
+            </path>
+            <path>
+              <groupId>com.google.auto.service</groupId>
+              <artifactId>auto-service</artifactId>
+              <version>${auto-service.version}</version>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>com.google.googlejavaformat.java.Main</mainClass>
+            </manifest>
+            <manifestEntries>
+              <Add-Exports><!--
+                -->jdk.compiler/com.sun.tools.javac.api <!--
+                -->jdk.compiler/com.sun.tools.javac.code <!--
+                -->jdk.compiler/com.sun.tools.javac.file <!--
+                -->jdk.compiler/com.sun.tools.javac.parser <!--
+                -->jdk.compiler/com.sun.tools.javac.tree <!--
+                -->jdk.compiler/com.sun.tools.javac.util<!--
+              --></Add-Exports>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>${maven-javadoc-plugin.version}</version>
+        <configuration>
+          <doclint>none</doclint>
+        </configuration>
+        <executions>
+          <execution>
+          <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.22.2</version>
+        <configuration>
+          <!-- set heap size to work around http://github.com/travis-ci/travis-ci/issues/3396 -->
+          <argLine>
+            -Xmx1024m
+            --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED
+            --add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED
+            --add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED
+            --add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED
+            --add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED
+            --add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED
+            --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED
+            --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
+            --add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED
+            --add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED
+          </argLine>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>sonatype-nexus-snapshots</id>
+      <name>Sonatype Nexus Snapshots</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+    </snapshotRepository>
+    <repository>
+      <id>sonatype-nexus-staging</id>
+      <name>Nexus Release Repository</name>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+  </distributionManagement>
+
+  <profiles>
+    <profile>
+      <id>sonatype-oss-release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>${maven-source-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>${maven-javadoc-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>3.0.1</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>eclipse</id>
+      <activation>
+        <jdk>[17,)</jdk>
+      </activation>
+      <modules>
+        <module>eclipse_plugin</module>
+      </modules>
+    </profile>
+  </profiles>
+</project>

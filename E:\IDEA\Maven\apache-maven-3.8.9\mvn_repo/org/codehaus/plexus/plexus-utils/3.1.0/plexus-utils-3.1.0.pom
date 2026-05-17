@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+Copyright The Codehaus Foundation.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.codehaus.plexus</groupId>
+    <artifactId>plexus</artifactId>
+    <version>4.0</version>
+  </parent>
+
+  <artifactId>plexus-utils</artifactId>
+  <version>3.1.0</version>
+
+  <name>Plexus Common Utilities</name>
+  <description>A collection of various utility classes to ease working with strings, files, command lines, XML and
+    more.
+  </description>
+
+  <scm>
+    <connection>scm:git:git@github.com:codehaus-plexus/plexus-utils.git</connection>
+    <developerConnection>scm:git:git@github.com:codehaus-plexus/plexus-utils.git</developerConnection>
+    <url>http://github.com/codehaus-plexus/plexus-utils</url>
+    <tag>plexus-utils-3.1.0</tag>
+  </scm>
+  <issueManagement>
+    <system>github</system>
+    <url>http://github.com/codehaus-plexus/plexus-utils/issues</url>
+  </issueManagement>
+  <distributionManagement>
+    <site>
+      <id>github:gh-pages</id>
+      <url>${project.scm.developerConnection}</url>
+    </site>
+  </distributionManagement>
+
+  <properties>
+    <javaVersion>6</javaVersion>
+  </properties>
+
+  <dependencies>
+      <dependency>
+        <groupId>org.apache.maven.shared</groupId>
+        <artifactId>maven-plugin-testing-harness</artifactId>
+        <version>1.1</version>
+        <scope>test</scope>
+      </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-scm-publish-plugin</artifactId>
+        <configuration>
+          <content>${project.reporting.outputDirectory}</content><!-- mono-module doesn't require site:stage -->
+        </configuration>
+        <executions>
+          <execution>
+            <id>scm-publish</id>
+            <phase>site-deploy</phase><!-- deploy site with maven-scm-publish-plugin -->
+            <goals>
+              <goal>publish-scm</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <!-- required to ensure the test classes are used, not surefire's plexus-utils -->
+          <childDelegation>true</childDelegation>
+          <excludes>
+            <exclude>org/codehaus/plexus/util/FileBasedTestCase.java</exclude>
+            <exclude>**/Test*.java</exclude>
+          </excludes>
+          <systemProperties>
+            <property>
+              <name>JAVA_HOME</name>
+              <value>${JAVA_HOME}</value>
+            </property>
+            <property>
+              <name>M2_HOME</name>
+              <value>${M2_HOME}</value>
+            </property>
+          </systemProperties>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>1.1.1</version>
+        <executions>
+          <execution>
+            <id>enforce-java</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireJavaVersion>
+                  <version>1.7.0</version>
+                </requireJavaVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  <profiles>
+    <profile>
+      <!-- See https://github.com/codehaus-plexus/plexus-utils/pull/27 -->
+      <!-- m2e Eclipse plugin doesn't respect the maven-enforcer-plugin 'requireJavaVersion' parameter  -->
+      <id>eclipse-only-jdk-version</id>
+      <activation>
+        <property>
+          <name>m2e.version</name>
+        </property>
+      </activation>
+      <properties>
+        <javaVersion>7</javaVersion>
+      </properties>
+    </profile>
+  </profiles>
+</project>

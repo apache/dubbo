@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.apache.maven</groupId>
+    <artifactId>maven-parent</artifactId>
+    <version>16</version>
+    <relativePath>../pom/maven/pom.xml</relativePath>
+  </parent>
+
+  <groupId>org.apache.maven.shared</groupId>
+  <artifactId>maven-shared-components</artifactId>
+  <version>15</version>
+  <packaging>pom</packaging>
+
+  <name>Maven Shared Components</name>
+  <description>Maven shared components</description>
+  <url>http://maven.apache.org/shared/</url>
+
+  <mailingLists>
+    <mailingList>
+      <name>Maven User List</name>
+      <subscribe>users-subscribe@maven.apache.org</subscribe>
+      <unsubscribe>users-unsubscribe@maven.apache.org</unsubscribe>
+      <post>users@maven.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/maven-users</archive>
+      <otherArchives>
+        <otherArchive>http://www.mail-archive.com/users@maven.apache.org/</otherArchive>
+        <otherArchive>http://www.nabble.com/Maven---Users-f178.html</otherArchive>
+        <otherArchive>http://maven.users.markmail.org/</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>Maven Developer List</name>
+      <subscribe>dev-subscribe@maven.apache.org</subscribe>
+      <unsubscribe>dev-unsubscribe@maven.apache.org</unsubscribe>
+      <post>dev@maven.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/maven-dev</archive>
+      <otherArchives>
+        <otherArchive>http://www.mail-archive.com/dev@maven.apache.org/</otherArchive>
+        <otherArchive>http://www.nabble.com/Maven-Developers-f179.html</otherArchive>
+        <otherArchive>http://maven.dev.markmail.org/</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>Maven Issues List</name>
+      <subscribe>issues-subscribe@maven.apache.org</subscribe>
+      <unsubscribe>issues-unsubscribe@maven.apache.org</unsubscribe>
+      <archive>http://mail-archives.apache.org/mod_mbox/maven-issues/</archive>
+      <otherArchives>
+        <otherArchive>http://www.mail-archive.com/issues@maven.apache.org</otherArchive>
+        <otherArchive>http://www.nabble.com/Maven---Issues-f15573.html</otherArchive>
+        <otherArchive>http://maven.issues.markmail.org/</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>Maven Commits List</name>
+      <subscribe>commits-subscribe@maven.apache.org</subscribe>
+      <unsubscribe>commits-unsubscribe@maven.apache.org</unsubscribe>
+      <archive>http://mail-archives.apache.org/mod_mbox/maven-dev</archive>
+      <otherArchives>
+        <otherArchive>http://www.mail-archive.com/commits@maven.apache.org</otherArchive>
+        <otherArchive>http://www.nabble.com/Maven---Commits-f15575.html</otherArchive>
+        <otherArchive>http://maven.commits.markmail.org/</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <!-- duplication from parent pom - temporary until they inherit properly (MNG-3124) -->
+    <mailingList>
+      <name>Maven Announcements List</name>
+      <post>announce@maven.apache.org</post>
+      <subscribe>announce-subscribe@maven.apache.org</subscribe>
+      <unsubscribe>announce-unsubscribe@maven.apache.org</unsubscribe>
+      <archive>http://mail-archives.apache.org/mod_mbox/maven-announce/</archive>
+      <otherArchives>
+        <otherArchive>http://www.mail-archive.com/announce@maven.apache.org</otherArchive>
+        <otherArchive>http://www.nabble.com/Maven-Announcements-f15617.html</otherArchive>
+        <otherArchive>http://maven.announce.markmail.org/</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>Maven Notifications List</name>
+      <subscribe>notifications-subscribe@maven.apache.org</subscribe>
+      <unsubscribe>notifications-unsubscribe@maven.apache.org</unsubscribe>
+      <archive>http://mail-archives.apache.org/mod_mbox/maven-notifications/</archive>
+      <otherArchives>
+        <otherArchive>http://www.mail-archive.com/notifications@maven.apache.org</otherArchive>
+        <otherArchive>http://www.nabble.com/Maven---Notifications-f15574.html</otherArchive>
+        <otherArchive>http://maven.notifications.markmail.org/</otherArchive>
+      </otherArchives>
+    </mailingList>
+  </mailingLists>
+
+  <modules>
+    <module>file-management</module>
+    <module>maven-ant</module>
+    <module>maven-archiver</module>
+    <module>maven-common-artifact-filters</module>
+    <module>maven-dependency-analyzer</module>
+    <module>maven-dependency-tree</module>
+    <module>maven-downloader</module>
+    <module>maven-doxia-tools</module>
+    <module>maven-filtering</module>
+    <module>maven-invoker</module>
+    <module>maven-model-converter</module>
+    <module>maven-osgi</module>
+    <module>maven-reporting-impl</module>
+    <module>maven-repository-builder</module>
+    <module>maven-runtime</module>
+    <!-- TODO: This seems to target Maven 3.x and needs some love
+    <module>maven-script</module>
+    -->
+    <module>maven-shared-io</module>
+    <module>maven-shared-jar</module>
+    <module>maven-shared-monitor</module>
+    <module>maven-verifier</module>
+  </modules>
+
+  <scm>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/maven/shared/tags/maven-shared-components-15</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/maven/shared/tags/maven-shared-components-15</developerConnection>
+    <url>http://svn.apache.org/viewvc/maven/shared/tags/maven-shared-components-15</url>
+  </scm>
+  <issueManagement>
+    <system>jira</system>
+    <url>http://jira.codehaus.org/browse/MSHARED</url>
+  </issueManagement>
+  <distributionManagement>
+    <site>
+      <id>apache.website</id>
+      <url>scp://people.apache.org/www/maven.apache.org/shared/</url>
+    </site>
+  </distributionManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-release-plugin</artifactId>
+          <configuration>
+            <tagBase>https://svn.apache.org/repos/asf/maven/shared/tags</tagBase>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-site-plugin</artifactId>
+          <configuration>
+            <stagingSiteURL>scp://people.apache.org/www/maven.apache.org/shared/${project.artifactId}-${project.version}</stagingSiteURL>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>reporting</id>
+      <reporting>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.5</version>
+            <configuration>
+              <tagletArtifacts>
+                <tagletArtifact>
+                  <groupId>org.codehaus.plexus</groupId>
+                  <artifactId>plexus-javadoc</artifactId>
+                  <version>1.0</version>
+                </tagletArtifact>
+              </tagletArtifacts>
+            </configuration>
+          </plugin>
+        </plugins>
+      </reporting>
+    </profile>
+    <profile>
+      <id>jre-1.5+</id>
+      <activation>
+        <jdk>!1.4</jdk>
+      </activation>
+      <modules>
+        <module>maven-artifact-resolver</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>parent-release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-release-plugin</artifactId>
+            <configuration>
+              <arguments>-N -Papache-release</arguments>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>source-release-assembly</id>
+                <configuration>
+                  <descriptorRefs>
+                    <descriptorRef>src</descriptorRef>
+                  </descriptorRefs>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

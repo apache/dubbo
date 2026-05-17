@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   ====================================================================
+   Licensed to the Apache Software Foundation (ASF) under one
+   or more contributor license agreements.  See the NOTICE file
+   distributed with this work for additional information
+   regarding copyright ownership.  The ASF licenses this file
+   to you under the Apache License, Version 2.0 (the
+   "License"); you may not use this file except in compliance
+   with the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing,
+   software distributed under the License is distributed on an
+   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+   KIND, either express or implied.  See the License for the
+   specific language governing permissions and limitations
+   under the License.
+   ====================================================================
+
+   This software consists of voluntary contributions made by many
+   individuals on behalf of the Apache Software Foundation.  For more
+   information on the Apache Software Foundation, please see
+   <http://www.apache.org />.
+ -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.apache-extras.beanshell</groupId>
+  <artifactId>bsh</artifactId>
+  <version>2.0b6</version>
+  <packaging>jar</packaging>
+
+  <name>BeanShell</name>
+  <description>BeanShell is a small, free, embeddable Java source interpreter
+    with object scripting language features, written in Java. BeanShell
+    dynamically executes standard Java syntax and extends it with common
+    scripting conveniences such as loose types, commands, and method closures
+    like those in Perl and JavaScript. 
+  </description>
+  <url>https://github.com/beanshell/beanshell/</url>
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  </properties>
+
+  <scm>
+    <connection>scm:git:git://github.com/beanshell/beanshell.git</connection>
+    <developerConnection>scm:git:git@github.com:beanshell/beanshell.git</developerConnection>
+    <url>https://github.com/beanshell/beanshell/</url>
+    <tag>HEAD</tag>
+  </scm>
+  <developers>
+    <!-- Current maintainers according to 
+         https://github.com/beanshell/
+    -->
+    <developer>
+      <name>Patrick Niemeyer</name>
+      <email>patniemeyer@gmail.com</email>
+      <organization>Apache Extras</organization>
+      <organizationUrl>http://www.apache-extras.org/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Daniel Leuck</name>
+      <email>dan@ikayzo.com</email>
+      <organization>Apache Extras</organization>
+      <organizationUrl>http://www.apache-extras.org/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Simone Tripodi</name>
+      <email>simonetripodi@apache.org</email>
+      <organization>Apache Extras</organization>
+      <organizationUrl>http://www.apache-extras.org/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Pedro Giffuni</name>
+      <email>pfg@apache.org</email>
+      <organization>Apache Extras</organization>
+      <organizationUrl>http://www.apache-extras.org/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Peter Jodeleit</name>
+      <email>pejobo70@gmail.com</email>
+      <organization>Apache Extras</organization>
+      <organizationUrl>http://www.apache-extras.org/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Stian Soiland-Reyes</name>
+      <email>stain@apache.org</email>
+      <organization>Apache Extras</organization>
+      <organizationUrl>http://www.apache-extras.org/</organizationUrl>
+    </developer>
+    <developer>
+      <name>Alan R Williams</name>
+      <email>alaninmcr@apache.org</email>
+      <organization>Apache Extras</organization>
+      <organizationUrl>http://www.apache-extras.org/</organizationUrl>
+    </developer>
+  </developers>
+
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/beanshell/beanshell/issues</url>
+  </issueManagement>
+
+  <distributionManagement>
+    <repository>
+    <id>bintray-beanshell-Beanshell-bsh</id>
+    <name>beanshell-Beanshell-bsh</name>
+    <url>https://api.bintray.com/maven/beanshell/Beanshell/bsh</url>
+    </repository>
+  </distributionManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>

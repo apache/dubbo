@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>io.rsocket</groupId>
+  <artifactId>rsocket-bom</artifactId>
+  <version>1.1.3</version>
+  <packaging>pom</packaging>
+  <name>rsocket-bom</name>
+  <description>RSocket Java Bill of materials.</description>
+  <url>http://rsocket.io</url>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>rdegnan</id>
+      <name>Ryland Degnan</name>
+      <email>ryland@netifi.com</email>
+    </developer>
+    <developer>
+      <id>yschimke</id>
+      <name>Yuri Schimke</name>
+      <email>yuri@schimke.ee</email>
+    </developer>
+    <developer>
+      <id>OlegDokuka</id>
+      <name>Oleh Dokuka</name>
+      <email>oleh.dokuka@icloud.com</email>
+    </developer>
+    <developer>
+      <id>rstoyanchev</id>
+      <name>Rossen Stoyanchev</name>
+      <email>rstoyanchev@vmware.com</email>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:https://github.com/rsocket/rsocket-java.git</connection>
+    <developerConnection>scm:git:https://github.com/rsocket/rsocket-java.git</developerConnection>
+    <url>https://github.com/rsocket/rsocket-java</url>
+  </scm>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.rsocket</groupId>
+        <artifactId>rsocket-core</artifactId>
+        <version>1.1.3</version>
+      </dependency>
+      <dependency>
+        <groupId>io.rsocket</groupId>
+        <artifactId>rsocket-load-balancer</artifactId>
+        <version>1.1.3</version>
+      </dependency>
+      <dependency>
+        <groupId>io.rsocket</groupId>
+        <artifactId>rsocket-micrometer</artifactId>
+        <version>1.1.3</version>
+      </dependency>
+      <dependency>
+        <groupId>io.rsocket</groupId>
+        <artifactId>rsocket-test</artifactId>
+        <version>1.1.3</version>
+      </dependency>
+      <dependency>
+        <groupId>io.rsocket</groupId>
+        <artifactId>rsocket-transport-local</artifactId>
+        <version>1.1.3</version>
+      </dependency>
+      <dependency>
+        <groupId>io.rsocket</groupId>
+        <artifactId>rsocket-transport-netty</artifactId>
+        <version>1.1.3</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+</project>

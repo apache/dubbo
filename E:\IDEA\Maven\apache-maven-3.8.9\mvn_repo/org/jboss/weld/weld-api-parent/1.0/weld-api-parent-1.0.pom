@@ -1,0 +1,86 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <parent>
+      <groupId>org.jboss.weld</groupId>
+      <artifactId>weld-api-bom</artifactId>
+      <version>1.0</version>
+      <relativePath>../bom/pom.xml</relativePath>
+   </parent>
+   <groupId>org.jboss.weld</groupId>
+   <artifactId>weld-api-parent</artifactId>
+   <packaging>pom</packaging>
+
+   <name>Weld and CDI APIs Parent</name>
+   
+
+   <!-- Full project metadata -->
+   <url>http://www.seamframework.org/Weld</url>
+   
+   <description>
+      APIs for CDI and Weld, the reference implementation of JSR 299: Contexts and Dependency Injection for Java EE
+   </description>
+
+   <ciManagement>
+      <system>Hudson</system>
+      <url>http://hudson.jboss.org</url>
+   </ciManagement>
+
+   <issueManagement>
+      <system>JIRA</system>
+      <url>http://jira.jboss.org/browse/WELD</url>
+   </issueManagement>
+   
+   <organization>
+      <name>Seam Framework</name>
+      <url>http://seamframework.org</url>
+   </organization>
+   
+   <inceptionYear>2008</inceptionYear>
+
+   <licenses>
+      <license>
+         <name>Apache License, Version 2.0</name>
+         <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+      </license>
+   </licenses>
+
+   <developers>
+      <developer>
+         <name>Pete Muir</name>
+         <id>pmuir</id>
+         <organization>Red Hat Inc.</organization>
+         <roles>
+            <role>Project Lead</role>
+         </roles>
+         <email>pmuir@redhat.com</email>
+      </developer>
+
+      <developer>
+         <name>Shane Bryzak</name>
+         <organization>Red Hat Inc.</organization>
+      </developer>
+
+      <developer>
+         <name>David Allen</name>
+      </developer>
+      
+      <developer>
+         <name>Nicklas Karlsson</name>
+      </developer>
+   </developers>
+
+   <!-- Configure non-API dependencies (e.g. testing)-->
+   <dependencyManagement>
+      <dependencies>
+      
+         <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>5.10</version>
+            <classifier>jdk15</classifier>
+         </dependency>
+      
+      </dependencies>
+   </dependencyManagement>
+   
+</project>

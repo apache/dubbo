@@ -1,0 +1,22 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>antlr</groupId>
+  <artifactId>antlr</artifactId>
+  <packaging>jar</packaging>
+  <version>2.7.7</version>
+  <name>AntLR Parser Generator</name>
+  <description>
+    A framework for constructing recognizers, compilers,
+    and translators from grammatical descriptions containing
+    Java, C#, C++, or Python actions.
+  </description>
+  <url>http://www.antlr.org/</url>
+  <licenses>
+    <license>
+      <name>BSD License</name>
+      <url>http://www.antlr.org/license.html</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <dependencies/>
+</project>

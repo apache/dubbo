@@ -1,0 +1,575 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+
+    Copyright 2006-2018 the original author or authors.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.objenesis</groupId>
+  <artifactId>objenesis-parent</artifactId>
+  <version>3.3</version>
+  <packaging>pom</packaging>
+
+  <name>Objenesis parent project</name>
+  <description>A library for instantiating Java objects</description>
+  <url>http://objenesis.org</url>
+  <inceptionYear>2006</inceptionYear>
+
+  <modules>
+    <module>test</module>
+    <module>main</module>
+    <module>exotic</module>
+    <module>tck</module>
+  </modules>
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <!-- Used for the copyright -->
+  <organization>
+    <name>Joe Walnes, Henri Tremblay, Leonardo Mesquita</name>
+  </organization>
+
+  <scm>
+    <url>https://github.com/easymock/objenesis</url>
+    <developerConnection>scm:git:git@github.com:easymock/objenesis.git</developerConnection>
+    <connection>scm:git:https://github.com/easymock/objenesis.git</connection>
+    <tag>3.3</tag>
+  </scm>
+
+  <developers>
+    <developer>
+      <id>joe</id>
+      <name>Joe Walnes</name>
+      <timezone>-5</timezone>
+    </developer>
+    <developer>
+      <id>henri</id>
+      <name>Henri Tremblay</name>
+      <timezone>-5</timezone>
+    </developer>
+    <developer>
+      <id>leonardo</id>
+      <name>Leonardo Mesquita</name>
+      <timezone>-5</timezone>
+    </developer>
+  </developers>
+
+  <properties>
+    <java.version>1.8</java.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <junit5.version>5.9.0</junit5.version>
+    <spotbugs-maven-plugin.version>4.7.1.1</spotbugs-maven-plugin.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>${junit5.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.vintage</groupId>
+        <artifactId>junit-vintage-engine</artifactId>
+        <version>${junit5.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.13.2</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <index>true</index>
+            <addMavenDescriptor>false</addMavenDescriptor>
+            <manifest>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-release-plugin</artifactId>
+        <configuration>
+          <!-- Required to let release with the benchmark project using snapshots. I can't put it directly in the benchmark project. It doesn't work -->
+          <allowTimestampedSnapshots>true</allowTimestampedSnapshots>
+          <!-- Renamed because the default would be objenesis-parent-x.y -->
+          <tagNameFormat>@{project.version}</tagNameFormat>
+          <!-- Quite annoying in case of error that the changes were pushed -->
+          <pushChanges>false</pushChanges>
+          <!-- Do not activate special profile from the superpom. We do it ourselves -->
+          <useReleaseProfile>false</useReleaseProfile>
+          <!-- Profiles required for the release -->
+          <releaseProfiles>release,full,all</releaseProfiles>
+          <!-- To use the same version on the module and the parent -->
+          <autoVersionSubmodules>true</autoVersionSubmodules>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-site-plugin</artifactId>
+        <inherited>false</inherited>
+        <configuration>
+          <siteDirectory>${project.basedir}/website</siteDirectory>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.mycila</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <inherited>false</inherited>
+        <configuration>
+          <!-- skipping the license check on the parent pom since it's not needed -->
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <rules>
+            <requireMavenVersion>
+              <version>3.5.0</version>
+            </requireMavenVersion>
+          </rules>
+        </configuration>
+        <executions>
+          <execution>
+            <id>enforce-versions</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <version>1.6.13</version>
+        <extensions>true</extensions>
+        <configuration>
+          <serverId>ossrh</serverId>
+          <nexusUrl>https://oss.sonatype.org</nexusUrl>
+          <autoReleaseAfterClose>false</autoReleaseAfterClose>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.gaul</groupId>
+        <artifactId>modernizer-maven-plugin</artifactId>
+        <version>2.4.0</version>
+        <configuration>
+          <javaVersion>8</javaVersion>
+        </configuration>
+      </plugin>
+    </plugins>
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-ssh-external</artifactId>
+        <version>3.5.2</version>
+      </extension>
+    </extensions>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>3.4.2</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.10.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.2.2</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.0.0-M7</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>3.2.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>3.0.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>3.0.1</version>
+          <executions>
+            <execution>
+              <id>sign-artifacts</id>
+              <phase>verify</phase>
+              <goals>
+                <goal>sign</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>3.0.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>3.0.0-M6</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>3.3.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>3.3.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.12.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>3.2.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>3.4.0</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-war-plugin</artifactId>
+          <version>3.3.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.felix</groupId>
+          <artifactId>maven-bundle-plugin</artifactId>
+          <version>5.1.7</version>
+        </plugin>
+        <plugin>
+          <groupId>com.keyboardsamurais.maven</groupId>
+          <artifactId>maven-timestamp-plugin</artifactId>
+          <version>1.0</version>
+          <executions>
+            <execution>
+              <id>year</id>
+              <goals>
+                <goal>create</goal>
+              </goals>
+              <configuration>
+                <propertyName>year</propertyName>
+                <timestampPattern>yyyy</timestampPattern>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>com.mycila</groupId>
+          <artifactId>license-maven-plugin</artifactId>
+          <version>4.1</version>
+          <configuration>
+            <header>${project.basedir}/../header.txt</header>
+            <strictCheck>true</strictCheck>
+            <mapping>
+              <java>SLASHSTAR_STYLE</java>
+            </mapping>
+            <excludes>
+              <!-- Not being ignore by default -->
+              <exclude>.gitignore</exclude>
+              <!-- Nothing is copyrighted in target -->
+              <exclude>target/**</exclude>
+              <!-- generated pom by maven-shade-plugin -->
+              <exclude>dependency-reduced-pom.xml</exclude>
+              <!-- generated by Equinox during OSGi test -->
+              <exclude>eclipse_config/**</exclude>
+              <!-- no header wanted on the website -->
+              <exclude>website/**</exclude>
+              <!-- no header on batch files -->
+              <exclude>**/*.bat</exclude>
+              <!-- generated Android files -->
+              <exclude>project.properties</exclude>
+              <exclude>lint.xml</exclude>
+              <exclude>gen/**</exclude>
+              <exclude>bin/**</exclude>
+              <!-- no header on text files -->
+              <exclude>**/*.txt</exclude>
+              <!-- no header on Eclipse launch files -->
+              <exclude>**/*.launch</exclude>
+              <!-- no header on markdown files -->
+              <exclude>**/*.md</exclude>
+              <!-- Github pages files -->
+              <exclude>website/site/resources/CNAME</exclude>
+              <exclude>website/site/resources/.nojekyll</exclude>
+            </excludes>
+            <properties>
+              <inceptionYear>${project.inceptionYear}</inceptionYear>
+              <year>${year}</year>
+            </properties>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-remote-resources-plugin</artifactId>
+          <version>3.0.0</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>process</goal>
+              </goals>
+              <configuration>
+                <resourceBundles>
+                  <resourceBundle>org.apache:apache-jar-resource-bundle:1.3</resourceBundle>
+                </resourceBundles>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>3.1.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>versions-maven-plugin</artifactId>
+          <version>2.11.0</version>
+        </plugin>
+        <plugin>
+          <groupId>com.github.spotbugs</groupId>
+          <artifactId>spotbugs-maven-plugin</artifactId>
+          <version>${spotbugs-maven-plugin.version}</version>
+          <configuration>
+            <xmlOutput>true</xmlOutput>
+            <omitVisitors>Naming</omitVisitors>
+          </configuration>
+        </plugin>
+        <!--This plugin configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>com.keyboardsamurais.maven</groupId>
+                    <artifactId>maven-timestamp-plugin</artifactId>
+                    <versionRange>[1.0,)</versionRange>
+                    <goals>
+                      <goal>create</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <execute />
+                  </action>
+                </pluginExecution>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <artifactId>maven-remote-resources-plugin</artifactId>
+                    <versionRange>[1.0,)</versionRange>
+                    <goals>
+                      <goal>process</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <execute />
+                  </action>
+                </pluginExecution>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs-maven-plugin</artifactId>
+                    <versionRange>[2.5.5,)</versionRange>
+                    <goals>
+                      <goal>spotbugs</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore />
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+  <reporting>
+    <plugins>
+      <plugin>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>3.4.0</version>
+      </plugin>
+      <plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+        <version>${spotbugs-maven-plugin.version}</version>
+      </plugin>
+      <plugin>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <version>3.17.0</version>
+        <configuration>
+          <targetJdk>1.8</targetJdk>
+        </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
+
+  <distributionManagement>
+    <repository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+  <profiles>
+    <profile>
+      <!-- Activate to generate javadoc, sources jars, license check and spotbugs -->
+      <id>full</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-source-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>spotbugs</id>
+                <goals>
+                  <goal>spotbugs</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>com.mycila</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>check</id>
+                <goals>
+                  <goal>check</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <!-- Activate to generate the website -->
+      <id>website</id>
+      <modules>
+        <module>website</module>
+      </modules>
+    </profile>
+    <profile>
+      <!-- Activate to execute the tck on Android -->
+      <id>android</id>
+      <modules>
+        <module>tck-android</module>
+      </modules>
+    </profile>
+    <profile>
+      <!-- Activate to run the benchmark -->
+      <id>benchmark</id>
+      <modules>
+        <module>benchmark</module>
+      </modules>
+    </profile>
+    <profile>
+      <!-- Activate to run to include Google App Engine test -->
+      <id>gae</id>
+      <modules>
+        <module>gae</module>
+      </modules>
+    </profile>
+    <profile>
+      <!-- Activate to create a complete release -->
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-gpg-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>all</id>
+      <modules>
+        <module>benchmark</module>
+        <!-- testing the android module will be removed for now since the android plugin doesn't work with Java 9+ -->
+        <!-- the only way to repair would be to migrate the build or a part of the buil to Gradle and I do not want to do that now -->
+        <!--<module>tck-android</module>-->
+        <module>gae</module>
+        <module>website</module>
+      </modules>
+    </profile>
+  </profiles>
+</project>
