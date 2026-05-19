@@ -95,11 +95,11 @@
     <javassist_version>3.31.0-GA</javassist_version>
     <byte-buddy_version>1.18.8</byte-buddy_version>
     <netty_version>3.2.10.Final</netty_version>
-    <netty4_version>4.2.12.Final</netty4_version>
+    <netty4_version>4.2.13.Final</netty4_version>
     <httpclient_version>4.5.14</httpclient_version>
     <httpcore_version>4.4.16</httpcore_version>
     <fastjson_version>1.2.83_noneautotype</fastjson_version>
-    <fastjson2_version>2.0.61</fastjson2_version>
+    <fastjson2_version>2.0.62</fastjson2_version>
     <zookeeper_version>3.7.2</zookeeper_version>
     <curator_version>5.9.0</curator_version>
     <curator_test_version>2.12.0</curator_test_version>
@@ -122,13 +122,13 @@
     <commons_lang3_version>3.20.0</commons_lang3_version>
     <envoy_api_version>0.1.35</envoy_api_version>
     <micrometer.version>1.16.5</micrometer.version>
-    <opentelemetry.version>1.61.0</opentelemetry.version>
+    <opentelemetry.version>1.62.0</opentelemetry.version>
     <zipkin-reporter.version>3.5.3</zipkin-reporter.version>
     <zipkin.version>3.6.1</zipkin.version>
     <micrometer-tracing.version>1.6.5</micrometer-tracing.version>
     <t_digest.version>3.3</t_digest.version>
     <prometheus_client.version>0.16.0</prometheus_client.version>
-    <prometheus_metrics.version>1.5.1</prometheus_metrics.version>
+    <prometheus_metrics.version>1.6.1</prometheus_metrics.version>
     <reactive.version>1.0.4</reactive.version>
     <reactor.version>3.8.5</reactor.version>
     <mutiny.version>2.9.5</mutiny.version>
@@ -142,7 +142,7 @@
     <nacos_version>2.5.2</nacos_version>
     <sentinel.version>1.8.9</sentinel.version>
     <seata.version>1.8.0</seata.version>
-    <grpc.version>1.80.0</grpc.version>
+    <grpc.version>1.81.0</grpc.version>
     <grpc_contrib_verdion>0.8.1</grpc_contrib_verdion>
     <jprotoc_version>1.2.2</jprotoc_version>
     <mustache_version>0.9.14</mustache_version>
@@ -152,10 +152,10 @@
     <log4j_version>1.2.17</log4j_version>
     <logback_version>1.2.13</logback_version>
     <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
-    <log4j2_version>2.25.4</log4j2_version>
+    <log4j2_version>2.26.0</log4j2_version>
     <commons_io_version>2.22.0</commons_io_version>
     <commons-codec_version>1.22.0</commons-codec_version>
-    <groovy_version>4.0.31</groovy_version>
+    <groovy_version>4.0.32</groovy_version>
 
     <!-- Test libs -->
     <junit_jupiter_version>5.14.4</junit_jupiter_version>
@@ -176,7 +176,7 @@
     <bouncycastle-bcprov_version>1.84</bouncycastle-bcprov_version>
     <metrics_version>2.0.6</metrics_version>
     <gson_version>2.14.0</gson_version>
-    <jackson_version>2.21.2</jackson_version>
+    <jackson_version>2.21.3</jackson_version>
     <mortbay_jetty_version>6.1.26</mortbay_jetty_version>
     <portlet_version>2.0</portlet_version>
     <maven_flatten_version>1.7.3</maven_flatten_version>
