@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 
 import com.alibaba.com.caucho.hessian.io.Deserializer;
+import com.alibaba.com.caucho.hessian.io.HessianProtocolException;
 import com.alibaba.com.caucho.hessian.io.InputStreamDeserializer;
 import com.alibaba.com.caucho.hessian.io.JavaDeserializer;
 import com.alibaba.com.caucho.hessian.io.JavaSerializer;
@@ -63,6 +64,18 @@ public class Hessian2SerializerFactory extends SerializerFactory {
         if (isEnableUnsafeSerializer() && JavaSerializer.getWriteReplace(cl) == null) {
             return UnsafeSerializer.create(cl);
         } else return JavaSerializer.create(cl);
+    }
+
+    @Override
+    public Serializer getSerializer(Class cl) throws HessianProtocolException {
+        try {
+            // 1. Force the security guard pre-check to run first
+            defaultSerializeClassChecker.loadClass(getClassLoader(), cl.getName());
+        } catch (ClassNotFoundException e) {
+            // ignore
+        }
+        checkSerializable(cl);
+        return super.getSerializer(cl);
     }
 
     @Override
