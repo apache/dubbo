@@ -68,10 +68,9 @@ public class CollectionUtils {
 
     private CollectionUtils() {}
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public static <T> List<T> sort(List<T> list) {
+    public static <T extends Comparable<? super T>> List<T> sort(List<T> list) {
         if (isNotEmpty(list)) {
-            Collections.sort((List) list);
+            Collections.sort(list);
         }
         return list;
     }
