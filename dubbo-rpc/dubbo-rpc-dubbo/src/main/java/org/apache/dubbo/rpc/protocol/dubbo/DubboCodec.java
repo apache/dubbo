@@ -294,7 +294,19 @@ public class DubboCodec extends ExchangeCodec {
         Object[] args = inv.getArguments();
         if (args != null) {
             for (int i = 0; i < args.length; i++) {
-                out.writeObject(callbackServiceCodec.encodeInvocationArgument(channel, inv, i));
+                Object arg = callbackServiceCodec.encodeInvocationArgument(channel, inv, i);
+                try {
+                    out.writeObject(arg);
+                } catch (IOException e) {
+                    Throwable cause = e.getCause() != null ? e.getCause().getCause() : null;
+                    if (cause instanceof IllegalArgumentException
+                            && cause.getMessage() != null
+                            && cause.getMessage().contains("has not implement Serializable")) {
+                        throw new IOException(arg.getClass().getName()
+                                + " must implement java.io.Serializable", e);
+                    }
+                    throw e;
+                }
             }
         }
         out.writeAttachments(inv.getObjectAttachments());
@@ -313,7 +325,18 @@ public class DubboCodec extends ExchangeCodec {
                 out.writeByte(attach ? RESPONSE_NULL_VALUE_WITH_ATTACHMENTS : RESPONSE_NULL_VALUE);
             } else {
                 out.writeByte(attach ? RESPONSE_VALUE_WITH_ATTACHMENTS : RESPONSE_VALUE);
-                out.writeObject(ret);
+                try {
+                    out.writeObject(ret);
+                } catch (IOException e) {
+                    Throwable cause = e.getCause() != null ? e.getCause().getCause() : null;
+                    if (cause instanceof IllegalArgumentException
+                            && cause.getMessage() != null
+                            && cause.getMessage().contains("has not implement Serializable")) {
+                        throw new IOException(ret.getClass().getName()
+                                + " must implement java.io.Serializable", e);
+                    }
+                    throw e;
+                }
             }
         } else {
             out.writeByte(attach ? RESPONSE_WITH_EXCEPTION_WITH_ATTACHMENTS : RESPONSE_WITH_EXCEPTION);

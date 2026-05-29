@@ -234,7 +234,6 @@ class DubboProtocolTest {
     }
 
     @Test
-    @Disabled
     public void testNonSerializedParameter() {
         DemoService service = new DemoServiceImpl();
         int port = NetUtils.getAvailablePort();
@@ -258,7 +257,6 @@ class DubboProtocolTest {
     }
 
     @Test
-    @Disabled
     public void testReturnNonSerialized() {
         DemoService service = new DemoServiceImpl();
         int port = NetUtils.getAvailablePort();
