@@ -302,8 +302,7 @@ public class DubboCodec extends ExchangeCodec {
                     if (cause instanceof IllegalArgumentException
                             && cause.getMessage() != null
                             && cause.getMessage().contains("has not implement Serializable")) {
-                        throw new IOException(arg.getClass().getName()
-                                + " must implement java.io.Serializable", e);
+                        throw new IOException(arg.getClass().getName() + " must implement java.io.Serializable", e);
                     }
                     throw e;
                 }
@@ -332,8 +331,7 @@ public class DubboCodec extends ExchangeCodec {
                     if (cause instanceof IllegalArgumentException
                             && cause.getMessage() != null
                             && cause.getMessage().contains("has not implement Serializable")) {
-                        throw new IOException(ret.getClass().getName()
-                                + " must implement java.io.Serializable", e);
+                        throw new IOException(ret.getClass().getName() + " must implement java.io.Serializable", e);
                     }
                     throw e;
                 }
