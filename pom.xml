@@ -1103,9 +1103,6 @@
     </profile>
     <profile>
       <id>spring-boot-3</id>
-      <properties>
-        <tomcat.version>10.1.52</tomcat.version>
-      </properties>
       <dependencyManagement>
         <dependencies>
           <dependency>
@@ -1192,21 +1189,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
             <version>${spring-boot-3.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.apache.tomcat.embed</groupId>
-            <artifactId>tomcat-embed-core</artifactId>
-            <version>${tomcat.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.apache.tomcat.embed</groupId>
-            <artifactId>tomcat-embed-el</artifactId>
-            <version>${tomcat.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.apache.tomcat.embed</groupId>
-            <artifactId>tomcat-embed-websocket</artifactId>
-            <version>${tomcat.version}</version>
           </dependency>
         </dependencies>
       </dependencyManagement>
