@@ -290,6 +290,14 @@ public class DubboProtocol extends AbstractProtocol {
         boolean isStubServiceInvoke;
         int port = channel.getLocalAddress().getPort();
         String path = (String) inv.getObjectAttachmentWithoutConvert(PATH_KEY);
+        if (path == null) {
+            throw new RemotingException(
+                    channel,
+                    "Failed to resolve service path from invocation. "
+                            + "This may be caused by non-serializable request parameters. "
+                            + "Please ensure all parameter types implement java.io.Serializable, "
+                            + "channel: " + channel.getRemoteAddress() + " --> " + channel.getLocalAddress());
+        }
 
         // if it's stub service on client side(after enable stubevent, usually is set up onconnect or ondisconnect
         // method)
