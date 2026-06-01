@@ -65,6 +65,8 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
                 "",
                 "TLS negotiation failed when trying to accept new connection.",
                 cause);
+        ctx.fireExceptionCaught(cause);
+        ctx.close();
     }
 
     @Override
