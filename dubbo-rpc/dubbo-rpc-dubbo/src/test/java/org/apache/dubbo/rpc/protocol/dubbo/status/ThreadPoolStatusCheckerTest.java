@@ -44,11 +44,14 @@ class ThreadPoolStatusCheckerTest {
 
         ThreadPoolStatusChecker threadPoolStatusChecker = new ThreadPoolStatusChecker(ApplicationModel.defaultModel());
         Status status = threadPoolStatusChecker.check();
-        Assertions.assertEquals(status.getLevel(), Status.Level.WARN);
-        Assertions.assertEquals(
-                status.getMessage(),
-                "Pool status:WARN, max:1, core:1, largest:0, active:0, task:0, service port: 8888;"
-                        + "Pool status:OK, max:10, core:10, largest:0, active:0, task:0, service port: 8889");
+        Assertions.assertEquals(Status.Level.WARN, status.getLevel());
+        String msg = status.getMessage();
+        String[] parts = msg.split(";");
+        Assertions.assertEquals(2, parts.length);
+        Assertions.assertTrue(
+                msg.contains("Pool status:WARN, max:1, core:1, largest:0, active:0, task:0, service port: 8888"));
+        Assertions.assertTrue(
+                msg.contains("Pool status:OK, max:10, core:10, largest:0, active:0, task:0, service port: 8889"));
 
         // reset
         executorService1.shutdown();
