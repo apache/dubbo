@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -652,6 +653,143 @@ class Hessian2SerializationTest {
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
             Assertions.assertInstanceOf(Map.class, objectInput.readObject());
             frameworkModel.destroy();
+        }
+    }
+
+    @Test
+    void testWriteReplaceSelfStillRequiresSerializable() throws IOException {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        try {
+            Serialization serialization =
+                    frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+            URL url = URL.valueOf("").setScopeModel(frameworkModel);
+            ObjectOutput objectOutput = serialization.serialize(url, new ByteArrayOutputStream());
+
+            Assertions.assertThrows(
+                    IOException.class, () -> objectOutput.writeObject(new NonSerializableWriteReplace("self")));
+        } finally {
+            frameworkModel.destroy();
+        }
+    }
+
+    @Test
+    void testWriteReplaceReplacementStillRequiresSerializable() throws IOException {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        try {
+            Serialization serialization =
+                    frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+            URL url = URL.valueOf("").setScopeModel(frameworkModel);
+            ObjectOutput objectOutput = serialization.serialize(url, new ByteArrayOutputStream());
+
+            Assertions.assertThrows(
+                    IOException.class,
+                    () -> objectOutput.writeObject(new SerializableWriteReplaceToNonSerializableReplacement("target")));
+        } finally {
+            frameworkModel.destroy();
+        }
+    }
+
+    @Test
+    void testWriteReplaceSerializableReplacementStillWorks() throws IOException, ClassNotFoundException {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        try {
+            Serialization serialization =
+                    frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+            URL url = URL.valueOf("").setScopeModel(frameworkModel);
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ObjectOutput objectOutput = serialization.serialize(url, outputStream);
+            objectOutput.writeObject(new SerializableWriteReplaceToSerializableReplacement("allowed"));
+            objectOutput.flushBuffer();
+
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+            ObjectInput objectInput = serialization.deserialize(url, inputStream);
+            Assertions.assertEquals(new SerializableReplacement("allowed"), objectInput.readObject());
+        } finally {
+            frameworkModel.destroy();
+        }
+    }
+
+    public static class NonSerializableWriteReplace {
+        private String value;
+
+        public NonSerializableWriteReplace() {}
+
+        public NonSerializableWriteReplace(String value) {
+            this.value = value;
+        }
+
+        private Object writeReplace() {
+            return this;
+        }
+    }
+
+    public static class SerializableWriteReplaceToNonSerializableReplacement implements Serializable {
+        private String value;
+
+        public SerializableWriteReplaceToNonSerializableReplacement() {}
+
+        public SerializableWriteReplaceToNonSerializableReplacement(String value) {
+            this.value = value;
+        }
+
+        private Object writeReplace() {
+            return new NonSerializableReplacement(value);
+        }
+    }
+
+    public static class NonSerializableReplacement {
+        private String value;
+
+        public NonSerializableReplacement() {}
+
+        public NonSerializableReplacement(String value) {
+            this.value = value;
+        }
+
+        private Object writeReplace() {
+            return this;
+        }
+    }
+
+    public static class SerializableWriteReplaceToSerializableReplacement implements Serializable {
+        private String value;
+
+        public SerializableWriteReplaceToSerializableReplacement() {}
+
+        public SerializableWriteReplaceToSerializableReplacement(String value) {
+            this.value = value;
+        }
+
+        private Object writeReplace() {
+            return new SerializableReplacement(value);
+        }
+    }
+
+    public static class SerializableReplacement implements Serializable {
+        private String value;
+
+        public SerializableReplacement() {}
+
+        public SerializableReplacement(String value) {
+            this.value = value;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof SerializableReplacement)) {
+                return false;
+            }
+            SerializableReplacement that = (SerializableReplacement) o;
+            return value.equals(that.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return value.hashCode();
         }
     }
 }
