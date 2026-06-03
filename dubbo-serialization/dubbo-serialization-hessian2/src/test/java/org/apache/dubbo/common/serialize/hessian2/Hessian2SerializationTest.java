@@ -29,6 +29,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -38,6 +39,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import com.example.test.TestPojo;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DubboProperty.DUBBO_HESSIAN_ALLOW_NON_SERIALIZABLE;
@@ -707,6 +709,42 @@ class Hessian2SerializationTest {
             Assertions.assertEquals(new SerializableReplacement("allowed"), objectInput.readObject());
         } finally {
             frameworkModel.destroy();
+        }
+    }
+
+    @Test
+    void testJdkImmutableListWithWriteReplaceCanSerializeInStrictMode() throws Exception {
+        List<String> immutableList = newJdkImmutableList("one", "two");
+        Assumptions.assumeTrue(immutableList != null, "JDK immutable collections are available since Java 9");
+
+        FrameworkModel frameworkModel = new FrameworkModel();
+        try {
+            Serialization serialization =
+                    frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+            frameworkModel
+                    .getBeanFactory()
+                    .getBean(SerializeSecurityManager.class)
+                    .setCheckStatus(SerializeCheckStatus.STRICT);
+            URL url = URL.valueOf("").setScopeModel(frameworkModel);
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ObjectOutput objectOutput = serialization.serialize(url, outputStream);
+            Assertions.assertDoesNotThrow(() -> {
+                objectOutput.writeObject(immutableList);
+                objectOutput.flushBuffer();
+            });
+        } finally {
+            frameworkModel.destroy();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<String> newJdkImmutableList(String first, String second) throws Exception {
+        try {
+            Method of = List.class.getMethod("of", Object.class, Object.class);
+            return (List<String>) of.invoke(null, first, second);
+        } catch (NoSuchMethodException e) {
+            return null;
         }
     }
 

@@ -51,9 +51,9 @@ public class Hessian2SerializerFactory extends SerializerFactory {
     @Override
     public Serializer getSerializer(Class cl) throws HessianProtocolException {
         // SerializerFactory handles writeReplace before getDefaultSerializer(), so enforce Dubbo's
-        // class policy here for replacement-capable classes as well.
+        // Serializable requirement here without expanding strict allow-list checks to JDK replacements.
         if (JavaSerializer.getWriteReplace(cl) != null) {
-            checkClass(cl);
+            checkSerializable(cl);
         }
         return super.getSerializer(cl);
     }
