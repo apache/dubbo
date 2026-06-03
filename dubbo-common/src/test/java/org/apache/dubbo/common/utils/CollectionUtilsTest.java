@@ -278,6 +278,13 @@ class CollectionUtilsTest {
         Assertions.assertSame(comparator, ((TreeSet<PriorityItem>) sorted).comparator());
     }
 
+    @Test
+    void toTreeSetShouldReturnNullForNullInputWithComparator() {
+        Comparator<PriorityItem> comparator = Comparator.comparingInt(PriorityItem::getPriority);
+
+        assertNull(CollectionUtils.toTreeSet(null, comparator));
+    }
+
     private static class Person implements Comparable<Person> {
 
         private final String name;
