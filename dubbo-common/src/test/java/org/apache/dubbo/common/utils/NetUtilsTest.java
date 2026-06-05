@@ -347,6 +347,13 @@ class NetUtilsTest {
     }
 
     @Test
+    void testMatchIpExpressionWithIpv4AddressAndPort() throws UnknownHostException {
+        assertTrue(NetUtils.matchIpExpression("*.*.*.*:90", "192.168.1.63:90"));
+        assertTrue(NetUtils.matchIpExpression("192.168.1.*:90", "192.168.1.63:90"));
+        assertFalse(NetUtils.matchIpExpression("192.168.1.*:80", "192.168.1.63:90"));
+    }
+
+    @Test
     void testMatchIpv6WithIpPort() throws UnknownHostException {
         assertTrue(NetUtils.matchIpRange("[234e:0:4567::3d:ee]", "234e:0:4567::3d:ee", 8090));
         assertTrue(NetUtils.matchIpRange("[234e:0:4567:0:0:0:3d:ee]", "234e:0:4567::3d:ee", 8090));

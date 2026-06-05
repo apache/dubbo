@@ -735,11 +735,13 @@ public final class NetUtils {
 
         String host = address;
         int port = 0;
-        // only works for ipv4 address with 'ip:port' format
-        if (address.endsWith(":")) {
-            String[] hostPort = address.split(":");
-            host = hostPort[0];
-            port = StringUtils.parseInteger(hostPort[1]);
+        // parse 'ip:port' format for IPv4 addresses
+        // use ADDRESS_PATTERN (which matches 'x.x.x.x:port') to detect IPv4 with port,
+        // and 'lastIndexOf' to avoid breaking IPv6 addresses that contain multiple colons
+        if (isValidAddress(address)) {
+            int lastColonIndex = address.lastIndexOf(':');
+            host = address.substring(0, lastColonIndex);
+            port = StringUtils.parseInteger(address.substring(lastColonIndex + 1));
         }
 
         // if the pattern is subnet format, it will not be allowed to config port param in pattern.
