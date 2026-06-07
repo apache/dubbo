@@ -92,6 +92,17 @@ class AddressMatchTest {
     }
 
     @Test
+    void cidrFallsBackToDeprecatedCirdField() throws ReflectiveOperationException {
+        AddressMatch addressMatch = new AddressMatch();
+        java.lang.reflect.Field cirdField = AddressMatch.class.getDeclaredField("cird");
+        cirdField.setAccessible(true);
+        cirdField.set(addressMatch, "192.168.1.*:90");
+
+        assertEquals("192.168.1.*:90", addressMatch.getCidr());
+        assertTrue(addressMatch.isMatch("192.168.1.63:90"));
+    }
+
+    @Test
     void cidrFieldCanBeMappedToPojo() throws ReflectiveOperationException {
         Map<String, Object> map = new HashMap<>();
         map.put("cidr", "192.168.1.*:90");
