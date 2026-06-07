@@ -71,6 +71,24 @@ class AddressMatchTest {
     }
 
     @Test
+    void wildcardMatchAddress() {
+        AddressMatch addressMatch = new AddressMatch();
+        addressMatch.setWildcard("192.168.1.*");
+
+        assertTrue(addressMatch.isMatch("192.168.1.63"));
+        assertFalse(addressMatch.isMatch("10.0.0.1"));
+    }
+
+    @Test
+    void exactMatchAddress() {
+        AddressMatch addressMatch = new AddressMatch();
+        addressMatch.setExact("192.168.1.63");
+
+        assertTrue(addressMatch.isMatch("192.168.1.63"));
+        assertFalse(addressMatch.isMatch("192.168.1.64"));
+    }
+
+    @Test
     @SuppressWarnings("deprecation")
     void deprecatedCirdAccessorsRemainCompatible() {
         AddressMatch addressMatch = new AddressMatch();
