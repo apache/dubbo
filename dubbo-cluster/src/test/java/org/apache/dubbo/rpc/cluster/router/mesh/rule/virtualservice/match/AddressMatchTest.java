@@ -23,6 +23,8 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -71,6 +73,14 @@ class AddressMatchTest {
     }
 
     @Test
+    void cidrMatchNullAddressReturnsFalse() {
+        AddressMatch addressMatch = new AddressMatch();
+        addressMatch.setCidr("192.168.1.*");
+
+        assertFalse(addressMatch.isMatch(null));
+    }
+
+    @Test
     void wildcardMatchAddress() {
         AddressMatch addressMatch = new AddressMatch();
         addressMatch.setWildcard("192.168.1.*");
@@ -80,12 +90,39 @@ class AddressMatchTest {
     }
 
     @Test
+    void wildcardAnyAddressMatches() {
+        AddressMatch wildcardAny = new AddressMatch();
+        wildcardAny.setWildcard(ANY_VALUE);
+        assertTrue(wildcardAny.isMatch("192.168.1.63"));
+
+        AddressMatch wildcardAnyHost = new AddressMatch();
+        wildcardAnyHost.setWildcard(ANYHOST_VALUE);
+        assertTrue(wildcardAnyHost.isMatch("192.168.1.63"));
+    }
+
+    @Test
+    void wildcardMatchNullAddressReturnsFalse() {
+        AddressMatch addressMatch = new AddressMatch();
+        addressMatch.setWildcard("192.168.1.*");
+
+        assertFalse(addressMatch.isMatch(null));
+    }
+
+    @Test
     void exactMatchAddress() {
         AddressMatch addressMatch = new AddressMatch();
         addressMatch.setExact("192.168.1.63");
 
         assertTrue(addressMatch.isMatch("192.168.1.63"));
         assertFalse(addressMatch.isMatch("192.168.1.64"));
+    }
+
+    @Test
+    void exactMatchNullAddressReturnsFalse() {
+        AddressMatch addressMatch = new AddressMatch();
+        addressMatch.setExact("192.168.1.63");
+
+        assertFalse(addressMatch.isMatch(null));
     }
 
     @Test
