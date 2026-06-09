@@ -33,7 +33,9 @@ env:
     --fail-fast
 
 concurrency:
+  # One group per PR, or per ref for branch pushes.
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # Cancel in-progress runs for PRs only, so release branch builds always complete.
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
