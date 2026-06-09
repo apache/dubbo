@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.http12.exception.UnimplementedException;
 import org.apache.dubbo.rpc.Invoker;
@@ -30,6 +31,7 @@ import org.apache.dubbo.rpc.stub.StubSuppliers;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 
@@ -99,49 +101,133 @@ public final class DescriptorUtils {
                     .get(0);
         } else {
             List<MethodDescriptor> methodDescriptors = serviceDescriptor.getMethods(methodName);
-            if (CollectionUtils.isEmpty(methodDescriptors)) {
-                return null;
-            }
-            // In most cases there is only one method
-            if (methodDescriptors.size() == 1) {
-                methodDescriptor = methodDescriptors.get(0);
-            }
-            // generated unary method ,use unary type
-            // Response foo(Request)
-            // void foo(Request,StreamObserver<Response>)
-            if (methodDescriptors.size() == 2) {
-                if (methodDescriptors.get(1).getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
-                    methodDescriptor = methodDescriptors.get(0);
-                } else if (methodDescriptors.get(0).getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
-                    methodDescriptor = methodDescriptors.get(1);
-                }
-            }
+            methodDescriptor = findSingleOrGeneratedUnaryMethodDescriptor(methodDescriptors);
         }
         return methodDescriptor;
     }
 
     public static MethodDescriptor findTripleMethodDescriptor(
             ServiceDescriptor serviceDescriptor, String methodName, InputStream rawMessage) throws IOException {
-        MethodDescriptor methodDescriptor = findReflectionMethodDescriptor(serviceDescriptor, methodName);
-        if (methodDescriptor == null) {
-            rawMessage.mark(Integer.MAX_VALUE);
-            List<MethodDescriptor> methodDescriptors = serviceDescriptor.getMethods(methodName);
-            TripleRequestWrapper request = TripleRequestWrapper.parseFrom(rawMessage);
-            String[] paramTypes = request.getArgTypes().toArray(new String[0]);
-            // wrapper mode the method can overload so maybe list
-            for (MethodDescriptor descriptor : methodDescriptors) {
-                // params type is array
-                if (Arrays.equals(descriptor.getCompatibleParamSignatures(), paramTypes)) {
-                    methodDescriptor = descriptor;
-                    break;
-                }
+        if (isGeneric(methodName)) {
+            return ServiceDescriptorInternalCache.genericService()
+                    .getMethods(methodName)
+                    .get(0);
+        }
+        if (isEcho(methodName)) {
+            return ServiceDescriptorInternalCache.echoService()
+                    .getMethods(methodName)
+                    .get(0);
+        }
+
+        List<MethodDescriptor> methodDescriptors = serviceDescriptor.getMethods(methodName);
+        if (CollectionUtils.isEmpty(methodDescriptors)) {
+            throw new UnimplementedException("method:" + methodName);
+        }
+        if (methodDescriptors.size() == 1) {
+            return methodDescriptors.get(0);
+        }
+
+        TripleRequestWrapper request = parseRequestWrapper(rawMessage);
+        List<String> argTypes = request == null ? null : request.getArgTypes();
+        if (argTypes != null) {
+            MethodDescriptor methodDescriptor =
+                    findMethodDescriptorByParamTypes(methodDescriptors, argTypes.toArray(new String[0]));
+            if (methodDescriptor != null) {
+                return methodDescriptor;
             }
-            if (methodDescriptor == null) {
+            if (CollectionUtils.isNotEmpty(argTypes)) {
                 throw new UnimplementedException("method:" + methodName);
             }
+        }
+
+        MethodDescriptor methodDescriptor = findGeneratedUnaryMethodDescriptor(methodDescriptors);
+        if (methodDescriptor != null) {
+            return methodDescriptor;
+        }
+        throw new UnimplementedException("method:" + methodName);
+    }
+
+    private static MethodDescriptor findSingleOrGeneratedUnaryMethodDescriptor(
+            List<MethodDescriptor> methodDescriptors) {
+        if (CollectionUtils.isEmpty(methodDescriptors)) {
+            return null;
+        }
+        // In most cases there is only one method
+        if (methodDescriptors.size() == 1) {
+            return methodDescriptors.get(0);
+        }
+        return findGeneratedUnaryMethodDescriptor(methodDescriptors);
+    }
+
+    private static TripleRequestWrapper parseRequestWrapper(InputStream rawMessage) throws IOException {
+        rawMessage.mark(Integer.MAX_VALUE);
+        try {
+            return TripleRequestWrapper.parseFrom(rawMessage);
+        } catch (IOException | RuntimeException ignored) {
+            return null;
+        } finally {
             rawMessage.reset();
         }
-        return methodDescriptor;
+    }
+
+    private static MethodDescriptor findMethodDescriptorByParamTypes(
+            List<MethodDescriptor> methodDescriptors, String[] paramTypes) {
+        for (MethodDescriptor descriptor : methodDescriptors) {
+            // wrapper mode the method can overload so maybe list
+            if (Arrays.equals(descriptor.getCompatibleParamSignatures(), paramTypes)) {
+                return descriptor;
+            }
+        }
+        return null;
+    }
+
+    private static MethodDescriptor findGeneratedUnaryMethodDescriptor(List<MethodDescriptor> methodDescriptors) {
+        // Generated unary methods may expose two Java methods for the same RPC:
+        // Response foo(Request)
+        // void foo(Request, StreamObserver<Response>)
+        if (methodDescriptors.size() != 2) {
+            return null;
+        }
+
+        MethodDescriptor unaryMethodDescriptor = null;
+        MethodDescriptor serverStreamMethodDescriptor = null;
+        for (MethodDescriptor descriptor : methodDescriptors) {
+            if (descriptor.getRpcType() == MethodDescriptor.RpcType.UNARY) {
+                unaryMethodDescriptor = descriptor;
+            } else if (descriptor.getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
+                serverStreamMethodDescriptor = descriptor;
+            }
+        }
+        if (unaryMethodDescriptor == null || serverStreamMethodDescriptor == null) {
+            return null;
+        }
+        if (!Arrays.equals(
+                unaryMethodDescriptor.getParameterClasses(),
+                getServerStreamRequestTypes(serverStreamMethodDescriptor))) {
+            return null;
+        }
+        if (!isSameResponseType(unaryMethodDescriptor, serverStreamMethodDescriptor)) {
+            return null;
+        }
+        return unaryMethodDescriptor;
+    }
+
+    private static Class<?>[] getServerStreamRequestTypes(MethodDescriptor serverStreamMethodDescriptor) {
+        Class<?>[] parameterClasses = serverStreamMethodDescriptor.getParameterClasses();
+        if (parameterClasses.length == 0
+                || !StreamObserver.class.isAssignableFrom(parameterClasses[parameterClasses.length - 1])) {
+            return null;
+        }
+        return Arrays.copyOf(parameterClasses, parameterClasses.length - 1);
+    }
+
+    private static boolean isSameResponseType(
+            MethodDescriptor unaryMethodDescriptor, MethodDescriptor serverStreamMethodDescriptor) {
+        Type[] returnTypes = unaryMethodDescriptor.getReturnTypes();
+        if (returnTypes.length == 0 || !(returnTypes[0] instanceof Class)) {
+            return false;
+        }
+        return returnTypes[0] == serverStreamMethodDescriptor.getActualResponseType();
     }
 
     private static boolean isGeneric(String methodName) {
