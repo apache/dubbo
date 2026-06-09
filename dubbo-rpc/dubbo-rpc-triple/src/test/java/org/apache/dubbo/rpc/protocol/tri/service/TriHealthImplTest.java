@@ -93,6 +93,29 @@ class TriHealthImplTest {
         Assertions.assertTrue(watches.isEmpty());
     }
 
+    @Test
+    void testMultipleClientsWatchingSameService() throws Exception {
+        TriHealthImpl triHealth = new TriHealthImpl();
+        HealthCheckRequest request =
+                HealthCheckRequest.newBuilder().setService("multi-client").build();
+        triHealth.setStatus(request.getService(), ServingStatus.SERVING);
+
+        StreamObserver<HealthCheckResponse> client1 = new MockStreamObserver();
+        StreamObserver<HealthCheckResponse> client2 = new MockStreamObserver();
+
+        triHealth.watch(request, client1);
+        triHealth.watch(request, client2);
+
+        // Verify both clients get notified
+        triHealth.setStatus(request.getService(), ServingStatus.NOT_SERVING);
+
+        MockStreamObserver mock1 = (MockStreamObserver) client1;
+        MockStreamObserver mock2 = (MockStreamObserver) client2;
+
+        Assertions.assertEquals(mock1.getCount(), 2);
+        Assertions.assertEquals(mock2.getCount(), 2);
+    }
+
     private void turnOffTerminal(TriHealthImpl triHealth) throws NoSuchFieldException, IllegalAccessException {
         Field terminalField = triHealth.getClass().getDeclaredField("terminal");
         terminalField.setAccessible(true);
