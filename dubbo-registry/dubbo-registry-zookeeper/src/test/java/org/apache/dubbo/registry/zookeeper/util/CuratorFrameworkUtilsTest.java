@@ -47,6 +47,7 @@ import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkParams.RO
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -99,6 +100,7 @@ class CuratorFrameworkUtilsTest {
         CuratorFramework curatorFramework = CuratorFrameworkUtils.buildCuratorFramework(registryUrl, null);
         Assertions.assertNotNull(curatorFramework);
         Assertions.assertTrue(curatorFramework.getZookeeperClient().isConnected());
+        verify(mockCuratorFramework, never()).close();
         curatorFramework.getZookeeperClient().close();
     }
 

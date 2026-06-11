@@ -32,6 +32,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -98,5 +99,38 @@ class ListenerRegistryWrapperTest {
         verify(listener, times(1)).onUnregister(serviceUrl, null);
         verify(listener, times(1)).onSubscribe(serviceUrl, null);
         verify(listener, times(1)).onUnsubscribe(serviceUrl, null);
+    }
+
+    @Test
+    void testDelegatesToRegistryWhenPresent() {
+        URL registryUrl = URL.valueOf("registry://127.0.0.1:2181/org.apache.dubbo.registry.RegistryService");
+        URL serviceUrl = URL.valueOf("dubbo://127.0.0.1:20881/" + DemoService.class.getName());
+        Registry registry = mock(Registry.class);
+        NotifyListener notifyListener = mock(NotifyListener.class);
+        RegistryServiceListener listener = mock(RegistryServiceListener.class);
+
+        when(registry.getUrl()).thenReturn(registryUrl);
+        when(registry.isAvailable()).thenReturn(true);
+        when(registry.isServiceDiscovery()).thenReturn(true);
+        when(registry.lookup(serviceUrl)).thenReturn(Collections.singletonList(serviceUrl));
+
+        ListenerRegistryWrapper wrapper = new ListenerRegistryWrapper(registry, Collections.singletonList(listener));
+
+        Assertions.assertEquals(registryUrl, wrapper.getUrl());
+        Assertions.assertTrue(wrapper.isAvailable());
+        Assertions.assertTrue(wrapper.isServiceDiscovery());
+        Assertions.assertEquals(Collections.singletonList(serviceUrl), wrapper.lookup(serviceUrl));
+
+        wrapper.unsubscribe(serviceUrl, notifyListener);
+        wrapper.destroy();
+
+        verify(registry, times(2)).getUrl();
+        verify(registry).isAvailable();
+        verify(registry).isServiceDiscovery();
+        verify(registry).lookup(serviceUrl);
+        verify(registry).unsubscribe(serviceUrl, notifyListener);
+        verify(registry).destroy();
+        verify(listener, times(1)).onUnsubscribe(serviceUrl, registry);
+        verify(listener, never()).onSubscribe(serviceUrl, registry);
     }
 }
