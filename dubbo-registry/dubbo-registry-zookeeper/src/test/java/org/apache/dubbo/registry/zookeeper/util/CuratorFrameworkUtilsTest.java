@@ -48,6 +48,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -113,20 +114,18 @@ class CuratorFrameworkUtilsTest {
     @Test
     void testBuildCuratorFrameworkCheckConnectDefault() {
         when(mockCuratorZookeeperClient.isConnected()).thenReturn(false);
-        Assertions.assertThrowsExactly(IllegalStateException.class, () -> {
-            CuratorFramework curatorFramework = CuratorFrameworkUtils.buildCuratorFramework(registryUrl, null);
-            curatorFramework.getZookeeperClient().close();
-        });
+        Assertions.assertThrowsExactly(
+                IllegalStateException.class, () -> CuratorFrameworkUtils.buildCuratorFramework(registryUrl, null));
+        verify(mockCuratorFramework).close();
     }
 
     @Test
     void testBuildCuratorFrameworkNotCheckConnect() {
         when(mockCuratorZookeeperClient.isConnected()).thenReturn(false);
         URL url = registryUrl.addParameter(CHECK_KEY, false);
-        Assertions.assertDoesNotThrow(() -> {
-            CuratorFramework curatorFramework = CuratorFrameworkUtils.buildCuratorFramework(url, null);
-            curatorFramework.getZookeeperClient().close();
-        });
+        Assertions.assertThrowsExactly(
+                IllegalStateException.class, () -> CuratorFrameworkUtils.buildCuratorFramework(url, null));
+        verify(mockCuratorFramework).close();
     }
 
     @Test
