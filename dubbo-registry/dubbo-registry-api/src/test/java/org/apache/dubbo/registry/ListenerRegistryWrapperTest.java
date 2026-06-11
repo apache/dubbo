@@ -133,4 +133,31 @@ class ListenerRegistryWrapperTest {
         verify(listener, times(1)).onUnsubscribe(serviceUrl, registry);
         verify(listener, never()).onSubscribe(serviceUrl, registry);
     }
+
+    @Test
+    void testLegacyConstructorWithNullRegistry() {
+        URL serviceUrl = URL.valueOf("dubbo://127.0.0.1:20881/" + DemoService.class.getName());
+        ListenerRegistryWrapper wrapper = new ListenerRegistryWrapper(null, Collections.emptyList());
+
+        Assertions.assertNull(wrapper.getUrl());
+        Assertions.assertFalse(wrapper.isAvailable());
+        Assertions.assertFalse(wrapper.isServiceDiscovery());
+        Assertions.assertTrue(wrapper.lookup(serviceUrl).isEmpty());
+        Assertions.assertDoesNotThrow(wrapper::destroy);
+    }
+
+    @Test
+    void testRegistryPresentButUnavailable() {
+        URL serviceUrl = URL.valueOf("dubbo://127.0.0.1:20881/" + DemoService.class.getName());
+        Registry registry = mock(Registry.class);
+        when(registry.isAvailable()).thenReturn(false);
+        when(registry.isServiceDiscovery()).thenReturn(false);
+
+        ListenerRegistryWrapper wrapper = new ListenerRegistryWrapper(registry, Collections.emptyList());
+
+        Assertions.assertFalse(wrapper.isAvailable());
+        Assertions.assertFalse(wrapper.isServiceDiscovery());
+        verify(registry).isAvailable();
+        verify(registry).isServiceDiscovery();
+    }
 }
