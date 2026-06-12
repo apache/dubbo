@@ -293,9 +293,10 @@ public class DubboProtocol extends AbstractProtocol {
         if (path == null) {
             throw new RemotingException(
                     channel,
-                    "Failed to resolve service path from invocation. "
-                            + "This may be caused by non-serializable request parameters. "
-                            + "Please ensure all parameter types implement java.io.Serializable, "
+                    "Service path is missing from the invocation, which indicates the invocation metadata is "
+                            + "missing or corrupted. Possible causes include a request decode failure "
+                            + "(e.g. parameter types that failed to deserialize), an incompatible protocol "
+                            + "version, or a custom codec/invocation implementation that does not set the path, "
                             + "channel: " + channel.getRemoteAddress() + " --> " + channel.getLocalAddress());
         }
 
