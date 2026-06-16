@@ -26,6 +26,13 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http2.Http2GoAwayFrame;
 import io.netty.util.ReferenceCountUtil;
 
+/**
+ * Handles HTTP/2 GOAWAY frames on the Triple protocol client side.
+ *
+ * <p>Logs the GOAWAY errorCode and lastStreamId for diagnostics, then delegates
+ * to {@link ConnectionHandler#onGoAway} which performs graceful connection migration
+ * (keeping old channel alive until new connection is established).
+ */
 public class TripleGoAwayHandler extends ChannelDuplexHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(TripleGoAwayHandler.class);
@@ -35,12 +42,20 @@ public class TripleGoAwayHandler extends ChannelDuplexHandler {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof Http2GoAwayFrame) {
+            Http2GoAwayFrame goAwayFrame = (Http2GoAwayFrame) msg;
             final ConnectionHandler connectionHandler =
                     (ConnectionHandler) ctx.pipeline().get(Constants.CONNECTION_HANDLER_NAME);
+
             if (logger.isInfoEnabled()) {
-                logger.info("Receive go away frame of " + ctx.channel().localAddress() + " -> "
-                        + ctx.channel().remoteAddress() + " and will reconnect later.");
+                logger.info(String.format(
+                        "Received GOAWAY frame: %s -> %s, errorCode=%d, lastStreamId=%d. "
+                                + "Initiating graceful connection migration.",
+                        ctx.channel().localAddress(),
+                        ctx.channel().remoteAddress(),
+                        goAwayFrame.errorCode(),
+                        goAwayFrame.lastStreamId()));
             }
+
             connectionHandler.onGoAway(ctx.channel());
             ReferenceCountUtil.release(msg);
             return;
