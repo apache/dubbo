@@ -89,7 +89,7 @@ public final class DescriptorUtils {
         MethodDescriptor methodDescriptor = null;
         if (isGeneric(methodName)) {
             // There should be one and only one
-            methodDescriptor = ServiceDescriptorInternalCache.genericService()
+            return ServiceDescriptorInternalCache.genericService()
                     .getMethods(methodName)
                     .get(0);
         } else if (isEcho(methodName)) {
