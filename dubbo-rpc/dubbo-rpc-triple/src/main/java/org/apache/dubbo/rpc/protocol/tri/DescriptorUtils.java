@@ -227,7 +227,11 @@ public final class DescriptorUtils {
         if (returnTypes.length == 0 || !(returnTypes[0] instanceof Class)) {
             return false;
         }
-        return returnTypes[0] == serverStreamMethodDescriptor.getActualResponseType();
+        Class<?> actualResponseType = serverStreamMethodDescriptor.getActualResponseType();
+        if (actualResponseType == null) {
+            return false;
+        }
+        return returnTypes[0].equals(actualResponseType);
     }
 
     private static boolean isGeneric(String methodName) {
