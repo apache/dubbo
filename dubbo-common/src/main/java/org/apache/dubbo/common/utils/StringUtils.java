@@ -1308,7 +1308,7 @@ public final class StringUtils {
             return str;
         }
         int index = str.indexOf(separator);
-        return index == INDEX_NOT_FOUND ? str : str.substring(index + 1);
+        return index == INDEX_NOT_FOUND ? EMPTY_STRING : str.substring(index + 1);
     }
 
     /**
