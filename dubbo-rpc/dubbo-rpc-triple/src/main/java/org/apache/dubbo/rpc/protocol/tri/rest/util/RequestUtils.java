@@ -44,6 +44,8 @@ public final class RequestUtils {
 
     public static final String EMPTY_BODY = "";
 
+    private static final int MAX_FORM_PARAM_COUNT = 1000;
+
     private RequestUtils() {}
 
     public static boolean isRestRequest(HttpRequest request) {
@@ -96,6 +98,10 @@ public final class RequestUtils {
         Collection<String> paramNames = request.formParameterNames();
         if (paramNames.isEmpty()) {
             return Collections.emptyMap();
+        }
+        if (paramNames.size() > MAX_FORM_PARAM_COUNT) {
+            throw new IllegalArgumentException(
+                    "Form parameter count exceeds maximum allowed: " + MAX_FORM_PARAM_COUNT);
         }
         Map<String, List<String>> params = CollectionUtils.newLinkedHashMap(paramNames.size());
         for (String paramName : paramNames) {
