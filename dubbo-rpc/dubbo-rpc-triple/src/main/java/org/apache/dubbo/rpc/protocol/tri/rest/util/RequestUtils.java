@@ -44,6 +44,8 @@ public final class RequestUtils {
 
     public static final String EMPTY_BODY = "";
 
+    private static final int MAX_FORM_PARAMS = 1000;
+
     private RequestUtils() {}
 
     public static boolean isRestRequest(HttpRequest request) {
@@ -97,8 +99,13 @@ public final class RequestUtils {
         if (paramNames.isEmpty()) {
             return Collections.emptyMap();
         }
-        Map<String, List<String>> params = CollectionUtils.newLinkedHashMap(paramNames.size());
+        int limit = Math.min(paramNames.size(), MAX_FORM_PARAMS);
+        Map<String, List<String>> params = CollectionUtils.newLinkedHashMap(limit);
+        int count = 0;
         for (String paramName : paramNames) {
+            if (count++ >= MAX_FORM_PARAMS) {
+                break;
+            }
             params.put(paramName, request.formParameterValues(paramName));
         }
         return params;
