@@ -34,6 +34,7 @@ import static org.apache.dubbo.common.utils.CollectionUtils.ofSet;
 import static org.apache.dubbo.common.utils.StringUtils.splitToList;
 import static org.apache.dubbo.common.utils.StringUtils.splitToSet;
 import static org.apache.dubbo.common.utils.StringUtils.startsWithIgnoreCase;
+import static org.apache.dubbo.common.utils.StringUtils.toBoolean;
 import static org.apache.dubbo.common.utils.StringUtils.toCommaDelimitedString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -502,5 +503,38 @@ class StringUtilsTest {
         assertTrue(startsWithIgnoreCase("dubbo.application.name", "dubbo.application."));
         assertTrue(startsWithIgnoreCase("dubbo.Application.name", "dubbo.application."));
         assertTrue(startsWithIgnoreCase("Dubbo.application.name", "dubbo.application."));
+    }
+
+    @Test
+    void testToBoolean() {
+        // true representations
+        assertEquals(Boolean.TRUE, toBoolean("true"));
+        assertEquals(Boolean.TRUE, toBoolean("True"));
+        assertEquals(Boolean.TRUE, toBoolean("on"));
+        assertEquals(Boolean.TRUE, toBoolean("yes"));
+        assertEquals(Boolean.TRUE, toBoolean("1"));
+        assertEquals(Boolean.TRUE, toBoolean("y"));
+        assertEquals(Boolean.TRUE, toBoolean("Y"));
+
+        // false representations
+        assertEquals(Boolean.FALSE, toBoolean("false"));
+        assertEquals(Boolean.FALSE, toBoolean("False"));
+        assertEquals(Boolean.FALSE, toBoolean("off"));
+        assertEquals(Boolean.FALSE, toBoolean("Off"));
+        assertEquals(Boolean.FALSE, toBoolean("no"));
+        assertEquals(Boolean.FALSE, toBoolean("0"));
+        assertEquals(Boolean.FALSE, toBoolean("n"));
+        assertEquals(Boolean.FALSE, toBoolean("N"));
+
+        // unrecognized or empty input returns null
+        assertNull(toBoolean(null));
+        assertNull(toBoolean(""));
+        assertNull(toBoolean("dubbo"));
+
+        // the overload falls back to the default value only for unrecognized input
+        assertFalse(StringUtils.toBoolean("off", true));
+        assertTrue(StringUtils.toBoolean("on", false));
+        assertTrue(StringUtils.toBoolean("unknown", true));
+        assertFalse(StringUtils.toBoolean(null, false));
     }
 }

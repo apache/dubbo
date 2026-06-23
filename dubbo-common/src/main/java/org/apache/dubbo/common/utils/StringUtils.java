@@ -1428,7 +1428,7 @@ public final class StringUtils {
                     return Boolean.TRUE;
                 }
                 if ("off".equalsIgnoreCase(value)) {
-                    return Boolean.TRUE;
+                    return Boolean.FALSE;
                 }
                 break;
             case 4:
