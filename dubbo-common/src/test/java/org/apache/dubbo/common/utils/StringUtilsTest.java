@@ -506,6 +506,20 @@ class StringUtilsTest {
     }
 
     @Test
+    void testSubstringAfter() {
+        // null or empty input is returned as-is
+        assertThat(StringUtils.substringAfter(null, ':'), is(nullValue()));
+        assertEquals("", StringUtils.substringAfter("", ':'));
+        // returns the substring after the first occurrence of the separator
+        assertEquals("b", StringUtils.substringAfter("a:b", ':'));
+        assertEquals("b:c", StringUtils.substringAfter("a:b:c", ':'));
+        // separator at the end leaves nothing after it
+        assertEquals("", StringUtils.substringAfter("ab:", ':'));
+        // when the separator is absent the Javadoc promises an empty string
+        assertEquals("", StringUtils.substringAfter("abc", ':'));
+    }
+
+    @Test
     void testToBoolean() {
         // true representations
         assertEquals(Boolean.TRUE, toBoolean("true"));
