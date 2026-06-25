@@ -127,13 +127,17 @@ public class DubboDefaultPropertiesEnvironmentPostProcessor implements Environme
         if (propertySources.contains(PROPERTY_SOURCE_NAME)) {
             PropertySource<?> source = propertySources.get(PROPERTY_SOURCE_NAME);
             if (source instanceof MapPropertySource) {
-                target = (MapPropertySource) source;
+                // The existing backing map may be immutable, so copy into a mutable map and replace the
+                // source instead of mutating it in place. See dubbo#16268.
+                Map<String, Object> merged = new HashMap<>(((MapPropertySource) source).getSource());
                 for (Map.Entry<String, Object> entry : map.entrySet()) {
                     String key = entry.getKey();
-                    if (!target.containsProperty(key)) {
-                        target.getSource().put(key, entry.getValue());
+                    if (!merged.containsKey(key)) {
+                        merged.put(key, entry.getValue());
                     }
                 }
+                target = new MapPropertySource(PROPERTY_SOURCE_NAME, merged);
+                propertySources.replace(PROPERTY_SOURCE_NAME, target);
             }
         }
         if (target == null) {
