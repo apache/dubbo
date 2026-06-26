@@ -88,35 +88,24 @@ public final class DescriptorUtils {
 
     public static MethodDescriptor findReflectionMethodDescriptor(
             ServiceDescriptor serviceDescriptor, String methodName) {
-        MethodDescriptor methodDescriptor = null;
-        if (isGeneric(methodName)) {
-            // There should be one and only one
-            methodDescriptor = ServiceDescriptorInternalCache.genericService()
-                    .getMethods(methodName)
-                    .get(0);
-        } else if (isEcho(methodName)) {
-            // There should be one and only one
-            return ServiceDescriptorInternalCache.echoService()
-                    .getMethods(methodName)
-                    .get(0);
-        } else {
-            List<MethodDescriptor> methodDescriptors = serviceDescriptor.getMethods(methodName);
-            methodDescriptor = findSingleOrGeneratedUnaryMethodDescriptor(methodDescriptors);
+        MethodDescriptor methodDescriptor = findWellKnownMethodDescriptor(methodName);
+        if (methodDescriptor != null) {
+            return methodDescriptor;
+        }
+
+        List<MethodDescriptor> methodDescriptors = serviceDescriptor.getMethods(methodName);
+        methodDescriptor = findSingleOrGeneratedUnaryMethodDescriptor(methodDescriptors);
+        if (methodDescriptor == null && CollectionUtils.isNotEmpty(methodDescriptors)) {
+            throw new UnimplementedException("method:" + methodName);
         }
         return methodDescriptor;
     }
 
     public static MethodDescriptor findTripleMethodDescriptor(
             ServiceDescriptor serviceDescriptor, String methodName, InputStream rawMessage) throws IOException {
-        if (isGeneric(methodName)) {
-            return ServiceDescriptorInternalCache.genericService()
-                    .getMethods(methodName)
-                    .get(0);
-        }
-        if (isEcho(methodName)) {
-            return ServiceDescriptorInternalCache.echoService()
-                    .getMethods(methodName)
-                    .get(0);
+        MethodDescriptor methodDescriptor = findWellKnownMethodDescriptor(methodName);
+        if (methodDescriptor != null) {
+            return methodDescriptor;
         }
 
         List<MethodDescriptor> methodDescriptors = serviceDescriptor.getMethods(methodName);
@@ -130,19 +119,19 @@ public final class DescriptorUtils {
         TripleRequestWrapper request = parseRequestWrapper(rawMessage);
         List<String> argTypes = request == null ? null : request.getArgTypes();
         if (argTypes != null) {
-            MethodDescriptor methodDescriptor =
+            MethodDescriptor matchedDescriptor =
                     findMethodDescriptorByParamTypes(methodDescriptors, argTypes.toArray(new String[0]));
-            if (methodDescriptor != null) {
-                return methodDescriptor;
+            if (matchedDescriptor != null) {
+                return matchedDescriptor;
             }
             if (CollectionUtils.isNotEmpty(argTypes)) {
                 throw new UnimplementedException("method:" + methodName);
             }
         }
 
-        MethodDescriptor methodDescriptor = findGeneratedUnaryMethodDescriptor(methodDescriptors);
-        if (methodDescriptor != null) {
-            return methodDescriptor;
+        MethodDescriptor generatedUnaryDescriptor = findGeneratedUnaryMethodDescriptor(methodDescriptors);
+        if (generatedUnaryDescriptor != null) {
+            return generatedUnaryDescriptor;
         }
         throw new UnimplementedException("method:" + methodName);
     }
@@ -163,11 +152,23 @@ public final class DescriptorUtils {
         rawMessage.mark(Integer.MAX_VALUE);
         try {
             return TripleRequestWrapper.parseFrom(rawMessage);
-        } catch (IOException | RuntimeException ignored) {
-            return null;
         } finally {
             rawMessage.reset();
         }
+    }
+
+    private static MethodDescriptor findWellKnownMethodDescriptor(String methodName) {
+        if (isGeneric(methodName)) {
+            return ServiceDescriptorInternalCache.genericService()
+                    .getMethods(methodName)
+                    .get(0);
+        }
+        if (isEcho(methodName)) {
+            return ServiceDescriptorInternalCache.echoService()
+                    .getMethods(methodName)
+                    .get(0);
+        }
+        return null;
     }
 
     private static MethodDescriptor findMethodDescriptorByParamTypes(

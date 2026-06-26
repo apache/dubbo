@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ReflectionServiceDescriptor;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 
@@ -103,6 +104,27 @@ class DescriptorUtilsTest {
         assertEquals(MethodDescriptor.RpcType.UNARY, methodDescriptor.getRpcType());
     }
 
+    @Test
+    void shouldRejectAmbiguousTwoMethodReflectionOverload() {
+        ReflectionServiceDescriptor serviceDescriptor =
+                new ReflectionServiceDescriptor(AmbiguousReflectionService.class);
+
+        assertThrows(
+                UnimplementedException.class,
+                () -> DescriptorUtils.findReflectionMethodDescriptor(serviceDescriptor, "ambiguous"));
+    }
+
+    @Test
+    void shouldSurfaceCorruptWrapperForGeneratedPair() {
+        ReflectionServiceDescriptor serviceDescriptor = new ReflectionServiceDescriptor(GeneratedUnaryService.class);
+        byte[] corruptWrapper = new byte[] {0x0A, 0x05, 'h', 'e'};
+
+        assertThrows(
+                IOException.class,
+                () -> DescriptorUtils.findTripleMethodDescriptor(
+                        serviceDescriptor, "generated", new ByteArrayInputStream(corruptWrapper)));
+    }
+
     private interface OverloadedService {
 
         DataWrapper<String> sync(String value);
@@ -122,5 +144,12 @@ class DescriptorUtilsTest {
         String generated(String value);
 
         void generated(String value, StreamObserver<String> response);
+    }
+
+    private interface AmbiguousReflectionService {
+
+        String ambiguous(String value);
+
+        void ambiguous(String value, StreamObserver<Integer> response);
     }
 }
