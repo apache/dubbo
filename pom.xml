@@ -167,6 +167,7 @@
     <spring-6.version>6.2.18</spring-6.version>
     <spring-security-6.version>6.5.10</spring-security-6.version>
     <spring-boot-3.version>3.5.14</spring-boot-3.version>
+    <spring-boot-4.version>4.0.6</spring-boot-4.version>
 
     <!-- protobuf-java_version should be same as protobuf-java_version at dubbo-dependencies-bom -->
     <protobuf-java_version>4.33.4</protobuf-java_version>
@@ -498,6 +499,7 @@
       </activation>
       <modules>
         <module>dubbo-spring-boot-project/dubbo-spring-boot-3-autoconfigure</module>
+        <module>dubbo-spring-boot-project/dubbo-spring-boot-4-autoconfigure</module>
         <module>dubbo-plugin/dubbo-spring6-security</module>
         <module>dubbo-plugin/dubbo-mutiny</module>
       </modules>
@@ -649,6 +651,7 @@
       <id>release</id>
       <modules>
         <module>dubbo-spring-boot-project/dubbo-spring-boot-3-autoconfigure</module>
+        <module>dubbo-spring-boot-project/dubbo-spring-boot-4-autoconfigure</module>
         <module>dubbo-plugin/dubbo-spring6-security</module>
         <module>dubbo-plugin/dubbo-plugin-loom</module>
         <module>dubbo-plugin/dubbo-mutiny</module>
@@ -1207,6 +1210,20 @@
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-websocket</artifactId>
             <version>${tomcat.version}</version>
+          </dependency>
+        </dependencies>
+      </dependencyManagement>
+    </profile>
+    <profile>
+      <id>spring-boot-4</id>
+      <dependencyManagement>
+        <dependencies>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-dependencies</artifactId>
+            <version>${spring-boot-4.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
           </dependency>
         </dependencies>
       </dependencyManagement>

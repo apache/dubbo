@@ -23,10 +23,24 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
 
 public class SpringBoot3Condition implements Condition {
 
-    public static boolean IS_SPRING_BOOT_3 = SpringBootVersion.getVersion().charAt(0) >= '3';
+    public static boolean IS_SPRING_BOOT_3 = getSpringBootMajorVersion() == 3;
 
     @Override
     public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
         return IS_SPRING_BOOT_3;
+    }
+
+    private static int getSpringBootMajorVersion() {
+        String version = SpringBootVersion.getVersion();
+        if (version == null || version.isEmpty()) {
+            return -1;
+        }
+        int separator = version.indexOf('.');
+        String majorVersion = separator < 0 ? version : version.substring(0, separator);
+        try {
+            return Integer.parseInt(majorVersion);
+        } catch (NumberFormatException ignored) {
+            return -1;
+        }
     }
 }
