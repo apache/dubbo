@@ -503,4 +503,20 @@ class StringUtilsTest {
         assertTrue(startsWithIgnoreCase("dubbo.Application.name", "dubbo.application."));
         assertTrue(startsWithIgnoreCase("Dubbo.application.name", "dubbo.application."));
     }
+
+    @Test
+    void testToBoolean() {
+        assertEquals(Boolean.TRUE, StringUtils.toBoolean("true"));
+        assertEquals(Boolean.FALSE, StringUtils.toBoolean("false"));
+        assertEquals(Boolean.TRUE, StringUtils.toBoolean("yes"));
+        assertEquals(Boolean.FALSE, StringUtils.toBoolean("no"));
+        assertEquals(Boolean.TRUE, StringUtils.toBoolean("on"));
+        assertEquals(Boolean.FALSE, StringUtils.toBoolean("off"));
+        assertEquals(Boolean.FALSE, StringUtils.toBoolean("OFF"));
+        assertEquals(Boolean.TRUE, StringUtils.toBoolean("1"));
+        assertEquals(Boolean.FALSE, StringUtils.toBoolean("0"));
+        assertEquals(Boolean.TRUE, StringUtils.toBoolean("y"));
+        assertEquals(Boolean.FALSE, StringUtils.toBoolean("n"));
+        assertNull(StringUtils.toBoolean("unknown"));
+    }
 }
