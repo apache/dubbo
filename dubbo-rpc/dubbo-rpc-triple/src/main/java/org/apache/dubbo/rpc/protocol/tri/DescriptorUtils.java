@@ -86,10 +86,9 @@ public final class DescriptorUtils {
 
     public static MethodDescriptor findReflectionMethodDescriptor(
             ServiceDescriptor serviceDescriptor, String methodName) {
-        MethodDescriptor methodDescriptor = null;
         if (isGeneric(methodName)) {
             // There should be one and only one
-            methodDescriptor = ServiceDescriptorInternalCache.genericService()
+            return ServiceDescriptorInternalCache.genericService()
                     .getMethods(methodName)
                     .get(0);
         } else if (isEcho(methodName)) {
@@ -98,6 +97,7 @@ public final class DescriptorUtils {
                     .getMethods(methodName)
                     .get(0);
         } else {
+            MethodDescriptor methodDescriptor = null;
             List<MethodDescriptor> methodDescriptors = serviceDescriptor.getMethods(methodName);
             if (CollectionUtils.isEmpty(methodDescriptors)) {
                 return null;
@@ -116,8 +116,8 @@ public final class DescriptorUtils {
                     methodDescriptor = methodDescriptors.get(1);
                 }
             }
+            return methodDescriptor;
         }
-        return methodDescriptor;
     }
 
     public static MethodDescriptor findTripleMethodDescriptor(
