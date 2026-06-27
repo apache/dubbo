@@ -499,6 +499,16 @@
           <artifactId>dubbo-spring-boot-3-autoconfigure</artifactId>
           <version>${project.version}</version>
         </dependency>
+        <dependency>
+          <groupId>org.apache.dubbo</groupId>
+          <artifactId>dubbo-spring-boot-4-autoconfigure</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.dubbo</groupId>
+          <artifactId>dubbo-spring-boot-starter4</artifactId>
+          <version>${project.version}</version>
+        </dependency>
       </dependencies>
     </profile>
   </profiles>
