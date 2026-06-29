@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import java.net.UnknownHostException;
 
@@ -60,7 +61,7 @@ public class AddressMatch {
     public boolean isMatch(String input) {
         if (getCird() != null && input != null) {
             try {
-                return input.equals(getCird()) || matchIpExpression(getCird(), input);
+                return input.equals(getCird()) || matchCird(input);
             } catch (UnknownHostException e) {
                 logger.error(
                         CLUSTER_FAILED_EXEC_CONDITION_ROUTER,
@@ -83,5 +84,16 @@ public class AddressMatch {
             return input.equals(getExact());
         }
         return false;
+    }
+
+    private boolean matchCird(String input) throws UnknownHostException {
+        String host = input;
+        int port = 0;
+        int colonIndex = input.indexOf(':');
+        if (colonIndex > 0 && colonIndex == input.lastIndexOf(':')) {
+            host = input.substring(0, colonIndex);
+            port = StringUtils.parseInteger(input.substring(colonIndex + 1));
+        }
+        return matchIpExpression(getCird(), host, port);
     }
 }
