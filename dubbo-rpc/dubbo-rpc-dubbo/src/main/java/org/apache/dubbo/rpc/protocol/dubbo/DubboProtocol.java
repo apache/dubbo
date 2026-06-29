@@ -290,6 +290,15 @@ public class DubboProtocol extends AbstractProtocol {
         boolean isStubServiceInvoke;
         int port = channel.getLocalAddress().getPort();
         String path = (String) inv.getObjectAttachmentWithoutConvert(PATH_KEY);
+        if (path == null) {
+            throw new RemotingException(
+                    channel,
+                    "Service path is missing from the invocation, which indicates the invocation metadata is "
+                            + "missing or corrupted. Possible causes include a request decode failure "
+                            + "(e.g. parameter types that failed to deserialize), an incompatible protocol "
+                            + "version, or a custom codec/invocation implementation that does not set the path, "
+                            + "channel: " + channel.getRemoteAddress() + " --> " + channel.getLocalAddress());
+        }
 
         // if it's stub service on client side(after enable stubevent, usually is set up onconnect or ondisconnect
         // method)

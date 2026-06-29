@@ -21,12 +21,14 @@ import org.apache.dubbo.config.ProtocolConfig;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -255,6 +257,34 @@ class CollectionUtilsTest {
         assertEquals("b", sorted.get(1).getName());
     }
 
+    @Test
+    void toTreeSetShouldSupportExplicitComparator() {
+        Set<PriorityItem> items = new LinkedHashSet<>(Arrays.asList(new PriorityItem(3), new PriorityItem(1)));
+
+        Set<PriorityItem> sorted = CollectionUtils.toTreeSet(items, Comparator.comparingInt(PriorityItem::getPriority));
+
+        List<PriorityItem> sortedList = new ArrayList<>(sorted);
+        assertEquals(1, sortedList.get(0).getPriority());
+        assertEquals(3, sortedList.get(1).getPriority());
+    }
+
+    @Test
+    void toTreeSetShouldPreserveComparatorForEmptyInput() {
+        Comparator<PriorityItem> comparator = Comparator.comparingInt(PriorityItem::getPriority);
+
+        Set<PriorityItem> sorted = CollectionUtils.toTreeSet(new LinkedHashSet<>(), comparator);
+
+        assertTrue(sorted instanceof TreeSet);
+        Assertions.assertSame(comparator, ((TreeSet<PriorityItem>) sorted).comparator());
+    }
+
+    @Test
+    void toTreeSetShouldReturnNullForNullInputWithComparator() {
+        Comparator<PriorityItem> comparator = Comparator.comparingInt(PriorityItem::getPriority);
+
+        assertNull(CollectionUtils.toTreeSet(null, comparator));
+    }
+
     private static class Person implements Comparable<Person> {
 
         private final String name;
@@ -277,6 +307,19 @@ class CollectionUtilsTest {
 
         private Student(String name) {
             super(name);
+        }
+    }
+
+    private static class PriorityItem {
+
+        private final int priority;
+
+        private PriorityItem(int priority) {
+            this.priority = priority;
+        }
+
+        private int getPriority() {
+            return priority;
         }
     }
 }

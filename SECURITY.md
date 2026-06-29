@@ -32,3 +32,9 @@ An overview of the vulnerability handling process is:
 * The vulnerability is publicly announced.
 
 A more detailed description of the process can be found [here](https://www.apache.org/security/committers.html).
+
+## Threat Model
+
+Apache Dubbo maintains a threat model at [`docs/threat-model.md`](docs/threat-model.md) that describes the project's security boundaries, adversary model, claimed and disclaimed security properties, and triage dispositions for vulnerability reports.
+
+When reporting a vulnerability, consult the threat model first. Findings that violate claimed properties (§8) should be reported to security@dubbo.apache.org. Findings that fall under out-of-scope (§3) or by-design disclaimed properties (§9) will be closed citing the threat model.
