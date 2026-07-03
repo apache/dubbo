@@ -31,6 +31,16 @@ import com.alibaba.fastjson2.JSONReader;
  */
 public class FastJson2ObjectInput implements ObjectInput {
 
+    // fastjson2 may corrupt JSONB $ref resolution when the same target class is parsed concurrently.
+    private static final Object NULL_PARSE_LOCK = new Object();
+
+    private static final ClassValue<Object> PARSE_LOCKS = new ClassValue<Object>() {
+        @Override
+        protected Object computeValue(Class<?> type) {
+            return new Object();
+        }
+    };
+
     private final Fastjson2CreatorManager fastjson2CreatorManager;
 
     private final Fastjson2SecurityManager fastjson2SecurityManager;
@@ -117,27 +127,7 @@ public class FastJson2ObjectInput implements ObjectInput {
                     "deserialize failed. expected read length: " + length + " but actual read: " + read);
         }
         Fastjson2SecurityManager.Handler securityFilter = fastjson2SecurityManager.getSecurityFilter();
-        T result;
-        if (securityFilter.isCheckSerializable()) {
-            result = JSONB.parseObject(
-                    bytes,
-                    cls,
-                    securityFilter,
-                    JSONReader.Feature.UseDefaultConstructorAsPossible,
-                    JSONReader.Feature.ErrorOnNoneSerializable,
-                    JSONReader.Feature.IgnoreAutoTypeNotMatch,
-                    JSONReader.Feature.UseNativeObject,
-                    JSONReader.Feature.FieldBased);
-        } else {
-            result = JSONB.parseObject(
-                    bytes,
-                    cls,
-                    securityFilter,
-                    JSONReader.Feature.UseDefaultConstructorAsPossible,
-                    JSONReader.Feature.UseNativeObject,
-                    JSONReader.Feature.IgnoreAutoTypeNotMatch,
-                    JSONReader.Feature.FieldBased);
-        }
+        T result = parseObject(bytes, cls, securityFilter);
         if (result != null && cls != null && !ClassUtils.isMatch(result.getClass(), cls)) {
             throw new IllegalArgumentException(
                     "deserialize failed. expected class: " + cls + " but actual class: " + result.getClass());
@@ -156,27 +146,7 @@ public class FastJson2ObjectInput implements ObjectInput {
                     "deserialize failed. expected read length: " + length + " but actual read: " + read);
         }
         Fastjson2SecurityManager.Handler securityFilter = fastjson2SecurityManager.getSecurityFilter();
-        T result;
-        if (securityFilter.isCheckSerializable()) {
-            result = JSONB.parseObject(
-                    bytes,
-                    cls,
-                    securityFilter,
-                    JSONReader.Feature.UseDefaultConstructorAsPossible,
-                    JSONReader.Feature.ErrorOnNoneSerializable,
-                    JSONReader.Feature.IgnoreAutoTypeNotMatch,
-                    JSONReader.Feature.UseNativeObject,
-                    JSONReader.Feature.FieldBased);
-        } else {
-            result = JSONB.parseObject(
-                    bytes,
-                    cls,
-                    securityFilter,
-                    JSONReader.Feature.UseDefaultConstructorAsPossible,
-                    JSONReader.Feature.UseNativeObject,
-                    JSONReader.Feature.IgnoreAutoTypeNotMatch,
-                    JSONReader.Feature.FieldBased);
-        }
+        T result = parseObject(bytes, cls, securityFilter);
         if (result != null && cls != null && !ClassUtils.isMatch(result.getClass(), cls)) {
             throw new IllegalArgumentException(
                     "deserialize failed. expected class: " + cls + " but actual class: " + result.getClass());
@@ -204,5 +174,33 @@ public class FastJson2ObjectInput implements ObjectInput {
             value = (value << 8) + (b & 0xFF);
         }
         return value;
+    }
+
+    private <T> T parseObject(byte[] bytes, Class<T> cls, Fastjson2SecurityManager.Handler securityFilter) {
+        synchronized (getParseLock(cls)) {
+            if (securityFilter.isCheckSerializable()) {
+                return JSONB.parseObject(
+                        bytes,
+                        cls,
+                        securityFilter,
+                        JSONReader.Feature.UseDefaultConstructorAsPossible,
+                        JSONReader.Feature.ErrorOnNoneSerializable,
+                        JSONReader.Feature.IgnoreAutoTypeNotMatch,
+                        JSONReader.Feature.UseNativeObject,
+                        JSONReader.Feature.FieldBased);
+            }
+            return JSONB.parseObject(
+                    bytes,
+                    cls,
+                    securityFilter,
+                    JSONReader.Feature.UseDefaultConstructorAsPossible,
+                    JSONReader.Feature.UseNativeObject,
+                    JSONReader.Feature.IgnoreAutoTypeNotMatch,
+                    JSONReader.Feature.FieldBased);
+        }
+    }
+
+    private Object getParseLock(Class<?> cls) {
+        return cls == null ? NULL_PARSE_LOCK : PARSE_LOCKS.get(cls);
     }
 }
