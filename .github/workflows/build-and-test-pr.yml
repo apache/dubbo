@@ -1,6 +1,12 @@
 name: "Build and Test For PR"
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches:
+      - 3.3
+      - 3.2
+  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -31,6 +37,12 @@ env:
     --no-snapshot-updates
     --no-transfer-progress
     --fail-fast
+
+concurrency:
+  # One group per PR, or per ref for branch pushes.
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # Cancel in-progress runs for PRs only, so release branch builds always complete.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   check-format:
