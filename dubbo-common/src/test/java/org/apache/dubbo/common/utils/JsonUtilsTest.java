@@ -27,6 +27,9 @@ import org.apache.dubbo.common.utils.json.TestObjectA;
 import org.apache.dubbo.common.utils.json.TestObjectB;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -394,6 +397,42 @@ class JsonUtilsTest {
         allowJackson.set(true);
 
         setJson(null);
+    }
+
+    @Test
+    void testLoadExtensionsWithoutOptionalGsonDependency() throws Exception {
+        URL classes = GsonImpl.class.getProtectionDomain().getCodeSource().getLocation();
+        Map<String, JsonUtil> extensions = new HashMap<>();
+
+        try (URLClassLoader classLoader = new URLClassLoader(new URL[] {classes}, JsonUtils.class.getClassLoader()) {
+            @Override
+            protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+                if (name.startsWith("com.google.gson.")) {
+                    throw new ClassNotFoundException(name);
+                }
+                if (name.equals("org.apache.dubbo.common.json.impl.GsonImpl")) {
+                    synchronized (getClassLoadingLock(name)) {
+                        Class<?> loaded = findLoadedClass(name);
+                        if (loaded == null) {
+                            loaded = findClass(name);
+                        }
+                        if (resolve) {
+                            resolveClass(loaded);
+                        }
+                        return loaded;
+                    }
+                }
+                return super.loadClass(name, resolve);
+            }
+        }) {
+            Method loadExtensions =
+                    JsonUtils.class.getDeclaredMethod("loadExtensions", String.class, ClassLoader.class, Map.class);
+            loadExtensions.setAccessible(true);
+            loadExtensions.invoke(null, null, classLoader, extensions);
+        }
+
+        Assertions.assertInstanceOf(FastJson2Impl.class, extensions.get("fastjson2"));
+        Assertions.assertFalse(extensions.containsKey("gson"));
     }
 
     private static Field jsonFieldCache;

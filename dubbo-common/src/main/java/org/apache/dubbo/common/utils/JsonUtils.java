@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.TreeMap;
 
@@ -79,10 +80,9 @@ public class JsonUtils {
     private static JsonUtil loadExtensions(String name, ClassLoader classLoader, Map<String, JsonUtil> extensions) {
         ServiceLoader<JsonUtil> loader = ServiceLoader.load(JsonUtil.class, classLoader);
         Iterator<JsonUtil> it = loader.iterator();
-        // In JDK 21+, ServiceLoader.hasNext() may throw NoClassDefFoundError
-        // when checking class dependencies, so we need to catch it here
         while (true) {
             try {
+                // ServiceLoader may resolve provider constructors in hasNext(), before next() can be called.
                 if (!it.hasNext()) {
                     break;
                 }
@@ -93,9 +93,7 @@ public class JsonUtils {
                     }
                     extensions.put(extension.getName(), extension);
                 }
-            } catch (Throwable ignored) {
-                // Ignore loading failures (e.g., NoClassDefFoundError in JDK 25)
-                // and continue with the next extension
+            } catch (ServiceConfigurationError | LinkageError | RuntimeException ignored) {
             }
         }
         return null;
