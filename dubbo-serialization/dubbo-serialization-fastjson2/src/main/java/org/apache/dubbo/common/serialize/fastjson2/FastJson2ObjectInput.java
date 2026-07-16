@@ -31,6 +31,26 @@ import com.alibaba.fastjson2.JSONReader;
  */
 public class FastJson2ObjectInput implements ObjectInput {
 
+    /**
+     * Number of striped locks used to serialize deserialization per type.
+     * Concurrent deserialization of different types is allowed; only
+     * concurrent deserialization of the same type is serialized.
+     *
+     * <p>This prevents a race condition in fastjson2's
+     * {@code ObjectReaderProvider.getObjectReaderInternal} where concurrent
+     * cache misses produce corrupted ObjectReader instances, leading to
+     * silent {@code $ref} resolution failures and null fields.
+     */
+    private static final int STRIPE_COUNT = 64;
+
+    private static final Object[] STRIPES = new Object[STRIPE_COUNT];
+
+    static {
+        for (int i = 0; i < STRIPE_COUNT; i++) {
+            STRIPES[i] = new Object();
+        }
+    }
+
     private final Fastjson2CreatorManager fastjson2CreatorManager;
 
     private final Fastjson2SecurityManager fastjson2SecurityManager;
@@ -118,25 +138,27 @@ public class FastJson2ObjectInput implements ObjectInput {
         }
         Fastjson2SecurityManager.Handler securityFilter = fastjson2SecurityManager.getSecurityFilter();
         T result;
-        if (securityFilter.isCheckSerializable()) {
-            result = JSONB.parseObject(
-                    bytes,
-                    cls,
-                    securityFilter,
-                    JSONReader.Feature.UseDefaultConstructorAsPossible,
-                    JSONReader.Feature.ErrorOnNoneSerializable,
-                    JSONReader.Feature.IgnoreAutoTypeNotMatch,
-                    JSONReader.Feature.UseNativeObject,
-                    JSONReader.Feature.FieldBased);
-        } else {
-            result = JSONB.parseObject(
-                    bytes,
-                    cls,
-                    securityFilter,
-                    JSONReader.Feature.UseDefaultConstructorAsPossible,
-                    JSONReader.Feature.UseNativeObject,
-                    JSONReader.Feature.IgnoreAutoTypeNotMatch,
-                    JSONReader.Feature.FieldBased);
+        synchronized (getStripe(cls)) {
+            if (securityFilter.isCheckSerializable()) {
+                result = JSONB.parseObject(
+                        bytes,
+                        cls,
+                        securityFilter,
+                        JSONReader.Feature.UseDefaultConstructorAsPossible,
+                        JSONReader.Feature.ErrorOnNoneSerializable,
+                        JSONReader.Feature.IgnoreAutoTypeNotMatch,
+                        JSONReader.Feature.UseNativeObject,
+                        JSONReader.Feature.FieldBased);
+            } else {
+                result = JSONB.parseObject(
+                        bytes,
+                        cls,
+                        securityFilter,
+                        JSONReader.Feature.UseDefaultConstructorAsPossible,
+                        JSONReader.Feature.UseNativeObject,
+                        JSONReader.Feature.IgnoreAutoTypeNotMatch,
+                        JSONReader.Feature.FieldBased);
+            }
         }
         if (result != null && cls != null && !ClassUtils.isMatch(result.getClass(), cls)) {
             throw new IllegalArgumentException(
@@ -157,25 +179,27 @@ public class FastJson2ObjectInput implements ObjectInput {
         }
         Fastjson2SecurityManager.Handler securityFilter = fastjson2SecurityManager.getSecurityFilter();
         T result;
-        if (securityFilter.isCheckSerializable()) {
-            result = JSONB.parseObject(
-                    bytes,
-                    cls,
-                    securityFilter,
-                    JSONReader.Feature.UseDefaultConstructorAsPossible,
-                    JSONReader.Feature.ErrorOnNoneSerializable,
-                    JSONReader.Feature.IgnoreAutoTypeNotMatch,
-                    JSONReader.Feature.UseNativeObject,
-                    JSONReader.Feature.FieldBased);
-        } else {
-            result = JSONB.parseObject(
-                    bytes,
-                    cls,
-                    securityFilter,
-                    JSONReader.Feature.UseDefaultConstructorAsPossible,
-                    JSONReader.Feature.UseNativeObject,
-                    JSONReader.Feature.IgnoreAutoTypeNotMatch,
-                    JSONReader.Feature.FieldBased);
+        synchronized (getStripe(cls)) {
+            if (securityFilter.isCheckSerializable()) {
+                result = JSONB.parseObject(
+                        bytes,
+                        cls,
+                        securityFilter,
+                        JSONReader.Feature.UseDefaultConstructorAsPossible,
+                        JSONReader.Feature.ErrorOnNoneSerializable,
+                        JSONReader.Feature.IgnoreAutoTypeNotMatch,
+                        JSONReader.Feature.UseNativeObject,
+                        JSONReader.Feature.FieldBased);
+            } else {
+                result = JSONB.parseObject(
+                        bytes,
+                        cls,
+                        securityFilter,
+                        JSONReader.Feature.UseDefaultConstructorAsPossible,
+                        JSONReader.Feature.UseNativeObject,
+                        JSONReader.Feature.IgnoreAutoTypeNotMatch,
+                        JSONReader.Feature.FieldBased);
+            }
         }
         if (result != null && cls != null && !ClassUtils.isMatch(result.getClass(), cls)) {
             throw new IllegalArgumentException(
@@ -190,6 +214,11 @@ public class FastJson2ObjectInput implements ObjectInput {
             fastjson2CreatorManager.setCreator(currentClassLoader);
             classLoader = currentClassLoader;
         }
+    }
+
+    private static Object getStripe(Class<?> cls) {
+        int hash = cls == null ? 0 : cls.getName().hashCode();
+        return STRIPES[(hash & 0x7FFFFFFF) % STRIPE_COUNT];
     }
 
     private int readLength() throws IOException {
