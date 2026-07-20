@@ -120,7 +120,7 @@ the exact phrases developers actually use.
 This skills directory is part of the GSoC 2026 project
 **"Convert Dubbo Capabilities into AI Skills"**.
 
-Project mentors: Albumen Kevin (albumenj@apache.org),
+Project mentors: 
 Yu Yu (rainyu@apache.org)
 
 See the full project idea at: https://s.apache.org/gsoc2026ideas
