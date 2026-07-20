@@ -131,7 +131,7 @@ To add a new skill:
 
 1. Create `skills/<module-name>/SKILL.md`
 2. Follow the 5-section format above
-3. Keep each SKILL.md under 2,000 tokens (roughly 1,500 words)
+3. Keep each SKILL.md under 3,000 tokens (roughly 1,500 words; code blocks count extra)
 4. Add the ASF Apache 2.0 license header at the top
 5. Add a row to the table in this README
 6. Open a pull request against the `3.3` branch
