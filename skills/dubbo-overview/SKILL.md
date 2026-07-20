@@ -1,3 +1,18 @@
+---
+name: dubbo-overview
+description: >
+  Load when working with Apache Dubbo architecture, the Provider/Consumer/
+  Registry topology, the control plane vs data plane split, the three-center
+  setup (Registry Center, Config Center, Metadata Center), or
+  application-level vs interface-level service discovery. Also load when
+  generating any Dubbo 3 provider or consumer from scratch, configuring
+  Nacos or Zookeeper as a registry, choosing between the tri and dubbo
+  protocols, migrating from Dubbo 2 to Dubbo 3, or understanding why a
+  Dubbo service cannot be discovered by consumers. Load this skill before
+  any other dubbo-* skill.
+license: Apache-2.0
+---
+
 <!---
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
@@ -14,20 +29,6 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
----
-name: dubbo-overview
-description: >
-Load when working with Apache Dubbo architecture, the Provider/Consumer/
-Registry topology, the control plane vs data plane split, the three-center
-setup (Registry Center, Config Center, Metadata Center), or
-application-level vs interface-level service discovery. Also load when
-generating any Dubbo 3 provider or consumer from scratch, configuring
-Nacos or Zookeeper as a registry, choosing between the tri and dubbo
-protocols, migrating from Dubbo 2 to Dubbo 3, or understanding why a
-Dubbo service cannot be discovered by consumers. Load this skill before
-any other dubbo-* skill.
-license: Apache-2.0
----
 
 # What Dubbo is
 
@@ -100,14 +101,15 @@ without it, consumers cannot resolve the interface-to-application mapping.
 <dependency>
   <groupId>org.apache.dubbo</groupId>
   <artifactId>dubbo-spring-boot-starter</artifactId>
-  <version>3.3.4</version>
+  <version>3.3.x</version> <!-- Replace with the latest 3.3.x release -->
 </dependency>
 
-<!-- Registry: Nacos -->
+<!-- Registry: Nacos — use the managed starter instead of raw nacos-client
+     to avoid version conflicts -->
 <dependency>
-  <groupId>com.alibaba.nacos</groupId>
-  <artifactId>nacos-client</artifactId>
-  <version>2.3.0</version>
+  <groupId>org.apache.dubbo</groupId>
+  <artifactId>dubbo-nacos-spring-boot-starter</artifactId>
+  <version>3.3.x</version> <!-- Same version as dubbo-spring-boot-starter -->
 </dependency>
 ```
 
@@ -147,8 +149,10 @@ public class GreetingServiceImpl implements GreetingService {
 dubbo:
   application:
     name: greeting-provider
-    # Application-level service discovery (Dubbo 3 default)
-    register-mode: instance
+    # register-mode defaults to 'all' (dual: interface + application level).
+    # For new greenfield services, 'instance' (application-level only) is
+    # recommended for better scalability:
+    # register-mode: instance
   protocol:
     name: tri          # Triple (HTTP/2, gRPC-compatible) — recommended for Dubbo 3
     port: 50051
@@ -269,9 +273,12 @@ The correct annotation is `org.apache.dubbo.config.annotation.DubboService`.
 `@Autowired` will look for a Spring bean. Dubbo remote proxies are injected
 with `org.apache.dubbo.config.annotation.DubboReference`.
 
-**3. Omitting `@EnableDubbo` on the main class**
-Without `@EnableDubbo`, Dubbo's Spring Boot auto-configuration does not
-scan for `@DubboService` or `@DubboReference` annotations.
+**3. Omitting `@EnableDubbo` or `dubbo.scan.base-packages` for providers**
+Without `@EnableDubbo(scanBasePackages = ...)` or the property
+`dubbo.scan.base-packages`, Dubbo will not scan for `@DubboService`
+annotations. For consumers, `@DubboReference` injection works via
+Spring Boot auto-configuration (`DubboAutoConfiguration`) even without
+`@EnableDubbo`, but adding it is still recommended for consistency.
 
 **4. Defaulting to `dubbo` protocol instead of `tri` in Dubbo 3**
 Dubbo 3 recommends the `tri` (Triple) protocol. It is HTTP/2 based,
@@ -291,6 +298,8 @@ A service can use Nacos as both, but they are configured separately under
 does not enable dynamic configuration.
 
 **7. Setting `register-mode: interface` in Dubbo 3 for new services**
-`instance` (application-level) is the Dubbo 3 default and is more
-scalable. Only use `interface` mode when you need compatibility with
-existing Dubbo 2 consumers that have not been upgraded.
+The Dubbo 3 default is `all` (dual registration at both interface and
+application level). For new greenfield services, prefer `instance`
+(application-level only) for better scalability. Only use `interface`
+mode when you need compatibility with existing Dubbo 2 consumers that
+have not been upgraded.
