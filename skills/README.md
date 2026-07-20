@@ -28,8 +28,8 @@ AI coding tools do not have reliable knowledge of Dubbo 3's internals.
 When asked to generate Dubbo provider code, they commonly:
 
 - Use `@Service` (Spring) instead of `@DubboService`
-- Register services at the interface level (Dubbo 2) instead of the
-  application level (Dubbo 3)
+- Assume `register-mode: instance` is the Dubbo 3 default when it is
+  actually `all` (dual registration)
 - Omit the MetadataCenter when it is required for Dubbo 2→3 migration
 - Default to the `dubbo` TCP protocol instead of `tri` (Triple/HTTP2)
 - Confuse the Registry Center with the Config Center
@@ -84,12 +84,12 @@ context window before asking Dubbo-related questions.
 |--------------------|---------------------------------------------|----------------|
 | dubbo-overview     | Architecture, topology, three-center setup  | ✅ Available   |
 | dubbo-rpc          | Protocol / Invoker / Proxy / Filter chain   | 🚧 Planned     |
-| dubbo-registry     | Service discovery, Nacos, Zookeeper, K8s    | 🚧 Planned     |
+| dubbo-registry     | Service discovery, Nacos, Zookeeper          | 🚧 Planned     |
 | dubbo-cluster      | Load balance, fault tolerance, routing      | 🚧 Planned     |
 | dubbo-config       | Config center, properties, dynamic config   | 🚧 Planned     |
 | dubbo-metadata     | Metadata center, Dubbo 2→3 migration        | 🚧 Planned     |
-| dubbo-remoting     | Transport layer, Netty, Exchange            | 🚧 Planned     |
-| dubbo-admin        | Admin console, traffic rules, service test  | 🚧 Planned     |
+| dubbo-remoting     | Transport layer, Netty, HTTP/2, HTTP/3      | 🚧 Planned     |
+| dubbo-spring-boot  | Spring Boot starters, auto-config, actuator  | 🚧 Planned     |
 
 ## SKILL.md format
 
@@ -103,6 +103,8 @@ description: >
   when asking an AI tool about this module>
 license: Apache-2.0
 ---
+
+<!--- ASF Apache 2.0 license header goes here -->
 
 # What this module is
 # How it works
@@ -132,7 +134,7 @@ To add a new skill:
 1. Create `skills/<module-name>/SKILL.md`
 2. Follow the 5-section format above
 3. Keep each SKILL.md under 3,000 tokens (roughly 1,500 words; code blocks count extra)
-4. Add the ASF Apache 2.0 license header at the top
+4. Add the ASF Apache 2.0 license header after the YAML frontmatter
 5. Add a row to the table in this README
 6. Open a pull request against the `3.3` branch
 
