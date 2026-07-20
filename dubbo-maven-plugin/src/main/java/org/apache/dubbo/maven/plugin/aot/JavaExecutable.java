@@ -33,10 +33,17 @@ public class JavaExecutable {
 
     private final File file;
 
+    private final String executablePath;
+
     public JavaExecutable() {
         String javaHome = SystemPropertyConfigUtils.getSystemProperty(CommonConstants.SystemProperty.JAVA_HOME);
         Assert.assertTrue(StringUtils.isNotEmpty(javaHome), "Unable to find java executable due to missing 'java.home'");
         this.file = findInJavaHome(javaHome);
+        try {
+            this.executablePath = this.file.getCanonicalPath();
+        } catch (IOException ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 
     private File findInJavaHome(String javaHome) {
@@ -54,18 +61,14 @@ public class JavaExecutable {
      * @return a {@link ProcessBuilder}
      */
     public ProcessBuilder processBuilder(String... arguments) {
-        ProcessBuilder processBuilder = new ProcessBuilder(toString());
+        ProcessBuilder processBuilder = new ProcessBuilder(this.executablePath);
         processBuilder.command().addAll(Arrays.asList(arguments));
         return processBuilder;
     }
 
     @Override
     public String toString() {
-        try {
-            return this.file.getCanonicalPath();
-        } catch (IOException ex) {
-            throw new IllegalStateException(ex);
-        }
+        return this.executablePath;
     }
 
 }
