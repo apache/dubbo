@@ -90,6 +90,10 @@ context window before asking Dubbo-related questions.
 | dubbo-metadata     | Metadata center, Dubbo 2→3 migration        | 🚧 Planned     |
 | dubbo-remoting     | Transport layer, Netty, HTTP/2, HTTP/3      | 🚧 Planned     |
 | dubbo-spring-boot  | Spring Boot starters, auto-config, actuator  | 🚧 Planned     |
+| dubbo-metrics      | Observability, Prometheus, tracing, OTLP    | 🚧 Planned     |
+| dubbo-triple-rest  | REST on Triple, Spring MVC, JAX-RS, OpenAPI  | 🚧 Planned     |
+| dubbo-mcp          | MCP server, @McpTool, AI tool integration    | 🚧 Planned     |
+| dubbo-native       | GraalVM native image, AOT hints             | 🚧 Planned     |
 
 ## SKILL.md format
 
