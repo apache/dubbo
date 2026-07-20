@@ -36,8 +36,8 @@ Apache Dubbo is a Java RPC and microservice framework. Its architecture
 divides into two layers:
 
 **Data Plane** — Provider and Consumer JVM processes that communicate
-directly via RPC protocols (Triple/HTTP2, Dubbo/TCP, REST). Every remote
-call travels through the data plane.
+directly via RPC protocols (Triple/HTTP2 with REST support, Dubbo/TCP).
+Every remote call travels through the data plane.
 
 **Control Plane** — Three optional centers that govern how data plane
 processes discover each other, share configuration, and exchange metadata:
@@ -56,8 +56,7 @@ Consumer with a direct connection and no registry at all.
 
 Handles registration and discovery of service instances.
 
-Supported registries: Nacos, Zookeeper, Consul, Kubernetes (native),
-Multicast (dev only), Etcd, Redis.
+Supported registries: Nacos, Zookeeper, Multicast (dev only).
 
 **Interface-level discovery (Dubbo 2 default)**
 One registry entry per interface per instance.
@@ -88,7 +87,7 @@ Stores the detailed interface metadata (methods, parameters, return types)
 that application-level service discovery no longer puts in the registry.
 Consumers retrieve this to know exactly what methods a provider exposes.
 
-Supported: Nacos, Zookeeper, Redis. Optional if using interface-level
+Supported: Nacos, Zookeeper. Optional if using interface-level
 discovery. **Required for any Dubbo 2 to Dubbo 3 migration**, because
 without it, consumers cannot resolve the interface-to-application mapping.
 
@@ -155,7 +154,7 @@ dubbo:
     # register-mode: instance
   protocol:
     name: tri          # Triple (HTTP/2, gRPC-compatible) — recommended for Dubbo 3
-    port: 50051
+    port: -1           # -1 = auto-assign random available port (recommended)
   registry:
     address: nacos://127.0.0.1:8848
   # Required if migrating from Dubbo 2, or if mixing Dubbo 2 and Dubbo 3 consumers
@@ -199,7 +198,7 @@ dubbo:
 
 ```java
 @SpringBootApplication
-@EnableDubbo   // required on both provider and consumer
+@EnableDubbo(scanBasePackages = {"com.example.provider"})  // scans for @DubboService
 public class ProviderApplication {
     public static void main(String[] args) {
         SpringApplication.run(ProviderApplication.class, args);
@@ -222,6 +221,7 @@ extensions. All built-in components are SPI-replaceable.
 | `org.apache.dubbo.rpc.Filter` | Intercept every RPC call | ~15 built-in |
 | `org.apache.dubbo.rpc.cluster.LoadBalance` | Pick one provider from list | random |
 | `org.apache.dubbo.rpc.cluster.Cluster` | Fault tolerance strategy | failover |
+| `org.apache.dubbo.common.serialize.Serialization` | Wire format | hessian2, fastjson2 |
 | `org.apache.dubbo.registry.RegistryFactory` | Custom registry | nacos, zk |
 
 ## How to register a custom Filter (the most common extension)
@@ -303,3 +303,9 @@ application level). For new greenfield services, prefer `instance`
 (application-level only) for better scalability. Only use `interface`
 mode when you need compatibility with existing Dubbo 2 consumers that
 have not been upgraded.
+
+**8. QoS port conflict when running multiple Dubbo apps locally**
+Dubbo starts a QoS (Quality of Service) diagnostic server on port 22222
+by default. When running two Dubbo apps on the same machine, the second
+app will fail with `Address already in use`. Disable or offset it:
+`dubbo.application.qos-port=22223` or `dubbo.application.qos-enable=false`.
