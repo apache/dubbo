@@ -68,9 +68,10 @@ public class SslClientTlsHandler extends ChannelInboundHandlerAdapter {
                         INTERNAL_ERROR,
                         "unknown error in remoting module",
                         "",
-                        "TLS negotiation failed when trying to accept new connection.",
+                        "TLS negotiation failed when connecting to remote server.",
                         handshakeEvent.cause());
                 ctx.fireExceptionCaught(handshakeEvent.cause());
+                ctx.close();
             }
         }
     }
