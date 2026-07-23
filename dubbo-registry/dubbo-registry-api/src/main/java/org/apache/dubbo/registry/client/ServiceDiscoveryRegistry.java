@@ -352,31 +352,44 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             ServiceInstancesChangedListener serviceInstancesChangedListener = serviceListeners.get(serviceNamesKey);
             if (serviceInstancesChangedListener == null) {
                 serviceInstancesChangedListener = serviceDiscovery.createListener(serviceNames);
+                serviceListeners.put(serviceNamesKey, serviceInstancesChangedListener);
+
+                // Register the push callback BEFORE the initial pull, so any push arriving
+                // during or right after the pull is delivered to our listener instead of
+                // being swallowed by the discovery SDK's local cache. See DUBBO issue on
+                // "instance push loss during initial subscribe".
+                ServiceInstancesChangedListener listenerForRegister = serviceInstancesChangedListener;
+                String serviceDiscoveryName =
+                        url.getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, url.getProtocol());
+                MetricsEventBus.post(
+                        RegistryEvent.toSsEvent(
+                                url.getApplicationModel(), serviceKey, Collections.singletonList(serviceDiscoveryName)),
+                        () -> {
+                            serviceDiscovery.addServiceInstancesChangedListener(listenerForRegister);
+                            return null;
+                        });
+
                 for (String serviceName : serviceNames) {
-                    List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
-                    if (CollectionUtils.isNotEmpty(serviceInstances)) {
-                        serviceInstancesChangedListener.onEvent(
-                                new ServiceInstancesChangedEvent(serviceName, serviceInstances));
+                    // Hold the same intrinsic lock as ServiceInstancesChangedListener.doOnEvent()
+                    // to serialize with any concurrent push callback. If a push has already
+                    // populated this serviceName, treat push as authoritative and skip the pull —
+                    // otherwise a stale pull result could overwrite fresher push data.
+                    synchronized (serviceInstancesChangedListener) {
+                        if (serviceInstancesChangedListener.getAllInstances().containsKey(serviceName)) {
+                            continue;
+                        }
+                        List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
+                        if (CollectionUtils.isNotEmpty(serviceInstances)) {
+                            serviceInstancesChangedListener.onEvent(
+                                    new ServiceInstancesChangedEvent(serviceName, serviceInstances));
+                        }
                     }
                 }
-                serviceListeners.put(serviceNamesKey, serviceInstancesChangedListener);
             }
 
             if (!serviceInstancesChangedListener.isDestroyed()) {
                 listener.addServiceListener(serviceInstancesChangedListener);
                 serviceInstancesChangedListener.addListenerAndNotify(url, listener);
-                ServiceInstancesChangedListener finalServiceInstancesChangedListener = serviceInstancesChangedListener;
-
-                String serviceDiscoveryName =
-                        url.getParameter(RegistryConstants.REGISTRY_CLUSTER_KEY, url.getProtocol());
-
-                MetricsEventBus.post(
-                        RegistryEvent.toSsEvent(
-                                url.getApplicationModel(), serviceKey, Collections.singletonList(serviceDiscoveryName)),
-                        () -> {
-                            serviceDiscovery.addServiceInstancesChangedListener(finalServiceInstancesChangedListener);
-                            return null;
-                        });
             } else {
                 logger.info(String.format("Listener of %s has been destroyed by another thread.", serviceNamesKey));
                 serviceListeners.remove(serviceNamesKey);
