@@ -58,6 +58,7 @@ class FileTest {
         ignoredModules.add(Pattern.compile("dubbo-rest-spring6"));
         ignoredModules.add(Pattern.compile("dubbo-spring6-security"));
         ignoredModules.add(Pattern.compile("dubbo-spring-boot-3-autoconfigure"));
+        ignoredModules.add(Pattern.compile("dubbo-test-rest-spring6\\.1"));
         ignoredModules.add(Pattern.compile("dubbo-plugin-loom.*"));
         ignoredModules.add(Pattern.compile("dubbo-mutiny.*"));
         ignoredModules.add(Pattern.compile("dubbo-mcp"));
