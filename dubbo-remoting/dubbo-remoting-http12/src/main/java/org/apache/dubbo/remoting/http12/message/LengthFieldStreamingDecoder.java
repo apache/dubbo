@@ -72,7 +72,11 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
     @Override
     public final void decode(InputStream inputStream) throws DecodeException {
         if (closing || closed) {
-            // ignored
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                throw new DecodeException(e);
+            }
             return;
         }
         accumulate.addInputStream(inputStream);
