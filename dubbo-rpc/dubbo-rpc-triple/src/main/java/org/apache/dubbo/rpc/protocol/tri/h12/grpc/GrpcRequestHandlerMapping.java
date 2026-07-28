@@ -61,7 +61,7 @@ public final class GrpcRequestHandlerMapping implements RequestHandlerMapping {
         String version = request.header(TripleHeaderEnum.SERVICE_VERSION.getKey());
         Invoker<?> invoker = pathResolver.resolve(path.getPath(), group, version);
         if (invoker == null) {
-            if(url.getOrDefaultApplicationModel().getDeployer().isStopping()){
+            if (url.getOrDefaultApplicationModel().getDeployer().isStopping()) {
                 throw unavailable();
             }
             throw notFound();
