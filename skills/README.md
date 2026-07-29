@@ -30,7 +30,8 @@ When asked to generate Dubbo provider code, they commonly:
 - Use `@Service` (Spring) instead of `@DubboService`
 - Assume `register-mode: instance` is the Dubbo 3 default when it is
   actually `all` (dual registration)
-- Omit the MetadataCenter when it is required for Dubbo 2→3 migration
+- Switch to `register-mode: instance` during Dubbo 2→3 migration,
+  breaking Dubbo 2 consumers that need interface-level registry entries
 - Default to the `dubbo` TCP protocol instead of `tri` (Triple/HTTP2)
 - Confuse the Registry Center with the Config Center
 
@@ -126,7 +127,7 @@ the exact phrases developers actually use.
 This skills directory is part of the GSoC 2026 project
 **"Convert Dubbo Capabilities into AI Skills"**.
 
-Project mentors: 
+Project mentors:
 Yu Yu (rainyu@apache.org)
 
 See the full project idea at: https://s.apache.org/gsoc2026ideas
