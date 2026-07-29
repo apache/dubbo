@@ -88,8 +88,11 @@ that application-level service discovery no longer puts in the registry.
 Consumers retrieve this to know exactly what methods a provider exposes.
 
 Supported: Nacos, Zookeeper. Optional if using interface-level
-discovery. **Required for any Dubbo 2 to Dubbo 3 migration**, because
-without it, consumers cannot resolve the interface-to-application mapping.
+discovery. During Dubbo 2→3 migration, providers **must** keep
+`register-mode: all` (the default) so that Dubbo 2 consumers can still
+discover services via interface-level registry entries. The Metadata
+Center is also needed so Dubbo 3 consumers can resolve the
+interface-to-application mapping.
 
 
 # How to use it — writing a correct Dubbo 3 provider and consumer
@@ -157,7 +160,9 @@ dubbo:
     port: -1           # -1 = auto-assign random available port (recommended)
   registry:
     address: nacos://127.0.0.1:8848
-  # Required if migrating from Dubbo 2, or if mixing Dubbo 2 and Dubbo 3 consumers
+  # During Dubbo 2→3 migration, keep register-mode: all (the default)
+  # so Dubbo 2 consumers can still discover services via interface-level
+  # registry entries. Also enable metadata-report:
   # metadata-report:
   #   address: nacos://127.0.0.1:8848
 ```
@@ -285,11 +290,14 @@ Dubbo 3 recommends the `tri` (Triple) protocol. It is HTTP/2 based,
 gRPC-compatible, and works through standard API gateways. New services
 should use `tri` unless they need backward TCP compatibility.
 
-**5. Omitting MetadataCenter during Dubbo 2→3 migration**
-When Dubbo 3 providers register at the application level, Dubbo 2
-consumers cannot discover them without the Metadata Center bridging the
-interface-to-application mapping. Without it, consumers throw
-`No provider available`.
+**5. Breaking Dubbo 2 consumers during Dubbo 2→3 migration**
+Dubbo 2 consumers only understand interface-level registry entries. If a
+Dubbo 3 provider sets `register-mode: instance`, it stops publishing
+interface-level entries and Dubbo 2 consumers throw `No provider
+available`. During mixed deployments, providers **must** keep the default
+`register-mode: all` (dual registration) and configure a Metadata Center
+so that Dubbo 3 consumers can also resolve the interface-to-application
+mapping.
 
 **6. Confusing Registry Center with Config Center**
 Registry = where services are. Config = how services behave.
@@ -307,5 +315,9 @@ have not been upgraded.
 **8. QoS port conflict when running multiple Dubbo apps locally**
 Dubbo starts a QoS (Quality of Service) diagnostic server on port 22222
 by default. When running two Dubbo apps on the same machine, the second
-app will fail with `Address already in use`. Disable or offset it:
-`dubbo.application.qos-port=22223` or `dubbo.application.qos-enable=false`.
+app's QoS server fails to start and logs a warning, but the application
+normally continues because `qos.check` defaults to `false`. If
+`dubbo.application.qos-check=true` is set on a provider, the bind
+failure will throw and stop the application. To avoid the warning,
+offset the port (`dubbo.application.qos-port=22223`) or disable QoS
+(`dubbo.application.qos-enable=false`).
