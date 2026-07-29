@@ -168,7 +168,9 @@ public class IOUtils {
             return new String[0];
         }
 
-        return readLines(new FileInputStream(file));
+        try (InputStream is = new FileInputStream(file)) {
+            return readLines(is);
+        }
     }
 
     /**
