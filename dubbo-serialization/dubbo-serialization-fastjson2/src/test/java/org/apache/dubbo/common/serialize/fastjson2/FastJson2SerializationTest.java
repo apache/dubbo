@@ -26,9 +26,11 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
-import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,49 +39,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.alibaba.fastjson2.JSONFactory;
-import com.alibaba.fastjson2.reader.ObjectReaderProvider;
 import com.example.test.TestPojo;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class FastJson2SerializationTest {
 
-    public static class RefOuter implements Serializable {
-        private List<RefInner> items;
-
-        public List<RefInner> getItems() {
-            return items;
-        }
-
-        public void setItems(List<RefInner> items) {
-            this.items = items;
-        }
-    }
-
-    public static class RefInner implements Serializable {
-        private String name;
-        private List<Long> ids;
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public List<Long> getIds() {
-            return ids;
-        }
-
-        public void setIds(List<Long> ids) {
-            this.ids = ids;
-        }
+    public static void main(String[] args) throws Exception {
+        new FastJson2SerializationTest().runConcurrentReadObjectWithReferences();
     }
 
     @Test
@@ -417,16 +391,49 @@ public class FastJson2SerializationTest {
 
     @Test
     void testConcurrentReadObjectWithReferences() throws Exception {
+        String javaExecutable = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+        String classPath = System.getProperty("surefire.test.class.path", System.getProperty("java.class.path"));
+        // Use a fresh JVM for each round instead of depending on fastjson2's internal cache fields.
+        for (int round = 0; round < 10; round++) {
+            Path output = Files.createTempFile("dubbo-fastjson2-concurrent-ref-", ".log");
+            Process process = new ProcessBuilder(
+                            javaExecutable, "-cp", classPath, getClass().getName())
+                    .redirectErrorStream(true)
+                    .redirectOutput(output.toFile())
+                    .start();
+            try {
+                if (!process.waitFor(30, TimeUnit.SECONDS)) {
+                    process.destroyForcibly();
+                    throw new AssertionError("Concurrent deserialization process timed out");
+                }
+                if (process.exitValue() != 0) {
+                    String childOutput = new String(Files.readAllBytes(output), StandardCharsets.UTF_8);
+                    throw new AssertionError("Concurrent deserialization process failed:\n" + childOutput);
+                }
+            } finally {
+                if (process.isAlive()) {
+                    process.destroyForcibly();
+                    process.waitFor(5, TimeUnit.SECONDS);
+                }
+                Files.deleteIfExists(output);
+            }
+        }
+    }
+
+    private void runConcurrentReadObjectWithReferences() throws Exception {
         FrameworkModel frameworkModel = new FrameworkModel();
+        ExecutorService executor = Executors.newFixedThreadPool(200);
         try {
             Serialization serialization =
                     frameworkModel.getExtensionLoader(Serialization.class).getExtension("fastjson2");
             URL url = URL.valueOf("").setScopeModel(frameworkModel);
             byte[] bytes = serializeRefOuter(serialization, url);
 
+            Assertions.assertEquals(0, countConcurrentNullIds(serialization, url, bytes, executor));
             Assertions.assertEquals(0, countNullIds(serialization, url, bytes));
-            Assertions.assertEquals(0, countConcurrentNullIds(serialization, url, bytes));
         } finally {
+            executor.shutdownNow();
+            Assertions.assertTrue(executor.awaitTermination(5, TimeUnit.SECONDS));
             frameworkModel.destroy();
         }
     }
@@ -680,13 +687,13 @@ public class FastJson2SerializationTest {
     }
 
     private byte[] serializeRefOuter(Serialization serialization, URL url) throws IOException {
-        RefOuter outer = new RefOuter();
-        List<RefInner> items = new ArrayList<>();
+        ConcurrentRefOuter outer = new ConcurrentRefOuter();
+        List<ConcurrentRefInner> items = new ArrayList<>();
         List<Long> sharedIds = new ArrayList<>();
         sharedIds.add(1L);
         sharedIds.add(2L);
         for (int i = 0; i < 20; i++) {
-            RefInner inner = new RefInner();
+            ConcurrentRefInner inner = new ConcurrentRefInner();
             inner.setName("item-" + i);
             inner.setIds(sharedIds);
             items.add(inner);
@@ -700,73 +707,51 @@ public class FastJson2SerializationTest {
         return outputStream.toByteArray();
     }
 
-    private int countConcurrentNullIds(Serialization serialization, URL url, byte[] bytes) throws Exception {
-        int rounds = 10;
+    private int countConcurrentNullIds(Serialization serialization, URL url, byte[] bytes, ExecutorService executor)
+            throws Exception {
         int threadCount = 200;
-        AtomicInteger totalNullTasks = new AtomicInteger();
+        CyclicBarrier barrier = new CyclicBarrier(threadCount);
+        CountDownLatch endLatch = new CountDownLatch(threadCount);
+        AtomicInteger nullTasks = new AtomicInteger();
         AtomicReference<Throwable> failure = new AtomicReference<>();
 
-        for (int round = 0; round < rounds; round++) {
-            clearObjectReaderCache();
-            CyclicBarrier barrier = new CyclicBarrier(threadCount);
-            CountDownLatch endLatch = new CountDownLatch(threadCount);
-            AtomicInteger roundNullTasks = new AtomicInteger();
-            for (int i = 0; i < threadCount; i++) {
-                Thread thread = new Thread(() -> {
-                    try {
-                        barrier.await();
-                        if (countNullIds(serialization, url, bytes) > 0) {
-                            roundNullTasks.incrementAndGet();
-                        }
-                    } catch (Throwable throwable) {
-                        failure.compareAndSet(null, throwable);
-                    } finally {
-                        endLatch.countDown();
+        for (int i = 0; i < threadCount; i++) {
+            executor.execute(() -> {
+                try {
+                    barrier.await(30, TimeUnit.SECONDS);
+                    if (countNullIds(serialization, url, bytes) > 0) {
+                        nullTasks.incrementAndGet();
                     }
-                });
-                thread.start();
-            }
-            endLatch.await();
-            if (failure.get() != null) {
-                throw new AssertionError("Concurrent deserialization failed", failure.get());
-            }
-            totalNullTasks.addAndGet(roundNullTasks.get());
+                } catch (Throwable throwable) {
+                    failure.compareAndSet(null, throwable);
+                } finally {
+                    endLatch.countDown();
+                }
+            });
         }
-
-        return totalNullTasks.get();
+        if (!endLatch.await(30, TimeUnit.SECONDS)) {
+            throw new AssertionError("Concurrent deserialization timed out");
+        }
+        if (failure.get() != null) {
+            throw new AssertionError("Concurrent deserialization failed", failure.get());
+        }
+        return nullTasks.get();
     }
 
     private int countNullIds(Serialization serialization, URL url, byte[] bytes) throws Exception {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
         ObjectInput objectInput = serialization.deserialize(url, inputStream);
-        RefOuter outer = objectInput.readObject(RefOuter.class);
+        ConcurrentRefOuter outer = objectInput.readObject(ConcurrentRefOuter.class);
         if (outer == null || outer.getItems() == null) {
             return 1;
         }
 
         int nullCount = 0;
-        for (RefInner inner : outer.getItems()) {
+        for (ConcurrentRefInner inner : outer.getItems()) {
             if (inner == null || inner.getIds() == null) {
                 nullCount++;
             }
         }
         return nullCount;
-    }
-
-    @SuppressWarnings("unchecked")
-    private void clearObjectReaderCache() throws Exception {
-        ObjectReaderProvider provider = JSONFactory.getDefaultObjectReaderProvider();
-        for (String fieldName : new String[] {"cache", "cacheFieldBased"}) {
-            Field field = ObjectReaderProvider.class.getDeclaredField(fieldName);
-            field.setAccessible(true);
-            Object cache = field.get(provider);
-            if (cache instanceof Map) {
-                ((Map<?, ?>) cache).clear();
-            }
-        }
-
-        Field readerCacheField = ObjectReaderProvider.class.getDeclaredField("readerCache");
-        readerCacheField.setAccessible(true);
-        readerCacheField.set(null, null);
     }
 }
