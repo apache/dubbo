@@ -300,10 +300,17 @@ so that Dubbo 3 consumers can also resolve the interface-to-application
 mapping.
 
 **6. Confusing Registry Center with Config Center**
-Registry = where services are. Config = how services behave.
-A service can use Nacos as both, but they are configured separately under
-`dubbo.registry` and `dubbo.config-center`. Setting only `dubbo.registry`
-does not enable dynamic configuration.
+Registry = where services are. Config = how services behave (dynamic
+config, routing rules, etc). By default, if no Config Center is
+explicitly configured, Dubbo reuses the registry as the Config Center
+via `DefaultApplicationDeployer.useRegistryAsConfigCenterIfNecessary()`,
+as long as `use-as-config-center` is left unset or `true` and the
+registry supports it (Nacos, Zookeeper both do). So configuring only
+`dubbo.registry` is usually enough to get dynamic configuration — a
+separate `dubbo.config-center` block isn't required unless you want a
+config source different from your registry. To opt out of the reuse
+and require an explicit Config Center, set
+`dubbo.application.use-as-config-center: false`.
 
 **7. Setting `register-mode: interface` in Dubbo 3 for new services**
 The Dubbo 3 default is `all` (dual registration at both interface and
