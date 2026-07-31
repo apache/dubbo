@@ -170,7 +170,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         // fast check duplicated equivalent config before write lock
         if (!(config instanceof ReferenceConfigBase || config instanceof ServiceConfigBase)) {
             for (AbstractConfig value : configsMap.values()) {
-                if (value.equals(config)) {
+                if (value.equals(config) && !hasDifferentExplicitId(value, config)) {
                     return (T) value;
                 }
             }
@@ -381,8 +381,19 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         }
 
         // 2. find equal config
-        prevConfig = values.stream().filter(val -> isEquals(val, config)).findFirst();
+        // If the config has an explicit id, only treat it as a duplicate when the
+        // existing config has the same id. Configs with different explicit ids are
+        // considered distinct even if all other attributes are equal.
+        prevConfig = values.stream()
+                .filter(val -> isEquals(val, config) && !hasDifferentExplicitId(val, config))
+                .findFirst();
         return prevConfig;
+    }
+
+    private boolean hasDifferentExplicitId(AbstractConfig oldOne, AbstractConfig newOne) {
+        String oldId = oldOne.getId();
+        String newId = newOne.getId();
+        return oldId != null && newId != null && !oldId.equals(newId);
     }
 
     protected boolean isEquals(AbstractConfig oldOne, AbstractConfig newOne) {

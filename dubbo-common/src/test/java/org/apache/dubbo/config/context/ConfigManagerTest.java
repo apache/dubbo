@@ -218,6 +218,45 @@ class ConfigManagerTest {
         assertEquals(configs, moduleConfigManager.getRegistries());
     }
 
+    // Test that registries with different explicit ids but same address are both retained (issue #16381)
+    @Test
+    void testRegistryConfigWithDifferentIdsSameAddress() {
+        String address = "zookeeper://127.0.0.1:2181";
+        RegistryConfig zk1 = new RegistryConfig();
+        zk1.setId("zk1");
+        zk1.setAddress(address);
+        RegistryConfig zk2 = new RegistryConfig();
+        zk2.setId("zk2");
+        zk2.setAddress(address);
+
+        configManager.addRegistry(zk1);
+        configManager.addRegistry(zk2);
+
+        // Both registries should be present since they have different explicit ids
+        assertEquals(2, configManager.getRegistries().size());
+        assertTrue(configManager.getRegistry("zk1").isPresent());
+        assertTrue(configManager.getRegistry("zk2").isPresent());
+    }
+
+    // Test that registries with same explicit id are still deduplicated
+    @Test
+    void testRegistryConfigWithSameIdSameAddress() {
+        String address = "zookeeper://127.0.0.1:2181";
+        RegistryConfig zk1 = new RegistryConfig();
+        zk1.setId("zk1");
+        zk1.setAddress(address);
+        RegistryConfig zk1Duplicate = new RegistryConfig();
+        zk1Duplicate.setId("zk1");
+        zk1Duplicate.setAddress(address);
+
+        configManager.addRegistry(zk1);
+        configManager.addRegistry(zk1Duplicate);
+
+        // Same id should be deduplicated (override)
+        assertEquals(1, configManager.getRegistries().size());
+        assertTrue(configManager.getRegistry("zk1").isPresent());
+    }
+
     // Test ConfigCenterConfig correlative methods
     @Test
     void testConfigCenterConfig() {
