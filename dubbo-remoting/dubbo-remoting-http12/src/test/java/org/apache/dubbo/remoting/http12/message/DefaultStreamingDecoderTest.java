@@ -16,11 +16,15 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
+import org.apache.dubbo.remoting.http12.exception.DecodeException;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DefaultStreamingDecoderTest {
@@ -45,6 +49,25 @@ class DefaultStreamingDecoderTest {
         decoder.decode(inputStream);
 
         assertTrue(inputStream.closed);
+    }
+
+    @Test
+    void propagatesCloseFailureAsDecodeException() {
+        DefaultStreamingDecoder decoder = new DefaultStreamingDecoder();
+        decoder.onStreamClosed();
+        InputStream failingStream = new InputStream() {
+            @Override
+            public int read() throws IOException {
+                return -1;
+            }
+
+            @Override
+            public void close() throws IOException {
+                throw new IOException("close failed");
+            }
+        };
+
+        assertThrows(DecodeException.class, () -> decoder.decode(failingStream));
     }
 
     private static final class CloseTrackingInputStream extends ByteArrayInputStream {
