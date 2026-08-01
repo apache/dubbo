@@ -89,6 +89,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
 
     protected Http2ServerChannelObserver prepareResponseObserver(Http2ServerChannelObserver responseObserver) {
         responseObserver.setExceptionCustomizer(getExceptionCustomizer());
+        responseObserver.setTerminationHandler(this::destroyPostRequestDecoder);
         RpcInvocationBuildContext context = getContext();
         responseObserver.setResponseEncoder(context == null ? JsonCodec.INSTANCE : context.getHttpMessageEncoder());
         responseObserver.setCancellationContext(RpcContext.getCancellationContext());

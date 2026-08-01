@@ -622,6 +622,14 @@ public class DefaultHttpRequest implements HttpRequest {
         return postDecoder;
     }
 
+    public void destroyPostRequestDecoder() {
+        HttpPostRequestDecoder postDecoder = this.postDecoder;
+        if (postDecoder != null) {
+            this.postDecoder = null;
+            postDecoder.destroy();
+        }
+    }
+
     @Override
     @SuppressWarnings("unchecked")
     public <T> T attribute(String name) {

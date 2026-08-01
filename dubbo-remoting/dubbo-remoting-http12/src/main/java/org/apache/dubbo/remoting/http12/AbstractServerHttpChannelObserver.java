@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -37,6 +38,8 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
     private static final ErrorTypeAwareLogger LOGGER = getErrorTypeAwareLogger(AbstractServerHttpChannelObserver.class);
 
     private final H httpChannel;
+
+    private final AtomicBoolean terminated = new AtomicBoolean();
 
     private List<BiConsumer<HttpHeaders, Throwable>> headersCustomizers;
 
@@ -51,6 +54,8 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
     private boolean completed;
 
     private boolean closed;
+
+    private Runnable terminationHandler;
 
     protected AbstractServerHttpChannelObserver(H httpChannel) {
         this.httpChannel = httpChannel;
@@ -80,6 +85,10 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
     @Override
     public void setExceptionCustomizer(Function<Throwable, ?> exceptionCustomizer) {
         this.exceptionCustomizer = exceptionCustomizer;
+    }
+
+    public void setTerminationHandler(Runnable terminationHandler) {
+        this.terminationHandler = terminationHandler;
     }
 
     public HttpMessageEncoder getResponseEncoder() {
@@ -118,6 +127,7 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         try {
             throwable = customizeError(throwable);
             if (throwable == null) {
+                terminate();
                 return;
             }
         } catch (Throwable t) {
@@ -316,8 +326,12 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
         if (completed) {
             return;
         }
-        doOnCompleted(throwable);
-        completed = true;
+        try {
+            doOnCompleted(throwable);
+        } finally {
+            completed = true;
+            terminate();
+        }
     }
 
     protected void doOnCompleted(Throwable throwable) {
@@ -365,5 +379,19 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
 
     protected final void closed() {
         closed = true;
+        terminate();
+    }
+
+    private void terminate() {
+        if (!terminated.compareAndSet(false, true)) {
+            return;
+        }
+        if (terminationHandler != null) {
+            try {
+                terminationHandler.run();
+            } catch (Throwable t) {
+                LOGGER.warn(INTERNAL_ERROR, "", "", "Error while terminating response observer", t);
+            }
+        }
     }
 }

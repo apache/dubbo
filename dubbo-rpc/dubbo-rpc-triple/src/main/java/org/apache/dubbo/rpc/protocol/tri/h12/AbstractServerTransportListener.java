@@ -30,6 +30,7 @@ import org.apache.dubbo.remoting.http12.HttpStatus;
 import org.apache.dubbo.remoting.http12.HttpTransportListener;
 import org.apache.dubbo.remoting.http12.RequestMetadata;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
+import org.apache.dubbo.remoting.http12.message.DefaultHttpRequest;
 import org.apache.dubbo.remoting.http12.message.MethodMetadata;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
@@ -335,6 +336,16 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
 
     protected final void setHttpMessageListener(HttpMessageListener httpMessageListener) {
         this.httpMessageListener = httpMessageListener;
+    }
+
+    protected final void destroyPostRequestDecoder() {
+        if (context == null) {
+            return;
+        }
+        Object request = context.getAttributes().get(TripleConstants.HTTP_REQUEST_KEY);
+        if (request instanceof DefaultHttpRequest) {
+            ((DefaultHttpRequest) request).destroyPostRequestDecoder();
+        }
     }
 
     protected Function<Throwable, Object> getExceptionCustomizer() {
