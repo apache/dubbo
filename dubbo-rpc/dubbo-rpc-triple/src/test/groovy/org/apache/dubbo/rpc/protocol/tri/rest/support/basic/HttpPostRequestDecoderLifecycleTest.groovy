@@ -17,20 +17,47 @@
 
 package org.apache.dubbo.rpc.protocol.tri.rest.support.basic
 
+import org.apache.dubbo.common.URL
+import org.apache.dubbo.remoting.http12.HttpChannel
+import org.apache.dubbo.remoting.http12.HttpMethods
+import org.apache.dubbo.remoting.http12.HttpRequest
 import org.apache.dubbo.remoting.http12.HttpUtils
+import org.apache.dubbo.remoting.http12.RequestMetadata
+import org.apache.dubbo.remoting.http12.h1.Http1InputMessage
+import org.apache.dubbo.remoting.http12.h2.Http2InputMessageFrame
 import org.apache.dubbo.remoting.http12.message.MediaType
+import org.apache.dubbo.remoting.http12.rest.Mapping
+import org.apache.dubbo.remoting.http12.rest.Param
+import org.apache.dubbo.remoting.http12.rest.ParamType
+import org.apache.dubbo.rpc.model.FrameworkModel
+import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext
+import org.apache.dubbo.rpc.protocol.tri.TripleConstants
+import org.apache.dubbo.rpc.protocol.tri.h12.AbstractServerTransportListener
+import org.apache.dubbo.rpc.protocol.tri.h12.http1.DefaultHttp11ServerTransportListener
 import org.apache.dubbo.rpc.protocol.tri.rest.service.DemoServiceImpl
 import org.apache.dubbo.rpc.protocol.tri.rest.test.BaseServiceTest
+import org.apache.dubbo.rpc.protocol.tri.test.MockH2StreamChannel
 import org.apache.dubbo.rpc.protocol.tri.test.TestRequest
+import org.apache.dubbo.rpc.protocol.tri.test.TestProtocol
 import org.apache.dubbo.rpc.protocol.tri.test.TestRunnerBuilder
+import org.apache.dubbo.rpc.protocol.tri.test.TestServerTransportListener
 
 import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory
+import spock.lang.Shared
+
+import java.nio.charset.StandardCharsets
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executor
 
 class HttpPostRequestDecoderLifecycleTest extends BaseServiceTest {
+
+    @Shared
+    UploadServiceImpl uploadService = new UploadServiceImpl()
 
     @Override
     void setupService(TestRunnerBuilder builder) {
         builder.provider(new DemoServiceImpl())
+        builder.provider(UploadService, uploadService)
     }
 
     def "completed form request should release post data"() {
@@ -46,9 +73,129 @@ class HttpPostRequestDecoderLifecycleTest extends BaseServiceTest {
             trackedPostRequests() == trackedRequests
     }
 
+    def "HTTP/1 form request should release post data after completion"() {
+        given:
+            def trackedRequests = trackedPostRequests()
+            def listener = new DirectHttp11ServerTransportListener(
+                new MockH2StreamChannel(), testUrl(), FrameworkModel.defaultModel()
+            )
+            def request = new TestRequest(
+                method: HttpMethods.POST.name(),
+                path: '/argTest',
+                contentType: MediaType.APPLICATION_FROM_URLENCODED
+            )
+        when:
+            listener.onMetadata(request.toMetadata())
+            listener.onData(new Http1InputMessage(new ByteArrayInputStream('name=Sam&age=8'.bytes)))
+        then:
+            trackedPostRequests() == trackedRequests
+    }
+
+    def "HTTP/2 cancellation should keep multipart data until application completion"() {
+        given:
+            uploadService.reset()
+            def trackedRequests = trackedPostRequests()
+            def boundary = 'dubbo-test-boundary'
+            def content = 'multipart content'
+            def body = "--${boundary}\r\n" +
+                'Content-Disposition: form-data; name="file"; filename="test.txt"\r\n' +
+                'Content-Type: text/plain\r\n\r\n' +
+                content + "\r\n--${boundary}--\r\n"
+            def listener = new TestServerTransportListener(
+                new MockH2StreamChannel(), testUrl(), FrameworkModel.defaultModel()
+            )
+            def request = new TestRequest(
+                method: HttpMethods.POST.name(),
+                path: '/upload',
+                contentType: "${MediaType.MULTIPART_FORM_DATA.name}; boundary=${boundary}"
+            )
+        when:
+            listener.onMetadata(request.toMetadata())
+            listener.onData(new Http2InputMessageFrame(
+                new ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8)), true
+            ))
+        then:
+            uploadService.fileUpload != null
+            trackedPostRequests() == trackedRequests + 1
+        when:
+            def inputStream = uploadService.fileUpload.inputStream()
+            listener.cancelByRemote(8)
+        then:
+            new String(inputStream.bytes, StandardCharsets.UTF_8) == content
+            trackedPostRequests() == trackedRequests + 1
+        when:
+            uploadService.result.complete('ok')
+        then:
+            trackedPostRequests() == trackedRequests
+        cleanup:
+            uploadService.result?.complete('cleanup')
+    }
+
+    def "custom request adapter should not require decoder cleanup"() {
+        given:
+            def listener = new DefaultHttp11ServerTransportListener(
+                Mock(HttpChannel), testUrl(), FrameworkModel.defaultModel()
+            )
+            def context = Stub(RpcInvocationBuildContext) {
+                getAttributes() >> [(TripleConstants.HTTP_REQUEST_KEY): Stub(HttpRequest)]
+            }
+            def contextField = AbstractServerTransportListener.getDeclaredField('context')
+            contextField.accessible = true
+            contextField.set(listener, context)
+            def observerField = DefaultHttp11ServerTransportListener.getDeclaredField('responseObserver')
+            observerField.accessible = true
+            def responseObserver = observerField.get(listener)
+        when:
+            responseObserver.onCompleted()
+        then:
+            noExceptionThrown()
+    }
+
+    private static URL testUrl() {
+        return new URL(TestProtocol.NAME, TestProtocol.HOST, TestProtocol.PORT)
+    }
+
     private static int trackedPostRequests() {
         def field = DefaultHttpDataFactory.getDeclaredField('requestFileDeleteMap')
         field.accessible = true
         return ((Map<?, ?>)field.get(HttpUtils.DATA_FACTORY)).size()
+    }
+
+    @Mapping('/')
+    private interface UploadService {
+
+        @Mapping('/upload')
+        CompletableFuture<String> upload(
+            @Param(value = 'file', type = ParamType.Part) HttpRequest.FileUpload fileUpload
+        )
+    }
+
+    private static final class UploadServiceImpl implements UploadService {
+
+        volatile HttpRequest.FileUpload fileUpload
+        CompletableFuture<String> result
+
+        void reset() {
+            fileUpload = null
+            result = new CompletableFuture<>()
+        }
+
+        @Override
+        CompletableFuture<String> upload(HttpRequest.FileUpload fileUpload) {
+            this.fileUpload = fileUpload
+            return result
+        }
+    }
+
+    private static final class DirectHttp11ServerTransportListener extends DefaultHttp11ServerTransportListener {
+
+        DirectHttp11ServerTransportListener(HttpChannel httpChannel, URL url, FrameworkModel frameworkModel) {
+            super(httpChannel, url, frameworkModel)
+        }
+
+        @Override
+        protected Executor initializeExecutor(URL url, RequestMetadata metadata) {
+            return { Runnable command -> command.run() } as Executor
+        }
     }
 }

@@ -147,6 +147,7 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
     @Override
     public final void onCompleted() {
         if (closed) {
+            terminate();
             return;
         }
         onCompleted(null);
@@ -379,7 +380,6 @@ public abstract class AbstractServerHttpChannelObserver<H extends HttpChannel> i
 
     protected final void closed() {
         closed = true;
-        terminate();
     }
 
     private void terminate() {
