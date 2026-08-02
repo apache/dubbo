@@ -73,34 +73,40 @@ class HttpPostRequestDecoderLifecycleTest extends BaseServiceTest {
             trackedPostRequests() == trackedRequests
     }
 
-    def "HTTP/1 form request should release post data after completion"() {
-        given:
-            def trackedRequests = trackedPostRequests()
-            def listener = new DirectHttp11ServerTransportListener(
-                new MockH2StreamChannel(), testUrl(), FrameworkModel.defaultModel()
-            )
-            def request = new TestRequest(
-                method: HttpMethods.POST.name(),
-                path: '/argTest',
-                contentType: MediaType.APPLICATION_FROM_URLENCODED
-            )
-        when:
-            listener.onMetadata(request.toMetadata())
-            listener.onData(new Http1InputMessage(new ByteArrayInputStream('name=Sam&age=8'.bytes)))
-        then:
-            trackedPostRequests() == trackedRequests
-    }
-
-    def "HTTP/2 cancellation should keep multipart data until application completion"() {
+    def "HTTP/1 multipart data should be released after exceptional completion"() {
         given:
             uploadService.reset()
             def trackedRequests = trackedPostRequests()
             def boundary = 'dubbo-test-boundary'
             def content = 'multipart content'
-            def body = "--${boundary}\r\n" +
-                'Content-Disposition: form-data; name="file"; filename="test.txt"\r\n' +
-                'Content-Type: text/plain\r\n\r\n' +
-                content + "\r\n--${boundary}--\r\n"
+            def listener = new DirectHttp11ServerTransportListener(
+                new MockH2StreamChannel(), testUrl(), FrameworkModel.defaultModel()
+            )
+            def request = new TestRequest(
+                method: HttpMethods.POST.name(),
+                path: '/upload',
+                contentType: "${MediaType.MULTIPART_FORM_DATA.name}; boundary=${boundary}"
+            )
+        when:
+            listener.onMetadata(request.toMetadata())
+            listener.onData(new Http1InputMessage(new ByteArrayInputStream(multipartBody(boundary, content))))
+        then:
+            uploadService.fileUpload != null
+            trackedPostRequests() == trackedRequests + 1
+        when:
+            uploadService.result.completeExceptionally(new RuntimeException('failed'))
+        then:
+            trackedPostRequests() == trackedRequests
+        cleanup:
+            uploadService.result?.complete('cleanup')
+    }
+
+    def "HTTP/2 multipart data should remain until application termination"() {
+        given:
+            uploadService.reset()
+            def trackedRequests = trackedPostRequests()
+            def boundary = 'dubbo-test-boundary'
+            def content = 'multipart content'
             def listener = new TestServerTransportListener(
                 new MockH2StreamChannel(), testUrl(), FrameworkModel.defaultModel()
             )
@@ -112,23 +118,34 @@ class HttpPostRequestDecoderLifecycleTest extends BaseServiceTest {
         when:
             listener.onMetadata(request.toMetadata())
             listener.onData(new Http2InputMessageFrame(
-                new ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8)), true
+                new ByteArrayInputStream(multipartBody(boundary, content)), true
             ))
         then:
             uploadService.fileUpload != null
             trackedPostRequests() == trackedRequests + 1
         when:
             def inputStream = uploadService.fileUpload.inputStream()
-            listener.cancelByRemote(8)
+            if (remoteCancellation) {
+                listener.cancelByRemote(8)
+            }
         then:
             new String(inputStream.bytes, StandardCharsets.UTF_8) == content
             trackedPostRequests() == trackedRequests + 1
         when:
-            uploadService.result.complete('ok')
+            if (exceptionalCompletion) {
+                uploadService.result.completeExceptionally(new RuntimeException('failed'))
+            } else {
+                uploadService.result.complete('ok')
+            }
         then:
             trackedPostRequests() == trackedRequests
         cleanup:
             uploadService.result?.complete('cleanup')
+        where:
+            remoteCancellation | exceptionalCompletion
+            true               | false
+            true               | true
+            false              | true
     }
 
     def "custom request adapter should not require decoder cleanup"() {
@@ -153,6 +170,13 @@ class HttpPostRequestDecoderLifecycleTest extends BaseServiceTest {
 
     private static URL testUrl() {
         return new URL(TestProtocol.NAME, TestProtocol.HOST, TestProtocol.PORT)
+    }
+
+    private static byte[] multipartBody(String boundary, String content) {
+        return ("--${boundary}\r\n" +
+            'Content-Disposition: form-data; name="file"; filename="test.txt"\r\n' +
+            'Content-Type: text/plain\r\n\r\n' +
+            content + "\r\n--${boundary}--\r\n").getBytes(StandardCharsets.UTF_8)
     }
 
     private static int trackedPostRequests() {

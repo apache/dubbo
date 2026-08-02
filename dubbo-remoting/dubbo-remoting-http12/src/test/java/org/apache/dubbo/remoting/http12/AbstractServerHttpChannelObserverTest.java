@@ -38,6 +38,7 @@ class AbstractServerHttpChannelObserverTest {
         assertEquals(0, terminationCount.get());
 
         observer.onCompleted();
+        observer.onCompleted();
         observer.onError(new RuntimeException("ignored after completion"));
         observer.close();
         assertEquals(1, terminationCount.get());

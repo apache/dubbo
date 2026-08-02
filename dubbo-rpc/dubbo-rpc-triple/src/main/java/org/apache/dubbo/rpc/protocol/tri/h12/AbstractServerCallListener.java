@@ -88,6 +88,12 @@ public abstract class AbstractServerCallListener implements ServerCallListener {
                 }
                 if (r.hasException()) {
                     responseObserver.onError(r.getException());
+                    if (responseObserver instanceof Http2CancelableStreamObserver
+                            && ((Http2CancelableStreamObserver<?>) responseObserver)
+                                    .getCancellationContext()
+                                    .isCancelled()) {
+                        responseObserver.onCompleted();
+                    }
                     return;
                 }
                 long cost = System.currentTimeMillis() - stInMillis;
