@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.TriRpcStatus;
@@ -130,5 +131,44 @@ class TripleClientStreamTest {
         final ByteBuf buf = Unpooled.wrappedBuffer(data);
         transportListener.onData(buf, false);
         Assertions.assertEquals(1, listener.message.length);
+    }
+
+    @Test
+    void testOnDataReleaseByteBufAfterCallbackExecutorShutdown() {
+        final URL url = URL.valueOf("tri://127.0.0.1:8080/foo.bar.service");
+        final ModuleServiceRepository repo =
+                ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
+        repo.registerService(IGreeter.class);
+        final ServiceDescriptor serviceDescriptor = repo.getService(IGreeter.class.getName());
+        final MethodDescriptor methodDescriptor = serviceDescriptor.getMethod("echo", new Class<?>[] {String.class});
+
+        MockClientStreamListener listener = new MockClientStreamListener();
+        TripleWriteQueue writeQueue = mock(TripleWriteQueue.class);
+        final EmbeddedChannel channel = new EmbeddedChannel();
+        when(writeQueue.enqueueFuture(any(QueuedCommand.class), any(Executor.class)))
+                .thenReturn(channel.newPromise());
+        Http2StreamChannel http2StreamChannel = mock(Http2StreamChannel.class);
+        when(http2StreamChannel.isActive()).thenReturn(true);
+        when(http2StreamChannel.newSucceededFuture()).thenReturn(channel.newSucceededFuture());
+        when(http2StreamChannel.eventLoop()).thenReturn(new NioEventLoopGroup().next());
+        when(http2StreamChannel.newPromise()).thenReturn(channel.newPromise());
+        when(http2StreamChannel.parent()).thenReturn(channel);
+
+        // Mirror the sync call path (TripleInvoker#doInvoke): a per-call ThreadlessExecutor
+        // wrapped by SerializingExecutor inside AbstractStream.
+        ThreadlessExecutor callbackExecutor = new ThreadlessExecutor();
+        AbstractTripleClientStream stream = new Http2TripleClientStream(
+                url.getOrDefaultFrameworkModel(), callbackExecutor, writeQueue, listener, http2StreamChannel);
+
+        // Simulate request timeout: AsyncRpcResult#get(timeout) shuts down the executor in finally.
+        callbackExecutor.shutdown();
+
+        H2TransportListener transportListener = stream.createTransportListener();
+        final ByteBuf buf = Unpooled.buffer(16);
+        buf.writeByte(1);
+        transportListener.onData(buf, false);
+        // A late DATA frame must not leak the ByteBuf just because the callback executor
+        // was shut down by the timeout.
+        Assertions.assertEquals(0, buf.refCnt());
     }
 }
