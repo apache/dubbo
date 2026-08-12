@@ -567,11 +567,12 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             }
             if (isCallbackExecutorShutdown()) {
                 // The callback executor (e.g. ThreadlessExecutor) has been shut down, e.g.
-                // after the request timed out {@link AsyncRpcResult}. SerializingExecutor would
+                // after the request timed out in {@link AsyncRpcResult}. SerializingExecutor would
                 // silently drop the submitted task so doOnData would never run; release the
-                // ByteBuf now to avoid a memory leak.
+                // ByteBuf now to avoid an off-heap memory leak.
                 ReferenceCountUtil.release(data);
-                LOGGER.warn(PROTOCOL_FAILED_RESPONSE, "", "", "Drop late response data, callback executor is shutdown");
+                LOGGER.warn(
+                        PROTOCOL_FAILED_RESPONSE, "", "", "Drop late response data: callback executor is shut down");
                 return;
             }
             try {
