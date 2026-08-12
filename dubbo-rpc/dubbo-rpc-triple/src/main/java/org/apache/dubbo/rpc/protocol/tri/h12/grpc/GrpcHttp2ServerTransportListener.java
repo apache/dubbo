@@ -172,7 +172,6 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
         private LazyFindMethodListener() {
             streamingDecoder = getStreamingDecoder();
             streamingDecoder.setFragmentListener(new DetermineMethodDescriptorListener());
-            streamingDecoder.request(Integer.MAX_VALUE);
         }
 
         @Override
