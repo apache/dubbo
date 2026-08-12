@@ -46,7 +46,6 @@ import java.util.concurrent.Executor;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpScheme;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
@@ -80,7 +79,7 @@ class TripleClientStreamTest {
         Http2StreamChannel http2StreamChannel = mock(Http2StreamChannel.class);
         when(http2StreamChannel.isActive()).thenReturn(true);
         when(http2StreamChannel.newSucceededFuture()).thenReturn(channel.newSucceededFuture());
-        when(http2StreamChannel.eventLoop()).thenReturn(new NioEventLoopGroup().next());
+        when(http2StreamChannel.eventLoop()).thenReturn(channel.eventLoop());
         when(http2StreamChannel.newPromise()).thenReturn(channel.newPromise());
         when(http2StreamChannel.parent()).thenReturn(channel);
         AbstractTripleClientStream stream = new Http2TripleClientStream(
@@ -150,7 +149,7 @@ class TripleClientStreamTest {
         Http2StreamChannel http2StreamChannel = mock(Http2StreamChannel.class);
         when(http2StreamChannel.isActive()).thenReturn(true);
         when(http2StreamChannel.newSucceededFuture()).thenReturn(channel.newSucceededFuture());
-        when(http2StreamChannel.eventLoop()).thenReturn(new NioEventLoopGroup().next());
+        when(http2StreamChannel.eventLoop()).thenReturn(channel.eventLoop());
         when(http2StreamChannel.newPromise()).thenReturn(channel.newPromise());
         when(http2StreamChannel.parent()).thenReturn(channel);
 
