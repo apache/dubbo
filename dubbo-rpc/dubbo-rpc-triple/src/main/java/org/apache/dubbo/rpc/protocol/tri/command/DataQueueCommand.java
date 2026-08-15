@@ -47,13 +47,13 @@ public class DataQueueCommand extends StreamQueueCommand {
     @Override
     public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {
         if (data == null) {
-            ctx.write(new DefaultHttp2DataFrame(endStream), promise);
+            ctx.writeAndFlush(new DefaultHttp2DataFrame(endStream), promise);
         } else {
             ByteBuf buf = ctx.alloc().buffer();
             buf.writeByte(compressFlag);
             buf.writeInt(data.length);
             buf.writeBytes(data);
-            ctx.write(new DefaultHttp2DataFrame(buf, endStream), promise);
+            ctx.writeAndFlush(new DefaultHttp2DataFrame(buf, endStream), promise);
         }
     }
 

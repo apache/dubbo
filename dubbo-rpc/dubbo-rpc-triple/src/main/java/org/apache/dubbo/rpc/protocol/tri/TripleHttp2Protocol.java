@@ -166,6 +166,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
         codec.connection().local().flowController().frameWriter(codec.encoder().frameWriter());
         List<ChannelHandler> handlers = new ArrayList<>();
         handlers.add(new ChannelHandlerPretender(codec));
+        handlers.add(new ChannelHandlerPretender(new FlushConsolidationHandler(64, true)));
         handlers.add(new ChannelHandlerPretender(new Http2MultiplexHandler(new ChannelDuplexHandler())));
         handlers.add(new ChannelHandlerPretender(new TriplePingPongHandler(UrlUtils.getCloseTimeout(url))));
         handlers.add(new ChannelHandlerPretender(new TripleGoAwayHandler()));
