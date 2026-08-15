@@ -81,11 +81,13 @@ class SpringBootMultipleConfigPropsTest {
     @BeforeAll
     public static void beforeAll() {
         DubboBootstrap.reset();
+        System.clearProperty("dubbo.metrics.protocol");
     }
 
     @AfterAll
     public static void afterAll() {
         DubboBootstrap.reset();
+        System.clearProperty("dubbo.metrics.protocol");
     }
 
     @Autowired
