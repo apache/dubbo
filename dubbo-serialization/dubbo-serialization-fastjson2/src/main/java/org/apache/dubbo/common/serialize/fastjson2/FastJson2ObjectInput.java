@@ -31,16 +31,6 @@ import com.alibaba.fastjson2.JSONReader;
  */
 public class FastJson2ObjectInput implements ObjectInput {
 
-    // fastjson2 may corrupt JSONB $ref resolution when the same target class is parsed concurrently.
-    private static final Object NULL_PARSE_LOCK = new Object();
-
-    private static final ClassValue<Object> PARSE_LOCKS = new ClassValue<Object>() {
-        @Override
-        protected Object computeValue(Class<?> type) {
-            return new Object();
-        }
-    };
-
     private final Fastjson2CreatorManager fastjson2CreatorManager;
 
     private final Fastjson2SecurityManager fastjson2SecurityManager;
@@ -56,7 +46,6 @@ public class FastJson2ObjectInput implements ObjectInput {
         this.fastjson2SecurityManager = fastjson2SecurityManager;
         this.classLoader = Thread.currentThread().getContextClassLoader();
         this.is = in;
-        fastjson2CreatorManager.setCreator(classLoader);
     }
 
     @Override
@@ -157,7 +146,6 @@ public class FastJson2ObjectInput implements ObjectInput {
     private void updateClassLoaderIfNeed() {
         ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
         if (currentClassLoader != classLoader) {
-            fastjson2CreatorManager.setCreator(currentClassLoader);
             classLoader = currentClassLoader;
         }
     }
@@ -177,30 +165,52 @@ public class FastJson2ObjectInput implements ObjectInput {
     }
 
     private <T> T parseObject(byte[] bytes, Class<T> cls, Fastjson2SecurityManager.Handler securityFilter) {
-        synchronized (getParseLock(cls)) {
-            if (securityFilter.isCheckSerializable()) {
-                return JSONB.parseObject(
-                        bytes,
-                        cls,
-                        securityFilter,
-                        JSONReader.Feature.UseDefaultConstructorAsPossible,
-                        JSONReader.Feature.ErrorOnNoneSerializable,
-                        JSONReader.Feature.IgnoreAutoTypeNotMatch,
-                        JSONReader.Feature.UseNativeObject,
-                        JSONReader.Feature.FieldBased);
+        Fastjson2CreatorManager.ParseWarmupState warmup = fastjson2CreatorManager.getReaderWarmup(cls);
+        if (!warmup.isWarmed()) {
+            warmup.addPending();
+            if (!warmup.isWarmed()) {
+                synchronized (fastjson2CreatorManager.getReaderWarmupLock()) {
+                    if (!warmup.isWarmed()) {
+                        try {
+                            fastjson2CreatorManager.setCreator(classLoader);
+                            T result = parseObjectWithoutWarmupLock(bytes, cls, securityFilter);
+                            if (warmup.removePending() == 0) {
+                                warmup.markWarmed();
+                            }
+                            return result;
+                        } catch (RuntimeException | Error exception) {
+                            warmup.removePending();
+                            throw exception;
+                        }
+                    }
+                }
             }
+            warmup.removePending();
+        }
+        fastjson2CreatorManager.setCreator(classLoader);
+        return parseObjectWithoutWarmupLock(bytes, cls, securityFilter);
+    }
+
+    private <T> T parseObjectWithoutWarmupLock(
+            byte[] bytes, Class<T> cls, Fastjson2SecurityManager.Handler securityFilter) {
+        if (securityFilter.isCheckSerializable()) {
             return JSONB.parseObject(
                     bytes,
                     cls,
                     securityFilter,
                     JSONReader.Feature.UseDefaultConstructorAsPossible,
-                    JSONReader.Feature.UseNativeObject,
+                    JSONReader.Feature.ErrorOnNoneSerializable,
                     JSONReader.Feature.IgnoreAutoTypeNotMatch,
+                    JSONReader.Feature.UseNativeObject,
                     JSONReader.Feature.FieldBased);
         }
-    }
-
-    private Object getParseLock(Class<?> cls) {
-        return cls == null ? NULL_PARSE_LOCK : PARSE_LOCKS.get(cls);
+        return JSONB.parseObject(
+                bytes,
+                cls,
+                securityFilter,
+                JSONReader.Feature.UseDefaultConstructorAsPossible,
+                JSONReader.Feature.UseNativeObject,
+                JSONReader.Feature.IgnoreAutoTypeNotMatch,
+                JSONReader.Feature.FieldBased);
     }
 }
