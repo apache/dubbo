@@ -670,4 +670,6 @@ public interface CommonConstants {
     String ZOOKEEPER_ENSEMBLE_TRACKER_KEY = "zookeeper.ensemble.tracker";
 
     String DUBBO_VERSIONS_KEY = "META-INF/dubbo-versions";
+
+    String RETRYABLE_FUNCTION_KEY = "retryable-function";
 }
