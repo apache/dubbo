@@ -150,7 +150,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         }
         if (this.serviceInstance == null) {
             ServiceInstance serviceInstance = createServiceInstance(this.metadataInfo);
-            if (!isValidInstance(serviceInstance)) {
+            if (!isValidInstance(serviceInstance, applicationModel)) {
                 return;
             }
             this.serviceInstance = serviceInstance;
@@ -182,12 +182,11 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             register();
         }
 
-        if (!isValidInstance(this.serviceInstance)) {
+        if (!isValidInstance(this.serviceInstance, applicationModel)) {
             return;
         }
         ServiceInstance oldServiceInstance = this.serviceInstance;
-        DefaultServiceInstance newServiceInstance =
-                new DefaultServiceInstance((DefaultServiceInstance) oldServiceInstance);
+        DefaultServiceInstance newServiceInstance = (DefaultServiceInstance) createServiceInstance(metadataInfo);
         boolean revisionUpdated = calOrUpdateInstanceRevision(newServiceInstance);
         if (revisionUpdated) {
             logger.info(String.format(
@@ -205,7 +204,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         }
         // fixme, this metadata info might still being shared by other instances
         //        unReportMetadata(this.metadataInfo);
-        if (!isValidInstance(this.serviceInstance)) {
+        if (!isValidInstance(this.serviceInstance, applicationModel)) {
             return;
         }
         doUnregister(this.serviceInstance);
