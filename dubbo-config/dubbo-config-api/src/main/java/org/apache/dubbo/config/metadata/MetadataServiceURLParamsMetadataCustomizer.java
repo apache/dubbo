@@ -18,6 +18,7 @@ package org.apache.dubbo.config.metadata;
 
 import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -37,7 +38,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 /**
  * Used to interact with non-dubbo systems, also see {@link SpringCloudMetadataServiceURLBuilder}
  */
-public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstanceCustomizer {
+public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstanceCustomizer, Prioritized {
 
     @Override
     public void customize(ServiceInstance serviceInstance, ApplicationModel applicationModel) {
