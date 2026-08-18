@@ -16,11 +16,6 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
-import org.apache.dubbo.common.resource.GlobalResourceInitializer;
-import org.apache.dubbo.remoting.Constants;
-
-import java.util.concurrent.ThreadFactory;
-
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
@@ -31,40 +26,74 @@ import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.incubator.channel.uring.IOUring;
+import io.netty.incubator.channel.uring.IOUringEventLoopGroup;
+import io.netty.incubator.channel.uring.IOUringServerSocketChannel;
+import io.netty.incubator.channel.uring.IOUringSocketChannel;
 import io.netty.util.concurrent.DefaultThreadFactory;
+import org.apache.dubbo.common.resource.GlobalResourceInitializer;
+import org.apache.dubbo.remoting.Constants;
+
+import java.util.concurrent.ThreadFactory;
 
 import static org.apache.dubbo.common.constants.CommonConstants.OS_LINUX_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.OS_NAME_KEY;
 import static org.apache.dubbo.remoting.Constants.NETTY_EPOLL_ENABLE_KEY;
+import static org.apache.dubbo.remoting.Constants.NETTY_IO_URING_ENABLE_KEY;
 
 public class NettyEventLoopFactory {
     /**
      * netty client bootstrap
      */
     public static final GlobalResourceInitializer<EventLoopGroup> NIO_EVENT_LOOP_GROUP =
-            new GlobalResourceInitializer<>(
-                    () -> eventLoopGroup(Constants.DEFAULT_IO_THREADS, "NettyClientWorker"),
-                    eventLoopGroup -> eventLoopGroup.shutdownGracefully());
+        new GlobalResourceInitializer<>(
+            () -> eventLoopGroup(Constants.DEFAULT_IO_THREADS, "NettyClientWorker"),
+            eventLoopGroup -> eventLoopGroup.shutdownGracefully());
 
     public static EventLoopGroup eventLoopGroup(int threads, String threadFactoryName) {
         ThreadFactory threadFactory = new DefaultThreadFactory(threadFactoryName, true);
-        return shouldEpoll()
-                ? new EpollEventLoopGroup(threads, threadFactory)
-                : new NioEventLoopGroup(threads, threadFactory);
+        if (shouldIOUring()) {
+            return new EpollEventLoopGroup(threads, threadFactory);
+        } else if (shouldIOUring()) {
+            return new IOUringEventLoopGroup(threads, threadFactory);
+        } else {
+            return new NioEventLoopGroup(threads, threadFactory);
+        }
     }
 
     public static Class<? extends SocketChannel> socketChannelClass() {
-        return shouldEpoll() ? EpollSocketChannel.class : NioSocketChannel.class;
+        if (shouldEpoll()) {
+            return EpollSocketChannel.class;
+        } else if (shouldIOUring()) {
+            return IOUringSocketChannel.class;
+        } else {
+            return NioSocketChannel.class;
+        }
     }
 
     public static Class<? extends ServerSocketChannel> serverSocketChannelClass() {
-        return shouldEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class;
+        if (shouldEpoll()) {
+            return EpollServerSocketChannel.class;
+        } else if (shouldIOUring()) {
+            return IOUringServerSocketChannel.class;
+        } else {
+            return NioServerSocketChannel.class;
+        }
     }
 
     private static boolean shouldEpoll() {
         if (Boolean.parseBoolean(System.getProperty(NETTY_EPOLL_ENABLE_KEY, "false"))) {
             String osName = System.getProperty(OS_NAME_KEY);
             return osName.toLowerCase().contains(OS_LINUX_PREFIX) && Epoll.isAvailable();
+        }
+
+        return false;
+    }
+
+    private static boolean shouldIOUring() {
+        if (Boolean.parseBoolean(System.getProperty(NETTY_IO_URING_ENABLE_KEY, "false"))) {
+            String osName = System.getProperty(OS_NAME_KEY);
+            return osName.toLowerCase().contains(OS_LINUX_PREFIX) && IOUring.isAvailable();
         }
 
         return false;
