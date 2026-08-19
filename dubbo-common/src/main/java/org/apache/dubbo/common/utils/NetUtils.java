@@ -271,7 +271,8 @@ public final class NetUtils {
             return HOST_ADDRESS;
         }
 
-        return LOCALHOST_VALUE;
+        HOST_ADDRESS = LOCALHOST_VALUE;
+        return HOST_ADDRESS;
     }
 
     public static String getLocalHostV6() {
@@ -365,8 +366,6 @@ public final class NetUtils {
     }
 
     private static InetAddress getLocalAddress0() {
-        InetAddress localAddress = null;
-
         // @since 2.7.6, choose the {@link NetworkInterface} first
         try {
             NetworkInterface networkInterface = findNetworkInterface();
@@ -387,19 +386,18 @@ public final class NetUtils {
             logger.warn(e);
         }
 
+        InetAddress localAddress = getLocalAddressV6();
+        if (localAddress != null) {
+            return localAddress;
+        }
+
         try {
-            localAddress = InetAddress.getLocalHost();
-            Optional<InetAddress> addressOp = toValidAddress(localAddress);
-            if (addressOp.isPresent()) {
-                return addressOp.get();
-            }
+            return InetAddress.getLocalHost();
         } catch (Throwable e) {
             logger.warn(e);
         }
 
-        localAddress = getLocalAddressV6();
-
-        return localAddress;
+        return null;
     }
 
     private static Inet6Address getLocalAddress0V6() {
