@@ -197,7 +197,7 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
                 }
 
                 if (matchRequestList.stream()
-                        .allMatch(request -> request.isMatch(invocation, sourcesLabels, tracingContextProviders))) {
+                        .anyMatch(request -> request.isMatch(invocation, sourcesLabels, tracingContextProviders))) {
                     return dubboRouteDetail.getRoute();
                 }
             }
