@@ -38,7 +38,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: dubbo
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: 'zulu'
           java-version: 21
@@ -140,7 +140,7 @@ jobs:
         if: ${{ matrix.jdk >= 24 && startsWith(matrix.os, 'windows') }}
         run: echo "MAVEN_OPTS=--sun-misc-unsafe-memory-access=allow" >> $env:GITHUB_ENV
       - name: "Set up JDK ${{ matrix.jdk }}"
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           java-version: ${{ matrix.jdk }}
           distribution: 'zulu'
@@ -191,7 +191,7 @@ jobs:
         if: ${{ matrix.jdk >= 24 && startsWith(matrix.os, 'windows') }}
         run: echo "MAVEN_OPTS=--sun-misc-unsafe-memory-access=allow" >> $env:GITHUB_ENV
       - name: "Set up JDK ${{ matrix.jdk }}"
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.jdk }}
@@ -288,7 +288,7 @@ jobs:
           name: samples-test-list
           path: test/jobs/
       - name: "Set up JDK ${{matrix.jdk}}"
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v6
         with:
           java-version: ${{matrix.jdk}}
       - name: "Init Candidate Versions"
@@ -391,7 +391,7 @@ jobs:
           name: integration-test-list
           path: test/jobs/
       - name: "Set up JDK ${{matrix.jdk}}"
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v6
         with:
           java-version: ${{matrix.jdk}}
       - name: "Init Candidate Versions"
@@ -448,7 +448,7 @@ jobs:
           path: "./dubbo-test-tools"
 
       - name: "Set up JDK 21"
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           java-version: 21
           distribution: 'zulu'
