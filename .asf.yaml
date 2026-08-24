@@ -18,8 +18,8 @@
 #
 
 notifications:
-  commits:      commits@dubbo.apache.org
-  issues:       notifications@dubbo.apache.org
+  commits: commits@dubbo.apache.org
+  issues: notifications@dubbo.apache.org
   pullrequests: notifications@dubbo.apache.org
   jira_options: link label link label
   discussions: notifications@dubbo.apache.org
@@ -37,47 +37,47 @@ github:
     # Enable GitHub Discussions for community discussions
     discussions: true
   protected_branches:
-    master: 
+    master:
       required_pull_request_reviews:
         dismiss_stale_reviews: true
         require_last_push_approval: true
         required_approving_review_count: 2
-    2.5.x: 
+    2.5.x:
       required_pull_request_reviews:
         dismiss_stale_reviews: true
         require_last_push_approval: true
         required_approving_review_count: 2
-    2.6.x: 
+    2.6.x:
       required_pull_request_reviews:
         dismiss_stale_reviews: true
         require_last_push_approval: true
         required_approving_review_count: 2
-    2.7.x: 
+    2.7.x:
       required_pull_request_reviews:
         dismiss_stale_reviews: true
         require_last_push_approval: true
         required_approving_review_count: 2
-    3.0: 
+    3.0:
       required_pull_request_reviews:
         dismiss_stale_reviews: true
         require_last_push_approval: true
         required_approving_review_count: 2
-    3.1: 
+    3.1:
       required_pull_request_reviews:
         dismiss_stale_reviews: true
         require_last_push_approval: true
         required_approving_review_count: 2
-    3.2: 
+    3.2:
       required_pull_request_reviews:
         dismiss_stale_reviews: true
         require_last_push_approval: true
         required_approving_review_count: 2
-    3.3: 
+    3.3:
       required_pull_request_reviews:
         dismiss_stale_reviews: true
         require_last_push_approval: true
         required_approving_review_count: 2
-    3.4: 
+    3.4:
       required_pull_request_reviews:
         dismiss_stale_reviews: true
         require_last_push_approval: true
@@ -94,3 +94,16 @@ github:
     - http
     - grpc
     - web
+  rulesets:
+    - name: "Default Branch Protection"
+      type: branch
+      branches:
+        includes:
+          - "~DEFAULT_BRANCH"
+          - "release/*"
+          - "rel/*"
+        excludes: []
+      bypass_teams:
+        - root
+      restrict_deletion: true
+      restrict_force_push: true
