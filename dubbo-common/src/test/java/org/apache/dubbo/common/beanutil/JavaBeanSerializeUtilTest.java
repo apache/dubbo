@@ -225,7 +225,26 @@ class JavaBeanSerializeUtilTest {
     }
 
     @Test
-    void testConstructorArg() {
+    public void testSerialize_MapWithNullKey() {
+        Map<String, String> map = new HashMap<>();
+        map.put("key1", "value1");
+        map.put(null, "nullKeyValue");
+
+        JavaBeanDescriptor descriptor = JavaBeanSerializeUtil.serialize(map);
+        Assertions.assertTrue(descriptor.isMapType());
+        Assertions.assertEquals(HashMap.class.getName(), descriptor.getClassName());
+        Assertions.assertEquals(2, descriptor.propertySize());
+
+        // round-trip
+        Object result = JavaBeanSerializeUtil.deserialize(descriptor);
+        Assertions.assertTrue(result instanceof Map);
+        Map<String, String> resultMap = (Map<String, String>) result;
+        Assertions.assertEquals("value1", resultMap.get("key1"));
+        Assertions.assertEquals("nullKeyValue", resultMap.get(null));
+    }
+
+    @Test
+    public void testConstructorArg() {
         Assertions.assertFalse((boolean) JavaBeanSerializeUtil.getConstructorArg(boolean.class));
         Assertions.assertFalse((boolean) JavaBeanSerializeUtil.getConstructorArg(Boolean.class));
         Assertions.assertEquals((byte) 0, JavaBeanSerializeUtil.getConstructorArg(byte.class));
