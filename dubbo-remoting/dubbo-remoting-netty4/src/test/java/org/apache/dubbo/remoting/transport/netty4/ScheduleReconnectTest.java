@@ -31,6 +31,8 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.net.ConnectException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -45,7 +47,11 @@ import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
 import static org.apache.dubbo.remoting.Constants.LEAST_RECONNECT_DURATION_KEY;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -107,6 +113,36 @@ class ScheduleReconnectTest {
         Assertions.assertTrue(
                 CONNECT_THREAD.get().startsWith("DubboClientHandler"),
                 "reconnect should run on the client executor, but ran on " + CONNECT_THREAD.get());
+
+        client.close(2000);
+    }
+
+    @Test
+    void testReconnectSwallowsExecutorRejection() throws Exception {
+        int port = NetUtils.getAvailablePort();
+        URL url = URL.valueOf("empty://127.0.0.1:" + port + "/client.schedule.reconnect.reject.test?check=false&"
+                + Constants.CONNECT_TIMEOUT_KEY + "=1000&" + LEAST_RECONNECT_DURATION_KEY + "=60000");
+        ApplicationModel applicationModel =
+                frameworkModel.getApplicationModels().get(0);
+        url = url.putAttribute(CommonConstants.SCOPE_MODEL, applicationModel);
+
+        BlockingConnectClient client = new BlockingConnectClient(url, new HandlerAdapter());
+
+        // Replace the client executor with one that rejects tasks, as if the executor were shut
+        // down while a reconnect was still pending.
+        ExecutorService rejectingExecutor = mock(ExecutorService.class);
+        doThrow(new RejectedExecutionException("executor is shut down"))
+                .when(rejectingExecutor)
+                .execute(any(Runnable.class));
+        java.lang.reflect.Field executorField =
+                org.apache.dubbo.remoting.transport.AbstractClient.class.getDeclaredField("executor");
+        executorField.setAccessible(true);
+        executorField.set(client, rejectingExecutor);
+
+        client.scheduleReconnect(0, TimeUnit.MILLISECONDS);
+        // The scheduled task must reach the client executor and swallow the rejection instead of
+        // propagating it out of the shared connectivity scheduler.
+        verify(rejectingExecutor, timeout(5000)).execute(any(Runnable.class));
 
         client.close(2000);
     }
