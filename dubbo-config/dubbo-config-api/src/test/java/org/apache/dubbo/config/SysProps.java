@@ -27,6 +27,9 @@ public class SysProps {
     private static Map<String, String> map = new LinkedHashMap<String, String>();
 
     public static void reset() {
+        for (String key : map.keySet()) {
+            System.clearProperty(key);
+        }
         map.clear();
     }
 
@@ -36,9 +39,6 @@ public class SysProps {
     }
 
     public static void clear() {
-        for (String key : map.keySet()) {
-            System.clearProperty(key);
-        }
         reset();
     }
 }
