@@ -20,7 +20,9 @@ import org.apache.dubbo.common.utils.DefaultSerializeClassChecker;
 
 import java.io.Serializable;
 
+import com.alibaba.com.caucho.hessian.io.AbstractSerializerFactory;
 import com.alibaba.com.caucho.hessian.io.Deserializer;
+import com.alibaba.com.caucho.hessian.io.HessianProtocolException;
 import com.alibaba.com.caucho.hessian.io.JavaDeserializer;
 import com.alibaba.com.caucho.hessian.io.JavaSerializer;
 import com.alibaba.com.caucho.hessian.io.Serializer;
@@ -34,6 +36,12 @@ public class Hessian2SerializerFactory extends SerializerFactory {
             ClassLoader classLoader, DefaultSerializeClassChecker defaultSerializeClassChecker) {
         super(classLoader);
         this.defaultSerializeClassChecker = defaultSerializeClassChecker;
+        // hessian-lite 3.2.x resolves classes with a writeReplace() method to
+        // JavaSerializer directly and never reaches getDefaultSerializer(), so
+        // such classes would otherwise skip checkSerializable(). Prepend a
+        // check factory that applies the same check and then falls through to
+        // the normal resolution chain. See https://github.com/apache/dubbo/issues/16287.
+        addFactory(new WriteReplaceCheckFactory());
     }
 
     @Override
@@ -82,5 +90,40 @@ public class Hessian2SerializerFactory extends SerializerFactory {
             throw new IllegalStateException(
                     "Serialized class " + cl.getName() + " must implement java.io.Serializable");
         }
+    }
+
+    /**
+     * Applies {@link #checkSerializable(Class)} to classes carrying a
+     * writeReplace() method before hessian-lite resolves them, and returns
+     * null so the normal SerializerFactory resolution chain keeps control.
+     */
+    private final class WriteReplaceCheckFactory extends AbstractSerializerFactory {
+        @Override
+        public Serializer getSerializer(Class cl) throws HessianProtocolException {
+            if (hasWriteReplace(cl)) {
+                checkSerializable(cl);
+            }
+            return null;
+        }
+
+        @Override
+        public Deserializer getDeserializer(Class cl) throws HessianProtocolException {
+            return null;
+        }
+    }
+
+    /**
+     * Mirrors hessian-lite 3.2.x JavaSerializer.getWriteReplace: walks the
+     * superclass chain for a no-arg writeReplace() method of any visibility.
+     */
+    private static boolean hasWriteReplace(Class<?> cl) {
+        for (; cl != null; cl = cl.getSuperclass()) {
+            for (java.lang.reflect.Method method : cl.getDeclaredMethods()) {
+                if ("writeReplace".equals(method.getName()) && method.getParameterTypes().length == 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
