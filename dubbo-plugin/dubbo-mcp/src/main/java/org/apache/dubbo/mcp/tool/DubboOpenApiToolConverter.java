@@ -43,6 +43,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.modelcontextprotocol.json.McpJsonMapper;
+import io.modelcontextprotocol.json.jackson2.JacksonMcpJsonMapper;
 import io.modelcontextprotocol.spec.McpSchema;
 
 public class DubboOpenApiToolConverter {
@@ -51,6 +53,7 @@ public class DubboOpenApiToolConverter {
             LoggerFactory.getErrorTypeAwareLogger(DubboOpenApiToolConverter.class);
     private final DefaultOpenAPIService openApiService;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final McpJsonMapper jsonMapper = new JacksonMcpJsonMapper(objectMapper);
     private final Map<String, Operation> opCache = new ConcurrentHashMap<>();
 
     public DubboOpenApiToolConverter(DefaultOpenAPIService openApiService) {
@@ -120,7 +123,11 @@ public class DubboOpenApiToolConverter {
                     e);
             schemaJson = "{\"type\":\"object\",\"properties\":{}}";
         }
-        return new McpSchema.Tool(toolName, desc, schemaJson);
+        return McpSchema.Tool.builder()
+                .name(toolName)
+                .description(desc)
+                .inputSchema(jsonMapper, schemaJson)
+                .build();
     }
 
     private String generateToolName(Operation op, McpServiceFilter.McpToolConfig toolConfig) {

@@ -43,6 +43,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.modelcontextprotocol.json.McpJsonMapper;
+import io.modelcontextprotocol.json.jackson2.JacksonMcpJsonMapper;
 import io.modelcontextprotocol.server.McpAsyncServer;
 import io.modelcontextprotocol.server.McpAsyncServerExchange;
 import io.modelcontextprotocol.server.McpServerFeatures;
@@ -61,6 +63,7 @@ public class DubboServiceToolRegistry {
     private final Map<String, McpServerFeatures.AsyncToolSpecification> registeredTools = new ConcurrentHashMap<>();
     private final Map<String, Set<String>> serviceToToolsMapping = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper;
+    private final McpJsonMapper jsonMapper;
 
     public DubboServiceToolRegistry(
             McpAsyncServer mcpServer,
@@ -72,6 +75,7 @@ public class DubboServiceToolRegistry {
         this.genericCaller = genericCaller;
         this.mcpServiceFilter = mcpServiceFilter;
         this.objectMapper = new ObjectMapper();
+        this.jsonMapper = new JacksonMcpJsonMapper(objectMapper);
     }
 
     public int registerService(ProviderModel providerModel) {
@@ -191,7 +195,11 @@ public class DubboServiceToolRegistry {
                 description = generateDefaultDescription(method, providerModel);
             }
 
-            McpSchema.Tool mcpTool = new McpSchema.Tool(toolName, description, generateToolSchema(method));
+            McpSchema.Tool mcpTool = McpSchema.Tool.builder()
+                    .name(toolName)
+                    .description(description)
+                    .inputSchema(jsonMapper, generateToolSchema(method))
+                    .build();
 
             McpServerFeatures.AsyncToolSpecification toolSpec =
                     createMethodToolSpecification(mcpTool, providerModel, method, url);

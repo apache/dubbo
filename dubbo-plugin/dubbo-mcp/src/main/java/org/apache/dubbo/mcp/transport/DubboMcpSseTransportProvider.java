@@ -37,8 +37,10 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.modelcontextprotocol.json.McpJsonMapper;
+import io.modelcontextprotocol.json.TypeRef;
+import io.modelcontextprotocol.json.jackson2.JacksonMcpJsonMapper;
 import io.modelcontextprotocol.spec.McpError;
 import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpServerSession;
@@ -66,7 +68,7 @@ public class DubboMcpSseTransportProvider implements McpServerTransportProvider 
 
     private McpServerSession.Factory sessionFactory;
 
-    private final ObjectMapper objectMapper;
+    private final McpJsonMapper jsonMapper;
 
     /**
      * session cache, default expire time is 60 seconds
@@ -82,7 +84,7 @@ public class DubboMcpSseTransportProvider implements McpServerTransportProvider 
             expireSeconds = 60;
         }
         sessions = new ExpiringMap<>(expireSeconds, 30);
-        this.objectMapper = objectMapper;
+        this.jsonMapper = new JacksonMcpJsonMapper(objectMapper);
         sessions.getExpireThread().startExpiryIfNotStarted();
     }
 
@@ -147,7 +149,7 @@ public class DubboMcpSseTransportProvider implements McpServerTransportProvider 
         refreshSessionExpire(session);
         try {
             McpSchema.JSONRPCMessage message = McpSchema.deserializeJsonRpcMessage(
-                    objectMapper, IOUtils.read(request.inputStream(), String.valueOf(StandardCharsets.UTF_8)));
+                    jsonMapper, IOUtils.read(request.inputStream(), String.valueOf(StandardCharsets.UTF_8)));
             session.handle(message).block();
             response.setStatus(HttpStatus.OK.getCode());
         } catch (IOException e) {
@@ -159,8 +161,7 @@ public class DubboMcpSseTransportProvider implements McpServerTransportProvider 
     private void handleSseConnection(StreamObserver<ServerSentEvent<String>> responseObserver) {
         // Handle the SSE connection
         // This is where you would set up the SSE stream and send events to the client
-        DubboMcpSessionTransport dubboMcpSessionTransport =
-                new DubboMcpSessionTransport(responseObserver, objectMapper);
+        DubboMcpSessionTransport dubboMcpSessionTransport = new DubboMcpSessionTransport(responseObserver, jsonMapper);
         McpServerSession mcpServerSession = sessionFactory.create(dubboMcpSessionTransport);
         sessions.put(mcpServerSession.getId(), mcpServerSession);
         Configuration conf = ConfigurationUtils.getGlobalConfiguration(ApplicationModel.defaultModel());
@@ -179,14 +180,14 @@ public class DubboMcpSseTransportProvider implements McpServerTransportProvider 
 
     private static class DubboMcpSessionTransport implements McpServerTransport {
 
-        private final ObjectMapper JSON;
+        private final McpJsonMapper jsonMapper;
 
         private final StreamObserver<ServerSentEvent<String>> responseObserver;
 
         public DubboMcpSessionTransport(
-                StreamObserver<ServerSentEvent<String>> responseObserver, ObjectMapper objectMapper) {
+                StreamObserver<ServerSentEvent<String>> responseObserver, McpJsonMapper jsonMapper) {
             this.responseObserver = responseObserver;
-            this.JSON = objectMapper;
+            this.jsonMapper = jsonMapper;
         }
 
         @Override
@@ -203,7 +204,7 @@ public class DubboMcpSseTransportProvider implements McpServerTransportProvider 
         public Mono<Void> sendMessage(McpSchema.JSONRPCMessage message) {
             return Mono.fromRunnable(() -> {
                 try {
-                    String jsonText = JSON.writeValueAsString(message);
+                    String jsonText = jsonMapper.writeValueAsString(message);
                     responseObserver.onNext(ServerSentEvent.<String>builder()
                             .event(MESSAGE_EVENT_TYPE)
                             .data(jsonText)
@@ -215,8 +216,8 @@ public class DubboMcpSseTransportProvider implements McpServerTransportProvider 
         }
 
         @Override
-        public <T> T unmarshalFrom(Object data, TypeReference<T> typeRef) {
-            return JSON.convertValue(data, typeRef);
+        public <T> T unmarshalFrom(Object data, TypeRef<T> typeRef) {
+            return jsonMapper.convertValue(data, typeRef);
         }
     }
 }
