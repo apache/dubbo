@@ -123,6 +123,34 @@ public class DefaultSerializeClassChecker implements AllowClassNotifyListener {
         return aClass;
     }
 
+    /**
+     * Check whether the given class satisfies the Serializable contract.
+     * <p>
+     * This method is used when the target {@link Class} is already known (e.g. resolved from a
+     * method signature) so no class-name-based loading is required. It enforces the same
+     * Serializable check as {@link #loadClass} to close the gap where a generic invocation Map
+     * without a {@code "class"} key would otherwise bypass serialization security checks.
+     *
+     * @param clazz the class to validate
+     * @throws IllegalArgumentException if {@code checkSerializable} is {@code true} and the class
+     *                                  does not implement {@link java.io.Serializable}
+     */
+    public void checkClass(Class<?> clazz) {
+        if (clazz == null || clazz.isPrimitive() || Serializable.class.isAssignableFrom(clazz)) {
+            return;
+        }
+        String className = clazz.getName();
+        String msg = "[Serialization Security] Serialized class " + className
+                + " has not implement Serializable interface. "
+                + "Current mode is strict check, will disallow to deserialize it by default. ";
+        if (serializeSecurityManager.getWarnedClasses().add(className)) {
+            logger.error(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "", msg);
+        }
+        if (checkSerializable) {
+            throw new IllegalArgumentException(msg);
+        }
+    }
+
     private Class<?> loadClass0(ClassLoader classLoader, String className) throws ClassNotFoundException {
         if (checkStatus == SerializeCheckStatus.DISABLE) {
             return classForName(classLoader, className);

@@ -462,6 +462,11 @@ public class PojoUtils {
                         CLASS_NOT_FOUND_CACHE.put((String) className, NOT_FOUND_VALUE);
                     }
                 }
+            } else if (type != Object.class && !type.isInterface() && !Map.class.isAssignableFrom(type)) {
+                // When no "class" key is present, the target type is already resolved from the method
+                // signature. We must still enforce the Serializable contract to prevent bypassing the
+                // serialization security check via generic invocation without an explicit "class" entry.
+                DefaultSerializeClassChecker.getInstance().checkClass(type);
             }
 
             // special logic for enum
