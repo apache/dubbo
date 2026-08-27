@@ -20,6 +20,12 @@ import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.io.IOException;
+import java.io.InputStream;
+
+/**
+ * Payload decompressor for Triple protocol.
+ */
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface DeCompressor extends MessageEncoding {
 
@@ -36,10 +42,17 @@ public interface DeCompressor extends MessageEncoding {
     }
 
     /**
-     * decompress payload
-     *
-     * @param payloadByteArr payload byte array
-     * @return decompressed payload byte array
+     * @deprecated use {@link #decompress(InputStream)} instead for zero-copy
      */
+    @Deprecated
     byte[] decompress(byte[] payloadByteArr);
+
+    /**
+     * Wraps the input stream with decompression.
+     *
+     * @param inputStream compressed input stream
+     * @return decompressed input stream
+     * @throws IOException if decompression fails
+     */
+    InputStream decompress(InputStream inputStream) throws IOException;
 }
