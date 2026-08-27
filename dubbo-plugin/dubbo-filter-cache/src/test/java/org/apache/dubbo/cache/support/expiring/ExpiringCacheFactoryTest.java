@@ -25,6 +25,10 @@ import org.apache.dubbo.rpc.RpcInvocation;
 
 import java.util.concurrent.TimeUnit;
 
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -33,6 +37,18 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 class ExpiringCacheFactoryTest extends AbstractCacheFactoryTest {
+
+    static HazelcastInstance hzInstance;
+
+    @BeforeAll
+    public static void initialize() {
+        hzInstance = Hazelcast.newHazelcastInstance();
+    }
+
+    @AfterAll
+    public static void tearDown() {
+        hzInstance.shutdown();
+    }
 
     private static final String EXPIRING_CACHE_URL =
             "test://test:12/test?cache=expiring&cache.seconds=1&cache.interval=1";
