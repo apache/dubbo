@@ -817,7 +817,7 @@ public abstract class AbstractConfig implements Serializable {
 
                     Class<?> paramType = method.getParameterTypes()[0];
                     if (paramType.isArray()) {
-                        if (isIgnoredAttribute(obj.getClass(), propertyName)) {
+                        if (isIgnoredAttributeOnRefresh(obj.getClass(), propertyName)) {
                             continue;
                         }
 
@@ -859,7 +859,7 @@ public abstract class AbstractConfig implements Serializable {
                     // 'setGeneric' methods in ReferenceConfig.
                     if (StringUtils.hasText(value)
                             && ClassUtils.isTypeMatch(paramType, value)
-                            && !isIgnoredAttribute(obj.getClass(), propertyName)) {
+                            && !isIgnoredAttributeOnRefresh(obj.getClass(), propertyName)) {
                         value = environment.resolvePlaceholders(value);
                         if (StringUtils.hasText(value)) {
                             Object arg = ClassUtils.convertPrimitive(frameworkModel, paramType, value);
@@ -998,6 +998,14 @@ public abstract class AbstractConfig implements Serializable {
         Parameter parameter = getter.getAnnotation(Parameter.class);
         // not an attribute
         return parameter != null && !parameter.attribute();
+    }
+
+    private boolean isIgnoredAttributeOnRefresh(Class<?> clazz, String propertyName) {
+        // `default` participates in property binding but is intentionally excluded from URL attributes/equality.
+        if (CommonConstants.DEFAULT_KEY.equals(propertyName)) {
+            return false;
+        }
+        return isIgnoredAttribute(clazz, propertyName);
     }
 
     protected void processExtraRefresh(String preferredPrefix, InmemoryConfiguration subPropsConfiguration) {

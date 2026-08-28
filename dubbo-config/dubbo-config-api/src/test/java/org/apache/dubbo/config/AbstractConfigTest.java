@@ -512,6 +512,24 @@ class AbstractConfigTest {
     }
 
     @Test
+    void testRefreshSkipsNonDefaultAttributeFalseProperties() {
+        try {
+            OverrideConfig overrideConfig = new OverrideConfig();
+            SysProps.setProperty("dubbo.override.non-attribute", "value");
+            SysProps.setProperty("dubbo.override.items[0]", "item");
+            SysProps.setProperty("dubbo.override.non-attribute-items[0]", "ignored");
+
+            overrideConfig.refresh();
+
+            Assertions.assertNull(overrideConfig.getNonAttribute());
+            Assertions.assertArrayEquals(new String[] {"item"}, overrideConfig.getItems());
+            Assertions.assertNull(overrideConfig.getNonAttributeItems());
+        } finally {
+            ApplicationModel.defaultModel().modelEnvironment().destroy();
+        }
+    }
+
+    @Test
     void testRefreshParametersWithOverrideConfigMode() {
         FrameworkModel frameworkModel = new FrameworkModel();
         try {
@@ -690,6 +708,9 @@ class AbstractConfigTest {
         public String escape;
         public String notConflictKey;
         public String notConflictKey2;
+        public String nonAttribute;
+        public String[] items;
+        public String[] nonAttributeItems;
         protected Map<String, String> parameters;
 
         public OverrideConfig() {}
@@ -764,6 +785,32 @@ class AbstractConfigTest {
 
         public void setNotConflictKey2(String notConflictKey2) {
             this.notConflictKey2 = notConflictKey2;
+        }
+
+        @Parameter(attribute = false)
+        public String getNonAttribute() {
+            return nonAttribute;
+        }
+
+        public void setNonAttribute(String nonAttribute) {
+            this.nonAttribute = nonAttribute;
+        }
+
+        public String[] getItems() {
+            return items;
+        }
+
+        public void setItems(String[] items) {
+            this.items = items;
+        }
+
+        @Parameter(attribute = false)
+        public String[] getNonAttributeItems() {
+            return nonAttributeItems;
+        }
+
+        public void setNonAttributeItems(String[] nonAttributeItems) {
+            this.nonAttributeItems = nonAttributeItems;
         }
 
         public Map<String, String> getParameters() {
