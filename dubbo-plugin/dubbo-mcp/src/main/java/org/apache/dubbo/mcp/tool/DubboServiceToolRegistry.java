@@ -42,7 +42,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.modelcontextprotocol.server.McpAsyncServer;
 import io.modelcontextprotocol.server.McpAsyncServerExchange;
 import io.modelcontextprotocol.server.McpServerFeatures;
@@ -60,7 +59,6 @@ public class DubboServiceToolRegistry {
     private final McpServiceFilter mcpServiceFilter;
     private final Map<String, McpServerFeatures.AsyncToolSpecification> registeredTools = new ConcurrentHashMap<>();
     private final Map<String, Set<String>> serviceToToolsMapping = new ConcurrentHashMap<>();
-    private final ObjectMapper objectMapper;
 
     public DubboServiceToolRegistry(
             McpAsyncServer mcpServer,
@@ -71,7 +69,6 @@ public class DubboServiceToolRegistry {
         this.toolConverter = toolConverter;
         this.genericCaller = genericCaller;
         this.mcpServiceFilter = mcpServiceFilter;
-        this.objectMapper = new ObjectMapper();
     }
 
     public int registerService(ProviderModel providerModel) {
@@ -191,7 +188,11 @@ public class DubboServiceToolRegistry {
                 description = generateDefaultDescription(method, providerModel);
             }
 
-            McpSchema.Tool mcpTool = new McpSchema.Tool(toolName, description, generateToolSchema(method));
+            McpSchema.Tool mcpTool = McpSchema.Tool.builder()
+                    .name(toolName)
+                    .description(description)
+                    .inputSchema(generateToolSchema(method))
+                    .build();
 
             McpServerFeatures.AsyncToolSpecification toolSpec =
                     createMethodToolSpecification(mcpTool, providerModel, method, url);
@@ -369,32 +370,15 @@ public class DubboServiceToolRegistry {
                 providerModel.getServiceModel().getInterfaceName());
     }
 
-    private String generateToolSchema(Method method) {
-        Map<String, Object> schemaMap = new HashMap<>();
-        schemaMap.put(McpConstant.SCHEMA_PROPERTY_TYPE, JsonSchemaType.OBJECT_SCHEMA.getJsonSchemaType());
-
+    private McpSchema.JsonSchema generateToolSchema(Method method) {
         Map<String, Object> properties = new HashMap<>();
         List<String> requiredParams = new ArrayList<>();
 
         generateSchemaFromMethodSignature(method, properties, requiredParams);
 
-        schemaMap.put(McpConstant.SCHEMA_PROPERTY_PROPERTIES, properties);
-
-        if (!requiredParams.isEmpty()) {
-            schemaMap.put(McpConstant.SCHEMA_PROPERTY_REQUIRED, requiredParams);
-        }
-
-        try {
-            return objectMapper.writeValueAsString(schemaMap);
-        } catch (Exception e) {
-            logger.error(
-                    LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION,
-                    "",
-                    "",
-                    "Failed to generate tool schema for method " + method.getName() + ": " + e.getMessage(),
-                    e);
-            return "{\"type\":\"object\",\"properties\":{}}";
-        }
+        List<String> schemaRequiredParams = requiredParams.isEmpty() ? null : requiredParams;
+        return new McpSchema.JsonSchema(
+                JsonSchemaType.OBJECT_SCHEMA.getJsonSchemaType(), properties, schemaRequiredParams, null, null, null);
     }
 
     private void generateSchemaFromMethodSignature(

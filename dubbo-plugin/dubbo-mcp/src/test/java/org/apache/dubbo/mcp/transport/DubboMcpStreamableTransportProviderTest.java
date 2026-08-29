@@ -29,6 +29,7 @@ import java.io.ByteArrayInputStream;
 import java.util.Collections;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.modelcontextprotocol.json.jackson2.JacksonMcpJsonMapper;
 import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpStreamableServerSession;
 import org.junit.jupiter.api.AfterEach;
@@ -78,7 +79,7 @@ class DubboMcpStreamableTransportProviderTest {
         rpcContextMockedStatic.when(RpcContext::getServiceContext).thenReturn(rpcServiceContext);
         when(rpcServiceContext.getRequest(HttpRequest.class)).thenReturn(httpRequest);
         when(rpcServiceContext.getResponse(HttpResponse.class)).thenReturn(httpResponse);
-        transportProvider = new DubboMcpStreamableTransportProvider(objectMapper);
+        transportProvider = new DubboMcpStreamableTransportProvider(new JacksonMcpJsonMapper(objectMapper));
         transportProvider.setSessionFactory(sessionFactory);
     }
 
@@ -171,7 +172,7 @@ class DubboMcpStreamableTransportProviderTest {
     void handleGetWithReplayRequestCallsSessionReplay() throws Exception {
         // Create a transport provider subclass for testing to access private methods and fields
         DubboMcpStreamableTransportProvider transportProviderUnderTest =
-                new DubboMcpStreamableTransportProvider(objectMapper);
+                new DubboMcpStreamableTransportProvider(new JacksonMcpJsonMapper(objectMapper));
         transportProviderUnderTest.setSessionFactory(sessionFactory);
 
         // Use reflection to put mockSession into the sessions map
