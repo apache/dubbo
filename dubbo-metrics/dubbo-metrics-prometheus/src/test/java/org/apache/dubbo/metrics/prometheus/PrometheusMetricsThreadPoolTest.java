@@ -20,6 +20,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.metrics.collector.sample.MetricThreadPoolExhaustedListener;
 import org.apache.dubbo.metrics.collector.sample.ThreadRejectMetricsCountSampler;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -147,7 +148,6 @@ public class PrometheusMetricsThreadPoolTest {
         ThreadRejectMetricsCountSampler threadRejectMetricsCountSampler =
                 new ThreadRejectMetricsCountSampler(collector);
         threadRejectMetricsCountSampler.inc(threadPoolExecutorName, threadPoolExecutorName);
-        threadRejectMetricsCountSampler.addMetricName(threadPoolExecutorName);
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
             Assertions.assertTrue(sample instanceof GaugeMetricSample);
@@ -158,6 +158,33 @@ public class PrometheusMetricsThreadPoolTest {
             Assertions.assertEquals(tags.get(TAG_IP), getLocalHost());
             Assertions.assertEquals(tags.get(TAG_HOSTNAME), getLocalHostName());
             Assertions.assertEquals(gaugeSample.applyAsLong(), 1);
+        }
+    }
+
+    @Test
+    void testThreadPoolRejectMetricsExportedAfterLateFirstEvent() {
+        metricsCollector.setCollectEnabled(true);
+        metricsCollector.setApplicationName(applicationModel.getApplicationName());
+        String threadPoolExecutorName = "DubboServerHandler-20816";
+
+        ThreadRejectMetricsCountSampler sampler = new ThreadRejectMetricsCountSampler(metricsCollector);
+        MetricThreadPoolExhaustedListener listener =
+                new MetricThreadPoolExhaustedListener(threadPoolExecutorName, sampler);
+
+        PrometheusMetricsReporter reporter = new PrometheusMetricsReporter(metricsConfig.toUrl(), applicationModel);
+        reporter.init();
+        try {
+            reporter.resetIfSamplesChanged();
+            Assertions.assertFalse(reporter.getResponse().contains("dubbo_thread_pool_reject_thread_count"));
+
+            listener.onEvent(null);
+            reporter.resetIfSamplesChanged();
+
+            String response = reporter.getResponse();
+            Assertions.assertTrue(response.contains("dubbo_thread_pool_reject_thread_count"));
+            Assertions.assertTrue(response.contains("thread.name=\"" + threadPoolExecutorName + "\""));
+        } finally {
+            reporter.destroy();
         }
     }
 }
