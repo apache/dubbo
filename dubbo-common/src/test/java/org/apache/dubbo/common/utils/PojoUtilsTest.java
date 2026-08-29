@@ -1286,4 +1286,46 @@ class PojoUtilsTest {
 
         boolean isUrgent();
     }
+
+    /**
+     * Non-Serializable POJO used to verify that PojoUtils.realize enforces
+     * the Serializable contract even when the generic Map has no "class" key.
+     * See <a href="https://github.com/apache/dubbo/issues/16270">issue #16270</a>.
+     */
+    public static class NonSerializableDto {
+        private String label;
+        private Integer sequence;
+
+        public NonSerializableDto() {}
+
+        public String getLabel() {
+            return label;
+        }
+
+        public void setLabel(String label) {
+            this.label = label;
+        }
+
+        public Integer getSequence() {
+            return sequence;
+        }
+
+        public void setSequence(Integer sequence) {
+            this.sequence = sequence;
+        }
+    }
+
+    @Test
+    void test_realize_rejectsNonSerializableMapWithoutClassKey() {
+        // A generic Map that does NOT carry a "class" entry.
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("label", "no-class-key");
+        data.put("sequence", 100);
+
+        // PojoUtils.realize should reject the non-Serializable target type
+        // even when the Map has no "class" key (issue #16270).
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            PojoUtils.realize(data, NonSerializableDto.class, NonSerializableDto.class);
+        });
+    }
 }
