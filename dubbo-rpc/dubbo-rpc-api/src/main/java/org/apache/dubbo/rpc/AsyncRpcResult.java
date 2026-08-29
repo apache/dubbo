@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
+import org.apache.dubbo.rpc.RpcContext.RestoreContext;
 import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 import org.apache.dubbo.rpc.protocol.dubbo.FutureAdapter;
 
@@ -81,6 +82,16 @@ public class AsyncRpcResult implements Result {
                 && !future.isDone()) {
             async = true;
             this.storedContext = RpcContext.clearAndStoreContext();
+
+            // this is to fix https://github.com/apache/dubbo/issues/13666
+            this.responseFuture = this.responseFuture.thenApply((appResponse) -> {
+                RestoreContext tempStoredContext = RpcContext.clearAndStoreContext();
+                this.storedContext.restore();
+                appResponse.addObjectAttachments(
+                        RpcContext.getServerResponseContext().getObjectAttachments());
+                tempStoredContext.restore();
+                return appResponse;
+            });
         } else {
             async = false;
         }
