@@ -69,15 +69,6 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
 
         Class<?> realInterfaceClass = null;
         if (generic) {
-            try {
-                // find the real interface from url
-                String realInterface = invoker.getUrl().getParameter(Constants.INTERFACE);
-                realInterfaceClass = ReflectUtils.forName(classLoader, realInterface);
-                interfaces.add(realInterfaceClass);
-            } catch (Throwable e) {
-                // ignore
-            }
-
             if (GenericService.class.isAssignableFrom(invoker.getInterface())
                     && Dubbo2CompactUtils.isEnabled()
                     && Dubbo2CompactUtils.isGenericServiceClassLoaded()) {
@@ -89,6 +80,15 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
                 } else {
                     interfaces.add(org.apache.dubbo.rpc.service.GenericService.class);
                 }
+            }
+
+            try {
+                // find the real interface from url
+                String realInterface = invoker.getUrl().getParameter(Constants.INTERFACE);
+                realInterfaceClass = ReflectUtils.forName(classLoader, realInterface);
+                interfaces.add(realInterfaceClass);
+            } catch (Throwable e) {
+                // ignore
             }
         }
 
