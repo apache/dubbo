@@ -80,6 +80,53 @@ public class FrameworkStatusReportService implements ScopeModelAware {
         return JsonUtils.toJson(registration);
     }
 
+    public static final String OUTCOME_SUCCESS = "SUCCESS";
+    public static final String OUTCOME_FAILED = "FAILED";
+    public static final String OUTCOME_PENDING_RETRY = "PENDING_RETRY";
+
+    /**
+     * Report a registration outcome tagged with the register mode (INTERFACE / INSTANCE), the
+     * registry address it targets, and a success flag. Used to surface partial-failure cases when
+     * Dubbo is running in dual registration mode, so observers can tell which side succeeded.
+     */
+    public void reportRegistrationOutcome(
+            String mode, String registryAddress, String serviceKey, boolean success, String errorMessage) {
+        reportRegistrationOutcome(
+                mode, registryAddress, serviceKey, success ? OUTCOME_SUCCESS : OUTCOME_FAILED, errorMessage);
+    }
+
+    /**
+     * String-status overload so callers can report outcomes that don't fit the success/failure
+     * binary — notably {@link #OUTCOME_PENDING_RETRY} for the FailbackRegistry silent-retry path
+     * where {@code register()} returned normally but the URL was queued for retry.
+     */
+    public void reportRegistrationOutcome(
+            String mode, String registryAddress, String serviceKey, String status, String errorMessage) {
+        doReport(
+                REGISTRATION_STATUS,
+                createRegistrationOutcomeReport(mode, registryAddress, serviceKey, status, errorMessage));
+    }
+
+    public String createRegistrationOutcomeReport(
+            String mode, String registryAddress, String serviceKey, boolean success, String errorMessage) {
+        return createRegistrationOutcomeReport(
+                mode, registryAddress, serviceKey, success ? OUTCOME_SUCCESS : OUTCOME_FAILED, errorMessage);
+    }
+
+    public String createRegistrationOutcomeReport(
+            String mode, String registryAddress, String serviceKey, String status, String errorMessage) {
+        HashMap<String, String> registration = new HashMap<>();
+        registration.put("application", applicationModel.getApplicationName());
+        registration.put("mode", mode);
+        registration.put("registry", registryAddress);
+        registration.put("service", serviceKey);
+        registration.put("status", status);
+        if (errorMessage != null) {
+            registration.put("error", errorMessage);
+        }
+        return JsonUtils.toJson(registration);
+    }
+
     public String createConsumptionReport(String interfaceName, String version, String group, String status) {
         HashMap<String, String> migrationStatus = new HashMap<>();
         migrationStatus.put("type", "consumption");
