@@ -79,7 +79,20 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
             }
             return;
         }
+        // Bytes must be returned to flow control as soon as they are taken off the wire,
+        // even if the message they belong to is still incomplete: a message larger than
+        // the peer's send window can only complete if the partial frames already received
+        // trigger WINDOW_UPDATE, otherwise both sides wait on each other forever.
+        int numBytes;
+        try {
+            numBytes = inputStream.available();
+        } catch (IOException e) {
+            throw new DecodeException(e);
+        }
         accumulate.addInputStream(inputStream);
+        if (listener != null) {
+            listener.bytesRead(numBytes);
+        }
         deliver();
     }
 
@@ -237,18 +250,9 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
     }
 
     private void processBody() throws IOException {
-        // Calculate total bytes read: header (offset + length field) + payload
-        int totalBytesRead = lengthFieldOffset + lengthFieldLength + requiredLength;
-
-        MessageStream messageStream;
-        try {
-            messageStream = readMessageStream(accumulate, requiredLength);
-        } finally {
-            // Notify listener about bytes read for flow control immediately after reading bytes
-            // This must be in finally block to ensure flow control works even if reading fails
-            // Following gRPC's pattern: bytesRead is called as soon as bytes are consumed from input
-            listener.bytesRead(totalBytesRead);
-        }
+        // Flow-control bytes were already returned in decode() when the data was ingested,
+        // so nothing to report per completed message here.
+        MessageStream messageStream = readMessageStream(accumulate, requiredLength);
 
         invokeListener(messageStream.inputStream, messageStream.length);
 

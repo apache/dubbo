@@ -125,18 +125,33 @@ public final class Http2TripleClientStream extends AbstractTripleClientStream {
         // This must be executed in the event loop thread
         if (http2StreamChannel.eventLoop().inEventLoop()) {
             try {
-                localFlowController.consumeBytes(stream, numBytes);
+                consumeBytesAndFlush(localFlowController, http2StreamChannel, stream, numBytes);
             } catch (Exception e) {
                 LOGGER.warn(PROTOCOL_FAILED_RESPONSE, "", "", "Failed to consumeBytes for stream " + streamId, e);
             }
         } else {
             http2StreamChannel.eventLoop().execute(() -> {
                 try {
-                    localFlowController.consumeBytes(stream, numBytes);
+                    consumeBytesAndFlush(localFlowController, http2StreamChannel, stream, numBytes);
                 } catch (Exception e) {
                     LOGGER.warn(PROTOCOL_FAILED_RESPONSE, "", "", "Failed to consumeBytes for stream " + streamId, e);
                 }
             });
+        }
+    }
+
+    private static void consumeBytesAndFlush(
+            Http2LocalFlowController localFlowController,
+            Http2StreamChannel http2StreamChannel,
+            Http2Stream stream,
+            int numBytes)
+            throws Exception {
+        // The WINDOW_UPDATE written by the flow controller is not flushed by the frame
+        // reading loop when consumption happens outside of it, and flushing the stream
+        // channel itself is a no-op for frames written directly to the connection, so
+        // flush the parent channel, otherwise the peer may wait forever for the window.
+        if (localFlowController.consumeBytes(stream, numBytes)) {
+            http2StreamChannel.parent().flush();
         }
     }
 
