@@ -19,38 +19,55 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.dubbo</groupId>
-    <artifactId>dubbo-parent</artifactId>
+    <artifactId>dubbo-test</artifactId>
     <version>${revision}</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
-  <artifactId>dubbo-test</artifactId>
-  <packaging>pom</packaging>
 
-  <modules>
-    <module>dubbo-test-check</module>
-    <module>dubbo-test-common</module>
-    <module>dubbo-test-spring</module>
-    <module>dubbo-test-spring3.2</module>
-    <module>dubbo-test-spring4.1</module>
-    <module>dubbo-test-spring4.2</module>
-    <module>dubbo-dependencies-all</module>
-    <module>dubbo-test-modules</module>
-  </modules>
+  <artifactId>dubbo-test-rest-spring6.1</artifactId>
 
   <properties>
     <skip_maven_deploy>true</skip_maven_deploy>
+    <spring_6_1_version>6.1.5</spring_6_1_version>
   </properties>
 
-  <profiles>
-    <profile>
-      <id>jdk-version-ge-17</id>
-      <activation>
-        <jdk>[17,)</jdk>
-      </activation>
-      <modules>
-        <module>dubbo-test-rest-spring6.1</module>
-      </modules>
-    </profile>
-  </profiles>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-framework-bom</artifactId>
+        <version>${spring_6_1_version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-rest-spring6</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-webmvc</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>17</source>
+          <target>17</target>
+          <release>17</release>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

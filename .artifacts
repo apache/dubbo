@@ -116,6 +116,7 @@ dubbo-xds
 dubbo-plugin-loom
 dubbo-rest-jaxrs
 dubbo-rest-spring
+dubbo-rest-spring6
 dubbo-rest-openapi
 dubbo-triple-servlet
 dubbo-triple-websocket
