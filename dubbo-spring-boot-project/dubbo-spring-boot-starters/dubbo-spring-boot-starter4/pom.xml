@@ -17,40 +17,35 @@
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
   <parent>
     <groupId>org.apache.dubbo</groupId>
-    <artifactId>dubbo-parent</artifactId>
+    <artifactId>dubbo-spring-boot-starters</artifactId>
     <version>${revision}</version>
-    <relativePath>../../pom.xml</relativePath>
+    <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>dubbo-spring-boot-starters</artifactId>
-  <packaging>pom</packaging>
-  <description>Apache Dubbo Spring Boot Starters</description>
+  <artifactId>dubbo-spring-boot-starter4</artifactId>
+  <packaging>jar</packaging>
+  <description>Apache Dubbo Spring Boot 4 Starter</description>
 
-  <modules>
-    <module>dubbo-nacos-spring-boot-starter</module>
-    <module>dubbo-zookeeper-curator5-spring-boot-starter</module>
-    <module>dubbo-sentinel-spring-boot-starter</module>
-    <module>dubbo-seata-spring-boot-starter</module>
-    <module>dubbo-spring-boot-starter</module>
-    <module>dubbo-tracing-brave-zipkin-spring-boot-starter</module>
-    <module>dubbo-tracing-otel-otlp-spring-boot-starter</module>
-    <module>dubbo-tracing-otel-zipkin-spring-boot-starter</module>
-    <module>dubbo-observability-spring-boot-starter</module>
-  </modules>
+  <dependencies>
+    <!-- Spring Boot dependencies -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter</artifactId>
+      <optional>true</optional>
+    </dependency>
 
-  <profiles>
-    <profile>
-      <id>jdk-version-ge-17</id>
-      <activation>
-        <jdk>[17,)</jdk>
-      </activation>
-      <modules>
-        <module>dubbo-spring-boot-starter4</module>
-      </modules>
-    </profile>
-  </profiles>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-spring-boot-autoconfigure</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-spring-boot-4-autoconfigure</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
 </project>

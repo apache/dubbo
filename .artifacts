@@ -95,6 +95,7 @@ dubbo-spring-boot-actuator-autoconfigure
 dubbo-spring-boot-actuator-compatible
 dubbo-spring-boot-autoconfigure
 dubbo-spring-boot-3-autoconfigure
+dubbo-spring-boot-4-autoconfigure
 dubbo-spring-boot-autoconfigure-compatible
 dubbo-spring-boot-actuator-autoconfigure-compatible
 dubbo-spring-boot-compatible
@@ -103,6 +104,7 @@ dubbo-tracing-otel-zipkin-spring-boot-starter
 dubbo-tracing-otel-otlp-spring-boot-starter
 dubbo-observability-spring-boot-starter
 dubbo-spring-boot-starter
+dubbo-spring-boot-starter4
 dubbo-spring-boot-starters
 dubbo-spring-boot-interceptor
 dubbo-nacos-spring-boot-starter

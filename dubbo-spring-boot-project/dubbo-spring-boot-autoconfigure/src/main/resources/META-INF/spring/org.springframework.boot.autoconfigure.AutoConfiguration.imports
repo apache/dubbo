@@ -9,3 +9,4 @@ org.apache.dubbo.spring.boot.autoconfigure.observability.brave.BraveAutoConfigur
 org.apache.dubbo.spring.boot.autoconfigure.observability.zipkin.ZipkinAutoConfiguration
 org.apache.dubbo.spring.boot.autoconfigure.observability.otlp.OtlpAutoConfiguration
 org.apache.dubbo.spring.boot.autoconfigure.DubboSpringBoot3DependencyCheckAutoConfiguration
+org.apache.dubbo.spring.boot.autoconfigure.DubboSpringBoot4DependencyCheckAutoConfiguration
