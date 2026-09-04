@@ -47,7 +47,9 @@ import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkParams.RO
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -98,6 +100,7 @@ class CuratorFrameworkUtilsTest {
         CuratorFramework curatorFramework = CuratorFrameworkUtils.buildCuratorFramework(registryUrl, null);
         Assertions.assertNotNull(curatorFramework);
         Assertions.assertTrue(curatorFramework.getZookeeperClient().isConnected());
+        verify(mockCuratorFramework, never()).close();
         curatorFramework.getZookeeperClient().close();
     }
 
@@ -113,20 +116,18 @@ class CuratorFrameworkUtilsTest {
     @Test
     void testBuildCuratorFrameworkCheckConnectDefault() {
         when(mockCuratorZookeeperClient.isConnected()).thenReturn(false);
-        Assertions.assertThrowsExactly(IllegalStateException.class, () -> {
-            CuratorFramework curatorFramework = CuratorFrameworkUtils.buildCuratorFramework(registryUrl, null);
-            curatorFramework.getZookeeperClient().close();
-        });
+        Assertions.assertThrowsExactly(
+                IllegalStateException.class, () -> CuratorFrameworkUtils.buildCuratorFramework(registryUrl, null));
+        verify(mockCuratorFramework).close();
     }
 
     @Test
     void testBuildCuratorFrameworkNotCheckConnect() {
         when(mockCuratorZookeeperClient.isConnected()).thenReturn(false);
         URL url = registryUrl.addParameter(CHECK_KEY, false);
-        Assertions.assertDoesNotThrow(() -> {
-            CuratorFramework curatorFramework = CuratorFrameworkUtils.buildCuratorFramework(url, null);
-            curatorFramework.getZookeeperClient().close();
-        });
+        Assertions.assertThrowsExactly(
+                IllegalStateException.class, () -> CuratorFrameworkUtils.buildCuratorFramework(url, null));
+        verify(mockCuratorFramework).close();
     }
 
     @Test
