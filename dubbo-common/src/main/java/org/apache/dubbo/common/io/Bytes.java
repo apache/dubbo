@@ -909,15 +909,9 @@ public class Bytes {
     private static byte[] getMD5(InputStream is, int bs) throws IOException {
         MessageDigest md = getMessageDigest();
         byte[] buf = new byte[bs];
-        while (is.available() > 0) {
-            int read, total = 0;
-            do {
-                if ((read = is.read(buf, total, bs - total)) <= 0) {
-                    break;
-                }
-                total += read;
-            } while (total < bs);
-            md.update(buf);
+        int read;
+        while ((read = is.read(buf)) != -1) {
+            md.update(buf, 0, read);
         }
         return md.digest();
     }
