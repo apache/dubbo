@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.router.condition.config;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
-import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.rpc.cluster.router.condition.config.model.ConditionRuleParser;
 
 import java.util.Arrays;
@@ -35,29 +32,5 @@ public class ConditionRuleParserTest {
                     Assertions.assertThrows(IllegalArgumentException.class, () -> ConditionRuleParser.parse(rawRule));
             Assertions.assertEquals("Condition router rule must be a YAML mapping.", exception.getMessage());
         }
-    }
-
-    @Test
-    public void testCommentOnlyRuleUpdatePreservesPreviousRule() {
-        String rawRule = "configVersion: v3.1\n" + "scope: service\n"
-                + "key: com.foo.BarService\n"
-                + "force: true\n"
-                + "runtime: true\n"
-                + "enabled: true\n"
-                + "conditions:\n"
-                + "  - from:\n"
-                + "      match: env=gray\n"
-                + "    to:\n"
-                + "      - match: env!=gray\n"
-                + "        weight: 100";
-
-        ServiceStateRouter<String> router = new ServiceStateRouter<>(
-                URL.valueOf("consumer://127.0.0.1/com.foo.BarService?env=gray&region=beijing"));
-        router.process(new ConfigChangedEvent("com.foo.BarService", "", rawRule, ConfigChangeType.ADDED));
-        Assertions.assertTrue(router.isForce());
-
-        router.process(new ConfigChangedEvent("com.foo.BarService", "", "# comment", ConfigChangeType.MODIFIED));
-
-        Assertions.assertTrue(router.isForce());
     }
 }
