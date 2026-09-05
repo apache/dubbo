@@ -167,7 +167,15 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         if (revisionUpdated) {
             try {
                 reportMetadata(this.metadataInfo);
-                doRegister(this.serviceInstance);
+                DefaultServiceInstance newServiceInstance =
+                        new DefaultServiceInstance((DefaultServiceInstance) serviceInstance);
+                newServiceInstance
+                        .getMetadata()
+                        .put(
+                                EXPORTED_SERVICES_REVISION_PROPERTY_NAME,
+                                newServiceInstance.getServiceMetadata().getRevision());
+                doRegister(newServiceInstance);
+                this.serviceInstance = newServiceInstance;
             } catch (Exception e) {
                 this.serviceInstance = null;
                 throw e;
@@ -201,8 +209,12 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             logger.info(String.format(
                     "Metadata of instance changed, updating instance with revision %s.",
                     newServiceInstance.getServiceMetadata().getRevision()));
+            newServiceInstance
+                    .getMetadata()
+                    .put(
+                            EXPORTED_SERVICES_REVISION_PROPERTY_NAME,
+                            newServiceInstance.getServiceMetadata().getRevision());
             doUpdate(oldServiceInstance, newServiceInstance);
-            this.serviceInstance = newServiceInstance;
         }
     }
 
@@ -217,6 +229,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             return;
         }
         doUnregister(this.serviceInstance);
+        this.serviceInstance = null;
     }
 
     @Override
@@ -266,6 +279,9 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
                     metadata.init();
                     break;
                 } else { // failed
+                    if (!metadataReport.isAvailable()) {
+                        break;
+                    }
                     if (triedTimes > 0) {
                         if (logger.isDebugEnabled()) {
                             logger.debug("Retry the " + triedTimes + " times to get metadata for revision=" + revision);
@@ -348,12 +364,14 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
      */
     protected void doUpdate(ServiceInstance oldServiceInstance, ServiceInstance newServiceInstance) {
         this.doUnregister(oldServiceInstance);
-
-        this.serviceInstance = newServiceInstance;
+        this.serviceInstance = null;
 
         if (!EMPTY_REVISION.equals(getExportedServicesRevision(newServiceInstance))) {
             reportMetadata(newServiceInstance.getServiceMetadata());
             this.doRegister(newServiceInstance);
+            this.serviceInstance = newServiceInstance;
+        } else {
+            metadataInfo.setReportRevision(EMPTY_REVISION);
         }
     }
 
@@ -377,18 +395,16 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     }
 
     protected boolean calOrUpdateInstanceRevision(ServiceInstance instance) {
-        String existingInstanceRevision = getExportedServicesRevision(instance);
         MetadataInfo metadataInfo = instance.getServiceMetadata();
         String newRevision = metadataInfo.calAndGetRevision();
-        if (!newRevision.equals(existingInstanceRevision)) {
-            instance.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, metadataInfo.getRevision());
-            return true;
-        }
-        return false;
+        boolean isMetadataReportSuccess = newRevision.equals(metadataInfo.getReportedRevision());
+        boolean isServiceInstanceUpdateSuccess =
+                newRevision.equals(instance.getMetadata(EXPORTED_SERVICES_REVISION_PROPERTY_NAME));
+        return !isMetadataReportSuccess || !isServiceInstanceUpdateSuccess;
     }
 
     protected void reportMetadata(MetadataInfo metadataInfo) {
-        if (metadataInfo == null) {
+        if (metadataInfo == null || metadataInfo.isReported()) {
             return;
         }
         if (metadataReport != null) {
@@ -397,9 +413,15 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             if ((DEFAULT_METADATA_STORAGE_TYPE.equals(metadataType) && metadataReport.shouldReportMetadata())
                     || REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
                 MetricsEventBus.post(MetadataEvent.toPushEvent(applicationModel), () -> {
+                    if (!metadataReport.isAvailable()) {
+                        throw new IllegalStateException("metadata report is not available");
+                    }
                     metadataReport.publishAppMetadata(identifier, metadataInfo);
+                    metadataInfo.setReportRevision(identifier.getRevision());
                     return null;
                 });
+            } else {
+                metadataInfo.setReportRevision(identifier.getRevision());
             }
         }
         MetadataInfo clonedMetadataInfo = metadataInfo.clone();

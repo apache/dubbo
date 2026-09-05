@@ -27,8 +27,11 @@ import org.apache.dubbo.config.mock.MockRegistryFactory2;
 import org.apache.dubbo.config.mock.MockServiceListener;
 import org.apache.dubbo.config.mock.TestProxyFactory;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
+import org.apache.dubbo.metadata.AbstractServiceNameMapping;
 import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.ServiceNameMapping;
+import org.apache.dubbo.metadata.report.MetadataReport;
+import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -38,6 +41,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.service.GenericService;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -54,6 +58,7 @@ import org.mockito.Mockito;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_BEAN;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_DEFAULT;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
@@ -82,8 +87,10 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 class ServiceConfigTest {
@@ -650,60 +657,50 @@ class ServiceConfigTest {
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>(applicationModel.newModule());
         serviceConfig.exported();
-        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         AtomicInteger count = new AtomicInteger(0);
-        ServiceNameMapping serviceNameMapping = new ServiceNameMapping() {
+
+        ApplicationConfig applicationConfig = new ApplicationConfig("app");
+        applicationConfig.setMappingRetryInterval(100);
+        serviceConfig.setApplication(applicationConfig);
+        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
+        applicationModel.getApplicationConfigManager().addMetadataReport(new MetadataReportConfig());
+
+        MetadataReportInstance mockMetadataReportInstance = mock(MetadataReportInstance.class);
+        MetadataReport metadataReport = mock(MetadataReport.class);
+        when(metadataReport.isAvailable()).thenReturn(true);
+        Map<String, MetadataReport> map = new HashMap<>();
+        map.put(DEFAULT_KEY, metadataReport);
+        when(mockMetadataReportInstance.getMetadataReports(true)).thenReturn(map);
+
+        AbstractServiceNameMapping serviceNameMapping = new AbstractServiceNameMapping(applicationModel) {
             @Override
-            public boolean map(URL url) {
-                if (count.incrementAndGet() < 5) {
-                    throw new RuntimeException();
-                }
-                return count.get() > 10;
+            protected boolean doMap(MetadataReport metadataReport, URL url) {
+                return count.incrementAndGet() > 10;
             }
+
+            @Override
+            public Set<String> get(URL url) {
+                return null;
+            }
+
+            @Override
+            public Set<String> getAndListen(URL url, MappingListener mappingListener) {
+                return null;
+            }
+
+            @Override
+            protected void removeListener(URL url, MappingListener mappingListener) {}
 
             @Override
             public boolean hasValidMetadataCenter() {
-                return true;
+                return false;
             }
-
-            @Override
-            public Set<String> getMapping(URL consumerURL) {
-                return null;
-            }
-
-            @Override
-            public Set<String> getAndListen(URL registryURL, URL subscribedURL, MappingListener listener) {
-                return null;
-            }
-
-            @Override
-            public MappingListener stopListen(URL subscribeURL, MappingListener listener) {
-                return null;
-            }
-
-            @Override
-            public void putCachedMapping(String serviceKey, Set<String> apps) {}
-
-            @Override
-            public Set<String> getRemoteMapping(URL consumerURL) {
-                return null;
-            }
-
-            @Override
-            public Set<String> removeCachedMapping(String serviceKey) {
-                return null;
-            }
-
-            @Override
-            public void $destroy() {}
         };
-        ApplicationConfig applicationConfig = new ApplicationConfig("app");
-        applicationConfig.setMappingRetryInterval(10);
-        serviceConfig.setApplication(applicationConfig);
-        serviceConfig.mapServiceName(URL.valueOf(""), serviceNameMapping, scheduledExecutorService);
+        serviceNameMapping.setMetadataReportInstance(mockMetadataReportInstance);
+        serviceNameMapping.setApplicationModel(applicationModel);
 
+        serviceConfig.mapServiceName(URL.valueOf(""), serviceNameMapping);
         await().until(() -> count.get() > 10);
-        scheduledExecutorService.shutdown();
     }
 
     @Test
@@ -759,7 +756,7 @@ class ServiceConfigTest {
         ApplicationConfig applicationConfig = new ApplicationConfig("app");
         applicationConfig.setMappingRetryInterval(10);
         serviceConfig.setApplication(applicationConfig);
-        serviceConfig.mapServiceName(URL.valueOf(""), serviceNameMapping, scheduledExecutorService);
+        serviceConfig.mapServiceName(URL.valueOf(""), serviceNameMapping);
 
         verify(scheduledExecutorService, times(0)).schedule((Runnable) any(), anyLong(), any());
 
