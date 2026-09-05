@@ -185,8 +185,6 @@ public class ServiceInstancesChangedListener {
         int emptyNum = hasEmptyMetadata(revisionToInstances);
         if (emptyNum != 0) {
             hasEmptyMetadata = true;
-
-            // return if all metadata is empty, this notification will not take effect.
             if (emptyNum == revisionToInstances.size()) {
                 // 1-17 - Address refresh failed.
                 logger.error(
@@ -194,9 +192,6 @@ public class ServiceInstancesChangedListener {
                         "metadata Server failure",
                         "",
                         "Address refresh failed because of Metadata Server failure, wait for retry or new address refresh event.");
-
-                submitRetryTask(event);
-                return;
             }
         } else {
             hasEmptyMetadata = false;
