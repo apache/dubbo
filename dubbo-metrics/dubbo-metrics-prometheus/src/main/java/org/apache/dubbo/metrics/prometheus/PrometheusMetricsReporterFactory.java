@@ -67,6 +67,9 @@ public class PrometheusMetricsReporterFactory extends AbstractMetricsReporterFac
                 logger.error(INTERNAL_ERROR, "", "", "Failed to instantiate PrometheusMetricsReporter", ncde);
                 throw ncde;
             }
+        } catch (IllegalStateException ise) {
+            logger.error(INTERNAL_ERROR, "", "", "Failed to initialize PrometheusMetricsReporter", ise);
+            return new NopPrometheusMetricsReporter();
         }
     }
 
@@ -77,6 +80,16 @@ public class PrometheusMetricsReporterFactory extends AbstractMetricsReporterFac
         if (msg.contains("io/micrometer/core/instrument/composite/CompositeMeterRegistry")) {
             return true;
         }
-        return msg.contains("io.micrometer.core.instrument.composite.CompositeMeterRegistry");
+        if (msg.contains("io.micrometer.core.instrument.composite.CompositeMeterRegistry")) {
+            return true;
+        }
+        return msg.contains("io/micrometer/prometheus/")
+                || msg.contains("io.micrometer.prometheus.")
+                || msg.contains("io/micrometer/prometheusmetrics/")
+                || msg.contains("io.micrometer.prometheusmetrics.")
+                || msg.contains("io/prometheus/client/exporter/")
+                || msg.contains("io.prometheus.client.exporter.")
+                || msg.contains("io/prometheus/metrics/exporter/pushgateway/")
+                || msg.contains("io.prometheus.metrics.exporter.pushgateway.");
     }
 }

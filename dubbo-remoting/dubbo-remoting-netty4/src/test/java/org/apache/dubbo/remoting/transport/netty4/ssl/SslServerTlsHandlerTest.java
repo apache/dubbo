@@ -14,24 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri.frame;
+package org.apache.dubbo.remoting.transport.netty4.ssl;
 
-public class RecordListener implements TriDecoder.Listener {
-    byte[] lastData;
-    int dataCount;
-    boolean close;
+import io.netty.channel.embedded.EmbeddedChannel;
+import org.junit.jupiter.api.Test;
 
-    @Override
-    public void bytesRead(int numBytes) {}
+import static org.junit.jupiter.api.Assertions.*;
 
-    @Override
-    public void onRawMessage(byte[] data) {
-        dataCount += 1;
-        lastData = data;
-    }
+class SslServerTlsHandlerTest {
 
-    @Override
-    public void close() {
-        close = true;
+    @Test
+    public void testExceptionCaughtShouldCloseChannel() {
+        SslServerTlsHandler handler = new SslServerTlsHandler(null);
+        EmbeddedChannel channel = new EmbeddedChannel(handler);
+
+        Throwable cause = new NoClassDefFoundError("class loading failure");
+        channel.pipeline().fireExceptionCaught(cause);
+
+        assertFalse(channel.isActive(), "channel should be closed after exceptionCaught");
+        assertFalse(channel.isOpen(), "Channel should not be open after exceptionCaught");
     }
 }

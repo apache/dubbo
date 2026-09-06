@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.protocol.tri.stream.ClientStreamFactory;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
+import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
@@ -84,7 +85,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
 
     // stream listener start
     @Override
-    public void onMessage(byte[] message, boolean isReturnTriException) {
+    public void onMessage(InputStream message, int messageLength, boolean isReturnTriException) {
         if (done) {
             LOGGER.warn(
                     PROTOCOL_STREAM_LISTENER,
@@ -95,8 +96,9 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
             return;
         }
         try {
+            // Use the new InputStream-based parseResponse method
             Object unpacked = requestMetadata.packableMethod.parseResponse(message, isReturnTriException);
-            listener.onMessage(unpacked, message.length);
+            listener.onMessage(unpacked, messageLength);
         } catch (Throwable t) {
             TriRpcStatus status = TriRpcStatus.INTERNAL
                     .withDescription("Deserialize response failed")

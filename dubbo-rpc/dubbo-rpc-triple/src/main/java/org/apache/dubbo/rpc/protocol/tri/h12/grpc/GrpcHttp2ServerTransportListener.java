@@ -170,9 +170,8 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
         private final StreamingDecoder streamingDecoder;
 
         private LazyFindMethodListener() {
-            streamingDecoder = new GrpcStreamingDecoder();
+            streamingDecoder = getStreamingDecoder();
             streamingDecoder.setFragmentListener(new DetermineMethodDescriptorListener());
-            streamingDecoder.request(Integer.MAX_VALUE);
         }
 
         @Override
@@ -195,11 +194,11 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
 
         @Override
         public void onClose() {
-            getStreamingDecoder().close();
+            // no op
         }
 
         @Override
-        public void onFragmentMessage(InputStream rawMessage) {
+        public void onFragmentMessage(InputStream rawMessage, int messageLength) {
             try {
                 RpcInvocationBuildContext context = getContext();
                 if (context.getMethodDescriptor() == null) {
@@ -209,7 +208,7 @@ public class GrpcHttp2ServerTransportListener extends GenericHttp2ServerTranspor
                     setHttpMessageListener(GrpcHttp2ServerTransportListener.super.buildHttpMessageListener());
                 }
 
-                ((GrpcStreamingDecoder) getStreamingDecoder()).invokeListener(rawMessage);
+                ((GrpcStreamingDecoder) getStreamingDecoder()).invokeListener(rawMessage, messageLength);
             } catch (IOException e) {
                 throw new DecodeException(e);
             }

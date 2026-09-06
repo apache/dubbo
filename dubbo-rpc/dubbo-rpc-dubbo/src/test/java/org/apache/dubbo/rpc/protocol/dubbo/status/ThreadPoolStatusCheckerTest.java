@@ -22,6 +22,8 @@ import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.common.store.DataStore;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -42,18 +44,25 @@ class ThreadPoolStatusCheckerTest {
         dataStore.put(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY, "8888", executorService1);
         dataStore.put(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY, "8889", executorService2);
 
-        ThreadPoolStatusChecker threadPoolStatusChecker = new ThreadPoolStatusChecker(ApplicationModel.defaultModel());
-        Status status = threadPoolStatusChecker.check();
-        Assertions.assertEquals(status.getLevel(), Status.Level.WARN);
-        Assertions.assertEquals(
-                status.getMessage(),
-                "Pool status:WARN, max:1, core:1, largest:0, active:0, task:0, service port: 8888;"
-                        + "Pool status:OK, max:10, core:10, largest:0, active:0, task:0, service port: 8889");
+        try {
+            ThreadPoolStatusChecker threadPoolStatusChecker =
+                    new ThreadPoolStatusChecker(ApplicationModel.defaultModel());
+            Status status = threadPoolStatusChecker.check();
+            Assertions.assertEquals(Status.Level.WARN, status.getLevel());
 
-        // reset
-        executorService1.shutdown();
-        executorService2.shutdown();
-        dataStore.remove(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY, "8888");
-        dataStore.remove(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY, "8889");
+            // DataStore does not guarantee map iteration order, so assert each pool status independently.
+            List<String> poolStatuses = Arrays.asList(status.getMessage().split(";"));
+            Assertions.assertEquals(2, poolStatuses.size());
+            Assertions.assertTrue(poolStatuses.contains(
+                    "Pool status:WARN, max:1, core:1, largest:0, active:0, task:0, service port: 8888"));
+            Assertions.assertTrue(poolStatuses.contains(
+                    "Pool status:OK, max:10, core:10, largest:0, active:0, task:0, service port: 8889"));
+        } finally {
+            // reset
+            executorService1.shutdown();
+            executorService2.shutdown();
+            dataStore.remove(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY, "8888");
+            dataStore.remove(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY, "8889");
+        }
     }
 }

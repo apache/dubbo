@@ -16,12 +16,24 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+
 public interface UnPack {
 
     /**
-     * @param data byte array
-     * @return object instance
-     * @throws Exception            exception
+     * @deprecated use {@link #unpack(InputStream)} instead
      */
+    @Deprecated
     Object unpack(byte[] data) throws Exception;
+
+    default Object unpack(InputStream inputStream) throws Exception {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        byte[] tmp = new byte[4096];
+        int len;
+        while ((len = inputStream.read(tmp)) != -1) {
+            buffer.write(tmp, 0, len);
+        }
+        return unpack(buffer.toByteArray());
+    }
 }

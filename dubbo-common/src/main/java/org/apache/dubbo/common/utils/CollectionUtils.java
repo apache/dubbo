@@ -68,10 +68,9 @@ public class CollectionUtils {
 
     private CollectionUtils() {}
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public static <T> List<T> sort(List<T> list) {
+    public static <T extends Comparable<? super T>> List<T> sort(List<T> list) {
         if (isNotEmpty(list)) {
-            Collections.sort((List) list);
+            Collections.sort(list);
         }
         return list;
     }
@@ -420,7 +419,7 @@ public class CollectionUtils {
         return values.get(0);
     }
 
-    public static <T> Set<T> toTreeSet(Set<T> set) {
+    public static <T extends Comparable<? super T>> Set<T> toTreeSet(Set<T> set) {
         if (isEmpty(set)) {
             return set;
         }
@@ -428,6 +427,15 @@ public class CollectionUtils {
             set = new TreeSet<>(set);
         }
         return set;
+    }
+
+    public static <T> Set<T> toTreeSet(Set<T> set, Comparator<? super T> comparator) {
+        if (set == null) {
+            return set;
+        }
+        Set<T> treeSet = new TreeSet<>(comparator);
+        treeSet.addAll(set);
+        return treeSet;
     }
 
     public static <T> Set<T> newHashSet(int expectedSize) {

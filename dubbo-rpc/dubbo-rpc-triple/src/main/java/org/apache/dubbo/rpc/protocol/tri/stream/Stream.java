@@ -20,6 +20,7 @@ import org.apache.dubbo.rpc.TriRpcStatus;
 
 import javax.net.ssl.SSLSession;
 
+import java.io.InputStream;
 import java.net.SocketAddress;
 
 import io.netty.handler.codec.http2.Http2Headers;
@@ -41,9 +42,11 @@ public interface Stream {
          * Callback when receive message. Note this method may be called many times if is a
          * streaming .
          *
-         * @param message message received from remote peer
+         * @param message message received from remote peer as InputStream
+         * @param messageLength the length of the message in bytes
+         * @param isReturnTriException whether the message is a Triple exception
          */
-        void onMessage(byte[] message, boolean isReturnTriException);
+        void onMessage(InputStream message, int messageLength, boolean isReturnTriException);
 
         /**
          * Callback when receive cancel signal.

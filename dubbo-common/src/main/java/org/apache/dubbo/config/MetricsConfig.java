@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.config.nested.HistogramConfig;
+import org.apache.dubbo.config.nested.OtlpMetricConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -126,6 +127,12 @@ public class MetricsConfig extends AbstractConfig {
      * The level of metrics collection, which can be "SERVICE" or "METHOD". The default is "METHOD".
      */
     private String rpcLevel;
+
+    /**
+     * Configuration for the metrics exporter.
+     */
+    @Nested
+    private OtlpMetricConfig otlp;
 
     public MetricsConfig() {}
 
@@ -286,5 +293,13 @@ public class MetricsConfig extends AbstractConfig {
 
     public void setEnableNetty(Boolean enableNetty) {
         this.enableNetty = enableNetty;
+    }
+
+    public OtlpMetricConfig getOtlp() {
+        return otlp;
+    }
+
+    public void setOtlp(OtlpMetricConfig otlp) {
+        this.otlp = otlp;
     }
 }
