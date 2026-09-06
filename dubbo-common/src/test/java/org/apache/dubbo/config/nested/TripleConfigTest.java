@@ -53,4 +53,13 @@ class TripleConfigTest {
         Assertions.assertThrows(IllegalArgumentException.class, () -> config.setMaxConnectionAge(-2L));
         Assertions.assertThrows(IllegalArgumentException.class, () -> config.setMaxConnectionAgeGrace(-1L));
     }
+
+    @Test
+    void testMaxConnectionAgeNullKeepsDefault() {
+        TripleConfig config = new TripleConfig();
+        config.setMaxConnectionAge(null);
+        config.setMaxConnectionAgeGrace(null);
+        Assertions.assertEquals(-1L, config.getMaxConnectionAgeOrDefault());
+        Assertions.assertEquals(10_000L, config.getMaxConnectionAgeGraceOrDefault());
+    }
 }
