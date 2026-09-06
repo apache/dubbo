@@ -105,6 +105,21 @@ public class TripleBuilder {
      */
     private Integer maxHeaderListSize;
 
+    /**
+     * Maximum connection age in milliseconds (server side).
+     * Connections older than this value will be gracefully terminated with GOAWAY
+     * so that clients can migrate and load can be rebalanced.
+     * <p>The default value is -1 (disabled).
+     */
+    private Long maxConnectionAge;
+
+    /**
+     * Grace time in milliseconds for the graceful connection termination
+     * triggered by maxConnectionAge.
+     * <p>The default value is 10000 (10 seconds).
+     */
+    private Long maxConnectionAgeGrace;
+
     public static TripleBuilder newBuilder() {
         return new TripleBuilder();
     }
@@ -174,6 +189,16 @@ public class TripleBuilder {
         return getThis();
     }
 
+    public TripleBuilder maxConnectionAge(Long maxConnectionAge) {
+        this.maxConnectionAge = maxConnectionAge;
+        return getThis();
+    }
+
+    public TripleBuilder maxConnectionAgeGrace(Long maxConnectionAgeGrace) {
+        this.maxConnectionAgeGrace = maxConnectionAgeGrace;
+        return getThis();
+    }
+
     protected TripleBuilder getThis() {
         return this;
     }
@@ -219,6 +244,12 @@ public class TripleBuilder {
         }
         if (maxHeaderListSize != null) {
             triple.setMaxHeaderListSize(maxHeaderListSize);
+        }
+        if (maxConnectionAge != null) {
+            triple.setMaxConnectionAge(maxConnectionAge);
+        }
+        if (maxConnectionAgeGrace != null) {
+            triple.setMaxConnectionAgeGrace(maxConnectionAgeGrace);
         }
         return triple;
     }
