@@ -359,7 +359,7 @@ public class AdaptiveClassCodeGenerator {
     }
 
     /**
-     * get value of adaptive annotation or if empty return splitted simple name
+     * get value of adaptive annotation or if empty return split simple name
      */
     private String[] getMethodAdaptiveValue(Adaptive adaptiveAnnotation) {
         String[] value = adaptiveAnnotation.value();
