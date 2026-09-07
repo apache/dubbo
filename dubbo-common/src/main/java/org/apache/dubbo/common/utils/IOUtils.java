@@ -191,13 +191,13 @@ public class IOUtils {
 
     public static String read(InputStream is, String encoding) throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
-        InputStreamReader inputStreamReader = new InputStreamReader(is, encoding);
-        char[] buf = new char[1024];
-        int len;
-        while ((len = inputStreamReader.read(buf)) != -1) {
-            stringBuilder.append(buf, 0, len);
+        try (InputStreamReader inputStreamReader = new InputStreamReader(is, encoding)) {
+            char[] buf = new char[1024];
+            int len;
+            while ((len = inputStreamReader.read(buf)) != -1) {
+                stringBuilder.append(buf, 0, len);
+            }
         }
-        inputStreamReader.close();
         return stringBuilder.toString();
     }
 
