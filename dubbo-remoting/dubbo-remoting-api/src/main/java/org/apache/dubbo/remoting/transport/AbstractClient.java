@@ -62,7 +62,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
     protected long reconnectDuration;
 
-    public AbstractClient(URL url, ChannelHandler handler) throws RemotingException {
+    protected AbstractClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
 
         // initialize connectLock before calling connect()
@@ -76,13 +76,15 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         initExecutor(url);
 
         reconnectDuration = getReconnectDuration(url);
+    }
 
+    protected final void init() throws RemotingException {
         try {
             doOpen();
         } catch (Throwable t) {
             close();
             throw new RemotingException(
-                    url.toInetSocketAddress(),
+                    getUrl().toInetSocketAddress(),
                     null,
                     "Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress()
                             + " connect to the server " + getRemoteAddress() + ", cause: " + t.getMessage(),
@@ -99,7 +101,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         } catch (RemotingException t) {
             // If lazy connect client fails to establish a connection, the client instance will still be created,
             // and the reconnection will be initiated by ReconnectTask, so there is no need to throw an exception
-            if (url.getParameter(LAZY_CONNECT_KEY, false)) {
+            if (getUrl().getParameter(LAZY_CONNECT_KEY, false)) {
                 logger.warn(
                         TRANSPORT_FAILED_CONNECT_PROVIDER,
                         "",
@@ -113,7 +115,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                 return;
             }
 
-            if (url.getParameter(Constants.CHECK_KEY, true)) {
+            if (getUrl().getParameter(Constants.CHECK_KEY, true)) {
                 close();
                 throw t;
             } else {
@@ -129,7 +131,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         } catch (Throwable t) {
             close();
             throw new RemotingException(
-                    url.toInetSocketAddress(),
+                    getUrl().toInetSocketAddress(),
                     null,
                     "Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress()
                             + " connect to the server " + getRemoteAddress() + ", cause: " + t.getMessage(),

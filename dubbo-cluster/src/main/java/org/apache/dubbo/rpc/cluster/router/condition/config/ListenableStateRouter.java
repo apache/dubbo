@@ -62,15 +62,16 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
     private volatile List<MultiDestConditionRouter<T>> multiDestConditionRouters = Collections.emptyList();
     private final String ruleKey;
 
-    public ListenableStateRouter(URL url, String ruleKey) {
+    private volatile boolean initialized = false;
+
+    protected ListenableStateRouter(URL url, String ruleKey) {
         super(url);
         this.setForce(false);
-        this.init(ruleKey);
         this.ruleKey = ruleKey;
     }
 
     @Override
-    public synchronized void process(ConfigChangedEvent event) {
+    public final synchronized void process(ConfigChangedEvent event) {
         if (logger.isInfoEnabled()) {
             logger.info("Notification of condition rule, change type is: " + event.getChangeType() + ", raw rule is:\n "
                     + event.getContent());
@@ -107,6 +108,7 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
             Holder<RouterSnapshotNode<T>> nodeHolder,
             Holder<String> messageHolder)
             throws RpcException {
+        ensureInitialized();
         if (CollectionUtils.isEmpty(invokers)
                 || (conditionRouters.size() == 0 && multiDestConditionRouters.size() == 0)) {
             if (needToPrintMessage) {
@@ -143,6 +145,19 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
         return invokers;
     }
 
+    private void ensureInitialized() {
+        if (initialized) {
+            return;
+        }
+        synchronized (this) {
+            if (initialized) {
+                return;
+            }
+            init(this.ruleKey);
+            initialized = true;
+        }
+    }
+
     @Override
     public boolean isForce() {
         return (routerRule != null && routerRule.isForce());
@@ -160,8 +175,8 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
         if (rule instanceof ConditionRouterRule) {
             this.conditionRouters = ((ConditionRouterRule) rule)
                     .getConditions().stream()
-                            .map(condition ->
-                                    new ConditionStateRouter<T>(getUrl(), condition, rule.isForce(), rule.isEnabled()))
+                            .map(condition -> ConditionStateRouter.<T>create(
+                                    getUrl(), condition, rule.isForce(), rule.isEnabled()))
                             .collect(Collectors.toList());
 
             for (ConditionStateRouter<T> conditionRouter : this.conditionRouters) {
@@ -170,7 +185,7 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
         } else if (rule instanceof MultiDestConditionRouterRule) {
             this.multiDestConditionRouters = ((MultiDestConditionRouterRule) rule)
                     .getConditions().stream()
-                            .map(condition -> new MultiDestConditionRouter<T>(
+                            .map(condition -> MultiDestConditionRouter.<T>create(
                                     getUrl(), condition, rule.isForce(), rule.isEnabled()))
                             .collect(Collectors.toList());
 
@@ -180,7 +195,7 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
         }
     }
 
-    private synchronized void init(String ruleKey) {
+    protected final void init(String ruleKey) {
         if (StringUtils.isEmpty(ruleKey)) {
             return;
         }
