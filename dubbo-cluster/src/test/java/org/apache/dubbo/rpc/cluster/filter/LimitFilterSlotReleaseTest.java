@@ -83,6 +83,20 @@ class LimitFilterSlotReleaseTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"actives", "executes"})
+    void downstreamTimeoutExceptionReleasesSlot(String limit) {
+        setup(limit);
+        RpcException timeout = new RpcException(RpcException.TIMEOUT_EXCEPTION, "downstream timed out");
+        when(target.invoke(any())).thenThrow(timeout).thenAnswer(call -> success(call.getArgument(0)));
+
+        assertSame(timeout, assertThrows(RpcException.class, () -> chain.invoke(invocation())));
+        assertCounts(0, 1);
+        assertEquals("ok", chain.invoke(invocation()).getValue());
+        assertCounts(0, 1);
+        verify(target, times(2)).invoke(any());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"actives", "executes"})
     void asynchronousLimitExceptionReleasesSlot(String limit) {
         setup(limit);
         CompletableFuture<AppResponse> pending = new CompletableFuture<>();
