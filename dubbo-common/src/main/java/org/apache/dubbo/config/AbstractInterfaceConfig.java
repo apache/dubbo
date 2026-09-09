@@ -41,6 +41,9 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -408,8 +411,16 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             }
         }
 
-        boolean hasMethod = Arrays.stream(interfaceClass.getMethods())
-                .anyMatch(method -> method.getName().equals(methodName));
+        boolean hasMethod;
+        if (StringUtils.hasWildcard(methodName)) {
+            // A wildcard method config (e.g. "create*") is valid as long as it matches at
+            // least one method of the interface.
+            hasMethod = Arrays.stream(interfaceClass.getMethods())
+                    .anyMatch(method -> StringUtils.isWildcardMatch(methodName, method.getName()));
+        } else {
+            hasMethod = Arrays.stream(interfaceClass.getMethods())
+                    .anyMatch(method -> method.getName().equals(methodName));
+        }
         if (!hasMethod) {
             String msg = "Found invalid method config, the interface " + interfaceClass.getName()
                     + " not found method \"" + methodName + "\" : [" + methodConfig + "]";
@@ -458,6 +469,54 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             }
         }
         return null;
+    }
+
+    /**
+     * Resolve the declared {@link MethodConfig}s into the actual method names of the interface.
+     *
+     * <p>A {@link MethodConfig} whose name carries a wildcard ({@code '*'} / {@code '?'}) is expanded
+     * to every interface method it matches, while a config using an exact method name always takes
+     * precedence over wildcard matches for the same method. The same {@link MethodConfig} instance is
+     * shared by all the method names it expands to (no cloning), so callback instances such as
+     * oninvoke/onreturn/onthrow are preserved.
+     *
+     * @param interfaceClass the interface class, may be null (then nothing is resolved)
+     * @return ordered entries of {@code actual interface method name -> MethodConfig}
+     */
+    protected List<Map.Entry<String, MethodConfig>> resolveMethodConfigs(Class<?> interfaceClass) {
+        List<MethodConfig> methodConfigs = getMethods();
+        if (CollectionUtils.isEmpty(methodConfigs) || interfaceClass == null) {
+            return Collections.emptyList();
+        }
+
+        // Interface method names, de-duplicated and in declaration order.
+        LinkedHashSet<String> interfaceMethodNames =
+                new LinkedHashSet<>(Arrays.asList(methods(interfaceClass)));
+        // Insertion order keeps the result stable. putIfAbsent for wildcard patterns followed by an
+        // override pass for exact names implements the "exact wins over wildcard" rule.
+        LinkedHashMap<String, MethodConfig> resolved = new LinkedHashMap<>();
+
+        // Pass 1: wildcard patterns fill in the matched methods, earlier patterns win.
+        for (MethodConfig methodConfig : methodConfigs) {
+            String declaredName = methodConfig.getName();
+            if (StringUtils.hasText(declaredName) && StringUtils.hasWildcard(declaredName)) {
+                for (String methodName : interfaceMethodNames) {
+                    if (StringUtils.isWildcardMatch(declaredName, methodName)) {
+                        resolved.putIfAbsent(methodName, methodConfig);
+                    }
+                }
+            }
+        }
+
+        // Pass 2: exact names take precedence over any wildcard match.
+        for (MethodConfig methodConfig : methodConfigs) {
+            String declaredName = methodConfig.getName();
+            if (StringUtils.isNotEmpty(declaredName) && !StringUtils.hasWildcard(declaredName)) {
+                resolved.put(declaredName, methodConfig);
+            }
+        }
+
+        return new ArrayList<>(resolved.entrySet());
     }
 
     /**
