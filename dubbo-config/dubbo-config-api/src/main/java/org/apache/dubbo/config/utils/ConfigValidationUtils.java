@@ -178,6 +178,13 @@ public class ConfigValidationUtils {
     private static final Pattern PATTERN_METHOD_NAME = Pattern.compile("[a-zA-Z][0-9a-zA-Z]*");
 
     /**
+     * The rule qualification for wildcard <b>method name patterns</b> (e.g. "create*", "get?" or
+     * "*"), where '*' matches any sequence of characters and '?' matches one character.
+     */
+    private static final Pattern PATTERN_METHOD_NAME_PATTERN =
+            Pattern.compile("[a-zA-Z*?][0-9a-zA-Z*?]*");
+
+    /**
      * The rule qualification for <b>path</b>
      */
     private static final Pattern PATTERN_PATH = Pattern.compile("[/\\-$._0-9a-zA-Z]+");
@@ -190,7 +197,7 @@ public class ConfigValidationUtils {
     /**
      * The pattern matches a property key
      */
-    private static final Pattern PATTERN_KEY = Pattern.compile("[*,\\-._0-9a-zA-Z]+");
+    private static final Pattern PATTERN_KEY = Pattern.compile("*,\\-._0-9a-zA-Z]+");
 
     public static final String IPV6_START_MARK = "[";
 
@@ -623,7 +630,12 @@ public class ConfigValidationUtils {
     public static void validateMethodConfig(MethodConfig config) {
         checkExtension(config.getScopeModel(), LoadBalance.class, LOADBALANCE_KEY, config.getLoadbalance());
         checkParameterName(config.getParameters());
-        checkMethodName("name", config.getName());
+        // A wildcard method name pattern (e.g. "create*") follows a slightly looser rule.
+        if (StringUtils.hasWildcard(config.getName())) {
+            checkMethodNamePattern("name", config.getName());
+        } else {
+            checkMethodName("name", config.getName());
+        }
 
         String mock = config.getMock();
         if (isNotEmpty(mock)) {
@@ -739,6 +751,10 @@ public class ConfigValidationUtils {
 
     public static void checkMethodName(String property, String value) {
         checkProperty(property, value, MAX_LENGTH, PATTERN_METHOD_NAME);
+    }
+
+    public static void checkMethodNamePattern(String property, String value) {
+        checkProperty(property, value, MAX_LENGTH, PATTERN_METHOD_NAME_PATTERN);
     }
 
     public static void checkParameterName(Map<String, String> parameters) {
