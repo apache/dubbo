@@ -490,8 +490,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
 
         // Interface method names, de-duplicated and in declaration order.
-        LinkedHashSet<String> interfaceMethodNames =
-                new LinkedHashSet<>(Arrays.asList(methods(interfaceClass)));
+        LinkedHashSet<String> interfaceMethodNames = new LinkedHashSet<>(Arrays.asList(methods(interfaceClass)));
         // Insertion order keeps the result stable. putIfAbsent for wildcard patterns followed by an
         // override pass for exact names implements the "exact wins over wildcard" rule.
         LinkedHashMap<String, MethodConfig> resolved = new LinkedHashMap<>();

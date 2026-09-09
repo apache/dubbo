@@ -181,8 +181,7 @@ public class ConfigValidationUtils {
      * The rule qualification for wildcard <b>method name patterns</b> (e.g. "create*", "get?" or
      * "*"), where '*' matches any sequence of characters and '?' matches one character.
      */
-    private static final Pattern PATTERN_METHOD_NAME_PATTERN =
-            Pattern.compile("[a-zA-Z*?][0-9a-zA-Z*?]*");
+    private static final Pattern PATTERN_METHOD_NAME_PATTERN = Pattern.compile("[a-zA-Z*?][0-9a-zA-Z*?]*");
 
     /**
      * The rule qualification for <b>path</b>
@@ -602,7 +601,7 @@ public class ConfigValidationUtils {
         checkPathName(CONTEXTPATH_KEY, config.getContextpath());
         checkExtension(config.getScopeModel(), ThreadPool.class, THREADPOOL_KEY, config.getThreadpool());
         checkMultiExtension(config.getScopeModel(), TelnetHandler.class, TELNET_KEY, config.getTelnet());
-        checkMultiExtension(config.getScopeModel(), StatusChecker.class, STATUS_KEY, config.getStatus());
+        checkMultiExtension(config.getScopeModel(), StatusChecker.class, "status", config.getStatus());
         checkExtension(config.getScopeModel(), Transporter.class, TRANSPORTER_KEY, config.getTransporter());
         checkExtension(config.getScopeModel(), Exchanger.class, EXCHANGER_KEY, config.getExchanger());
         checkMultiExtension(config.getScopeModel(), Serialization.class, SERIALIZATION_KEY, config.getSerialization());
@@ -672,7 +671,7 @@ public class ConfigValidationUtils {
      * required)
      *
      * @param type     The Extension type
-     * @param property The extension key
+     * @param property The Extension key
      * @param value    The Extension name
      */
     public static void checkMultiExtension(ScopeModel scopeModel, Class<?> type, String property, String value) {
@@ -699,7 +698,7 @@ public class ConfigValidationUtils {
                 }
                 if (!match) {
                     throw new IllegalStateException("No such extension " + v + " for " + property + "/"
-                            + types.stream().map(Class::getName).collect(Collectors.joining(",")));
+                            + types.stream().map(Class::getName).collect(Collectors.joining(","));
                 }
             }
         }
@@ -746,7 +745,7 @@ public class ConfigValidationUtils {
     }
 
     public static void checkPathName(String property, String value) {
-        checkProperty(property, value, MAX_PATH_LENGTH, PATTERN_PATH);
+        checkProperty(property, value, MAX_LENGTH, PATTERN_PATH);
     }
 
     public static void checkMethodName(String property, String value) {

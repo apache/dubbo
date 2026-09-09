@@ -55,8 +55,7 @@ class MethodConfigWildcardTest {
         ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
         serviceConfig.setMethods(methods);
         Map<String, MethodConfig> resolved = new LinkedHashMap<>();
-        for (Map.Entry<String, MethodConfig> entry :
-                serviceConfig.resolveMethodConfigs(DemoService.class)) {
+        for (Map.Entry<String, MethodConfig> entry : serviceConfig.resolveMethodConfigs(DemoService.class)) {
             resolved.put(entry.getKey(), entry.getValue());
         }
         return resolved;
@@ -158,8 +157,7 @@ class MethodConfigWildcardTest {
     @Test
     void testResolvedKeysAreAllRealInterfaceMethods() {
         Map<String, MethodConfig> resolved = resolve(Arrays.asList(method("*", 100)));
-        Set<String> illegal = resolved.keySet()
-                .stream()
+        Set<String> illegal = resolved.keySet().stream()
                 .filter(name -> !DEMO_METHODS.contains(name))
                 .collect(Collectors.toSet());
         assertTrue(illegal.isEmpty(), "Resolved keys must be real interface methods: " + illegal);
