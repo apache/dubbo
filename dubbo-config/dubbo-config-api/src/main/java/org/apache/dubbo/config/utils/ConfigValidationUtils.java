@@ -197,7 +197,7 @@ public class ConfigValidationUtils {
     /**
      * The pattern matches a property key
      */
-    private static final Pattern PATTERN_KEY = Pattern.compile("*,\\-._0-9a-zA-Z]+");
+    private static final Pattern PATTERN_KEY = Pattern.compile("[*,\\-._0-9a-zA-Z]+");
 
     public static final String IPV6_START_MARK = "[";
 
