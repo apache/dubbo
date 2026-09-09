@@ -601,7 +601,7 @@ public class ConfigValidationUtils {
         checkPathName(CONTEXTPATH_KEY, config.getContextpath());
         checkExtension(config.getScopeModel(), ThreadPool.class, THREADPOOL_KEY, config.getThreadpool());
         checkMultiExtension(config.getScopeModel(), TelnetHandler.class, TELNET_KEY, config.getTelnet());
-        checkMultiExtension(config.getScopeModel(), StatusChecker.class, "status", config.getStatus());
+        checkMultiExtension(config.getScopeModel(), StatusChecker.class, STATUS_KEY, config.getStatus());
         checkExtension(config.getScopeModel(), Transporter.class, TRANSPORTER_KEY, config.getTransporter());
         checkExtension(config.getScopeModel(), Exchanger.class, EXCHANGER_KEY, config.getExchanger());
         checkMultiExtension(config.getScopeModel(), Serialization.class, SERIALIZATION_KEY, config.getSerialization());
@@ -671,7 +671,7 @@ public class ConfigValidationUtils {
      * required)
      *
      * @param type     The Extension type
-     * @param property The Extension key
+     * @param property The extension key
      * @param value    The Extension name
      */
     public static void checkMultiExtension(ScopeModel scopeModel, Class<?> type, String property, String value) {
@@ -698,7 +698,7 @@ public class ConfigValidationUtils {
                 }
                 if (!match) {
                     throw new IllegalStateException("No such extension " + v + " for " + property + "/"
-                            + types.stream().map(Class::getName).collect(Collectors.joining(","));
+                            + types.stream().map(Class::getName).collect(Collectors.joining(",")));
                 }
             }
         }
@@ -745,7 +745,7 @@ public class ConfigValidationUtils {
     }
 
     public static void checkPathName(String property, String value) {
-        checkProperty(property, value, MAX_LENGTH, PATTERN_PATH);
+        checkProperty(property, value, MAX_PATH_LENGTH, PATTERN_PATH);
     }
 
     public static void checkMethodName(String property, String value) {
