@@ -168,7 +168,9 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
                 configsCache, getTagName(targetConfigType), type -> new ConcurrentHashMap<>());
 
         // fast check duplicated equivalent config before write lock
-        if (!(config instanceof ReferenceConfigBase || config instanceof ServiceConfigBase)) {
+        if (!(config instanceof ReferenceConfigBase
+                || config instanceof ServiceConfigBase
+                || config instanceof RegistryConfig)) {
             for (AbstractConfig value : configsMap.values()) {
                 if (value.equals(config)) {
                     return (T) value;
@@ -211,10 +213,12 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
             return config;
         }
 
-        // find by value
-        Optional<C> prevConfig = findDuplicatedConfig(configsMap, config);
-        if (prevConfig.isPresent()) {
-            return prevConfig.get();
+        if (!(config instanceof RegistryConfig)) {
+            // find by value
+            Optional<C> prevConfig = findDuplicatedConfig(configsMap, config);
+            if (prevConfig.isPresent()) {
+                return prevConfig.get();
+            }
         }
 
         String key = config.getId();
