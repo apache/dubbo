@@ -16,9 +16,18 @@
  */
 package org.apache.dubbo.rpc.support;
 
+import java.util.List;
+import java.util.Map;
+
 public class DemoServiceImpl implements DemoService {
     @Override
     public String sayHello(String name) {
         return "hello " + name;
     }
+
+    @Override
+    public void processBytes(List<Byte> data) {}
+
+    @Override
+    public void processMultiple(String name, List<Short> values, Map<String, Byte> mapping) {}
 }
