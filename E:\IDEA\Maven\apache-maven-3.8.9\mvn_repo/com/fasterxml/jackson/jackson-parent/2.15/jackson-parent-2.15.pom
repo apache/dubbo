@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+   <groupId>com.fasterxml</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>50</version>
+  </parent>
+
+  <groupId>com.fasterxml.jackson</groupId>
+  <artifactId>jackson-parent</artifactId>
+  <version>2.15</version>
+  <packaging>pom</packaging>
+
+  <name>Jackson parent poms</name>
+  <description>Parent pom for all Jackson components</description>
+  <url>http://github.com/FasterXML/</url>
+  <organization>
+    <name>FasterXML</name>
+    <url>http://fasterxml.com/</url>
+  </organization>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>cowtowncoder</id>
+      <name>Tatu Saloranta</name>
+      <email>tatu@fasterxml.com</email>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git@github.com:FasterXML/jackson-parent.git</connection>
+    <developerConnection>scm:git:git@github.com:FasterXML/jackson-parent.git</developerConnection>
+    <url>http://github.com/FasterXML/jackson-parent</url>
+    <tag>jackson-parent-2.15</tag>
+  </scm>
+
+  <properties>
+    <!-- 02-Oct-2015, tatu: Jackson 2.4 and above are Java 6 (earlier versions Java 5);
+          Jackson 2.7 and above Java 7 (with exception of `jackson-core`/`jackson-annotations` still Java 6),
+    -->
+    <!-- 09-Jan-2021, tatu: Jackson 2.13 finally raises baseline to Java 8, with continuing
+       exception fo `jackson-core`/`jackson-annotations` as Java 6 -->
+    <javac.src.version>1.8</javac.src.version>
+    <javac.target.version>1.8</javac.target.version>
+    <maven.compiler.source>${javac.src.version}</maven.compiler.source>
+    <maven.compiler.target>${javac.target.version}</maven.compiler.target>
+    
+    <javac.debuglevel>lines,source,vars</javac.debuglevel>
+
+    <!--
+     | For automatically generating PackageVersion.java. Your child pom.xml must define
+     | packageVersion.dir and packageVersion.package, and must set the phase of the
+     | process-packageVersion execution of maven-replacer-plugin to 'generate-sources'.
+    -->
+    <packageVersion.template.input>${basedir}/src/main/java/${packageVersion.dir}/PackageVersion.java.in</packageVersion.template.input>
+    <packageVersion.template.output>${generatedSourcesDir}/${packageVersion.dir}/PackageVersion.java</packageVersion.template.output>
+
+    <project.build.outputTimestamp>2023-04-23T20:09:36Z</project.build.outputTimestamp>
+  </properties>
+
+  <!-- 17-Sep-2021, tatu: Used to have junit prior to Jackson 2.13, removed due to
+      [jackson-bom#43] issue
+    -->
+
+  <!-- Alas, need to include snapshot reference since otherwise can not find
+       snapshot of parent... -->
+  <repositories>
+    <repository>
+      <id>sonatype-nexus-snapshots</id>
+      <name>Sonatype Nexus Snapshots</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <releases><enabled>false</enabled></releases>
+      <snapshots><enabled>true</enabled></snapshots>
+    </repository>
+  </repositories>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+
+        <!-- Jackson has stricter enforced requirements than parent pom -->
+        <plugin>
+         <groupId>org.apache.maven.plugins</groupId>
+         <artifactId>maven-enforcer-plugin</artifactId>
+         <executions>
+          <execution>
+            <id>enforce-java</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                 <requireMavenVersion>
+                  <version>[3.6,)</version>
+                  <message>[ERROR] The currently supported version of Maven is 3.6 or higher</message>
+                </requireMavenVersion>
+                <requirePluginVersions>
+                  <banLatest>true</banLatest>
+                  <banRelease>true</banRelease>
+                  <banSnapshots>true</banSnapshots>
+                  <phases>clean,deploy,site</phases>
+                  <message>[ERROR] Best Practice is to always define plugin versions!</message>
+                </requirePluginVersions>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+        </plugin>
+        <!-- use of replacer plug-in specific to Jackson -->
+        <plugin>
+          <groupId>com.google.code.maven-replacer-plugin</groupId>
+          <artifactId>replacer</artifactId>
+          <version>${version.plugin.replacer}</version>
+          <executions>
+            <execution>
+              <id>process-packageVersion</id>
+              <goals>
+                <goal>replace</goal>
+              </goals>
+              <!--
+               | We explicitly omit 'phase' here so child poms can opt in to
+               | generating their PackageVersion.java file.
+               |
+               | If your child pom wants a PackageVersion.java file, define
+               | the 'packageVersion.dir' and 'packageVersion.package' properties
+               | and include the commented-out section in your child pom's plugin
+               | for this execution ID.
+               <phase>generate-sources</phase>
+              -->
+            </execution>
+          </executions>
+          <configuration>
+            <file>${packageVersion.template.input}</file>
+            <outputFile>${packageVersion.template.output}</outputFile>
+            <replacements>
+              <replacement>
+                <token>@package@</token>
+                <value>${packageVersion.package}</value>
+              </replacement>
+              <replacement>
+                <token>@projectversion@</token>
+                <value>${project.version}</value>
+              </replacement>
+              <replacement>
+                <token>@projectgroupid@</token>
+                <value>${project.groupId}</value>
+              </replacement>
+              <replacement>
+                <token>@projectartifactid@</token>
+                <value>${project.artifactId}</value>
+              </replacement>
+            </replacements>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+</project>

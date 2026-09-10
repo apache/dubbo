@@ -1,0 +1,462 @@
+<?xml version="1.0"?>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<project
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-parent</artifactId>
+    <version>9</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>commons-lang</groupId>
+  <artifactId>commons-lang</artifactId>
+  <version>2.4</version>
+  <name>Commons Lang</name>
+
+  <inceptionYear>2001</inceptionYear>
+    <description>
+        Commons Lang, a package of Java utility classes for the
+        classes that are in java.lang's hierarchy, or are considered to be so
+        standard as to justify existence in java.lang.
+    </description>
+
+  <url>http://commons.apache.org/lang/</url>
+
+  <issueManagement>
+    <system>jira</system>
+    <url>http://issues.apache.org/jira/browse/LANG</url>
+  </issueManagement>
+
+  <scm>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/commons/proper/lang/trunk</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/commons/proper/lang/trunk</developerConnection>
+    <url>http://svn.apache.org/viewvc/commons/proper/lang/trunk</url>
+  </scm>
+
+    <developers>
+        <developer>
+            <name>Daniel Rall</name>
+            <id>dlr</id>
+            <email>dlr@finemaltcoding.com</email>
+            <organization>CollabNet, Inc.</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Stephen Colebourne</name>
+            <id>scolebourne</id>
+            <email>scolebourne@joda.org</email>
+            <organization>SITA ATS Ltd</organization>
+            <timezone>0</timezone>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Henri Yandell</name>
+            <id>bayard</id>
+            <email>bayard@apache.org</email>
+            <organization/>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Steven Caswell</name>
+            <id>scaswell</id>
+            <email>stevencaswell@apache.org</email>
+            <organization/>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+            <timezone>-5</timezone>
+        </developer>
+        <developer>
+            <name>Robert Burrell Donkin</name>
+            <id>rdonkin</id>
+            <email>rdonkin@apache.org</email>
+            <organization/>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Gary D. Gregory</name>
+            <id>ggregory</id>
+            <email>ggregory@seagullsw.com</email>
+            <organization>Seagull Software</organization>
+            <timezone>-8</timezone>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Phil Steitz</name>
+            <id>psteitz</id>
+            <email>phil@steitz.com</email>
+            <organization/>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Fredrik Westermarck</name>
+            <id>fredrik</id>
+            <email/>
+            <organization/>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>James Carman</name>
+            <id>jcarman</id>
+            <email>jcarman@apache.org</email>
+            <organization>Carman Consulting, Inc.</organization>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Niall Pemberton</name>
+            <id>niallp</id>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Matt Benson</name>
+            <id>mbenson</id>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+    </developers>
+    <contributors>
+        <contributor>
+            <name>C. Scott Ananian</name>
+        </contributor>
+        <contributor>
+            <name>Chris Audley</name>
+        </contributor>
+        <contributor>
+            <name>Stephane Bailliez</name>
+        </contributor>
+        <contributor>
+            <name>Michael Becke</name>
+        </contributor>
+        <contributor>
+            <name>Ola Berg</name>
+        </contributor>
+        <contributor>
+            <name>Nathan Beyer</name>
+        </contributor>
+        <contributor>
+            <name>Stefan Bodewig</name>
+        </contributor>
+        <contributor>
+            <name>Janek Bogucki</name>
+        </contributor>
+        <contributor>
+            <name>Mike Bowler</name>
+        </contributor>
+        <contributor>
+            <name>Sean Brown</name>
+        </contributor>
+        <contributor>
+            <name>Alexander Day Chaffee</name>
+        </contributor>
+        <contributor>
+            <name>Al Chou</name>
+        </contributor>
+        <contributor>
+            <name>Greg Coladonato</name>
+        </contributor>
+        <contributor>
+            <name>Maarten Coene</name>
+        </contributor>
+        <contributor>
+            <name>Justin Couch</name>
+        </contributor>
+        <contributor>
+            <name>Michael Davey</name>
+        </contributor>
+        <contributor>
+            <name>Norm Deane</name>
+        </contributor>
+        <contributor>
+            <name>Ringo De Smet</name>
+        </contributor>
+        <contributor>
+            <name>Russel Dittmar</name>
+        </contributor>
+        <contributor>
+            <name>Steve Downey</name>
+        </contributor>
+        <contributor>
+            <name>Matthias Eichel</name>
+        </contributor>
+        <contributor>
+            <name>Christopher Elkins</name>
+        </contributor>
+        <contributor>
+            <name>Chris Feldhacker</name>
+        </contributor>
+        <contributor>
+            <name>Pete Gieser</name>
+        </contributor>
+        <contributor>
+            <name>Jason Gritman</name>
+        </contributor>
+        <contributor>
+            <name>Matthew Hawthorne</name>
+        </contributor>
+        <contributor>
+            <name>Michael Heuer</name>
+        </contributor>
+        <contributor>
+            <name>Oliver Heger</name>
+        </contributor>
+        <contributor>
+            <name>Chris Hyzer</name>
+        </contributor>
+        <contributor>
+            <name>Marc Johnson</name>
+        </contributor>
+        <contributor>
+            <name>Shaun Kalley</name>
+        </contributor>
+        <contributor>
+            <name>Tetsuya Kaneuchi</name>
+        </contributor>
+        <contributor>
+            <name>Nissim Karpenstein</name>
+        </contributor>
+        <contributor>
+            <name>Ed Korthof</name>
+        </contributor>
+        <contributor>
+            <name>Holger Krauth</name>
+        </contributor>
+        <contributor>
+            <name>Rafal Krupinski</name>
+        </contributor>
+        <contributor>
+            <name>Rafal Krzewski</name>
+        </contributor>
+        <contributor>
+            <name>Craig R. McClanahan</name>
+        </contributor>
+        <contributor>
+            <name>Rand McNeely</name>
+        </contributor>
+        <contributor>
+            <name>Dave Meikle</name>
+        </contributor>
+        <contributor>
+            <name>Nikolay Metchev</name>
+        </contributor>
+        <contributor>
+            <name>Kasper Nielsen</name>
+        </contributor>
+        <contributor>
+            <name>Tim O'Brien</name>
+        </contributor>
+        <contributor>
+            <name>Brian S O'Neill</name>
+        </contributor>
+        <contributor>
+            <name>Andrew C. Oliver</name>
+        </contributor>
+        <contributor>
+            <name>Alban Peignier</name>
+        </contributor>
+        <contributor>
+            <name>Moritz Petersen</name>
+        </contributor>
+        <contributor>
+            <name>Dmitri Plotnikov</name>
+        </contributor>
+        <contributor>
+            <name>Neeme Praks</name>
+        </contributor>
+        <contributor>
+            <name>Eric Pugh</name>
+        </contributor>
+        <contributor>
+            <name>Stephen Putman</name>
+        </contributor>
+        <contributor>
+            <name>Travis Reeder</name>
+        </contributor>
+        <contributor>
+            <name>Antony Riley</name>
+        </contributor>
+        <contributor>
+            <name>Scott Sanders</name>
+        </contributor>
+        <contributor>
+            <name>Ralph Schaer</name>
+        </contributor>
+        <contributor>
+            <name>Henning P. Schmiedehausen</name>
+        </contributor>
+        <contributor>
+            <name>Sean Schofield</name>
+        </contributor>
+        <contributor>
+            <name>Reuben Sivan</name>
+        </contributor>
+        <contributor>
+            <name>Ville Skytta</name>
+        </contributor>
+        <contributor>
+            <name>Jan Sorensen</name>
+        </contributor>
+        <contributor>
+            <name>Glen Stampoultzis</name>
+        </contributor>
+        <contributor>
+            <name>Scott Stanchfield</name>
+        </contributor>
+        <contributor>
+            <name>Jon S. Stevens</name>
+        </contributor>
+        <contributor>
+            <name>Sean C. Sullivan</name>
+        </contributor>
+        <contributor>
+            <name>Ashwin Suresh</name>
+        </contributor>
+        <contributor>
+            <name>Helge Tesgaard</name>
+        </contributor>
+        <contributor>
+            <name>Arun Mammen Thomas</name>
+        </contributor>
+        <contributor>
+            <name>Masato Tezuka</name>
+        </contributor>
+        <contributor>
+            <name>Jeff Varszegi</name>
+        </contributor>
+        <contributor>
+            <name>Chris Webb</name>
+        </contributor>
+        <contributor>
+            <name>Mario Winterer</name>
+        </contributor>
+        <contributor>
+            <name>Stepan Koltsov</name>
+        </contributor>
+        <contributor>
+            <name>Holger Hoffstatte</name>
+        </contributor>
+    </contributors>
+
+  <!-- Lang should depend on very little -->
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies> 
+
+  <properties>
+    <maven.compile.source>1.3</maven.compile.source>
+    <maven.compile.target>1.2</maven.compile.target>
+    <commons.componentid>lang</commons.componentid>
+    <commons.release.version>2.4</commons.release.version>
+    <commons.jira.id>LANG</commons.jira.id>
+    <commons.jira.pid>12310481</commons.jira.pid>
+  </properties> 
+
+
+  <build>
+    <sourceDirectory>src/java</sourceDirectory>
+    <testSourceDirectory>src/test</testSourceDirectory>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <includes>
+            <include>**/*TestSuite.java</include>
+          </includes>
+          <excludes>
+            <exclude>**/AllLangTestSuite.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptors>
+            <descriptor>src/assembly/bin.xml</descriptor>
+            <descriptor>src/assembly/src.xml</descriptor>
+          </descriptors>
+          <tarLongFileMode>gnu</tarLongFileMode>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>2.1</version>
+        <configuration>
+          <configLocation>${basedir}/checkstyle.xml</configLocation>
+          <enableRulesSummary>false</enableRulesSummary>
+        </configuration>
+      </plugin>
+      <!--
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <version>1.1.1</version>
+        <configuration>
+          <threshold>Normal</threshold>
+          <effort>Default</effort>
+       </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cobertura-maven-plugin</artifactId>
+        <version>2.2</version>
+      </plugin>
+      -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>clirr-maven-plugin</artifactId>
+        <version>2.1.1</version>
+        <configuration>
+          <comparisonVersion>2.3</comparisonVersion>
+          <minSeverity>info</minSeverity>
+        </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
+
+</project>
