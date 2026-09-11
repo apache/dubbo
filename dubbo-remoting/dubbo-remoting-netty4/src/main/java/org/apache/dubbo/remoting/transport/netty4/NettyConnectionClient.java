@@ -122,8 +122,10 @@ public final class NettyConnectionClient extends AbstractNettyConnectionClient {
                             new Http2ClientSettingsHandler(connectionPrefaceReceivedPromiseRef));
                 }
 
-                // set null but do not close this client, it will be reconnecting in the future
-                ch.closeFuture().addListener(channelFuture -> clearNettyChannel());
+                // Use compareAndSet to prevent wiping a newly-swapped channel during graceful migration.
+                // When onConnected() sets the new channel and then the old channel closes,
+                // the old channel's closeFuture must only clear its own reference, not the new one.
+                ch.closeFuture().addListener(channelFuture -> compareAndClearNettyChannel(ch));
                 // TODO support Socks5
 
                 // set channel initialized promise to success if necessary.
