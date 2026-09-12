@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.support.BlockMyInvoker;
 
+import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -33,8 +34,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class ExecuteLimitFilterTest {
@@ -132,5 +138,49 @@ class ExecuteLimitFilterTest {
         }
 
         Assertions.assertEquals(totalExecute - maxExecute, failed.get());
+    }
+
+    @Test
+    void testOnErrorReleasesCountWhenBusinessThrowsLimitExceeded() {
+        URL url = URL.valueOf("test://test:11/exec-leak?accesslog=true&group=dubbo&version=1.1&executes=10");
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setMethodName("invoke");
+
+        @SuppressWarnings("unchecked")
+        Invoker<ExecuteLimitFilterTest> target = mock(Invoker.class);
+        given(target.getUrl()).willReturn(url);
+        given(target.getInterface()).willReturn(ExecuteLimitFilterTest.class);
+        given(target.invoke(any(Invocation.class))).willThrow(
+                new RpcException(RpcException.LIMIT_EXCEEDED_EXCEPTION, "business limit"));
+
+        // beginCount succeeds and the marker is set; the business LIMIT_EXCEEDED
+        // propagates through the filter
+        assertThrows(RpcException.class, () -> executeLimitFilter.invoke(target, invocation));
+        executeLimitFilter.onError(
+                new RpcException(RpcException.LIMIT_EXCEEDED_EXCEPTION, "business limit"), target, invocation);
+
+        assertEquals(0, RpcStatus.getStatus(url, "invoke").getActive());
+    }
+
+    @Test
+    void testOnErrorKeepsCountWhenFilterItselfRejected() {
+        URL url = URL.valueOf("test://test:11/exec-self-reject?accesslog=true&group=dubbo&version=1.1&executes=1");
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setMethodName("invoke");
+        assertTrue(RpcStatus.beginCount(url, "invoke", 1));
+
+        @SuppressWarnings("unchecked")
+        Invoker<ExecuteLimitFilterTest> target = mock(Invoker.class);
+        given(target.getUrl()).willReturn(url);
+        given(target.getInterface()).willReturn(ExecuteLimitFilterTest.class);
+
+        // Admission fails inside invoke() before the counted marker is set
+        assertThrows(RpcException.class, () -> executeLimitFilter.invoke(target, invocation));
+        executeLimitFilter.onError(
+                new RpcException(RpcException.LIMIT_EXCEEDED_EXCEPTION, "self rejected"), target, invocation);
+
+        // The slot held by the concurrent invocation stays untouched (no double release)
+        assertEquals(1, RpcStatus.getStatus(url, "invoke").getActive());
+        RpcStatus.endCount(url, "invoke", 0, false);
     }
 }
