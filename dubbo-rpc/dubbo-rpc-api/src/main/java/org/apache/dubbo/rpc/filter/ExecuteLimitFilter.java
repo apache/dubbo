@@ -41,6 +41,7 @@ import static org.apache.dubbo.rpc.Constants.EXECUTES_KEY;
 public class ExecuteLimitFilter implements Filter, Filter.Listener {
 
     private static final String EXECUTE_LIMIT_FILTER_START_TIME = "execute_limit_filter_start_time";
+    private static final String EXECUTE_LIMIT_FILTER_COUNTED = "execute_limit_filter_counted";
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -54,6 +55,7 @@ public class ExecuteLimitFilter implements Filter, Filter.Listener {
                             + ", cause: The service using threads greater than <dubbo:service executes=\"" + max
                             + "\" /> limited.");
         }
+        invocation.put(EXECUTE_LIMIT_FILTER_COUNTED, true);
 
         invocation.put(EXECUTE_LIMIT_FILTER_START_TIME, System.currentTimeMillis());
         try {
@@ -76,7 +78,12 @@ public class ExecuteLimitFilter implements Filter, Filter.Listener {
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
         if (t instanceof RpcException) {
             RpcException rpcException = (RpcException) t;
-            if (rpcException.isLimitExceed()) {
+            if (rpcException.isLimitExceed() && invocation.get(EXECUTE_LIMIT_FILTER_COUNTED) == null) {
+                // This filter itself rejected the invocation before beginCount
+                // succeeded, so there is nothing to release. A LIMIT_EXCEEDED
+                // thrown by the business implementation must still release the
+                // count taken in invoke(), otherwise the concurrent slots leak
+                // (#16455).
                 return;
             }
         }
