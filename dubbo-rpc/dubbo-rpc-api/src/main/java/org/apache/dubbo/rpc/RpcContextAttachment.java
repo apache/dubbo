@@ -245,9 +245,10 @@ public class RpcContextAttachment extends RpcContext {
      * @return a copy of RpcContextAttachment with deep copied attachments
      */
     public RpcContextAttachment copyOf(boolean needCopy) {
-        if (!isValid()) {
-            return null;
-        }
+        // to fix https://github.com/apache/dubbo/issues/13666
+        //        if (!isValid()) {
+        //            return null;
+        //        }
 
         if (needCopy) {
             RpcContextAttachment copy = new RpcContextAttachment();
