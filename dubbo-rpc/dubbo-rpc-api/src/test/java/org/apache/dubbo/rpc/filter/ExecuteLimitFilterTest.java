@@ -26,7 +26,6 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.support.BlockMyInvoker;
 
-import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -150,8 +149,8 @@ class ExecuteLimitFilterTest {
         Invoker<ExecuteLimitFilterTest> target = mock(Invoker.class);
         given(target.getUrl()).willReturn(url);
         given(target.getInterface()).willReturn(ExecuteLimitFilterTest.class);
-        given(target.invoke(any(Invocation.class))).willThrow(
-                new RpcException(RpcException.LIMIT_EXCEEDED_EXCEPTION, "business limit"));
+        given(target.invoke(any(Invocation.class)))
+                .willThrow(new RpcException(RpcException.LIMIT_EXCEEDED_EXCEPTION, "business limit"));
 
         // beginCount succeeds and the marker is set; the business LIMIT_EXCEEDED
         // propagates through the filter

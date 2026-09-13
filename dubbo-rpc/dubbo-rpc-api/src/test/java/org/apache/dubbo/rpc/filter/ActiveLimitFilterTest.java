@@ -28,7 +28,6 @@ import org.apache.dubbo.rpc.support.MockInvocation;
 import org.apache.dubbo.rpc.support.MyInvoker;
 import org.apache.dubbo.rpc.support.RuntimeExceptionInvoker;
 
-import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -241,7 +240,8 @@ class ActiveLimitFilterTest {
 
     @Test
     void testOnErrorReleasesCountWhenDownstreamThrowsLimitExceeded() {
-        URL url = URL.valueOf("test://test:11/limit-leak?accesslog=true&group=dubbo&version=1.1&actives=1&timeout=1000");
+        URL url =
+                URL.valueOf("test://test:11/limit-leak?accesslog=true&group=dubbo&version=1.1&actives=1&timeout=1000");
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("invoke");
 
@@ -249,23 +249,22 @@ class ActiveLimitFilterTest {
         Invoker<ActiveLimitFilterTest> target = mock(Invoker.class);
         given(target.getUrl()).willReturn(url);
         given(target.getInterface()).willReturn(ActiveLimitFilterTest.class);
-        given(target.invoke(any(Invocation.class))).willThrow(
-                new RpcException(RpcException.LIMIT_EXCEEDED_EXCEPTION, "downstream rejected"));
+        given(target.invoke(any(Invocation.class)))
+                .willThrow(new RpcException(RpcException.LIMIT_EXCEEDED_EXCEPTION, "downstream rejected"));
 
         assertThrows(RpcException.class, () -> activeLimitFilter.invoke(target, invocation));
         // beginCount succeeded in invoke(); the downstream LIMIT_EXCEEDED must
         // still release the taken slot instead of leaking it.
         activeLimitFilter.onError(
-                new RpcException(RpcException.LIMIT_EXCEEDED_EXCEPTION, "downstream rejected"),
-                target,
-                invocation);
+                new RpcException(RpcException.LIMIT_EXCEEDED_EXCEPTION, "downstream rejected"), target, invocation);
 
         assertEquals(0, RpcStatus.getStatus(url, "invoke").getActive());
     }
 
     @Test
     void testOnErrorKeepsCountWhenFilterItselfRejected() {
-        URL url = URL.valueOf("test://test:11/limit-self-reject?accesslog=true&group=dubbo&version=1.1&actives=1&timeout=1");
+        URL url = URL.valueOf(
+                "test://test:11/limit-self-reject?accesslog=true&group=dubbo&version=1.1&actives=1&timeout=1");
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("invoke");
         assertTrue(RpcStatus.beginCount(url, "invoke", 1));
