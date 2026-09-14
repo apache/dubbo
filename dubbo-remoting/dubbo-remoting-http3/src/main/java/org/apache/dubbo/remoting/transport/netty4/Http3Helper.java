@@ -17,8 +17,11 @@
 package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.nested.Http3Config;
+
+import java.net.InetSocketAddress;
 
 import io.netty.handler.codec.quic.QuicCodecBuilder;
 import io.netty.handler.codec.quic.QuicCongestionControlAlgorithm;
@@ -26,6 +29,19 @@ import io.netty.handler.codec.quic.QuicCongestionControlAlgorithm;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 final class Http3Helper {
+
+    /**
+     * QUIC validates that handshake responses come from the address the client dialed. Rewriting a
+     * loopback host (localhost, 127.*) to a local interface address makes a wildcard-bound HTTP/3
+     * server on a multi-homed host answer from a different source than the dialed one, so dial
+     * loopback hosts exactly as configured.
+     */
+    static InetSocketAddress getConnectAddress(URL url) {
+        if (NetUtils.isLocalHost(url.getHost())) {
+            return new InetSocketAddress(url.getHost(), url.getPort());
+        }
+        return new InetSocketAddress(NetUtils.filterLocalHost(url.getHost()), url.getPort());
+    }
 
     @SuppressWarnings("unchecked")
     static <T extends QuicCodecBuilder<T>> T configCodec(QuicCodecBuilder<T> builder, URL url) {

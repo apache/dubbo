@@ -22,6 +22,7 @@ import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.http3.Http3SslContexts;
 
+import java.net.InetSocketAddress;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -51,6 +52,11 @@ public final class NettyHttp3ConnectionClient extends AbstractNettyConnectionCli
 
     public NettyHttp3ConnectionClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
+    }
+
+    @Override
+    public InetSocketAddress getConnectAddress() {
+        return Http3Helper.getConnectAddress(getUrl());
     }
 
     @Override
