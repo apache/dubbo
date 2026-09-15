@@ -29,6 +29,9 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.Executor;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.retry.RetryOneTime;
 
 /**
  * Create {@link Process} to start zookeeper on Windows OS.
@@ -70,15 +73,39 @@ public class StartZookeeperWindowsProcessor extends ZookeeperWindowsProcessor {
                     .toString());
             context.getExecutorService().submit(() -> executor.execute(cmdLine));
         }
+        logger.info("Waiting for all Zookeeper instances to be ready...");
+        for (int clientPort : context.getClientPorts()) {
+            waitForZookeeperReady(clientPort);
+        }
+    }
+
+    private void waitForZookeeperReady(int port) throws DubboTestException {
+        String connectString = "127.0.0.1:" + port;
+
+        CuratorFramework client = CuratorFrameworkFactory.builder()
+                .connectString(connectString)
+                .retryPolicy(new RetryOneTime(1000))
+                .connectionTimeoutMs(5000)
+                .sessionTimeoutMs(5000)
+                .build();
+
         try {
-            // TODO: Help me to optimize the ugly sleep.
-            // sleep to wait all of zookeeper instances are started successfully.
-            // The best way is to check the output log with the specified keywords,
-            // however, there maybe keep waiting for check when any exception occurred,
-            // because the output stream will be blocked to wait for continuous data without any break
-            TimeUnit.SECONDS.sleep(3);
+            logger.info("Waiting for Zookeeper to be ready at {}", connectString);
+
+            client.start();
+            boolean connected = client.blockUntilConnected(10, TimeUnit.SECONDS);
+
+            if (!connected) {
+                throw new DubboTestException("Zookeeper startup timeout at " + connectString);
+            }
+
+            logger.info("Zookeeper is ready at {}", connectString);
+
         } catch (InterruptedException e) {
-            // ignored
+            Thread.currentThread().interrupt();
+            throw new DubboTestException("Interrupted while waiting for Zookeeper startup at " + connectString, e);
+        } finally {
+            client.close();
         }
     }
 }
