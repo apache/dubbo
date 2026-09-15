@@ -127,27 +127,29 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
         if (providerConnectionConfig != null && canDetectSsl(in)) {
             if (isSsl(in)) {
                 enableSsl(ctx, providerConnectionConfig);
-            } else {
-                // check server should load TLS or not
-                if (providerConnectionConfig.getAuthPolicy() != AuthPolicy.NONE) {
-                    byte[] preface = new byte[in.readableBytes()];
-                    in.readBytes(preface);
-                    LOGGER.error(
-                            CONFIG_SSL_CONNECT_INSECURE,
-                            "client request server without TLS",
-                            "",
-                            String.format(
-                                    "Downstream=%s request without TLS preface, but server require it. " + "preface=%s",
-                                    ctx.channel().remoteAddress(), Bytes.bytes2hex(preface)));
-
-                    // Untrusted connection; discard everything and close the connection.
-                    in.clear();
-                    ctx.close();
-                }
+                return;
             }
-        } else {
-            detectProtocol(ctx, url, channel, in);
+            // check server should load TLS or not
+            if (providerConnectionConfig.getAuthPolicy() != AuthPolicy.NONE) {
+                byte[] preface = new byte[in.readableBytes()];
+                in.readBytes(preface);
+                LOGGER.error(
+                        CONFIG_SSL_CONNECT_INSECURE,
+                        "client request server without TLS",
+                        "",
+                        String.format(
+                                "Downstream=%s request without TLS preface, but server require it. " + "preface=%s",
+                                ctx.channel().remoteAddress(), Bytes.bytes2hex(preface)));
+
+                // Untrusted connection; discard everything and close the connection.
+                in.clear();
+                ctx.close();
+                return;
+            }
+            // AuthPolicy.NONE with a non-TLS client: permissive mode, fall through to
+            // plaintext protocol detection below instead of silently waiting for more data.
         }
+        detectProtocol(ctx, url, channel, in);
     }
 
     private void enableSsl(ChannelHandlerContext ctx, ProviderCert providerConnectionConfig) {

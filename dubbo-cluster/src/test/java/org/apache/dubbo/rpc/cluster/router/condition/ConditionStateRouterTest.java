@@ -197,6 +197,33 @@ class ConditionStateRouterTest {
     }
 
     @Test
+    void testRoute_shouldFilterTailInvokers() {
+        List<Invoker<String>> originInvokers = new ArrayList<Invoker<String>>();
+        Invoker<String> targetInvoker =
+                new MockInvoker<String>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
+        Invoker<String> tailInvoker =
+                new MockInvoker<String>(URL.valueOf("dubbo://10.20.3.4:20880/com.foo.BarService"));
+        originInvokers.add(targetInvoker);
+        BitList<Invoker<String>> invokers = new BitList<>(originInvokers);
+        invokers.add(tailInvoker);
+
+        StateRouter<String> router = new ConditionStateRouterFactory()
+                .getRouter(
+                        String.class, getRouteUrl("=> host = 10.20.3.3").addParameter(FORCE_KEY, String.valueOf(true)));
+
+        BitList<Invoker<String>> filteredInvokers = router.route(
+                invokers,
+                URL.valueOf("consumer://" + LOCAL_HOST + "/com.foo.BarService"),
+                new RpcInvocation(),
+                false,
+                new Holder<>());
+
+        Assertions.assertEquals(1, filteredInvokers.size());
+        Assertions.assertTrue(filteredInvokers.contains(targetInvoker));
+        Assertions.assertFalse(filteredInvokers.contains(tailInvoker));
+    }
+
+    @Test
     void testRoute_methodRoute() {
         Invocation invocation = new RpcInvocation("getFoo", "com.foo.BarService", "", new Class<?>[0], new Object[0]);
         // More than one methods, mismatch

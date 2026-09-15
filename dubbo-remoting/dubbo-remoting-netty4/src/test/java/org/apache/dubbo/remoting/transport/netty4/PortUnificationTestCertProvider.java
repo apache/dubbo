@@ -14,31 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.test.common;
+package org.apache.dubbo.remoting.transport.netty4;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.ssl.AuthPolicy;
+import org.apache.dubbo.common.ssl.Cert;
+import org.apache.dubbo.common.ssl.CertProvider;
+import org.apache.dubbo.common.ssl.ProviderCert;
 
-/**
- * Use to set and clear System property
- */
-public class SysProps {
+@Activate(order = -10000)
+public class PortUnificationTestCertProvider implements CertProvider {
 
-    private static Map<String, String> map = new LinkedHashMap<>();
-
-    public static void reset() {
-        for (String key : map.keySet()) {
-            System.clearProperty(key);
-        }
-        map.clear();
+    @Override
+    public boolean isSupport(URL address) {
+        return address.getParameter("pu.test.cert", false);
     }
 
-    public static void setProperty(String key, String value) {
-        map.put(key, value);
-        System.setProperty(key, value);
+    @Override
+    public ProviderCert getProviderConnectionConfig(URL localAddress) {
+        return new ProviderCert(new byte[0], new byte[0], null, AuthPolicy.NONE);
     }
 
-    public static void clear() {
-        reset();
+    @Override
+    public Cert getConsumerConnectionConfig(URL remoteAddress) {
+        return null;
     }
 }

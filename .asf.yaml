@@ -41,47 +41,47 @@ github:
       required_pull_request_reviews:
         dismiss_stale_reviews: true
         require_last_push_approval: true
-        required_approving_review_count: 2
+        required_approving_review_count: 1
     2.5.x: 
       required_pull_request_reviews:
         dismiss_stale_reviews: true
         require_last_push_approval: true
-        required_approving_review_count: 2
+        required_approving_review_count: 1
     2.6.x: 
       required_pull_request_reviews:
         dismiss_stale_reviews: true
         require_last_push_approval: true
-        required_approving_review_count: 2
+        required_approving_review_count: 1
     2.7.x: 
       required_pull_request_reviews:
         dismiss_stale_reviews: true
         require_last_push_approval: true
-        required_approving_review_count: 2
+        required_approving_review_count: 1
     3.0: 
       required_pull_request_reviews:
         dismiss_stale_reviews: true
         require_last_push_approval: true
-        required_approving_review_count: 2
+        required_approving_review_count: 1
     3.1: 
       required_pull_request_reviews:
         dismiss_stale_reviews: true
         require_last_push_approval: true
-        required_approving_review_count: 2
+        required_approving_review_count: 1
     3.2: 
       required_pull_request_reviews:
         dismiss_stale_reviews: true
         require_last_push_approval: true
-        required_approving_review_count: 2
+        required_approving_review_count: 1
     3.3: 
       required_pull_request_reviews:
         dismiss_stale_reviews: true
         require_last_push_approval: true
-        required_approving_review_count: 2
+        required_approving_review_count: 1
     3.4: 
       required_pull_request_reviews:
         dismiss_stale_reviews: true
         require_last_push_approval: true
-        required_approving_review_count: 2
+        required_approving_review_count: 1
   labels:
     - java
     - rpc

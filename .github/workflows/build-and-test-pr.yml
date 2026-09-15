@@ -1,6 +1,12 @@
 name: "Build and Test For PR"
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches:
+      - 3.3
+      - 3.2
+  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
