@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.registry.integration.DemoService;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -72,5 +73,32 @@ class ListenerRegistryWrapperTest {
 
         registryWrapper.subscribe(subscribeUrl, notifyListener);
         verify(listener, times(1)).onSubscribe(subscribeUrl, registry);
+    }
+
+    @Test
+    void testNullRegistryIsTolerated() {
+        // When a registry is unavailable and check=false (e.g. a weakly dependent registry is down at
+        // startup), AbstractRegistryFactory returns a null registry which RegistryFactoryWrapper still
+        // wraps. The wrapper must tolerate the null delegate instead of throwing NullPointerException.
+        // See https://github.com/apache/dubbo/issues/16178.
+        ListenerRegistryWrapper wrapper = new ListenerRegistryWrapper(null, Collections.emptyList());
+
+        URL url = new ServiceConfigURL("dubbo", "127.0.0.1", 20881, DemoService.class.getName(), new HashMap<>());
+        NotifyListener notifyListener = mock(NotifyListener.class);
+
+        Assertions.assertNull(wrapper.getRegistry());
+        Assertions.assertNull(wrapper.getUrl());
+        Assertions.assertFalse(wrapper.isAvailable());
+        Assertions.assertFalse(wrapper.isServiceDiscovery());
+        Assertions.assertTrue(wrapper.lookup(url).isEmpty());
+
+        // register / subscribe / lifecycle methods must be no-ops rather than throwing
+        Assertions.assertDoesNotThrow(() -> {
+            wrapper.register(url);
+            wrapper.unregister(url);
+            wrapper.subscribe(url, notifyListener);
+            wrapper.unsubscribe(url, notifyListener);
+            wrapper.destroy();
+        });
     }
 }
