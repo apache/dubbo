@@ -42,9 +42,13 @@ public class ExecuteLimitFilter implements Filter, Filter.Listener {
 
     private static final String EXECUTE_LIMIT_FILTER_START_TIME = "execute_limit_filter_start_time";
 
+    private static final String EXECUTE_LIMIT_FILTER_COUNTED = "execute_limit_filter_counted";
+
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         URL url = invoker.getUrl();
+        String countKey = EXECUTE_LIMIT_FILTER_COUNTED + url.toIdentityString();
+        invocation.put(countKey, false);
         String methodName = RpcUtils.getMethodName(invocation);
         int max = url.getMethodParameter(methodName, EXECUTES_KEY, 0);
         if (!RpcStatus.beginCount(url, methodName, max)) {
@@ -55,6 +59,7 @@ public class ExecuteLimitFilter implements Filter, Filter.Listener {
                             + "\" /> limited.");
         }
 
+        invocation.put(countKey, true);
         invocation.put(EXECUTE_LIMIT_FILTER_START_TIME, System.currentTimeMillis());
         try {
             return invoker.invoke(invocation);
@@ -76,7 +81,10 @@ public class ExecuteLimitFilter implements Filter, Filter.Listener {
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
         if (t instanceof RpcException) {
             RpcException rpcException = (RpcException) t;
-            if (rpcException.isLimitExceed()) {
+            // A downstream rejection still needs to release this filter's acquired slot.
+            if (rpcException.isLimitExceed()
+                    && !Boolean.TRUE.equals(invocation.get(
+                            EXECUTE_LIMIT_FILTER_COUNTED + invoker.getUrl().toIdentityString()))) {
                 return;
             }
         }
