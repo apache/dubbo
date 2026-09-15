@@ -618,6 +618,14 @@ public class ServiceAnnotationPostProcessor
             AnnotatedBeanDefinition refServiceBeanDefinition,
             Map<String, Object> attributes) {
 
+        if (shouldSkipDueToConditionalOnMissingBean(refServiceBeanName, refServiceBeanDefinition)) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Skip registering ServiceBean for bean [" + refServiceBeanName
+                        + "] due to @ConditionalOnMissingBean condition not satisfied");
+            }
+            return;
+        }
+
         Map<String, Object> serviceAnnotationAttributes = new LinkedHashMap<>(attributes);
 
         // get bean class from return type
@@ -660,6 +668,117 @@ public class ServiceAnnotationPostProcessor
         if (logger.isInfoEnabled()) {
             logger.info("Register ServiceBean[" + serviceBeanName + "]: " + serviceBeanDefinition);
         }
+    }
+
+    private boolean shouldSkipDueToConditionalOnMissingBean(
+            String refServiceBeanName, AnnotatedBeanDefinition beanDefinition) {
+        MethodMetadata factoryMethod = SpringCompatUtils.getFactoryMethodMetadata(beanDefinition);
+        if (factoryMethod == null) {
+            return false;
+        }
+
+        Map<String, Object> conditionalAttrs = factoryMethod.getAnnotationAttributes(
+                "org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean");
+
+        if (conditionalAttrs == null || conditionalAttrs.isEmpty()) {
+            return false;
+        }
+
+        String[] beanNames = (String[]) conditionalAttrs.get("name");
+        if (beanNames != null) {
+            for (String beanName : beanNames) {
+                if (hasExistingBeanName(beanName, refServiceBeanName)) {
+                    return true;
+                }
+            }
+        }
+
+        Class<?>[] beanTypes = (Class<?>[]) conditionalAttrs.get("value");
+        if (beanTypes == null || beanTypes.length == 0) {
+            Object typeAttr = conditionalAttrs.get("type");
+            if (typeAttr instanceof Class[]) {
+                beanTypes = (Class<?>[]) typeAttr;
+            } else if (typeAttr instanceof String[]) {
+                String[] typeNames = (String[]) typeAttr;
+                List<Class<?>> resolvedTypes = new ArrayList<>(typeNames.length);
+                for (String typeName : typeNames) {
+                    if (StringUtils.isEmpty(typeName)) {
+                        continue;
+                    }
+                    String resolvedName = typeName;
+                    if (environment != null) {
+                        resolvedName = environment.resolvePlaceholders(typeName);
+                    }
+                    if (!ClassUtils.isPresent(resolvedName, classLoader)) {
+                        continue;
+                    }
+                    resolvedTypes.add(resolveClassName(resolvedName, classLoader));
+                }
+                if (!resolvedTypes.isEmpty()) {
+                    beanTypes = resolvedTypes.toArray(new Class<?>[0]);
+                }
+            }
+        }
+        if (beanTypes == null || beanTypes.length == 0) {
+            return false;
+        }
+
+        for (Class<?> beanType : beanTypes) {
+            if (hasExistingBeanOfType(beanType, refServiceBeanName)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean hasExistingBeanOfType(Class<?> beanType, String refServiceBeanName) {
+        if (registry instanceof ConfigurableListableBeanFactory) {
+            ConfigurableListableBeanFactory beanFactory = (ConfigurableListableBeanFactory) registry;
+
+            String[] beanNames = beanFactory.getBeanNamesForType(beanType);
+            for (String beanName : beanNames) {
+                if (!beanName.equals(refServiceBeanName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean hasExistingBeanName(String beanName, String refServiceBeanName) {
+        if (beanName == null || beanName.isEmpty()) {
+            return false;
+        }
+        String resolvedName = beanName;
+        if (environment != null) {
+            resolvedName = environment.resolvePlaceholders(beanName);
+        }
+        if (registry instanceof ConfigurableListableBeanFactory) {
+            ConfigurableListableBeanFactory beanFactory = (ConfigurableListableBeanFactory) registry;
+            if (isCurrentBeanNameOrAlias(beanFactory, resolvedName, refServiceBeanName)) {
+                return false;
+            }
+            return beanFactory.containsBean(resolvedName);
+        }
+        if (resolvedName.equals(refServiceBeanName)) {
+            return false;
+        }
+        return registry.containsBeanDefinition(resolvedName);
+    }
+
+    private boolean isCurrentBeanNameOrAlias(
+            ConfigurableListableBeanFactory beanFactory, String candidateName, String refServiceBeanName) {
+        if (candidateName.equals(refServiceBeanName)) {
+            return true;
+        }
+        String[] aliases = beanFactory.getAliases(refServiceBeanName);
+        for (String alias : aliases) {
+            if (candidateName.equals(alias)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
