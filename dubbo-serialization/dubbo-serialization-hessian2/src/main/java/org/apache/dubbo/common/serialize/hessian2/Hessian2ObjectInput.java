@@ -22,8 +22,16 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import com.alibaba.com.caucho.hessian.io.Hessian2Input;
 
@@ -119,6 +127,7 @@ public class Hessian2ObjectInput implements ObjectInput, Cleanable {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> cls, Type type) throws IOException, ClassNotFoundException {
         if (!Objects.equals(
                 mH2i.getSerializerFactory().getClassLoader(),
@@ -126,7 +135,102 @@ public class Hessian2ObjectInput implements ObjectInput, Cleanable {
             mH2i.setSerializerFactory(hessian2FactoryManager.getSerializerFactory(
                     Thread.currentThread().getContextClassLoader()));
         }
-        return readObject(cls);
+        if (type instanceof ParameterizedType && containsNarrowableType(type)) {
+            // hessian2 encodes Byte/Short/Integer all as int and Float/Double as double on the wire,
+            // so the element type of such generic collections can only be restored from the declared
+            // generic type. hessian's expectedTypes mechanism is single-level, so nested generics
+            // (e.g. List<List<Byte>>, Map<String, List<Byte>>) lose the narrow element type. Read the
+            // object with the erased type and then recursively narrow numeric elements to match the
+            // declared generic type.
+            Object obj = mH2i.readObject(cls);
+            return (T) narrowByType(obj, type);
+        }
+        return (T) mH2i.readObject(cls);
+    }
+
+    /**
+     * Checks whether the given {@link Type} declares any narrow primitive-wrapper element type
+     * (Byte/Short/Float/Character) anywhere in the generic hierarchy. Only such types need the
+     * recursive narrowing pass, avoiding unnecessary copies for e.g. {@code List<String>}.
+     */
+    private boolean containsNarrowableType(Type type) {
+        if (type instanceof ParameterizedType) {
+            Type[] typeArgs = ((ParameterizedType) type).getActualTypeArguments();
+            for (Type typeArg : typeArgs) {
+                if (containsNarrowableType(typeArg)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return type == Byte.class || type == Short.class || type == Float.class || type == Character.class;
+    }
+
+    /**
+     * Recursively narrows widened numeric elements (Integer/Double) inside generic collections to the
+     * element types declared by {@code type}. Returns the input object unchanged when no element needs
+     * to be narrowed.
+     */
+    @SuppressWarnings("unchecked")
+    private Object narrowByType(Object obj, Type type) {
+        if (type instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+            Type rawType = parameterizedType.getRawType();
+            Type[] typeArgs = parameterizedType.getActualTypeArguments();
+            if (rawType instanceof Class
+                    && Collection.class.isAssignableFrom((Class<?>) rawType)
+                    && typeArgs.length == 1) {
+                Type elementType = typeArgs[0];
+                if (obj instanceof List) {
+                    List<Object> result = new ArrayList<>(((List<?>) obj).size());
+                    for (Object element : (List<?>) obj) {
+                        result.add(narrowByType(element, elementType));
+                    }
+                    return result;
+                }
+                if (obj instanceof Set) {
+                    Set<Object> result = new LinkedHashSet<>();
+                    for (Object element : (Set<?>) obj) {
+                        result.add(narrowByType(element, elementType));
+                    }
+                    return result;
+                }
+                if (obj instanceof Collection) {
+                    Collection<Object> result = new ArrayList<>();
+                    for (Object element : (Collection<?>) obj) {
+                        result.add(narrowByType(element, elementType));
+                    }
+                    return result;
+                }
+            } else if (rawType instanceof Class
+                    && Map.class.isAssignableFrom((Class<?>) rawType)
+                    && typeArgs.length == 2) {
+                Type keyType = typeArgs[0];
+                Type valueType = typeArgs[1];
+                if (obj instanceof Map) {
+                    Map<Object, Object> result = new LinkedHashMap<>();
+                    for (Map.Entry<?, ?> entry : ((Map<?, ?>) obj).entrySet()) {
+                        result.put(narrowByType(entry.getKey(), keyType), narrowByType(entry.getValue(), valueType));
+                    }
+                    return result;
+                }
+            }
+        } else if (type instanceof Class) {
+            Class<?> clazz = (Class<?>) type;
+            if (clazz == Byte.class && obj instanceof Integer) {
+                return Byte.valueOf(((Number) obj).byteValue());
+            }
+            if (clazz == Short.class && obj instanceof Integer) {
+                return Short.valueOf(((Number) obj).shortValue());
+            }
+            if (clazz == Float.class && obj instanceof Double) {
+                return Float.valueOf(((Number) obj).floatValue());
+            }
+            if (clazz == Character.class && obj instanceof Integer) {
+                return (char) ((Number) obj).intValue();
+            }
+        }
+        return obj;
     }
 
     public InputStream readInputStream() throws IOException {
