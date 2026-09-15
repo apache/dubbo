@@ -100,6 +100,42 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
     public static final String BEAN_NAME = ReferenceAnnotationBeanPostProcessor.class.getName();
 
     /**
+     * Spring environment property key used to select the naming strategy that derives the bean
+     * name of a {@link DubboReference}/{@link Reference} annotated member which does not declare
+     * an explicit {@code id} attribute.
+     * <p>
+     * Supported values:
+     * <ul>
+     *     <li>{@link #FIELD_NAME_NAMING_STRATEGY} (default): derive the bean name from the
+     *     annotated field or setter property name.</li>
+     *     <li>{@link #INTERFACE_NAME_NAMING_STRATEGY}: derive the bean name from the simple name
+     *     of the referenced service interface.</li>
+     * </ul>
+     *
+     * @see #DEFAULT_REFERENCE_BEAN_NAMING_STRATEGY
+     */
+    public static final String REFERENCE_BEAN_NAMING_STRATEGY_PROPERTY =
+            "dubbo.application.reference-bean-naming-strategy";
+
+    /**
+     * Naming strategy value that derives the reference bean name from the annotated field or
+     * setter property name (historical behavior).
+     */
+    public static final String FIELD_NAME_NAMING_STRATEGY = "field-name";
+
+    /**
+     * Naming strategy value that derives the reference bean name from the simple name of the
+     * referenced service interface.
+     */
+    public static final String INTERFACE_NAME_NAMING_STRATEGY = "interface-name";
+
+    /**
+     * The default value of {@link #REFERENCE_BEAN_NAMING_STRATEGY_PROPERTY}, which preserves the
+     * historical behavior.
+     */
+    public static final String DEFAULT_REFERENCE_BEAN_NAMING_STRATEGY = FIELD_NAME_NAMING_STRATEGY;
+
+    /**
      * Cache size
      */
     private static final int CACHE_SIZE = Integer.getInteger(BEAN_NAME + ".cache.size", 32);
@@ -419,9 +455,18 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         // referenceBeanName
         String referenceBeanName = AnnotationUtils.getAttribute(attributes, ReferenceAttributes.ID);
         if (hasText(referenceBeanName)) {
+            // An explicit 'id' attribute always has the highest priority and never gets renamed.
             renameable = false;
         } else {
-            referenceBeanName = propertyName;
+            // No explicit 'id': derive the bean name from the configured naming strategy.
+            // By default the field/setter property name is used (historical behavior), but this
+            // makes the registered bean name depend on the declaring member name. A same-named
+            // field of a different type then occupies the bean name and breaks by-name
+            // injections such as JSR-250 @Resource, which happen later in time and therefore
+            // cannot be protected by the rename logic below (see apache/dubbo#12637).
+            // The optional 'interface-name' strategy avoids that conflict by deriving the bean
+            // name from the simple name of the referenced service interface instead.
+            referenceBeanName = resolveDefaultReferenceBeanName(propertyName, injectedType, member);
         }
 
         String checkLocation = "Please check " + member.toString();
@@ -565,6 +610,60 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         referenceBeanManager.registerReferenceKeyAndBeanName(referenceKey, referenceBeanName);
         logger.info("Register dubbo reference bean: " + referenceBeanName + " = " + referenceKey + " at " + member);
         return referenceBeanName;
+    }
+
+    /**
+     * Resolves the default bean name for a {@link DubboReference}/{@link Reference} annotated
+     * member that does not specify an explicit {@code id} attribute.
+     * <p>
+     * The naming strategy is selected via the Spring environment property
+     * {@code dubbo.application.reference-bean-naming-strategy}:
+     * <ul>
+     *     <li>{@code field-name} (default): use the annotated field or setter property name.
+     *     This preserves the historical behavior where the bean name is bound to the declaring
+     *     member name.</li>
+     *     <li>{@code interface-name}: use the simple name of the referenced service interface.
+     *     The registered bean name then no longer depends on the declaring field name, so
+     *     same-named fields of different interfaces no longer occupy conflicting bean names,
+     *     and by-name injections such as JSR-250 {@code @Resource} on a co-located bean keep
+     *     resolving to their intended target. This closes the timing gap that {@code @Resource}
+     *     injection happens after {@code @DubboReference} has registered its bean definition and
+     *     therefore cannot be protected by the existing rename logic,
+     *     see apache/dubbo#12637.</li>
+     * </ul>
+     * Unknown strategy values, or an unavailable interface simple name, fall back to the
+     * {@code field-name} strategy.
+     *
+     * @param propertyName the property name derived from the annotated field or setter method
+     * @param injectedType the referenced service interface type
+     * @param member       the annotated member, only used for diagnostics
+     * @return the default reference bean name
+     */
+    protected String resolveDefaultReferenceBeanName(String propertyName, Class<?> injectedType, Member member) {
+        String strategy = getReferenceBeanNamingStrategy();
+        if (INTERFACE_NAME_NAMING_STRATEGY.equalsIgnoreCase(strategy)) {
+            if (injectedType != null && hasText(injectedType.getSimpleName())) {
+                return injectedType.getSimpleName();
+            }
+            logger.warn(
+                    CONFIG_DUBBO_BEAN_INITIALIZER,
+                    "",
+                    "",
+                    "The '" + INTERFACE_NAME_NAMING_STRATEGY + "' naming strategy cannot derive a reference bean "
+                            + "name from " + member.toString() + ", fallback to the '"
+                            + FIELD_NAME_NAMING_STRATEGY + "' strategy with [" + propertyName + "]");
+        }
+        return propertyName;
+    }
+
+    private String getReferenceBeanNamingStrategy() {
+        if (applicationContext != null) {
+            String strategy = applicationContext.getEnvironment().getProperty(REFERENCE_BEAN_NAMING_STRATEGY_PROPERTY);
+            if (hasText(strategy)) {
+                return strategy.trim();
+            }
+        }
+        return DEFAULT_REFERENCE_BEAN_NAMING_STRATEGY;
     }
 
     @Override
