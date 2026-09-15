@@ -1,0 +1,65 @@
+<project>
+  <parent>
+    <artifactId>plexus-containers</artifactId>
+    <groupId>org.codehaus.plexus</groupId>
+    <version>1.0.3</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>plexus-container-default</artifactId>
+  <name>Default Plexus Container</name>
+  <version>1.0-alpha-9-stable-1</version>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>**/Test*.java</exclude>
+            <exclude>**/Abstract*.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+    </plugins>
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-webdav</artifactId>
+        <version>1.0-beta-2</version>
+      </extension>
+    </extensions>
+  </build>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
+      <version>1.0.4</version>
+    </dependency>
+    <dependency>
+      <groupId>classworlds</groupId>
+      <artifactId>classworlds</artifactId>
+      <version>1.1-alpha-2</version>
+    </dependency>
+  </dependencies>
+  <distributionManagement>                                                                                                                                               
+    <repository>                                                                                                                                                         
+      <id>codehaus.org</id>                                                                                                                                              
+      <name>Plexus Central Repository</name>                                                                                                                             
+      <url>dav:https://dav.codehaus.org/repository/plexus</url>                                                                                                          
+    </repository>                                                                                                                                                        
+    <snapshotRepository>                                                                                                                                                 
+      <id>codehaus.org</id>                                                                                                                                              
+      <name>Plexus Central Development Repository</name>                                                                                                                 
+      <url>dav:https://dav.codehaus.org/snapshots.repository/plexus</url>                                                                                                
+    </snapshotRepository>                                                                                                                                                
+    <site>                                                                                                                                                               
+      <id>codehaus.org</id>                                                                                                                                              
+      <url>dav:https://dav.codehaus.org/plexus</url>                                                                                                                     
+    </site>                                                                                                                                                              
+  </distributionManagement>    
+</project>

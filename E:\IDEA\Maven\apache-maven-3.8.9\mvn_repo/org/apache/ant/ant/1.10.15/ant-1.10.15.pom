@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       https://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<!--
+  This POM has been created manually by the Ant Development Team.
+  Please contact us if you are not satisfied with the data contained in this POM.
+  URL : https://ant.apache.org
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+    <groupId>org.apache.ant</groupId>
+    <artifactId>ant-parent</artifactId>
+    <relativePath>../pom.xml</relativePath>
+    <version>1.10.15</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <url>https://ant.apache.org/</url>
+  <groupId>org.apache.ant</groupId>
+  <artifactId>ant</artifactId>
+  <version>1.10.15</version>
+  <name>Apache Ant Core</name>
+  <properties>
+    <modules.exclude>org/apache/tools/ant/taskdefs/modules/</modules.exclude>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.ant</groupId>
+      <artifactId>ant-launcher</artifactId>
+      <version>1.10.15</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.ant</groupId>
+      <artifactId>ant-antunit</artifactId>
+      <version>1.4.1</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.ant</groupId>
+          <artifactId>ant</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.ant</groupId>
+          <artifactId>ant-launcher</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>xerces</groupId>
+      <artifactId>xercesImpl</artifactId>
+      <version>2.12.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.mail</groupId>
+      <artifactId>javax.mail</artifactId>
+      <version>1.6.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.beanshell</groupId>
+      <artifactId>bsh</artifactId>
+      <version>2.0b5</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <filters>
+      <filter>../../../../target/ant/.build.timestamp.properties</filter>
+    </filters>
+    <plugins>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>create-timestamp-file</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <tstamp/>
+                <mkdir dir="${project.build.directory}"/>
+                <touch file="${project.build.directory}/.build.timestamp.properties"/>
+                <echo file="${project.build.directory}/.build.timestamp.properties" append="false"
+                  message="TODAY=${TODAY}"/>
+              </target>
+            </configuration>
+          </execution>
+          <execution>
+            <id>create-antlib-test-jar</id>
+            <phase>process-test-classes</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <jar jarfile="${project.build.testOutputDirectory}/org/apache/tools/ant/taskdefs/test2-antlib.jar">
+                  <manifest>
+                    <attribute name="Extension-name"
+                               value="org.apache.tools.ant"/>
+                    <attribute name="Specification-Title"
+                               value="Apache Ant"/>
+                    <attribute name="Specification-Version"
+                               value="${project.version}"/>
+                    <attribute name="Specification-Vendor"
+                               value="Apache Software Foundation"/>
+                    <attribute name="Implementation-Title"
+                               value="org.apache.tools.ant"/>
+                    <attribute name="Implementation-Version"
+                               value="${project.version}"/>
+                    <attribute name="Implementation-Vendor"
+                               value="Apache Software Foundation"/>
+                  </manifest>
+                  <zipfileset dir="${project.build.scriptSourceDirectory}/testcases" fullpath="taskdefs/test.antlib.xml">
+                    <include name="taskdefs/test2.antlib.xml"/>
+                  </zipfileset>
+                </jar>
+                <echoproperties prefix="maven."/>
+              </target>
+            </configuration>
+          </execution>
+          <execution>
+            <id>delete-timestamp-file</id>
+            <phase>clean</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <delete file="${project.build.directory}/.build.timestamp.properties"/>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>org/apache/tools/ant/filters/util/JavaClassHelper*</exclude>
+            <exclude>org/apache/tools/ant/launch/</exclude>
+            <exclude>org/apache/tools/ant/listener/CommonsLoggingListener*</exclude>
+            <exclude>org/apache/tools/ant/listener/Log4jListener*</exclude>
+            <exclude>org/apache/tools/ant/taskdefs/email/*MimeMailer*</exclude>
+            <exclude>${modules.exclude}</exclude>
+            <exclude>org/apache/tools/ant/taskdefs/optional/NetRexxC*</exclude>
+            <exclude>org/apache/tools/ant/taskdefs/optional/Xalan2TraceSupport*</exclude>
+            <exclude>org/apache/tools/ant/taskdefs/optional/image/</exclude>
+            <exclude>org/apache/tools/ant/taskdefs/optional/jdepend/</exclude>
+            <exclude>org/apache/tools/ant/taskdefs/optional/junit/</exclude>
+            <exclude>org/apache/tools/ant/taskdefs/optional/junitlauncher/</exclude>
+            <exclude>org/apache/tools/ant/taskdefs/optional/net/FTP*</exclude>
+            <exclude>org/apache/tools/ant/taskdefs/optional/net/RExec*</exclude>
+            <exclude>org/apache/tools/ant/taskdefs/optional/net/TelnetTask*</exclude>
+            <exclude>org/apache/tools/ant/taskdefs/optional/sound/</exclude>
+            <exclude>org/apache/tools/ant/taskdefs/optional/splash/</exclude>
+            <exclude>org/apache/tools/ant/taskdefs/optional/ssh/</exclude>
+            <exclude>org/apache/tools/ant/taskdefs/optional/xz/</exclude>
+            <exclude>org/apache/tools/ant/types/optional/image/</exclude>
+            <exclude>org/apache/tools/ant/types/optional/imageio/</exclude>
+            <exclude>org/apache/tools/ant/types/optional/xz/</exclude>
+            <exclude>org/apache/tools/ant/types/resolver/</exclude>
+            <exclude>org/apache/tools/ant/util/depend/bcel/</exclude>
+            <exclude>org/apache/tools/ant/util/ScriptRunner.java</exclude>
+            <exclude>org/apache/tools/ant/util/optional/ScriptRunner.java</exclude>
+            <exclude>org/apache/tools/ant/util/regexp/JakartaOro*</exclude>
+            <exclude>org/apache/tools/ant/util/regexp/JakartaRegexp*</exclude>
+          </excludes>
+          <testExcludes>
+            <!-- launcher -->
+            <exclude>org/apache/tools/ant/launch/</exclude>
+            <!-- commons-logging -->
+            <exclude>org/apache/tools/ant/listener/CommonsLoggingListener*</exclude>
+            <!-- log4j -->
+            <exclude>org/apache/tools/ant/listener/Log4jListener*</exclude>
+            <!-- obsolete -->
+            <exclude>org/apache/tools/ant/taskdefs/AbstractCvs*</exclude>
+            <!-- ERROR: "default value" when javac cannot cross-compile to Java 5 -->
+            <exclude>org/apache/tools/ant/taskdefs/Javac*</exclude>
+            <!-- see XsltTest -->
+            <exclude>org/apache/tools/ant/taskdefs/StyleTest*</exclude>
+            <!-- ERROR: Unexpected recipients -->
+            <exclude>org/apache/tools/ant/taskdefs/email/EmailTask*</exclude>
+            <!-- Java9+ -->
+            <exclude>${modules.exclude}</exclude>
+            <!-- antlr -->
+            <exclude>org/apache/tools/ant/taskdefs/optional/ANTLR*</exclude>
+            <!-- obsolete -->
+            <exclude>org/apache/tools/ant/taskdefs/optional/Jspc*</exclude>
+            <exclude>org/apache/tools/ant/taskdefs/optional/Pvcs*</exclude>
+            <!-- xalan: workaround for different resource encoding -->
+            <exclude>org/apache/tools/ant/taskdefs/optional/TraXLiaison*</exclude>
+            <!-- ERROR: UnknownHostException: chemical (XML parser-dependent) -->
+            <exclude>org/apache/tools/ant/taskdefs/optional/XmlValidateCatalog*</exclude>
+            <!-- image/imageio -->
+            <exclude>org/apache/tools/ant/taskdefs/optional/image/</exclude>
+            <!-- jdepend -->
+            <exclude>org/apache/tools/ant/taskdefs/optional/jdepend/</exclude>
+            <!-- junit -->
+            <exclude>org/apache/tools/ant/taskdefs/optional/junit/</exclude>
+            <!-- junitlauncher -->
+            <exclude>org/apache/tools/ant/taskdefs/optional/junitlauncher/</exclude>
+            <!-- net -->
+            <exclude>org/apache/tools/ant/taskdefs/optional/net/FTP*</exclude>
+            <!-- swing -->
+            <exclude>org/apache/tools/ant/taskdefs/optional/splash/</exclude>
+            <!-- jsch -->
+            <exclude>org/apache/tools/ant/taskdefs/optional/ssh/</exclude>
+            <!-- dependent on junit -->
+            <exclude>org/apache/tools/ant/types/Assertions*</exclude>
+            <!-- bcel -->
+            <exclude>org/apache/tools/ant/types/optional/depend/ClassFileSet*</exclude>
+            <!-- ERROR: defaults.properties are in both compile and test file tree -->
+            <exclude>org/apache/tools/ant/util/ClasspathUtils*</exclude>
+            <exclude>org/apache/tools/ant/util/LoaderUtils*</exclude>
+            <!-- oro -->
+            <exclude>org/apache/tools/ant/util/regexp/JakartaOro*</exclude>
+            <!-- regexp -->
+            <exclude>org/apache/tools/ant/util/regexp/JakartaRegexp*</exclude>
+            <!-- dependent on IncludeTest.class: checks presence -->
+            <exclude>org/apache/tools/ant/AntClassLoaderDelegation*</exclude>
+            <!-- ERROR:  More pseudo attributes are expected (encoding="UTF-8");
+             failure mode is XML parser-dependent (see to do for failures in IDE) -->
+            <exclude>org/apache/tools/ant/Include*</exclude>
+            <!-- dependent on JUnit 5 -->
+            <exclude>org/example/junitlauncher/</exclude>
+            <!-- requires Graal.js and forking tests per class -->
+            <exclude>org/apache/tools/ant/taskdefs/optional/script/graal/</exclude>
+            <!-- requires structure of a binary distribution of Ant in ANT_HOME -->
+            <exclude>org/apache/tools/ant/types/CommandlineJavaTest*</exclude>
+            <exclude>org/apache/tools/ant/types/selectors/ModifiedSelectorTest*</exclude>
+            <exclude>org/apache/tools/ant/taskdefs/AvailableTest*</exclude>
+          </testExcludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <index>true</index>
+            <manifest>
+              <mainClass>org.apache.tools.ant.Main</mainClass>
+              <addExtensions>true</addExtensions>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <basedir>../../../..</basedir>
+          <workingDirectory>../../../..</workingDirectory>
+          <systemProperties>
+            <property>
+              <name>ant.home</name>
+              <value>${env.ANT_HOME}</value>
+            </property>
+            <property>
+              <name>build.classes.value</name>
+              <value>${project.basedir}/../../../../target/${project.artifactId}/classes</value>
+            </property>
+            <property>
+              <name>build.tests.value</name>
+              <value>${project.basedir}/../../../../target/${project.artifactId}/testcases</value>
+            </property>
+            <property>
+              <name>offline</name>
+              <value>true</value>
+            </property>
+            <property>
+              <name>ant.test.basedir.ignore</name>
+              <value>true</value>
+            </property>
+          </systemProperties>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+      </plugin>
+    </plugins>
+    <resources>
+      <resource>
+        <directory>../../../..</directory>
+        <targetPath>META-INF</targetPath>
+        <includes>
+          <include>LICENSE</include>
+          <include>NOTICE</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>../../../../src/main</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>org/apache/tools/ant/listener/defaults.properties</include>
+          <include>org/apache/tools/ant/taskdefs/defaults.properties</include>
+          <include>org/apache/tools/ant/types/defaults.properties</include>
+          <include>org/apache/tools/ant/antlib.xml</include>
+          <include>org/apache/tools/ant/types/conditions/antlib.xml</include>
+          <include>org/apache/tools/ant/defaultManifest.mf</include>
+          <include>org/apache/tools/ant/version.txt</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>../../../../src/resources</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>**/antlib.xml</include>
+          <include>**/javadoc-frame-injections-fix.txt</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>../../../../manual</directory>
+        <filtering>false</filtering>
+        <includes>
+          <include>images/ant_logo_large.gif</include>
+        </includes>
+      </resource>
+    </resources>
+    <testResources>
+      <testResource>
+        <directory>../../../../src/etc/testcases</directory>
+        <filtering>true</filtering>
+      </testResource>
+      <testResource>
+        <directory>../../../../src/main</directory>
+        <filtering>true</filtering>
+        <excludes>
+          <exclude>**/*.java</exclude>
+        </excludes>
+      </testResource>
+    </testResources>
+    <sourceDirectory>../../../../src/main</sourceDirectory>
+    <testSourceDirectory>../../../../src/tests/junit</testSourceDirectory>
+    <scriptSourceDirectory>../../../../src/etc</scriptSourceDirectory>
+    <!-- directory name is hardcoded in AntTest -->
+    <outputDirectory>../../../../target/${project.artifactId}/classes</outputDirectory>
+    <testOutputDirectory>../../../../target/${project.artifactId}/testcases</testOutputDirectory>
+    <directory>../../../../target/${project.artifactId}</directory>
+  </build>
+  <profiles>
+    <profile>
+      <id>java9+</id>
+      <activation>
+        <jdk>[9,)</jdk>
+      </activation>
+      <properties>
+        <modules.exclude>not/here</modules.exclude>
+      </properties>
+    </profile>
+  </profiles>
+</project>

@@ -1,0 +1,395 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ ~ Copyright (c) 2010, 2013 Sonatype, Inc.
+ ~ All rights reserved. This program and the accompanying materials
+ ~ are made available under the terms of the Eclipse Public License v1.0
+ ~ which accompanies this distribution, and is available at
+ ~ http://www.eclipse.org/legal/epl-v10.html
+ ~
+ ~ Contributors:
+ ~    Stuart McCulloch (Sonatype, Inc.) - initial API and implementation
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
+  </parent>
+
+  <groupId>org.eclipse.sisu</groupId>
+  <artifactId>sisu-inject</artifactId>
+  <version>0.3.0.M1</version>
+  <packaging>pom</packaging>
+
+  <name>Sisu Inject</name>
+  <description>JSR330-based container; supports classpath scanning, auto-binding, and dynamic auto-wiring</description>
+  <url>http://www.eclipse.org/sisu/</url>
+  <inceptionYear>2010</inceptionYear>
+  <organization>
+    <name>The Eclipse Foundation</name>
+    <url>http://www.eclipse.org/</url>
+  </organization>
+  <licenses>
+    <license>
+      <name>Eclipse Public License, Version 1.0</name>
+      <url>http://www.eclipse.org/legal/epl-v10.html</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <mailingLists>
+    <mailingList>
+      <name>Sisu Developers List</name>
+      <subscribe>sisu-dev-subscribe@eclipse.org</subscribe>
+      <unsubscribe>sisu-dev-unsubscribe@eclipse.org</unsubscribe>
+      <post>sisu-dev@eclipse.org</post>
+      <archive>http://dev.eclipse.org/mhonarc/lists/sisu-dev/</archive>
+    </mailingList>
+    <mailingList>
+      <name>Sisu Users List</name>
+      <subscribe>sisu-users-subscribe@eclipse.org</subscribe>
+      <unsubscribe>sisu-users-unsubscribe@eclipse.org</unsubscribe>
+      <post>sisu-users@eclipse.org</post>
+      <archive>http://dev.eclipse.org/mhonarc/lists/sisu-users/</archive>
+    </mailingList>
+  </mailingLists>
+
+  <prerequisites>
+    <maven>3.0</maven>
+  </prerequisites>
+
+  <modules>
+    <module>org.eclipse.sisu.inject</module>
+    <module>org.eclipse.sisu.inject.extender</module>
+    <module>org.eclipse.sisu.inject.tests</module>
+    <module>org.eclipse.sisu.inject.site</module>
+  </modules>
+
+  <scm>
+    <connection>scm:git:git://git.eclipse.org/gitroot/sisu/org.eclipse.sisu.inject.git</connection>
+    <developerConnection>scm:git:ssh://git.eclipse.org/gitroot/sisu/org.eclipse.sisu.inject.git</developerConnection>
+    <url>http://git.eclipse.org/c/sisu/org.eclipse.sisu.inject.git/tree/</url>
+  </scm>
+  <issueManagement>
+    <system>bugzilla</system>
+    <url>https://bugs.eclipse.org/bugs/enter_bug.cgi?product=Sisu&amp;component=Inject&amp;format=guided</url>
+  </issueManagement>
+  <ciManagement>
+    <system>Hudson</system>
+    <url>https://hudson.eclipse.org/sisu/job/sisu-inject-nightly/</url>
+  </ciManagement>
+
+  <properties>
+    <maven.compiler.source>1.5</maven.compiler.source>
+    <maven.compiler.target>1.5</maven.compiler.target>
+    <tycho.scmUrl>scm:git:http://git.eclipse.org/gitroot/sisu/org.eclipse.sisu.inject.git</tycho.scmUrl>
+    <tycho-version>0.19.0</tycho-version>
+  </properties>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>animal-sniffer-maven-plugin</artifactId>
+          <version>1.9</version>
+          <configuration>
+            <signature>
+              <groupId>org.codehaus.mojo.signature</groupId>
+              <artifactId>java15</artifactId>
+              <version>1.0</version>
+            </signature>
+            <ignores>
+              <ignore>javax.annotation.processing.*</ignore>
+              <ignore>javax.lang.model.*</ignore>
+              <ignore>javax.tools.*</ignore>
+            </ignores>
+          </configuration>
+          <executions>
+            <execution>
+              <id>check-java5</id>
+              <phase>package</phase>
+              <goals>
+                <goal>check</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>1.3</version>
+          <configuration>
+            <rules>
+              <enforceBytecodeVersion>
+                <maxJdkVersion>1.5</maxJdkVersion>
+                <excludes>
+                  <exclude>*:javax.annotation-api</exclude>
+                  <exclude>*:javax.el</exclude>
+                </excludes>
+              </enforceBytecodeVersion>
+            </rules>
+          </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>extra-enforcer-rules</artifactId>
+              <version>1.0-beta-2</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+        <plugin>
+          <groupId>org.eclipse.tycho</groupId>
+          <artifactId>target-platform-configuration</artifactId>
+          <version>${tycho-version}</version>
+          <configuration>
+            <executionEnvironment>JavaSE-1.6</executionEnvironment>
+            <target>
+              <artifact>
+                <groupId>org.eclipse.sisu</groupId>
+                <artifactId>org.eclipse.sisu.inject</artifactId>
+                <version>${project.version}</version>
+                <classifier>build</classifier>
+              </artifact>
+            </target>
+            <environments>
+              <environment>
+                <os>win32</os>
+                <ws>win32</ws>
+                <arch>x86</arch>
+              </environment>
+              <environment>
+                <os>linux</os>
+                <ws>gtk</ws>
+                <arch>x86_64</arch>
+              </environment>
+              <environment>
+                <os>macosx</os>
+                <ws>cocoa</ws>
+                <arch>x86_64</arch>
+              </environment>
+            </environments>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.eclipse.tycho</groupId>
+          <artifactId>tycho-compiler-plugin</artifactId>
+          <version>${tycho-version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.eclipse.tycho</groupId>
+          <artifactId>tycho-maven-plugin</artifactId>
+          <version>${tycho-version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.eclipse.tycho</groupId>
+          <artifactId>tycho-p2-plugin</artifactId>
+          <version>${tycho-version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.eclipse.tycho</groupId>
+          <artifactId>tycho-packaging-plugin</artifactId>
+          <version>${tycho-version}</version>
+          <configuration>
+            <archive>
+              <addMavenDescriptor>false</addMavenDescriptor>
+            </archive>
+            <sourceReferences>
+              <generate>true</generate>
+            </sourceReferences>
+          </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.eclipse.tycho.extras</groupId>
+              <artifactId>tycho-sourceref-jgit</artifactId>
+              <version>${tycho-version}</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+        <plugin>
+          <groupId>org.eclipse.tycho</groupId>
+          <artifactId>tycho-source-plugin</artifactId>
+          <version>${tycho-version}</version>
+          <executions>
+            <execution>
+              <id>plugin-source</id>
+              <goals>
+                <goal>plugin-source</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>2.5</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>2.6</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>0.6.3.201306030806</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.14.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>2.4</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>2.4</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>2.7</version>
+        </plugin>
+        <plugin>
+          <groupId>org.sonatype.plugins</groupId>
+          <artifactId>nexus-staging-maven-plugin</artifactId>
+          <version>1.4.4</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>2.4.1</version>
+          <configuration>
+            <dryRun>true</dryRun> <!-- releases are made using the prepare/perform_milestone.sh scripts -->
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>2.9.1</version>
+          <configuration>
+            <docletArtifact>
+              <groupId>com.google.doclava</groupId>
+              <artifactId>doclava</artifactId>
+              <version>1.0.5</version>
+            </docletArtifact>
+            <doclet>com.google.doclava.Doclava</doclet>
+            <!--
+             | bootclasspath required by Sun's JVM
+            -->
+            <bootclasspath>${sun.boot.class.path}</bootclasspath>
+            <excludePackageNames>*.internal,*.asm</excludePackageNames>
+            <additionalparam>
+              -quiet
+              -federate JDK http://docs.oracle.com/javase/6/docs/api/index.html?
+              -federationxml JDK http://doclava.googlecode.com/svn/static/api/openjdk-6.xml
+              -federate Guice http://google-guice.googlecode.com/git-history/3.0/javadoc
+              -federate OSGi http://www.osgi.org/javadoc/r4v42/index.html?
+              -federationxml OSGi ${basedir}/../doclava/api/osgi.xml
+              -hdf project.name "${project.name}"
+              -overview ${basedir}/overview.html
+              -templatedir ${basedir}/../doclava
+              -d ${project.build.directory}/apidocs
+            </additionalparam>
+            <useStandardDocletOptions>false</useStandardDocletOptions>
+            <!--
+             | Apple's JVM sometimes requires more memory
+            -->
+            <additionalJOption>-J-Xmx1024m</additionalJOption>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.3</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>m2e</id>
+      <activation>
+        <property>
+          <name>m2e.version</name>
+        </property>
+      </activation>
+      <build>
+        <!-- ignore various mojos that aren't covered by m2e -->
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.eclipse.m2e</groupId>
+              <artifactId>lifecycle-mapping</artifactId>
+              <version>1.0.0</version>
+              <configuration>
+                <lifecycleMappingMetadata>
+                  <pluginExecutions>
+                    <pluginExecution>
+                      <pluginExecutionFilter>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <versionRange>[1.0,)</versionRange>
+                        <goals><goal>enforce</goal></goals>
+                      </pluginExecutionFilter>
+                      <action><ignore /></action>
+                    </pluginExecution>
+                    <pluginExecution>
+                      <pluginExecutionFilter>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <versionRange>[1.0,)</versionRange>
+                        <goals><goal>attach-artifact</goal></goals>
+                      </pluginExecutionFilter>
+                      <action><ignore></ignore></action>
+                    </pluginExecution>
+                    <pluginExecution>
+                      <pluginExecutionFilter>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <versionRange>[0.6,)</versionRange>
+                        <goals><goal>prepare-agent</goal></goals>
+                      </pluginExecutionFilter>
+                      <action><ignore></ignore></action>
+                    </pluginExecution>
+                  </pluginExecutions>
+                </lifecycleMappingMetadata>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+    <profile>
+      <id>sonatype-oss-release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.4</version>
+            <configuration>
+              <passphrase>${gpg.passphrase}</passphrase>
+              <useAgent>true</useAgent>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.9.1</version>
+          </plugin>
+          <plugin>
+            <extensions>true</extensions>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <configuration>
+              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+              <serverId>sonatype-nexus-staging</serverId>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

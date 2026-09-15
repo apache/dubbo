@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <!-- This module was also published with a richer model, Gradle metadata,  -->
+  <!-- which should be used instead. Do not delete the following line which  -->
+  <!-- is to indicate to Gradle or any Gradle module metadata file consumer  -->
+  <!-- that they should prefer consuming it instead. -->
+  <!-- do_not_remove: published-with-gradle-metadata -->
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.dom4j</groupId>
+  <artifactId>dom4j</artifactId>
+  <version>2.1.4</version>
+  <name>dom4j</name>
+  <description>flexible XML framework for Java</description>
+  <url>http://dom4j.github.io/</url>
+  <licenses>
+    <license>
+      <name>Plexus</name>
+      <url>https://github.com/dom4j/dom4j/blob/master/LICENSE</url>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <name>Filip Jirsák</name>
+      <email>filip@jirsak.org</email>
+      <url>https://github.com/FilipJirsak</url>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:git@github.com:dom4j/dom4j.git</connection>
+    <developerConnection>scm:git:git@github.com:dom4j/dom4j.git</developerConnection>
+    <url>git@github.com:dom4j/dom4j.git</url>
+  </scm>
+  <dependencies>
+    <dependency>
+      <groupId>jaxen</groupId>
+      <artifactId>jaxen</artifactId>
+      <version>1.1.6</version>
+      <scope>runtime</scope>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>javax.xml.stream</groupId>
+      <artifactId>stax-api</artifactId>
+      <version>1.0-2</version>
+      <scope>runtime</scope>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>net.java.dev.msv</groupId>
+      <artifactId>xsdlib</artifactId>
+      <version>2013.6.1</version>
+      <scope>runtime</scope>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+      <version>2.2.12</version>
+      <scope>runtime</scope>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>pull-parser</groupId>
+      <artifactId>pull-parser</artifactId>
+      <version>2.1.10</version>
+      <scope>runtime</scope>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>xpp3</groupId>
+      <artifactId>xpp3</artifactId>
+      <version>1.1.4c</version>
+      <scope>runtime</scope>
+      <optional>true</optional>
+    </dependency>
+  </dependencies>
+</project>

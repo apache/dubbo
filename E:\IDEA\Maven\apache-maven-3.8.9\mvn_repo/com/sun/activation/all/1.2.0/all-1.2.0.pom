@@ -1,0 +1,641 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2017 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://oss.oracle.com/licenses/CDDL+GPL-1.1
+    or LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+			    http://maven.apache.org/maven-v4_0_0.xsd">
+    <parent>
+	<groupId>net.java</groupId>
+	<artifactId>jvnet-parent</artifactId>
+	<version>1</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.sun.activation</groupId>
+    <artifactId>all</artifactId>
+    <packaging>pom</packaging>
+    <version>1.2.0</version>
+    <name>JavaBeans Activation Framework distribution</name>
+    <description>${project.name}</description>
+
+    <scm>
+	<connection>scm:git:https://github.com/javaee/activation.git</connection>
+	<developerConnection>scm:git:git@github.com:javaee/activation.git</developerConnection>
+	<url>https://github.com/javaee/activation</url>
+    </scm>
+
+    <issueManagement>
+	<system>GitHub</system>
+	<url>https://github.com/javaee/activation/issues</url>
+    </issueManagement>
+
+    <licenses>
+      <license>
+	<name>CDDL/GPLv2+CE</name>
+	<url>https://github.com/javaee/activation/blob/master/LICENSE.txt</url>
+	<distribution>repo</distribution>
+	<comments>CDDL or GPL version 2 plus the Classpath Exception</comments>
+      </license>
+    </licenses>
+
+    <organization>
+	<name>Oracle</name>
+	<url>http://www.oracle.com</url>
+    </organization>
+
+    <properties>
+	<activation.spec.version>1.2</activation.spec.version>
+	<!-- defaults that are overridden in activation module -->
+	<activation.extensionName>
+	    ${project.groupId}.${project.artifactId}
+	</activation.extensionName>
+	<activation.moduleName>
+	    ${project.groupId}.${project.artifactId}
+	</activation.moduleName>
+	<activation.specificationTitle>
+	    ${project.groupId}.${project.artifactId}
+	</activation.specificationTitle>
+	<activation.implementationTitle>
+	    ${project.groupId}.${project.artifactId}
+	</activation.implementationTitle>
+	<activation.bundle.symbolicName>
+	    ${project.groupId}.${project.artifactId}
+	</activation.bundle.symbolicName>
+	<activation.bundle.symbolicName>
+	    ${project.groupId}.${project.artifactId}
+	</activation.bundle.symbolicName>
+	<activation.packages.export>
+	    javax.activation.*; version=${activation.spec.version}
+	</activation.packages.export>
+	<activation.packages.import>
+	    *
+	</activation.packages.import>
+	<activation.packages.private>
+	    com.sun.activation.*
+	</activation.packages.private>
+	<!-- for the osgiversion-maven-plugin -->
+	<hk2.plugin.version>2.0.0</hk2.plugin.version>
+	<project.build.sourceEncoding>iso-8859-1</project.build.sourceEncoding>
+	<findbugs.threshold>
+	    High
+	</findbugs.threshold>
+	<findbugs.version>
+	    3.0.1
+	</findbugs.version>
+	<findbugs.skip>
+	    true
+	</findbugs.skip>
+	<findbugs.exclude/>
+        <copyright-plugin.version>1.42</copyright-plugin.version>
+    </properties>
+
+    <developers>
+	<developer>
+	    <id>shannon</id>
+	    <name>Bill Shannon</name>
+	    <email>bill.shannon@oracle.com</email>
+	    <organization>Oracle</organization>
+	    <roles>
+		<role>lead</role>
+	    </roles>
+	</developer>
+    </developers>
+
+    <!-- following to enable use of "mvn site:stage" -->
+    <distributionManagement>
+	<site>
+	    <id>oracle.com</id>
+	    <url>file:/tmp</url> <!-- not used -->
+	</site>
+    </distributionManagement>
+
+    <modules>
+	<module>activation</module>
+	<module>activationapi</module>
+    </modules>
+
+    <profiles>
+	<!--
+	    This profile contains modules that should only be built
+	    but not installed or deployed.
+	-->
+	<profile>
+	    <id>build-only</id>
+	    <modules>
+		<module>demo</module>
+	    </modules>
+	    <activation>
+		<activeByDefault>true</activeByDefault>
+	    </activation>
+	</profile>
+
+	<!--
+	    This profile is used for deploying a JAF final release.
+	-->
+	<profile>
+	    <id>deploy-release</id>
+	    <build>
+		<plugins>
+		    <plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-surefire-plugin</artifactId>
+			<configuration>
+			    <skip>true</skip>
+			</configuration>
+		    </plugin>
+
+		    <plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-javadoc-plugin</artifactId>
+			<executions>
+			    <execution>
+				<id>attach-javadocs</id>
+				<goals>
+				    <goal>jar</goal>
+				</goals>
+			    </execution>
+			</executions>
+		    </plugin>
+
+		    <plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-gpg-plugin</artifactId>
+			<version>1.1</version>
+			<executions>
+			    <execution>
+				<id>sign-artifacts</id>
+				<phase>verify</phase>
+				<goals>
+				    <goal>sign</goal>
+				</goals>
+			    </execution>
+			</executions>
+		    </plugin>
+		</plugins>
+	    </build>
+	</profile>
+
+	<!--
+	    This profile is used for deploying a JAF SNAPSHOT release.
+	    It's identical to the above deploy-release profile except that
+	    artifacts aren't signed.
+	-->
+	<profile>
+	    <id>deploy-snapshot</id>
+	    <build>
+		<plugins>
+		    <plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-surefire-plugin</artifactId>
+			<configuration>
+			    <skip>true</skip>
+			</configuration>
+		    </plugin>
+
+		    <plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-javadoc-plugin</artifactId>
+			<executions>
+			    <execution>
+				<id>attach-javadocs</id>
+				<goals>
+				    <goal>jar</goal>
+				</goals>
+			    </execution>
+			</executions>
+		    </plugin>
+		</plugins>
+	    </build>
+	</profile>
+
+	<!--
+	    A special profile for compiling with the real JDK 1.5
+	    compiler, to make sure there are no accidental dependencies
+	    on JDK 1.6 or newer APIs.  Set the property javac.path to the path
+	    to the JDK 1.5 compiler, e.g.,
+	    "mvn -P1.5 -Djavac.path=/opt/jdk1.5/bin/javac".
+	-->
+	<profile>
+	    <id>1.5</id>
+	    <build>
+		<plugins>
+		    <plugin>
+			<artifactId>maven-compiler-plugin</artifactId>
+			<executions>
+			    <execution>
+				<id>default-compile</id>
+				<configuration>
+				    <fork>true</fork>
+				    <executable>${javac.path}</executable>
+				    <compilerVersion>1.5</compilerVersion>
+				    <source>1.5</source>
+				    <target>1.5</target>
+				</configuration>
+			    </execution>
+			</executions>
+		    </plugin>
+		</plugins>
+	    </build>
+	</profile>
+    </profiles>
+
+    <build>
+	<defaultGoal>install</defaultGoal>
+	<plugins>
+	    <!--
+		Make sure we're using the correct version of maven.
+	    -->
+	    <plugin>
+		<groupId>org.apache.maven.plugins</groupId>
+		<artifactId>maven-enforcer-plugin</artifactId>
+		<executions>
+		    <execution>
+			<id>enforce-version</id>
+			<goals>
+			    <goal>enforce</goal>
+			</goals>
+			<configuration>
+			    <rules>
+				<requireMavenVersion>
+				    <version>[2.2.1,)</version>
+				</requireMavenVersion>
+			    </rules>
+			</configuration>
+		    </execution>
+		</executions>
+	    </plugin>
+
+	    <!--
+		This plugin is reponsible for packaging artifacts
+		as OSGi bundles.  Please refer to
+		http://felix.apache.org/site/apache-felix-maven-bundle-plugin-bnd.html
+		for more information about how to use this plugin.
+	    -->
+	    <plugin>
+		<groupId>org.apache.felix</groupId>
+		<artifactId>maven-bundle-plugin</artifactId>
+		<configuration>
+		    <instructions>
+			<Bundle-SymbolicName>
+			    ${activation.bundle.symbolicName}
+			</Bundle-SymbolicName>
+			<Export-Package>
+			    ${activation.packages.export}
+			</Export-Package>
+			<Import-Package>
+			    ${activation.packages.import}
+			</Import-Package>
+			<Private-Package>
+			    ${activation.packages.private}
+			</Private-Package>
+			<DynamicImport-Package>
+			    *
+			</DynamicImport-Package>
+		    </instructions>
+		</configuration>
+		<!--
+		    Since we don't change the packaging type to bundle, we
+		    need to configure the plugin to execute the manifest goal
+		    during the process-classes phase of the build life cycle.
+		-->
+		<executions>
+		    <execution>
+			<id>osgi-manifest</id>
+			<phase>process-classes</phase>
+			<goals>
+			    <goal>manifest</goal>
+			</goals>
+		    </execution>
+		</executions>
+	    </plugin>
+
+	    <!--
+		Since we don't want a qualifier like b05 or SNAPSHOT to
+		appear in the OSGi package version attribute, we use
+		the following plugin to populate a project property
+		with an OSGi version that is equivalent to the maven
+		version without the qualifier.
+	    -->
+	    <plugin>
+		<groupId>org.glassfish.hk2</groupId>
+		<artifactId>osgiversion-maven-plugin</artifactId>
+		<version>${hk2.plugin.version}</version>
+		<configuration>
+		    <dropVersionComponent>qualifier</dropVersionComponent>
+		    <versionPropertyName>activation.osgiversion</versionPropertyName>
+		</configuration>
+		<executions>
+		    <execution>
+			<id>compute-osgi-version</id>
+			<goals>
+			    <goal>compute-osgi-version</goal>
+			</goals>
+		    </execution>
+		</executions>
+	    </plugin>
+
+	    <!--
+		Use the 1.5 compiler for JAF itself and the test classes.
+	    -->
+	    <plugin>
+		<artifactId>maven-compiler-plugin</artifactId>
+		<executions>
+		    <execution>
+			<id>default-compile</id>
+			<configuration>
+			    <source>1.5</source>
+			    <target>1.5</target>
+			</configuration>
+		    </execution>
+		    <execution>
+			<id>default-testCompile</id>
+			<configuration>
+			    <source>1.5</source>
+			    <target>1.5</target>
+			</configuration>
+		    </execution>
+		</executions>
+	    </plugin>
+
+	    <plugin>
+		<artifactId>maven-jar-plugin</artifactId>
+		<!-- need at least this version to make excludes work -->
+		<configuration>
+		    <finalName>${project.artifactId}</finalName>
+		    <archive>
+			<!--
+			    Configure the maven-jar-plugin to pick up
+			    META-INF/MANIFEST.MF that's generated by
+			    the maven-bundle-plugin.
+			-->
+			<manifestFile>
+			  ${project.build.outputDirectory}/META-INF/MANIFEST.MF
+			</manifestFile>
+			<manifestEntries>
+			    <Extension-Name>
+				${activation.extensionName}
+			    </Extension-Name>
+			    <Specification-Title>
+				${activation.specificationTitle}
+			    </Specification-Title>
+			    <Specification-Version>
+				${activation.spec.version}
+			    </Specification-Version>
+			    <Specification-Vendor>
+				${project.organization.name}
+			    </Specification-Vendor>
+			    <Implementation-Title>
+				${activation.implementationTitle}
+			    </Implementation-Title>
+			    <Implementation-Version>
+				${project.version}
+			    </Implementation-Version>
+			    <Implementation-Vendor>
+				${project.organization.name}
+			    </Implementation-Vendor>
+			    <Implementation-Vendor-Id>
+				com.sun
+			    </Implementation-Vendor-Id>
+			    <!-- for JDK 9 -->
+			    <Automatic-Module-Name>
+				${activation.moduleName}
+			    </Automatic-Module-Name>
+			</manifestEntries>
+		    </archive>
+		    <excludes>
+			<exclude>**/*.java</exclude>
+		    </excludes>
+		</configuration>
+	    </plugin>
+
+	    <!--
+		Tell the source plugin about the sources that may have
+		been downloaded by the maven-dependency-plugin.
+
+		Also, need this plugin to define target/classes as another
+		source directory so that the filtered Version.java
+		that's copied there will also be compiled when using
+		the latest version of the maven-compiler-plugin.
+	    -->
+
+	    <plugin>
+		<groupId>org.codehaus.mojo</groupId>
+		<artifactId>build-helper-maven-plugin</artifactId>
+		<executions>
+		    <execution>
+			<id>add-source</id>
+			<phase>generate-sources</phase>
+			<goals>
+			    <goal>add-source</goal>
+			</goals>
+			<configuration>
+			    <sources>
+				<source> <!-- for dependencies -->
+				    ${project.build.directory}/sources
+				</source>
+				<source> <!-- for Version.java -->
+				    target/classes
+				</source>
+			    </sources>
+			</configuration>
+		    </execution>
+		</executions>
+	    </plugin>
+
+	    <!--
+		Configure the source plugin here so that it will know
+		about the sources that may have been downloaded by the
+		maven-dependency-plugin and configured by the
+		build-helper-maven-plugin.
+	    -->
+	    <plugin>
+		<groupId>org.apache.maven.plugins</groupId>
+		<artifactId>maven-source-plugin</artifactId>
+		<executions>
+		    <execution>
+			<id>attach-sources</id>
+			<goals>
+			    <goal>jar-no-fork</goal> 
+			</goals>
+		    </execution>
+		</executions>
+		<configuration>
+		    <includePom>true</includePom>
+		    <!--
+			Since we added the classes directory using the
+			build-helper-maven-plugin above, we need to exclude
+			the class files from the source jar file.
+		    -->
+		    <excludes>
+			<exclude>**/*.class</exclude>
+		    </excludes>
+		</configuration>
+	    </plugin>
+
+<!-- not used
+	    <plugin>
+		<artifactId>maven-release-plugin</artifactId>
+		<configuration>
+		    <arguments>-P deploy</arguments>
+		</configuration>
+	    </plugin>
+-->
+	</plugins>
+
+	<pluginManagement>
+	    <plugins>
+		<plugin>
+		    <groupId>org.apache.maven.plugins</groupId>
+		    <artifactId>maven-compiler-plugin</artifactId>
+		    <version>2.4</version>
+		</plugin>
+		<plugin>
+		    <groupId>org.apache.maven.plugins</groupId>
+		    <artifactId>maven-surefire-plugin</artifactId>
+		    <version>2.4.3</version>
+		</plugin>
+		<plugin>
+		    <groupId>org.apache.maven.plugins</groupId>
+		    <artifactId>maven-jar-plugin</artifactId>
+		    <version>2.4</version>
+		</plugin>
+		<plugin>
+		    <groupId>org.codehaus.mojo</groupId>
+		    <artifactId>build-helper-maven-plugin</artifactId>
+		    <version>1.7</version>
+		</plugin>
+		<plugin>
+		    <groupId>org.apache.maven.plugins</groupId>
+		    <artifactId>maven-assembly-plugin</artifactId>
+		    <version>2.4</version>
+		</plugin>
+		<plugin>
+		    <!--
+			By default, disable the FindBugs plugin for all modules.
+			It's enabled in the modules where we actually want to
+			run it.
+		    -->
+		    <groupId>org.codehaus.mojo</groupId>
+		    <artifactId>findbugs-maven-plugin</artifactId>
+		    <version>${findbugs.version}</version>
+		    <configuration>
+			<skip>${findbugs.skip}</skip>
+			<threshold>${findbugs.threshold}</threshold>
+			<findbugsXmlWithMessages>true</findbugsXmlWithMessages>
+			<excludeFilterFile>
+			    ${findbugs.exclude}
+			</excludeFilterFile>
+		    </configuration>
+		</plugin>
+		<plugin>
+		    <groupId>org.apache.maven.plugins</groupId>
+		    <artifactId>maven-enforcer-plugin</artifactId>
+		    <version>1.0</version>
+		</plugin>
+		<plugin>
+		    <groupId>org.apache.felix</groupId>
+		    <artifactId>maven-bundle-plugin</artifactId>
+		    <version>2.1.0</version>
+		</plugin>
+		<plugin>
+		    <groupId>org.apache.maven.plugins</groupId>
+		    <artifactId>maven-source-plugin</artifactId>
+		    <version>2.1.2</version>
+		 </plugin>
+		<plugin>
+		    <groupId>org.apache.maven.plugins</groupId>
+		    <artifactId>maven-javadoc-plugin</artifactId>
+		    <version>2.10</version>
+		</plugin>
+		<plugin>
+		    <groupId>org.apache.maven.plugins</groupId>
+		    <artifactId>maven-project-info-reports-plugin</artifactId>
+		    <version>2.7</version>
+		</plugin>
+		<plugin>
+		    <groupId>org.glassfish.copyright</groupId>
+		    <artifactId>glassfish-copyright-maven-plugin</artifactId>
+		    <version>${copyright-plugin.version}</version>
+		    <configuration>
+			<scm>git</scm>
+			<scmOnly>true</scmOnly> 
+			<excludeFile>
+			    copyright-exclude
+			</excludeFile>
+		    </configuration>
+		</plugin>
+	    </plugins>
+	</pluginManagement>
+    </build>
+
+    <dependencyManagement>
+	<dependencies>
+	    <dependency>
+		<groupId>com.sun.activation</groupId>
+		<artifactId>javax.activation</artifactId>
+		<version>${project.version}</version>
+	    </dependency>
+	</dependencies>
+    </dependencyManagement>
+
+    <reporting>
+	<plugins>
+	    <!--
+		Configure FindBugs to run with "mvn site" and
+		generate html output that can be viewed directly.
+	    -->
+	    <plugin>
+		<groupId>org.codehaus.mojo</groupId>
+		<artifactId>findbugs-maven-plugin</artifactId>
+		<version>${findbugs.version}</version>
+		<configuration>
+		    <skip>${findbugs.skip}</skip>
+		    <threshold>${findbugs.threshold}</threshold>
+		    <excludeFilterFile>
+			${findbugs.exclude}
+		    </excludeFilterFile>
+		</configuration>
+	    </plugin>
+	</plugins>
+    </reporting>
+</project>

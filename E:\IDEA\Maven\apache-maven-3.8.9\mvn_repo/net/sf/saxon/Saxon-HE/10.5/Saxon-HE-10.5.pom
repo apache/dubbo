@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>net.sf.saxon</groupId>
+  <artifactId>Saxon-HE</artifactId>
+  <version>10.5</version>
+  <name>Saxon-HE</name>
+  <description>The XSLT and XQuery Processor</description>
+  <url>http://www.saxonica.com/</url>
+  <inceptionYear>1999</inceptionYear>
+  <organization>
+    <name>Saxonica</name>
+    <url>https://www.saxonica.com/</url>
+  </organization>
+  <licenses>
+    <license>
+      <name>Mozilla Public License Version 2.0</name>
+      <url>http://www.mozilla.org/MPL/2.0/</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>mike</id>
+      <name>Michael Kay</name>
+      <email>mike@saxonica.com</email>
+    </developer>
+    <developer>
+      <id>ond1</id>
+      <name>O’Neil Delpratt</name>
+      <email>oneil@saxonica.com</email>
+    </developer>
+    <developer>
+      <id>debbie</id>
+      <name>Debbie Lockett</name>
+      <email>debbie@saxonica.com</email>
+    </developer>
+    <developer>
+      <id>john</id>
+      <name>John Lumley</name>
+      <email>john@saxonica.com</email>
+    </developer>
+    <developer>
+      <id>norm</id>
+      <name>Norman Walsh</name>
+      <email>norm@saxonica.com</email>
+    </developer>
+  </developers>
+  <mailingLists>
+    <mailingList>
+      <name>User List</name>
+      <post>saxon-help@lists.sourceforge.net</post>
+      <archive>http://sourceforge.net/mailarchive/forum.php?forum_name=saxon-help</archive>
+    </mailingList>
+  </mailingLists>
+  <scm>
+    <connection>scm:svn:https://dev.saxonica.com/repos/archive/opensource/</connection>
+    <developerConnection>scm:svn:https://dev.saxonica.com/repos/archive/opensource/</developerConnection>
+    <url>https://dev.saxonica.com/repos/archive/opensource/</url>
+  </scm>
+  <issueManagement>
+    <system>Saxon Community</system>
+    <url>https://saxonica.plan.io/projects/saxon</url>
+  </issueManagement>
+  <properties>
+    <skipTests>false</skipTests>
+    <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ss</maven.build.timestamp.format>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.javadoc.skip>true</maven.javadoc.skip>
+    <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
+</project>

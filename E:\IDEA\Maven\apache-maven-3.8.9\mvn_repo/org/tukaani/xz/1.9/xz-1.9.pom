@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Author: Lasse Collin <lasse.collin@tukaani.org>
+
+    This file has been put into the public domain.
+    You can do whatever you want with this file.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.tukaani</groupId>
+    <artifactId>xz</artifactId>
+    <version>1.9</version>
+    <packaging>jar</packaging>
+
+    <name>XZ for Java</name>
+    <description>XZ data compression</description>
+    <url>https://tukaani.org/xz/java.html</url>
+
+    <licenses>
+        <license>
+            <name>Public Domain</name>
+            <comments>You can do whatever you want with this package.</comments>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://git.tukaani.org/?p=xz-java.git</url>
+        <connection>scm:git:https://git.tukaani.org/xz-java.git</connection>
+    </scm>
+
+    <developers>
+        <developer>
+            <name>Lasse Collin</name>
+            <email>lasse.collin@tukaani.org</email>
+        </developer>
+    </developers>
+
+    <contributors>
+        <contributor>
+            <!-- According to Maven docs, it's good to only list those people
+                 as <developers> that should be contacted if someone wants
+                 to talk with an upstream developer. Thus, Igor Pavlov is
+                 marked as a <contributor> even though XZ for Java simply
+                 couldn't exist without Igor Pavlov's code. -->
+            <name>Igor Pavlov</name>
+            <url>http://7-zip.org/</url>
+        </contributor>
+
+        <contributor>
+            <name>Brett Okken</name>
+            <email>brett.okken.os@gmail.com</email>
+        </contributor>
+    </contributors>
+
+</project>

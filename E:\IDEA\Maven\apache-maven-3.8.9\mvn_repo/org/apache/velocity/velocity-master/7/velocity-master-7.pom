@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.apache</groupId>
+    <artifactId>apache</artifactId>
+    <version>33</version>
+  </parent>
+
+  <groupId>org.apache.velocity</groupId>
+  <artifactId>velocity-master</artifactId>
+  <version>7</version>
+  <packaging>pom</packaging>
+
+  <name>Velocity - Master POM</name>
+  <description>Master POM for Velocity</description>
+  <url>https://velocity.apache.org/</url>
+  <inceptionYear>2000</inceptionYear>
+
+  <properties>
+    <javaVersion>8</javaVersion>
+    <maven.compiler.source>${javaVersion}</maven.compiler.source>
+    <maven.compiler.target>${javaVersion}</maven.compiler.target>
+    <project.build.outputTimestamp>2024-07-30T17:26:59Z</project.build.outputTimestamp>
+  </properties>
+
+  <developers>
+    <developer>
+      <name>Claude Brisson</name>
+      <id>cbrisson</id>
+      <url>http://claude.brisson.info</url>
+      <roles>
+        <role>Java developer</role>
+        <role>PMC Member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Nathan Bubna</name>
+      <id>nbubna</id>
+      <email>nathan@esha.com</email>
+      <organization>ESHA Research</organization>
+      <roles>
+        <role>Java developer</role>
+        <role>PMC Chair</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Will Glass-Husain</name>
+      <id>wglass</id>
+      <email>wglass@forio.com</email>
+      <organization>Forio Business Simulations</organization>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Marinó A. Jónsson</name>
+      <id>marino</id>
+      <email>marinoj@centrum.is</email>
+      <roles>
+        <role>Java developer</role>
+        <role>PMC Member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Geir Magnusson Jr.</name>
+      <id>geirm</id>
+      <email>geirm@optonline.net</email>
+      <organization>Independent (DVSL Maven)</organization>
+      <roles>
+        <role>Java developer</role>
+        <role>PMC Member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Daniel Rall</name>
+      <id>dlr</id>
+      <email>dlr@finemaltcoding.com</email>
+      <organization>CollabNet, Inc.</organization>
+      <roles>
+        <role>Java developer</role>
+        <role>PMC Member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Henning P. Schmiedehausen</name>
+      <id>henning</id>
+      <organization>The Henning Schmiedehausen Organization</organization>
+      <roles>
+        <role>Java developer</role>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>-7</timezone>
+    </developer>
+    <developer>
+      <name>Jon S. Stevens</name>
+      <id>jons</id>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Jason van Zyl</name>
+      <id>jvanzyl</id>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Christopher Schultz</name>
+      <id>schultz</id>
+      <roles>
+        <role>Java developer</role>
+      </roles>
+      <timezone>-5</timezone>
+    </developer>
+    <developer>
+      <name>Sergiu Dumitriu</name>
+      <id>sdumitriu</id>
+      <url>http://purl.org/net/sergiu</url>
+      <timezone>-4</timezone>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Dishara Wijewardana</name>
+      <id>dishara</id>
+      <roles>
+        <role>Java developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Mike Kienenberger</name>
+      <id>mkienenb</id>
+      <roles>
+        <role>Java developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Michael Osipov</name>
+      <id>michaelo</id>
+      <email>michaelo@apache.org</email>
+      <roles>
+        <role>Java developer</role>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>Europe/Berlin</timezone>
+    </developer>
+  </developers>
+
+  <mailingLists>
+    <mailingList>
+      <name>general</name>
+      <subscribe>general-subscribe@velocity.apache.org</subscribe>
+      <unsubscribe>general-unsubscribe@velocity.apache.org</unsubscribe>
+      <post>general@velocity.apache.org</post>
+      <archive>https://lists.apache.org/list.html?general@velocity.apache.org</archive>
+    </mailingList>
+    <mailingList>
+      <name>user</name>
+      <subscribe>user-subscribe@velocity.apache.org</subscribe>
+      <unsubscribe>user-unsubscribe@velocity.apache.org</unsubscribe>
+      <post>user@velocity.apache.org</post>
+      <archive>https://lists.apache.org/list.html?user@velocity.apache.org</archive>
+    </mailingList>
+    <mailingList>
+      <name>dev</name>
+      <subscribe>dev-subscribe@velocity.apache.org</subscribe>
+      <unsubscribe>dev-unsubscribe@velocity.apache.org</unsubscribe>
+      <post>dev@velocity.apache.org</post>
+      <archive>https://lists.apache.org/list.html?dev@velocity.apache.org</archive>
+    </mailingList>
+    <mailingList>
+      <name>commits</name>
+      <subscribe>commits-subscribe@velocity.apache.org</subscribe>
+      <unsubscribe>commits-unsubscribe@velocity.apache.org</unsubscribe>
+      <archive>https://lists.apache.org/list.html?commits@velocity.apache.org</archive>
+    </mailingList>
+  </mailingLists>
+
+  <scm>
+    <connection>scm:git:https://gitbox.apache.org/repos/asf/velocity-master.git</connection>
+    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/velocity-master.git</developerConnection>
+    <url>https://gitbox.apache.org/repos/asf?p=velocity-master.git</url>
+    <tag>velocity-master-7</tag>
+  </scm>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>enforce-bytecode-version</id>
+              <goals>
+                <goal>enforce</goal>
+              </goals>
+              <configuration>
+                <rules>
+                  <enforceBytecodeVersion>
+                    <maxJdkVersion>${maven.compiler.target}</maxJdkVersion>
+                  </enforceBytecodeVersion>
+                </rules>
+                <fail>true</fail>
+              </configuration>
+            </execution>
+          </executions>
+          <dependencies>
+            <dependency>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>extra-enforcer-rules</artifactId>
+              <version>1.8.0</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+</project>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.eclipse.platform</groupId>
+  <artifactId>org.eclipse.osgi</artifactId>
+  <version>3.23.100</version>
+  <name>OSGi System Bundle</name>
+  <description>%systemBundle</description>
+  <url>https://github.com/eclipse-equinox/equinox/</url>
+  <organization>
+    <name>Eclipse Foundation</name>
+    <url>https://www.eclipse.org</url>
+  </organization>
+  <licenses>
+    <license>
+      <name>EPL-2.0</name>
+      <url>https://www.eclipse.org/legal/epl-2.0/</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <url>https://github.com/eclipse-equinox/equinox/graphs/contributors</url>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:https://github.com/eclipse-equinox/equinox.git</connection>
+    <developerConnection>scm:git:https://github.com/eclipse-equinox/equinox.git</developerConnection>
+    <tag>59373c3bd1d29e604245dd50be9b4b5c2abe5bfb</tag>
+    <url>https://github.com/eclipse-equinox/equinox/tree/59373c3bd1d29e604245dd50be9b4b5c2abe5bfb/bundles/org.eclipse.osgi</url>
+  </scm>
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/eclipse-equinox/equinox/issues</url>
+  </issueManagement>
+</project>

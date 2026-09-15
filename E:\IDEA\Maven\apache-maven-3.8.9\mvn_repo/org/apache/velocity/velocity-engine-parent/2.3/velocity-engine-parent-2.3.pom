@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.apache.velocity</groupId>
+        <artifactId>velocity-master</artifactId>
+        <version>4</version>
+        <relativePath />
+    </parent>
+
+    <artifactId>velocity-engine-parent</artifactId>
+    <version>2.3</version>
+
+    <name>Apache Velocity</name>
+    <url>http://velocity.apache.org/engine/devel/</url>
+    <description>Apache Velocity is a general purpose template engine.</description>
+    <inceptionYear>2000</inceptionYear>
+    <packaging>pom</packaging>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <junit.version>4.13.2</junit.version>
+        <slf4j.version>1.7.30</slf4j.version>
+        <surefire.plugin.version>2.22.1</surefire.plugin.version>
+        <jira.browse.url>https://issues.apache.org/jira/browse</jira.browse.url>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+
+    <build>
+        <defaultGoal>install</defaultGoal>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>3.0.0-M1</version>
+                    <configuration>
+                        <useReleaseProfile>false</useReleaseProfile>
+                        <autoVersionSubmodules>true</autoVersionSubmodules>
+                        <goals>deploy</goals>
+                        <arguments>-Papache-release</arguments>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.1.2</version>
+                    <configuration>
+                        <archive>
+                            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                        </archive>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>maven-bundle-plugin</artifactId>
+                    <version>3.5.1</version>
+                    <executions>
+                        <execution>
+                            <id>bundle-manifest</id>
+                            <phase>process-classes</phase>
+                            <goals>    
+                                <goal>manifest</goal>
+                            </goals>   
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>3.1.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.1.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.google.code.maven-replacer-plugin</groupId>
+                    <artifactId>replacer</artifactId>
+                    <version>1.5.3</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>3.1.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.1.0</version>
+                    <configuration>
+                        <includePom>false</includePom>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <goals>
+                                <goal>jar-no-fork</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>extra-enforcer-rules</artifactId>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>3.2.0</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <showDeprecation>true</showDeprecation>
+                    <showWarning>true</showWarning>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.1.1</version>
+                <configuration>
+                    <!-- full checking is left disabled
+                         <doclint>html,missing,reference,syntax</doclint>
+                    -->
+                    <doclint>none</doclint>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>aggregate</id>
+                        <goals>
+                            <goal>aggregate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforce-bytecode-version</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <enforceBytecodeVersion>
+                                    <maxJdkVersion>${maven.compiler.target}</maxJdkVersion>
+                                </enforceBytecodeVersion>
+                                <requireJavaVersion>
+                                    <version>[1.8,)</version>
+                                </requireJavaVersion>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>ban-known-bad-maven-versions</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireMavenVersion>
+                                    <version>[3.0.5,)</version>
+                                    <message>Maven minimal expected version is 3.0.5.</message>
+                                </requireMavenVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>extra-enforcer-rules</artifactId>
+                        <version>1.3</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
+
+    <distributionManagement>
+        <site>
+            <id>velocity.apache.org</id>
+            <url>scpexe://people.apache.org/www/velocity.apache.org/engine/devel/
+            </url>
+        </site>
+    </distributionManagement>
+
+    <scm>
+        <connection>scm:git:https://gitbox.apache.org/repos/asf/velocity-engine.git</connection>
+        <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/velocity-engine.git</developerConnection>
+        <url>https://gitbox.apache.org/repos/asf?p=velocity-engine.git</url>
+        <tag>2.3-RC2</tag>
+    </scm>
+
+    <issueManagement>
+        <system>JIRA</system>
+        <url>${jira.browse.url}/VELOCITY</url>
+    </issueManagement>
+    <modules>
+        <module>velocity-engine-core</module>
+        <module>velocity-engine-examples</module>
+        <module>velocity-engine-scripting</module>
+        <module>velocity-custom-parser-example</module>
+        <module>spring-velocity-support</module>
+    </modules>
+
+    <!-- This project is an effort by many people. If you feel that your name
+         should be in here and has been omitted in error, please open an issue
+         with the Apache Velocity Issue tracker. -->
+    <contributors>
+        <contributor>
+            <name>Adrian Tarau</name>
+        </contributor>
+        <contributor>
+            <name>Aki Nieminen</name>
+        </contributor>
+        <contributor>
+            <name>Alexey Pachenko</name>
+        </contributor>
+        <contributor>
+            <name>Anil K. Vijendran</name>
+        </contributor>
+        <contributor>
+            <name>Attila Szegedi</name>
+        </contributor>
+        <contributor>
+            <name>Bob McWhirter</name>
+        </contributor>
+        <contributor>
+            <name>Byron Foster</name>
+        </contributor>
+        <contributor>
+            <name>Candid Dauth</name>
+        </contributor>
+        <contributor>
+            <name>Christoph Reck</name>
+        </contributor>
+        <contributor>
+            <name>Darren Cruse</name>
+        </contributor>
+        <contributor>
+            <name>Dave Bryson</name>
+        </contributor>
+        <contributor>
+            <name>David Kinnvall</name>
+        </contributor>
+        <contributor>
+            <name>Dawid Weiss</name>
+        </contributor>
+        <contributor>
+            <name>Dishara Wijewardana</name>
+        </contributor>
+        <contributor>
+            <name>Eelco Hillenius</name>
+        </contributor>
+        <contributor>
+            <name>Fedor Karpelevitch</name>
+        </contributor>
+        <contributor>
+            <name>Felipe Maschio</name>
+        </contributor>
+        <contributor>
+            <name>Gal Shachor</name>
+        </contributor>
+        <contributor>
+            <name>Hervé Boutemy</name>
+        </contributor>
+        <contributor>
+            <name>Jarkko Viinamäki</name>
+        </contributor>
+        <contributor>
+            <name>Jeff Bowden</name>
+        </contributor>
+        <contributor>
+            <name>Jorgen Rydenius</name>
+        </contributor>
+        <contributor>
+            <name>Jose Alberto Fernandez</name>
+        </contributor>
+        <contributor>
+            <name>Kasper Nielsen</name>
+        </contributor>
+        <contributor>
+            <name>Kent Johnson</name>
+        </contributor>
+        <contributor>
+            <name>Kyle F. Downey</name>
+        </contributor>
+        <contributor>
+            <name>Leon Messerschmidt</name>
+        </contributor>
+        <contributor>
+            <name>Llewellyn Falco</name>
+        </contributor>
+        <contributor>
+            <name>Matt Raible</name>
+        </contributor>
+        <contributor>
+            <name>Matt Ryall</name>
+        </contributor>
+        <contributor>
+            <name>Matthijs Lambooy</name>
+        </contributor>
+        <contributor>
+            <name>Oswaldo Hernandez</name>
+        </contributor>
+        <contributor>
+            <name>Paulo Gaspar</name>
+        </contributor>
+        <contributor>
+            <name>Peter Romianowski</name>
+        </contributor>
+        <contributor>
+            <name>Robert Burrell Donkin</name>
+        </contributor>
+        <contributor>
+            <name>Robert Fuller</name>
+        </contributor>
+        <contributor>
+            <name>Sam Ruby</name>
+        </contributor>
+        <contributor>
+            <name>Sean Legassick</name>
+        </contributor>
+        <contributor>
+            <name>Serge Knystautas</name>
+        </contributor>
+        <contributor>
+            <name>Stephane Bailliez</name>
+        </contributor>
+        <contributor>
+            <name>Stephen Habermann</name>
+        </contributor>
+        <contributor>
+            <name>Sylwester Lachiewicz</name>
+        </contributor>
+    </contributors>
+</project>

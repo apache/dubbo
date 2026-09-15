@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       https://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<!--
+  This POM has been created manually by the Ant Development Team.
+  Please contact us if you are not satisfied with the data contained in this POM.
+  URL : https://ant.apache.org
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+    <groupId>org.apache.ant</groupId>
+    <artifactId>ant-parent</artifactId>
+    <relativePath>../pom.xml</relativePath>
+    <version>1.10.15</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <url>https://ant.apache.org/</url>
+  <groupId>org.apache.ant</groupId>
+  <artifactId>ant-launcher</artifactId>
+  <version>1.10.15</version>
+  <name>Apache Ant Launcher</name>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <includes>
+            <include>org/apache/tools/ant/launch/*.java</include>
+          </includes>
+          <testIncludes>
+            <include>org/apache/tools/ant/launch/*.java</include>
+          </testIncludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <index>true</index>
+            <manifest>
+              <mainClass>org.apache.tools.ant.launch.Launcher</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+    <resources>
+      <resource>
+        <directory>../../../..</directory>
+        <targetPath>META-INF</targetPath>
+        <includes>
+          <include>LICENSE</include>
+          <include>NOTICE</include>
+        </includes>
+      </resource>
+    </resources>
+    <sourceDirectory>../../../../src/main</sourceDirectory>
+    <!-- tests depend on Ant (Os) -->
+    <testSourceDirectory>../../../../src/testcases</testSourceDirectory>
+    <outputDirectory>../../../../target/${project.artifactId}/classes</outputDirectory>
+    <testOutputDirectory>../../../../target/${project.artifactId}/testcases</testOutputDirectory>
+    <directory>../../../../target/${project.artifactId}</directory>
+  </build>
+</project>

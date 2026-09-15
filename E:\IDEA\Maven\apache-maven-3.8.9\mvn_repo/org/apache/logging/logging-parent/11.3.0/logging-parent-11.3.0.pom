@@ -1,0 +1,1301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more
+  ~ contributor license agreements.  See the NOTICE file distributed with
+  ~ this work for additional information regarding copyright ownership.
+  ~ The ASF licenses this file to you under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License.  You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache</groupId>
+    <artifactId>apache</artifactId>
+    <version>33</version>
+  </parent>
+  <groupId>org.apache.logging</groupId>
+  <artifactId>logging-parent</artifactId>
+  <version>11.3.0</version>
+  <packaging>pom</packaging>
+  <name>Apache Logging Parent</name>
+  <description>Parent project internally used in Maven-based projects of the Apache Logging Services</description>
+  <url>https://logging.apache.org/logging-parent</url>
+  <inceptionYear>1999</inceptionYear>
+  <licenses>
+    <license>
+      <name>Apache-2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>ggregory</id>
+      <name>Gary Gregory</name>
+      <email>ggregory@apache.org</email>
+      <url>https://www.garygregory.com</url>
+      <organization>The Apache Software Foundation</organization>
+      <organizationUrl>https://www.apache.org/</organizationUrl>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>America/New_York</timezone>
+    </developer>
+    <developer>
+      <id>grobmeier</id>
+      <name>Christian Grobmeier</name>
+      <email>grobmeier@apache.org</email>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>Europe/Berlin</timezone>
+    </developer>
+    <developer>
+      <id>mattsicker</id>
+      <name>Matt Sicker</name>
+      <email>mattsicker@apache.org</email>
+      <organization>Apple</organization>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>America/Chicago</timezone>
+    </developer>
+    <developer>
+      <id>pkarwasz</id>
+      <name>Piotr P. Karwasz</name>
+      <email>pkarwasz@apache.org</email>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>Europe/Warsaw</timezone>
+    </developer>
+    <developer>
+      <id>vy</id>
+      <name>Volkan Yazıcı</name>
+      <email>vy@apache.org</email>
+      <roles>
+        <role>PMC Chair</role>
+      </roles>
+      <timezone>Europe/Amsterdam</timezone>
+    </developer>
+  </developers>
+  <mailingLists>
+    <mailingList>
+      <name>log4j-user</name>
+      <subscribe>log4j-user-subscribe@logging.apache.org</subscribe>
+      <unsubscribe>log4j-user-unsubscribe@logging.apache.org</unsubscribe>
+      <post>log4j-user@logging.apache.org</post>
+      <archive>https://lists.apache.org/list.html?log4j-user@logging.apache.org</archive>
+    </mailingList>
+    <mailingList>
+      <name>dev</name>
+      <subscribe>dev-subscribe@logging.apache.org</subscribe>
+      <unsubscribe>dev-unsubscribe@logging.apache.org</unsubscribe>
+      <post>dev@logging.apache.org</post>
+      <archive>https://lists.apache.org/list.html?dev@logging.apache.org</archive>
+    </mailingList>
+  </mailingLists>
+  <scm>
+    <connection>scm:git:git@github.com:apache/logging-parent.git</connection>
+    <developerConnection>scm:git:git@github.com:apache/logging-parent.git</developerConnection>
+    <url>https://github.com/apache/logging-parent</url>
+  </scm>
+  <issueManagement>
+    <system>GitHub Issues</system>
+    <url>https://github.com/apache/logging-parent/issues</url>
+  </issueManagement>
+  <ciManagement>
+    <system>GitHub Actions</system>
+    <url>https://github.com/apache/logging-parent/actions</url>
+  </ciManagement>
+  <distributionManagement>
+    <downloadUrl>https://logging.apache.org/download.html</downloadUrl>
+  </distributionManagement>
+  <properties>
+    <xml-maven-plugin.version>1.1.0</xml-maven-plugin.version>
+    <spotbugs-annotations.version>4.8.6</spotbugs-annotations.version>
+    <findsecbugs-plugin.version>1.13.0</findsecbugs-plugin.version>
+    <flatten-maven-plugin.version>1.6.0</flatten-maven-plugin.version>
+    <osgi.annotation.version>8.1.0</osgi.annotation.version>
+    <jspecify.version>1.0.0</jspecify.version>
+    <groovy.version>4.0.23</groovy.version>
+    <gmavenplus-plugin.version>3.0.2</gmavenplus-plugin.version>
+    <develocity-user-data-extension.version>2.0.1</develocity-user-data-extension.version>
+    <npm.version>10.5.0</npm.version>
+    <minimalJavaBuildVersion>[17,18)</minimalJavaBuildVersion>
+    <palantir-java-format.version>2.50.0</palantir-java-format.version>
+    <vdr.url>https://logging.apache.org/cyclonedx/vdr.xml</vdr.url>
+    <maven.compiler.source>8</maven.compiler.source>
+    <frontend-maven-plugin.version>1.15.0</frontend-maven-plugin.version>
+    <org.eclipse.jgit.version>7.0.0.202409031743-r</org.eclipse.jgit.version>
+    <bnd-module-name>$[Bundle-SymbolicName]</bnd-module-name>
+    <revision>11.3.0</revision>
+    <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
+    <bnd-multi-release>false</bnd-multi-release>
+    <develocity-maven-plugin.version>1.22.1</develocity-maven-plugin.version>
+    <bnd-extra-module-options></bnd-extra-module-options>
+    <cyclonedx-maven-plugin.version>2.8.1</cyclonedx-maven-plugin.version>
+    <sign-maven-plugin.version>1.1.0</sign-maven-plugin.version>
+    <exec-maven-plugin.version>3.3.0</exec-maven-plugin.version>
+    <maven.compiler.release>8</maven.compiler.release>
+    <bnd-baseline-maven-plugin.version>7.0.0</bnd-baseline-maven-plugin.version>
+    <bnd-maven-plugin.version>7.0.0</bnd-maven-plugin.version>
+    <bnd-extra-package-options></bnd-extra-package-options>
+    <bnd-jpms-module-info>$[bnd-module-name];access=0</bnd-jpms-module-info>
+    <asciidoctor-maven-plugin.version>3.0.0</asciidoctor-maven-plugin.version>
+    <osgi.annotation.bundle.version>2.0.0</osgi.annotation.bundle.version>
+    <osgi.annotation.versioning.version>1.1.2</osgi.annotation.versioning.version>
+    <log4j-changelog-maven-plugin.version>0.9.0</log4j-changelog-maven-plugin.version>
+    <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
+    <bnd.annotation.version>7.0.0</bnd.annotation.version>
+    <error-prone.version>2.32.0</error-prone.version>
+    <bnd-bundle-symbolicname>$[project.groupId].$[subst;$[subst;$[project.artifactId];log4j-];[^A-Za-z0-9];.]</bnd-bundle-symbolicname>
+    <bnd-extra-config></bnd-extra-config>
+    <build-helper-maven-plugin.version>3.6.0</build-helper-maven-plugin.version>
+    <maven-artifact-plugin.version>3.5.1</maven-artifact-plugin.version>
+    <minimalMavenBuildVersion>3.8.1</minimalMavenBuildVersion>
+    <spotbugs-maven-plugin.version>4.8.6.3</spotbugs-maven-plugin.version>
+    <maven.compiler.target>8</maven.compiler.target>
+    <node.version>21.7.1</node.version>
+    <project.build.outputTimestamp>2024-09-17T15:46:19Z</project.build.outputTimestamp>
+    <site-project.version>11.0.0</site-project.version>
+    <restrict-imports-enforcer-rule.version>2.5.0</restrict-imports-enforcer-rule.version>
+  </properties>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.logging</groupId>
+        <artifactId>logging-parent</artifactId>
+        <version>${site-project.version}</version>
+        <type>pom</type>
+      </dependency>
+      <dependency>
+        <groupId>biz.aQute.bnd</groupId>
+        <artifactId>biz.aQute.bnd.annotation</artifactId>
+        <version>${bnd.annotation.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-annotations</artifactId>
+        <version>${spotbugs-annotations.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jspecify</groupId>
+        <artifactId>jspecify</artifactId>
+        <version>${jspecify.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>osgi.annotation</artifactId>
+        <version>${osgi.annotation.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.annotation.bundle</artifactId>
+        <version>${osgi.annotation.bundle.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.annotation.versioning</artifactId>
+        <version>${osgi.annotation.versioning.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.asciidoctor</groupId>
+          <artifactId>asciidoctor-maven-plugin</artifactId>
+          <version>${asciidoctor-maven-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>biz.aQute.bnd</groupId>
+          <artifactId>bnd-baseline-maven-plugin</artifactId>
+          <version>${bnd-baseline-maven-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>biz.aQute.bnd</groupId>
+          <artifactId>bnd-maven-plugin</artifactId>
+          <version>${bnd-maven-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>${build-helper-maven-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.cyclonedx</groupId>
+          <artifactId>cyclonedx-maven-plugin</artifactId>
+          <version>${cyclonedx-maven-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>com.gradle</groupId>
+          <artifactId>develocity-maven-extension</artifactId>
+          <version>${develocity-maven-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>com.gradle</groupId>
+          <artifactId>common-custom-user-data-maven-extension</artifactId>
+          <version>${develocity-user-data-extension.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>flatten-maven-plugin</artifactId>
+          <version>${flatten-maven-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.gmavenplus</groupId>
+          <artifactId>gmavenplus-plugin</artifactId>
+          <version>${gmavenplus-plugin.version}</version>
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.groovy</groupId>
+              <artifactId>groovy</artifactId>
+              <version>${groovy.version}</version>
+              <scope>runtime</scope>
+            </dependency>
+            <dependency>
+              <groupId>org.apache.groovy</groupId>
+              <artifactId>groovy-ant</artifactId>
+              <version>${groovy.version}</version>
+              <scope>runtime</scope>
+            </dependency>
+          </dependencies>
+        </plugin>
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>${jacoco-maven-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-changelog-maven-plugin</artifactId>
+          <version>${log4j-changelog-maven-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-artifact-plugin</artifactId>
+          <version>${maven-artifact-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.simplify4u.plugins</groupId>
+          <artifactId>sign-maven-plugin</artifactId>
+          <version>${sign-maven-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>com.github.spotbugs</groupId>
+          <artifactId>spotbugs-maven-plugin</artifactId>
+          <version>${spotbugs-maven-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>com.diffplug.spotless</groupId>
+          <artifactId>spotless-maven-plugin</artifactId>
+          <version>${spotless-maven-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>xml-maven-plugin</artifactId>
+          <version>${xml-maven-plugin.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>flatten-revision</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>flatten</goal>
+            </goals>
+            <configuration>
+              <updatePomFile>true</updatePomFile>
+              <flattenMode>resolveCiFriendliesOnly</flattenMode>
+            </configuration>
+          </execution>
+          <execution>
+            <id>clean-flattened-pom</id>
+            <phase>clean</phase>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>flatten-bom</id>
+            <phase>none</phase>
+            <goals>
+              <goal>flatten</goal>
+            </goals>
+            <configuration>
+              <flattenMode>bom</flattenMode>
+              <pomElements>
+                <build>remove</build>
+                <properties>remove</properties>
+                <repositories>remove</repositories>
+                <distributionManagement>remove</distributionManagement>
+                <dependencyManagement>interpolate</dependencyManagement>
+                <parent>keep</parent>
+              </pomElements>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>delete-module-descriptor</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+            <configuration>
+              <excludeDefaultDirectories>true</excludeDefaultDirectories>
+              <filesets>
+                <fileset>
+                  <directory>${project.build.outputDirectory}</directory>
+                  <includes>
+                    <include>module-info.class</include>
+                  </includes>
+                </fileset>
+              </filesets>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>default-testCompile</id>
+            <configuration>
+              <useModulePath>false</useModulePath>
+            </configuration>
+          </execution>
+        </executions>
+        <configuration>
+          <source>${maven.compiler.source}</source>
+          <release>${maven.compiler.release}</release>
+          <target>${maven.compiler.target}</target>
+          <encoding>${project.build.sourceEncoding}</encoding>
+          <parameters>true</parameters>
+          <compilerArgs>
+            <arg>-Xlint:all</arg>
+            <arg>-XDcompilePolicy=simple</arg>
+            <arg>-Xplugin:ErrorProne</arg>
+          </compilerArgs>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>com.google.errorprone</groupId>
+              <artifactId>error_prone_core</artifactId>
+              <version>${error-prone.version}</version>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <useModulePath>false</useModulePath>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <useModulePath>false</useModulePath>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.cyclonedx</groupId>
+        <artifactId>cyclonedx-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate-sbom</id>
+            <phase>package</phase>
+            <goals>
+              <goal>makeAggregateBom</goal>
+            </goals>
+            <configuration>
+              <externalReferences>
+                <externalReference>
+                  <type>vulnerability-assertion</type>
+                  <url>${vdr.url}</url>
+                </externalReference>
+              </externalReferences>
+              <outputFormat>xml</outputFormat>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-upper-bound-deps</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireUpperBoundDeps />
+              </rules>
+            </configuration>
+          </execution>
+          <execution>
+            <id>ban-wildcard-imports</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <RestrictImports>
+                  <reason>Expand all wildcard imports</reason>
+                  <bannedImport>**.'*'</bannedImport>
+                </RestrictImports>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>de.skuzzle.enforcer</groupId>
+            <artifactId>restrict-imports-enforcer-rule</artifactId>
+            <version>${restrict-imports-enforcer-rule.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>default-spotbugs</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <configuration>
+              <fork>false</fork>
+              <plugins>
+                <plugin>
+                  <groupId>com.h3xstream.findsecbugs</groupId>
+                  <artifactId>findsecbugs-plugin</artifactId>
+                  <version>${findsecbugs-plugin.version}</version>
+                </plugin>
+              </plugins>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <consoleOutput>true</consoleOutput>
+          <excludes combine.children="append">
+            <exclude>.java-version</exclude>
+            <exclude>.mvn/jvm.config</exclude>
+            <exclude>**/*.txt</exclude>
+            <exclude>src/changelog/**/*.xml</exclude>
+            <exclude>.github/ISSUE_TEMPLATE/*.md</exclude>
+            <exclude>.github/pull_request_template.md</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>default-spotless</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>com.palantir.javaformat</groupId>
+            <artifactId>palantir-java-format</artifactId>
+            <version>${palantir-java-format.version}</version>
+          </dependency>
+        </dependencies>
+        <configuration>
+          <java>
+            <licenseHeader>
+              <content>/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to you under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */</content>
+            </licenseHeader>
+            <palantirJavaFormat>
+              <version>${palantir-java-format.version}</version>
+            </palantirJavaFormat>
+          </java>
+          <pom>
+            <licenseHeader>
+              <content>&lt;?xml version="1.0" encoding="UTF-8"?>
+&lt;!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more
+  ~ contributor license agreements.  See the NOTICE file distributed with
+  ~ this work for additional information regarding copyright ownership.
+  ~ The ASF licenses this file to you under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License.  You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  --></content>
+              <delimiter>&lt;project</delimiter>
+            </licenseHeader>
+            <sortPom>
+              <expandEmptyElements>false</expandEmptyElements>
+              <spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
+            </sortPom>
+          </pom>
+          <formats>
+            <format>
+              <includes>
+                <include>src/**/*.xml</include>
+              </includes>
+              <excludes>
+                <exclude>src/changelog/**/*.xml</exclude>
+              </excludes>
+              <licenseHeader>
+                <content>&lt;?xml version="1.0" encoding="UTF-8"?>
+&lt;!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more
+  ~ contributor license agreements.  See the NOTICE file distributed with
+  ~ this work for additional information regarding copyright ownership.
+  ~ The ASF licenses this file to you under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License.  You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  --></content>
+                <delimiter>&lt;(!DOCTYPE|\w)</delimiter>
+              </licenseHeader>
+              <endWithNewline />
+              <trimTrailingWhitespace />
+            </format>
+            <format>
+              <includes>
+                <include>src/**/*.properties</include>
+              </includes>
+              <licenseHeader>
+                <content>#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to you under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#</content>
+                <delimiter>(##|[^#])</delimiter>
+              </licenseHeader>
+              <endWithNewline />
+            </format>
+          </formats>
+          <yaml>
+            <includes>
+              <include>.asf.yaml</include>
+              <include>.github/**/*.yaml</include>
+              <include>.github/**/*.yml</include>
+              <include>src/**/*.yaml</include>
+              <include>src/**/*.yml</include>
+            </includes>
+            <licenseHeader>
+              <content>#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to you under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#</content>
+              <delimiter>(##|[^#])</delimiter>
+            </licenseHeader>
+            <endWithNewline />
+            <trimTrailingWhitespace />
+          </yaml>
+          <lineEndings>UNIX</lineEndings>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>parse-version</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>parse-version</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>biz.aQute.bnd</groupId>
+        <artifactId>bnd-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate-module-descriptors</id>
+            <goals>
+              <goal>bnd-process</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <bnd># `Bundle-DocURL` uses `project.url`.
+            # This is set to `${project.parent.url}${project.artifactId}` through Maven's inheritance assembly[1].
+            # This eventually produces incorrect values.
+            # Hence, we remove them from the produced descriptor.
+            #
+            # `Bundle-SCM` uses `project.scm.url` and suffers from the same inheritance problem `Bundle-DocURL` has.
+            #
+            # [1] https://maven.apache.org/ref/3.9.4/maven-model-builder/#inheritance-assembly
+            #     Inheritance assembly can be disabled for certain properties, e.g., `project.url`.
+            #     Though this would necessitate changes in the root `pom.xml`s of parented projects.
+            #
+            # `Bundle-Developers` is removed, since it is nothing but noise and occupies quite some real estate.
+            -removeheaders: Bundle-DocURL,Bundle-SCM,Bundle-Developers
+
+            # Create OSGi and JPMS module names based on the `groupId` and `artifactId`.
+            # This almost agrees with `maven-bundle-plugin`, but replaces non-alphanumeric characters
+            # with full stops `.`.
+            Bundle-SymbolicName: $[bnd-bundle-symbolicname]
+            -jpms-module-info: $[bnd-jpms-module-info]
+
+            # Prevents an execution error in multi-release jars:
+            -fixupmessages.classes_in_wrong_dir: "Classes found in the wrong directory";restrict:=error;is:=warning
+
+            # Convert API leakage warnings to errors
+            -fixupmessages.priv_refs: "private references";restrict:=warning;is:=error
+
+            # 1. OSGI modules do not make sense in JPMS
+            # 2. BND has a problem detecting the name of multi-release JPMS modules
+            -jpms-module-info-options: \
+              $[bnd-extra-module-options],\
+              org.osgi.core;static=true;transitive=false,\
+              org.osgi.framework;static=true;transitive=false,\
+              org.apache.logging.log4j;substitute="log4j-api",\
+              org.apache.logging.log4j.core;substitute="log4j-core"
+
+            # Import all packages by default:
+            Import-Package: \
+              $[bnd-extra-package-options],\
+              *
+
+            # Allow each project to override the `Multi-Release` header:
+            Multi-Release: $[bnd-multi-release]
+
+# Skipping to set `-jpms-multi-release` to `bnd-multi-release`.
+# This would generate descriptors in `META-INF/versions/&lt;version>` directories needed for MRJs.
+# Though we decided to skip it due to following reasons:
+# 1. It is only needed by a handful of files in `-java9`-suffixed modules of `logging-log4j2`.
+#    Hence, it is effectively insignificant.
+# 2. `dependency:unpack` and `bnd:bnd-process` executions must be aligned correctly.
+# See this issue for details: https://github.com/apache/logging-parent/issues/93
+            # Adds certain `Implementation-*` and `Specification-*` entries to the generated `MANIFEST.MF`.
+            # Using these properties is known to be a bad practice: https://github.com/apache/logging-log4j2/issues/1923#issuecomment-1786818254
+            # Users should use `META-INF/maven/&lt;groupId>/&lt;artifactId>/pom.properties` instead.
+            # Yet we support it due to backward compatibility reasons.
+            # The issue was reported to `bnd-maven-plugin` too: https://github.com/bndtools/bnd/issues/5855
+            # We set these values to their Maven Archiver defaults: https://maven.apache.org/shared/maven-archiver/#class_manifest
+            Implementation-Title: ${project.name}
+            Implementation-Vendor: ${project.organization.name}
+            Implementation-Version: ${project.version}
+            Specification-Title: ${project.name}
+            Specification-Vendor: ${project.organization.name}
+            Specification-Version: ${parsedVersion.majorVersion}.${parsedVersion.minorVersion}
+
+            # Extra configuration provided by the consumer:
+            ${bnd-extra-config}</bnd>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>biz.aQute.bnd</groupId>
+        <artifactId>bnd-baseline-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>check-api-compat</id>
+            <goals>
+              <goal>baseline</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <includeDistributionManagement>false</includeDistributionManagement>
+          <releaseversions>true</releaseversions>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  <profiles>
+    <profile>
+      <id>changelog-validate</id>
+      <activation>
+        <file>
+          <exists>src/changelog</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>xml-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>validate-changelog</id>
+                <phase>validate</phase>
+                <goals>
+                  <goal>validate</goal>
+                </goals>
+                <configuration>
+                  <validationSets>
+                    <validationSet>
+                      <dir>src/changelog</dir>
+                      <includes>
+                        <include>**/*.xml</include>
+                      </includes>
+                      <publicId>https://logging.apache.org/xml/ns</publicId>
+                      <systemId>https://logging.apache.org/xml/ns/log4j-changelog-0.xsd</systemId>
+                      <validating>true</validating>
+                    </validationSet>
+                  </validationSets>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>changelog-release</id>
+      <build>
+        <defaultGoal>log4j-changelog:release@release-changelog generate-sources</defaultGoal>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-changelog-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>release-changelog</id>
+                <configuration>
+                  <releaseVersion>${project.version}</releaseVersion>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>distribution</id>
+      <build>
+        <defaultGoal>enforcer:enforce@enforce-distribution-arguments gplus:execute@create-distribution</defaultGoal>
+        <plugins>
+          <plugin>
+            <artifactId>maven-enforcer-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>enforce-distribution-arguments</id>
+                <goals>
+                  <goal>enforce</goal>
+                </goals>
+                <configuration>
+                  <rules>
+                    <requireProperty>
+                      <property>attachmentFilepathPattern</property>
+                      <message>You must set an `attachmentFilepathPattern` property for the regex pattern matched against the filepath relative to the main project directory for determining attachments to be included in the distribution!</message>
+                    </requireProperty>
+                    <requireProperty>
+                      <property>attachmentCount</property>
+                      <message>You must set an `attachmentCount` property for the number of attachments expected to be found!</message>
+                    </requireProperty>
+                  </rules>
+                  <fail>true</fail>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.gmavenplus</groupId>
+            <artifactId>gmavenplus-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>create-distribution</id>
+                <goals>
+                  <goal>execute</goal>
+                </goals>
+                <configuration>
+                  <properties>
+                    <outputDirectory>${project.build.directory}</outputDirectory>
+                    <outputTimestamp>${project.build.outputTimestamp}</outputTimestamp>
+                    <attachmentCountString>${attachmentCount}</attachmentCountString>
+                    <attachmentFilepathPatternString>${attachmentFilepathPattern}</attachmentFilepathPatternString>
+                    <releaseNotes>${project.build.directory}/generated-site/antora/modules/ROOT/pages/_release-notes/${project.version}.adoc</releaseNotes>
+                  </properties>
+                  <scripts>
+                    <script>import java.io.*;
+                      import java.nio.file.*;
+                      import java.util.*;
+                      import java.util.function.*;
+                      import java.util.regex.*;
+                      import java.util.stream.*;
+                      import java.util.zip.*;
+                      import java.time.Instant;
+
+                      import org.eclipse.jgit.dircache.*;
+                      import org.eclipse.jgit.lib.Repository;
+                      import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+
+                      long timestampMillis = Instant.parse(outputTimestamp).toEpochMilli()
+                      // These are ensured by the `enforcer` rule
+                      int attachmentCount = attachmentCountString.toInteger()
+                      Pattern attachmentFilepathPattern = Pattern.compile(attachmentFilepathPatternString)
+
+                      def zip = { String zipFileName, Map&lt;String, Path> pathByFile ->
+                          try (OutputStream outputStream = new FileOutputStream(zipFileName)
+                              ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
+                              pathByFile.each {
+                                  // Skip directories, which is tracked by Git only when it is a symlink
+                                  if (!Files.isDirectory(it.value)) {
+                                      try {
+                                          log.debug("adding file `" + it.key + "` at path `" + it.value + "`")
+                                          ZipEntry zipEntry = new ZipEntry(it.key)
+                                          zipEntry.setTime(timestampMillis)
+                                          zipOutputStream.putNextEntry(zipEntry)
+                                          zipOutputStream.write(Files.readAllBytes(it.value))
+                                          zipOutputStream.closeEntry()
+                                      } catch (Exception error) {
+                                          // The exception is printed by the catch below, no need to attach it here
+                                          log.error("failed processing file `" + it.key + "` at path `" + it.value + "`")
+                                          throw error
+                                      }
+                                  }
+
+                              }
+                          } catch (Exception error) {
+                              log.error("failed creating ZIP archive `" + zipFileName + "`", error)
+                              throw error
+                          }
+                      }
+
+                      // Find Git-tracked files
+                      SortedMap pathByFile = new TreeMap()
+                      Repository repo = new FileRepositoryBuilder().readEnvironment().findGitDir().build()
+                      DirCache repoCache = repo.readDirCache()
+                      Path projectDir = repo.getDirectory().toPath().getParent()
+                      for (int repoCacheEntryIndex = 0; repoCacheEntryIndex &lt; repoCache.getEntryCount(); repoCacheEntryIndex++) {
+                          DirCacheEntry repoCacheEntry = repoCache.getEntry(repoCacheEntryIndex)
+                          String repoCacheEntryPath = repoCacheEntry.getPathString()
+                          pathByFile.put(repoCacheEntryPath, projectDir.resolve(repoCacheEntryPath))
+                      }
+
+                      // Create the source distribution using Git-tracked files
+                      zip(outputDirectory + "/src.zip", pathByFile)
+                      log.info("Generated the source distribution (`src.zip`) containing " + pathByFile.size() + " files.")
+
+                      // Short-circuit if there is no binary distribution expected
+                      if (attachmentCount == 0) {
+                          return
+                      }
+
+                      // Find auxiliary files that will go into the binary distribution
+                      pathByFile = new TreeMap()
+                      pathByFile.put("RELEASE-NOTES.adoc", projectDir.resolve(releaseNotes))
+                      pathByFile.put("README.adoc", projectDir.resolve("README.adoc"))
+                      pathByFile.put("NOTICE.txt", projectDir.resolve("NOTICE.txt"))
+                      pathByFile.put("LICENSE.txt", projectDir.resolve("LICENSE.txt"))
+
+                      // Find attachments that will go into the binary distribution
+                      log.info("Locating attachments matching the provided pattern: " + attachmentFilepathPattern)
+                      SortedMap attachmentPathByFile = new TreeMap()
+                      Stream paths = Files.walk(projectDir, 32)
+                      try {
+                          paths.forEach { path ->
+                              if (Files.isRegularFile(path)) {
+                                  String relativePath = projectDir.relativize(path).toString()
+                                  if (attachmentFilepathPattern.matcher(relativePath).matches()) {
+                                      attachmentPathByFile.put(path.getFileName().toString(), path)
+                                  }
+                              }
+                          }
+                      } catch (Exception error) {
+                          // Supplement diagnostics
+                          log.error(error)
+                          throw error
+                      } finally {
+                          paths.close()
+                      }
+
+                      StringBuilder attachments = new StringBuilder()
+                      attachmentPathByFile.eachWithIndex { entry, index ->
+                          attachments.append("\n\t[" + (index + 1) + "] " + entry.value);
+                      }
+                      // Check if no attachments were found
+                      if (attachmentCount != attachmentPathByFile.size()) {
+                          log.error("Attachments found:" + attachments)
+                          String errorMsg = "Error: Was expecting " + attachmentCount + " attachments, found " + attachmentPathByFile.size() + "!"
+                          log.error(errorMsg)
+                          log.error("Tip: Have you already executed the Maven `package` goal?")
+                          throw new RuntimeException(errorMsg)
+                      }
+
+                      // Create the binary distribution
+                      pathByFile.putAll(attachmentPathByFile)
+                      zip(outputDirectory + "/bin.zip", pathByFile)
+                      log.info("Generated the binary distribution (`bin.zip`) containing the following " +
+                          (pathByFile.size() - 4) + " binary files:" + attachments)</script>
+                  </scripts>
+                </configuration>
+              </execution>
+            </executions>
+            <dependencies>
+              <dependency>
+                <groupId>org.eclipse.jgit</groupId>
+                <artifactId>org.eclipse.jgit</artifactId>
+                <version>${org.eclipse.jgit.version}</version>
+              </dependency>
+            </dependencies>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>deploy</id>
+      <build>
+        <defaultGoal>deploy</defaultGoal>
+        <plugins>
+          <plugin>
+            <groupId>org.simplify4u.plugins</groupId>
+            <artifactId>sign-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+      <properties>
+        <spotbugs.skip>true</spotbugs.skip>
+        <installAtEnd>true</installAtEnd>
+        <deployAtEnd>true</deployAtEnd>
+        <skipTests>true</skipTests>
+        <spotless.check.skip>true</spotless.check.skip>
+      </properties>
+    </profile>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-source-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-enforcer-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>enforce-no-snapshots</id>
+                <goals>
+                  <goal>enforce</goal>
+                </goals>
+                <configuration>
+                  <rules>
+                    <requireReleaseDeps>
+                      <message>A release cannot have SNAPSHOT dependencies</message>
+                      <onlyWhenRelease>true</onlyWhenRelease>
+                    </requireReleaseDeps>
+                    <requireReleaseVersion>
+                      <message>A release cannot be a SNAPSHOT version</message>
+                    </requireReleaseVersion>
+                  </rules>
+                  <fail>true</fail>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>antora</id>
+      <activation>
+        <file>
+          <exists>src/site/antora</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-changelog-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>export-changelog</id>
+                <phase>pre-site</phase>
+                <goals>
+                  <goal>export</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}/generated-site/antora/modules/ROOT/pages</outputDirectory>
+                  <indexTemplates>
+                    <template>
+                      <source>.index.adoc.ftl</source>
+                      <target>release-notes.adoc</target>
+                    </template>
+                  </indexTemplates>
+                  <changelogTemplates>
+                    <template>
+                      <source>.release-notes.adoc.ftl</source>
+                      <target>_release-notes/%v.adoc</target>
+                    </template>
+                  </changelogTemplates>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>copy-antora-yml</id>
+                <phase>pre-site</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <copy file="${project.basedir}/src/site/antora/antora.tmpl.yml" tofile="${project.build.directory}/antora-yml/antora.yml" overwrite="true" />
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-resources-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>filter-antora-yml</id>
+                <phase>pre-site</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}/generated-site/antora</outputDirectory>
+                  <resources>
+                    <resource>
+                      <directory>${project.build.directory}/antora-yml</directory>
+                      <filtering>true</filtering>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+              <execution>
+                <id>copy-site</id>
+                <phase>pre-site</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}/generated-site</outputDirectory>
+                  <resources>
+                    <resource>
+                      <directory>${project.basedir}/src/site</directory>
+                      <excludes>
+                        <exclude>antora/antora.yml</exclude>
+                      </excludes>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-maven-plugin</artifactId>
+            <version>${frontend-maven-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>install-node-and-npm</id>
+                <phase>pre-site</phase>
+                <goals>
+                  <goal>install-node-and-npm</goal>
+                </goals>
+                <configuration>
+                  <nodeVersion>v${node.version}</nodeVersion>
+                  <npmVersion>${npm.version}</npmVersion>
+                </configuration>
+              </execution>
+              <execution>
+                <id>install-antora</id>
+                <phase>pre-site</phase>
+                <goals>
+                  <goal>npm</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>${exec-maven-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>run-antora</id>
+                <phase>site</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <executable>${project.basedir}/node/node</executable>
+                  <arguments>
+                    <argument>--eval</argument>
+                    <argument>require('@antora/cli')(['generate', '--playbook', 'antora-playbook.yaml', '--to-dir', 'target/site'])</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+      <properties>
+        <maven.site.skip>true</maven.site.skip>
+        <maven.site.deploy.skip>true</maven.site.deploy.skip>
+      </properties>
+    </profile>
+    <profile>
+      <id>spotbugs-exclude</id>
+      <activation>
+        <file>
+          <exists>${maven.multiModuleProjectDirectory}/spotbugs-exclude.xml</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-maven-plugin</artifactId>
+            <configuration>
+              <excludeFilterFile>${maven.multiModuleProjectDirectory}/spotbugs-exclude.xml</excludeFilterFile>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>coverage</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>prepare-jacoco-agent</id>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>report-test-coverage</id>
+                <goals>
+                  <goal>report</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <includes>
+                <include>org/apache/log4j/**</include>
+                <include>org/apache/logging/**</include>
+              </includes>
+              <excludes>
+                <exclude>**/test/**</exclude>
+              </excludes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>
