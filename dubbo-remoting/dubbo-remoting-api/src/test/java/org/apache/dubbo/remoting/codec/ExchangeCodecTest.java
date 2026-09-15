@@ -32,6 +32,7 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.codec.ExchangeCodec;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.apache.dubbo.remoting.telnet.codec.TelnetCodec;
+import org.apache.dubbo.remoting.transport.ExceedPayloadLimitException;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.ByteArrayOutputStream;
@@ -41,6 +42,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -211,6 +213,19 @@ class ExchangeCodecTest extends TelnetCodecTest {
             Assertions.assertTrue(expected.getMessage()
                     .startsWith("Data length too large: " + Bytes.bytes2int(new byte[] {1, 1, 1, 1})));
         }
+    }
+
+    @Test
+    void testDecodeRejectsCompleteNonMagicInputBeforeCopy() {
+        Assumptions.assumeTrue(codec instanceof ExchangeCodec);
+        int payloadLimit = 16;
+        byte[] oversizedInput = new byte[payloadLimit + 1];
+        ChannelBuffer buffer = ChannelBuffers.wrappedBuffer(oversizedInput);
+        Channel channel = getServerSideChannel(url.addParameter(Constants.PAYLOAD_KEY, payloadLimit));
+
+        Assertions.assertThrows(ExceedPayloadLimitException.class, () -> codec.decode(channel, buffer));
+        Assertions.assertEquals(
+                0, buffer.readerIndex(), "payload validation should reject non-magic input before reading it");
     }
 
     @Test
