@@ -706,9 +706,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         AbstractConfig.appendParameters(map, protocolConfig);
         AbstractConfig.appendParameters(map, this);
 
-        // append params with method configs,
-        if (CollectionUtils.isNotEmpty(getMethods())) {
-            getMethods().forEach(method -> appendParametersWithMethod(method, map));
+        // append params with method configs, expanding wildcard method names (e.g. "create*")
+        // to matched interface methods; an exact config takes precedence over a wildcard one.
+        for (Map.Entry<String, MethodConfig> resolvedMethod : resolveMethodConfigs(interfaceClass)) {
+            appendParametersWithMethod(resolvedMethod.getValue(), resolvedMethod.getKey(), map);
         }
 
         if (isGeneric(generic)) {
@@ -755,29 +756,29 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         return map;
     }
 
-    private void appendParametersWithMethod(MethodConfig method, Map<String, String> params) {
-        AbstractConfig.appendParameters(params, method, method.getName());
+    private void appendParametersWithMethod(MethodConfig method, String methodName, Map<String, String> params) {
+        AbstractConfig.appendParameters(params, method, methodName);
 
-        String retryKey = method.getName() + ".retry";
+        String retryKey = methodName + ".retry";
         if (params.containsKey(retryKey)) {
             String retryValue = params.remove(retryKey);
             if ("false".equals(retryValue)) {
-                params.put(method.getName() + ".retries", "0");
+                params.put(methodName + ".retries", "0");
             }
         }
 
         List<ArgumentConfig> arguments = method.getArguments();
         if (CollectionUtils.isNotEmpty(arguments)) {
-            Method matchedMethod = findMatchedMethod(method);
+            Method matchedMethod = findMatchedMethod(methodName);
             if (matchedMethod != null) {
                 arguments.forEach(argument -> appendArgumentConfig(argument, matchedMethod, params));
             }
         }
     }
 
-    private Method findMatchedMethod(MethodConfig methodConfig) {
+    private Method findMatchedMethod(String methodName) {
         for (Method method : interfaceClass.getMethods()) {
-            if (method.getName().equals(methodConfig.getName())) {
+            if (method.getName().equals(methodName)) {
                 return method;
             }
         }
