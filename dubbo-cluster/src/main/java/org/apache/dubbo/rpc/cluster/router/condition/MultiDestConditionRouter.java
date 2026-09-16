@@ -60,16 +60,22 @@ public class MultiDestConditionRouter<T> extends AbstractStateRouter<T> {
     protected List<ConditionMatcherFactory> matcherFactories;
     private boolean enabled;
 
-    public MultiDestConditionRouter(URL url, MultiDestCondition multiDestCondition, boolean force, boolean enabled) {
+    public static <T> MultiDestConditionRouter<T> create(
+            URL url, MultiDestCondition multiDestCondition, boolean force, boolean enabled) {
+        MultiDestConditionRouter<T> router = new MultiDestConditionRouter<>(url, multiDestCondition, force, enabled);
+        router.init(multiDestCondition.getFrom(), multiDestCondition.getTo());
+        return router;
+    }
+
+    private MultiDestConditionRouter(URL url, MultiDestCondition multiDestCondition, boolean force, boolean enabled) {
         super(url);
         this.setForce(force);
         this.enabled = enabled;
         matcherFactories =
                 moduleModel.getExtensionLoader(ConditionMatcherFactory.class).getActivateExtensions();
-        this.init(multiDestCondition.getFrom(), multiDestCondition.getTo());
     }
 
-    public void init(Map<String, String> from, List<Map<String, String>> to) {
+    private final void init(Map<String, String> from, List<Map<String, String>> to) {
         try {
             if (from == null || to == null) {
                 throw new IllegalArgumentException("Illegal route rule!");

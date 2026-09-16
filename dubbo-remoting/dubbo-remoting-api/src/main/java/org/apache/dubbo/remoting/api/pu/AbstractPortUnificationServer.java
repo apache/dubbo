@@ -53,7 +53,7 @@ public abstract class AbstractPortUnificationServer extends AbstractServer {
      */
     private Map<String, ChannelHandler> supportedHandlers;
 
-    public AbstractPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
+    protected AbstractPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
     }
 

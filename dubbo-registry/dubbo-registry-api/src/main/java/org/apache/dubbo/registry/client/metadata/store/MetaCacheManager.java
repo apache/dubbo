@@ -42,7 +42,10 @@ public class MetaCacheManager extends AbstractCacheManager<MetadataInfo> {
         return scopeModel.getBeanFactory().getOrRegisterBean(MetaCacheManager.class);
     }
 
-    public MetaCacheManager(boolean enableFileCache, String registryName, ScheduledExecutorService executorService) {
+    public static MetaCacheManager create(
+            boolean enableFileCache, String registryName, ScheduledExecutorService executorService) {
+        MetaCacheManager manager = new MetaCacheManager();
+
         String filePath = SystemPropertyConfigUtils.getSystemProperty(DUBBO_META_CACHE_FILEPATH);
         String fileName = SystemPropertyConfigUtils.getSystemProperty(DUBBO_META_CACHE_FILENAME);
         if (StringUtils.isEmpty(fileName)) {
@@ -60,13 +63,39 @@ public class MetaCacheManager extends AbstractCacheManager<MetadataInfo> {
         String rawMaxFileSize = SystemPropertyConfigUtils.getSystemProperty(DUBBO_META_CACHE_MAXFILESIZE);
         long maxFileSize = StringUtils.parseLong(rawMaxFileSize);
 
-        init(enableFileCache, filePath, fileName, entrySize, maxFileSize, 60, executorService);
+        manager.init(enableFileCache, filePath, fileName, entrySize, maxFileSize, 60, executorService);
+        return manager;
     }
 
     // for unit test only
-    public MetaCacheManager() {
-        this(true, "", null);
+    public static MetaCacheManager create() {
+        MetaCacheManager manager = new MetaCacheManager();
+        boolean enableFileCache = true;
+        String registryName = "";
+        ScheduledExecutorService executorService = null;
+
+        String filePath = SystemPropertyConfigUtils.getSystemProperty(DUBBO_META_CACHE_FILEPATH);
+        String fileName = SystemPropertyConfigUtils.getSystemProperty(DUBBO_META_CACHE_FILENAME);
+        if (StringUtils.isEmpty(fileName)) {
+            fileName = DEFAULT_FILE_NAME;
+        }
+
+        if (StringUtils.isNotEmpty(registryName)) {
+            fileName = fileName + "." + registryName;
+        }
+
+        String rawEntrySize = SystemPropertyConfigUtils.getSystemProperty(DUBBO_META_CACHE_ENTRYSIZE);
+        int entrySize = StringUtils.parseInteger(rawEntrySize);
+        entrySize = (entrySize == 0 ? DEFAULT_ENTRY_SIZE : entrySize);
+
+        String rawMaxFileSize = SystemPropertyConfigUtils.getSystemProperty(DUBBO_META_CACHE_MAXFILESIZE);
+        long maxFileSize = StringUtils.parseLong(rawMaxFileSize);
+
+        manager.init(enableFileCache, filePath, fileName, entrySize, maxFileSize, 60, executorService);
+        return manager;
     }
+
+    private MetaCacheManager() {}
 
     @Override
     protected MetadataInfo toValueType(String value) {
