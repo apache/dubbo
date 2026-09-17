@@ -49,10 +49,15 @@ public class ConditionRuleParser {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ConditionRuleParser.class);
 
+    @SuppressWarnings("unchecked")
     public static AbstractRouterRule parse(String rawRule) {
         AbstractRouterRule rule;
         Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
-        Map<String, Object> map = yaml.load(rawRule);
+        Object parsedRule = yaml.load(rawRule);
+        if (!(parsedRule instanceof Map)) {
+            throw new IllegalArgumentException("Condition router rule must be a YAML mapping.");
+        }
+        Map<String, Object> map = (Map<String, Object>) parsedRule;
         String confVersion = (String) map.get(CONFIG_VERSION_KEY);
 
         if (confVersion != null && confVersion.toLowerCase().startsWith(RULE_VERSION_V31)) {
