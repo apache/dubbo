@@ -101,6 +101,14 @@ public interface ServiceDiscovery extends RegistryService, Prioritized {
     }
 
     /**
+     * Is the service discovery client connection is available
+     * @return boolean is connection available
+     */
+    default boolean isConnectionAvailable() {
+        return true;
+    }
+
+    /**
      * A human-readable description of the implementation
      *
      * @return The description.
