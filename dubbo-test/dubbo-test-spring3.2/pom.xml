@@ -28,7 +28,8 @@
 
   <properties>
     <skip_maven_deploy>true</skip_maven_deploy>
-    <spring_version>5.3.39</spring_version>
+    <!-- DON'T UPGRADE SPRING VERSION (3.2.18.RELEASE) OF THIS PROJECT !!! -->
+    <spring_version>3.2.18.RELEASE</spring_version>
   </properties>
 
   <dependencyManagement>
@@ -83,26 +84,4 @@
     </plugins>
   </build>
 
-  <profiles>
-    <profile>
-      <id>jdk15ge-simple</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <useSystemClassLoader>true</useSystemClassLoader>
-              <forkCount>1</forkCount>
-              <systemProperties>
-                <!-- common shared -->
-              </systemProperties>
-              <!-- Activate the use of TCP to transmit events to the plugin to fix Corrupted STDOUT issue -->
-              <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory" />
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>
