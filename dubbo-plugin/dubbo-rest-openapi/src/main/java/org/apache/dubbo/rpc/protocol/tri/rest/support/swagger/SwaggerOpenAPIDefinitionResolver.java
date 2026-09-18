@@ -242,7 +242,7 @@ public final class SwaggerOpenAPIDefinitionResolver
         schema.setNullable(anno.nullable() ? Boolean.TRUE : null);
         schema.setDeprecated(anno.deprecated() ? Boolean.TRUE : null);
 
-        return chain.resolve(parameter, context);
+        return schema;
     }
 
     @Override

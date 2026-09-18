@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.protocol.tri.rest.support.basic.Annotations;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.RestToolKit;
 import org.apache.dubbo.rpc.protocol.tri.rest.util.TypeUtils;
 
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -112,7 +113,14 @@ public final class SchemaResolver {
                             .setAdditionalPropertiesSchema(doResolveNestedType(argTypes[1], parameter));
                 }
 
-                return doResolveClass(clazz, parameter);
+                Schema classSchema = doResolveClass(clazz, parameter, pType);
+                for (Type argType : argTypes) {
+                    Type actualArgType = TypeUtils.getActualGenericType(argType);
+                    if (actualArgType != null) {
+                        doResolveNestedType(actualArgType, parameter);
+                    }
+                }
+                return classSchema;
             }
         }
         if (type instanceof TypeVariable) {
@@ -130,6 +138,10 @@ public final class SchemaResolver {
     }
 
     private Schema doResolveClass(Class<?> clazz, ParameterMeta parameter) {
+        return doResolveClass(clazz, parameter, null);
+    }
+
+    private Schema doResolveClass(Class<?> clazz, ParameterMeta parameter, ParameterizedType parameterizedType) {
         Schema schema = PrimitiveSchema.newSchemaOf(clazz);
         if (schema != null) {
             return schema;
@@ -154,7 +166,7 @@ public final class SchemaResolver {
             return schema;
         }
 
-        TypeParameterMeta typeParameter = new TypeParameterMeta(clazz);
+        TypeParameterMeta typeParameter = new TypeParameterMeta(parameter.getToolKit(), clazz);
         for (OpenAPISchemaPredicate predicate : predicates) {
             Boolean accepted = predicate.acceptClass(clazz, typeParameter);
             if (accepted == null) {
@@ -184,13 +196,32 @@ public final class SchemaResolver {
             flatten = anno != null && anno.getBoolean("flatten");
         }
 
-        return new Schema().setTargetSchema(doResolveBeanClass(parameter.getToolKit(), clazz, flatten));
+        return new Schema()
+                .setTargetSchema(doResolveBeanClass(parameter.getToolKit(), clazz, flatten, parameterizedType));
     }
 
     private Schema doResolveBeanClass(RestToolKit toolKit, Class<?> clazz, boolean flatten) {
+        return doResolveBeanClass(toolKit, clazz, flatten, null);
+    }
+
+    private Schema doResolveBeanClass(
+            RestToolKit toolKit, Class<?> clazz, boolean flatten, ParameterizedType parameterizedType) {
         Schema beanSchema = OBJECT.newSchema().setJavaType(clazz);
         schemaMap.put(clazz, beanSchema);
         BeanMeta beanMeta = new BeanMeta(toolKit, clazz, flatten);
+
+        Map<String, Type> typeVarMap = null;
+        if (parameterizedType != null) {
+            TypeVariable<?>[] typeParams = clazz.getTypeParameters();
+            Type[] actualArgs = parameterizedType.getActualTypeArguments();
+            if (typeParams.length == actualArgs.length && typeParams.length > 0) {
+                typeVarMap = CollectionUtils.newHashMap(typeParams.length);
+                for (int i = 0; i < typeParams.length; i++) {
+                    typeVarMap.put(typeParams[i].getName(), actualArgs[i]);
+                }
+            }
+        }
+
         out:
         for (PropertyMeta property : beanMeta.getProperties()) {
             boolean fallback = true;
@@ -200,10 +231,10 @@ public final class SchemaResolver {
                     continue;
                 }
                 if (accepted) {
+                    continue out;
+                } else {
                     fallback = false;
                     break;
-                } else {
-                    continue out;
                 }
             }
 
@@ -213,7 +244,21 @@ public final class SchemaResolver {
                     continue;
                 }
             }
-            beanSchema.addProperty(property.getName(), resolve(property));
+
+            Type originalType = property.getGenericType();
+            Type substitutedType = originalType;
+            if (typeVarMap != null) {
+                substitutedType = substituteTypeVariables(originalType, typeVarMap);
+            }
+
+            Schema propertySchema;
+            if (substitutedType != originalType) {
+                ParameterMeta substitutedParam = new SubstitutedPropertyMeta(property, substitutedType);
+                propertySchema = resolve(substitutedParam);
+            } else {
+                propertySchema = resolve(property);
+            }
+            beanSchema.addProperty(property.getName(), propertySchema);
         }
 
         if (flatten) {
@@ -256,6 +301,30 @@ public final class SchemaResolver {
             Collections.sort(matches);
         }
         return matches.get(0).getValue();
+    }
+
+    private Type substituteTypeVariables(Type type, Map<String, Type> typeVarMap) {
+        if (type instanceof TypeVariable) {
+            TypeVariable<?> typeVar = (TypeVariable<?>) type;
+            Type actualType = typeVarMap.get(typeVar.getName());
+            return actualType != null ? actualType : type;
+        }
+        if (type instanceof ParameterizedType) {
+            ParameterizedType pType = (ParameterizedType) type;
+            Type[] actualArgs = pType.getActualTypeArguments();
+            Type[] substitutedArgs = new Type[actualArgs.length];
+            boolean changed = false;
+            for (int i = 0; i < actualArgs.length; i++) {
+                substitutedArgs[i] = substituteTypeVariables(actualArgs[i], typeVarMap);
+                if (substitutedArgs[i] != actualArgs[i]) {
+                    changed = true;
+                }
+            }
+            if (changed) {
+                return new ParameterizedTypeImpl(pType.getRawType(), substitutedArgs, pType.getOwnerType());
+            }
+        }
+        return type;
     }
 
     public static void addPath(RadixTree<Boolean> tree, String path) {
@@ -313,6 +382,97 @@ public final class SchemaResolver {
         @Override
         public Schema resolve(Type type) {
             return SchemaResolver.this.resolve(type);
+        }
+    }
+
+    private static final class SubstitutedPropertyMeta extends ParameterMeta {
+        private final PropertyMeta originalProperty;
+        private final Type substitutedType;
+        private final Class<?> substitutedClass;
+
+        SubstitutedPropertyMeta(PropertyMeta originalProperty, Type substitutedType) {
+            super(originalProperty.getToolKit(), originalProperty.getPrefix(), originalProperty.getName());
+            this.originalProperty = originalProperty;
+            this.substitutedType = substitutedType;
+            this.substitutedClass = TypeUtils.getActualType(substitutedType);
+        }
+
+        @Override
+        public Class<?> getType() {
+            return substitutedClass;
+        }
+
+        @Override
+        public Type getGenericType() {
+            return substitutedType;
+        }
+
+        @Override
+        protected AnnotatedElement getAnnotatedElement() {
+            // Return the first annotated element from the list
+            List<? extends AnnotatedElement> elements = originalProperty.getAnnotatedElements();
+            return (elements != null && !elements.isEmpty()) ? elements.get(0) : null;
+        }
+
+        @Override
+        public List<? extends AnnotatedElement> getAnnotatedElements() {
+            // Delegate to original property to preserve all annotation sources
+            return originalProperty.getAnnotatedElements();
+        }
+
+        @Override
+        public String getDescription() {
+            return originalProperty.getDescription();
+        }
+
+        @Override
+        public int getIndex() {
+            return originalProperty.getIndex();
+        }
+    }
+
+    private static final class ParameterizedTypeImpl implements ParameterizedType {
+        private final Type rawType;
+        private final Type[] typeArguments;
+        private final Type ownerType;
+
+        ParameterizedTypeImpl(Type rawType, Type[] typeArguments, Type ownerType) {
+            this.rawType = rawType;
+            this.typeArguments = typeArguments;
+            this.ownerType = ownerType;
+        }
+
+        @Override
+        public Type[] getActualTypeArguments() {
+            return typeArguments.clone();
+        }
+
+        @Override
+        public Type getRawType() {
+            return rawType;
+        }
+
+        @Override
+        public Type getOwnerType() {
+            return ownerType;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            if (ownerType != null) {
+                sb.append(ownerType).append(".");
+            }
+            sb.append(rawType);
+            if (typeArguments.length > 0) {
+                sb.append("<");
+                for (int i = 0; i < typeArguments.length; i++) {
+                    if (i > 0) sb.append(", ");
+                    sb.append(typeArguments[i]);
+                }
+                sb.append(">");
+            }
+            return sb.toString();
         }
     }
 }
