@@ -173,7 +173,7 @@
     <swagger_version>1.6.16</swagger_version>
 
     <snappy_java_version>1.1.10.8</snappy_java_version>
-    <bouncycastle-bcprov_version>1.84</bouncycastle-bcprov_version>
+    <bouncycastle-bcprov_version>1.85</bouncycastle-bcprov_version>
     <metrics_version>2.0.6</metrics_version>
     <gson_version>2.14.0</gson_version>
     <jackson_version>2.22.0</jackson_version>
