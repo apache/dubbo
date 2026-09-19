@@ -54,6 +54,7 @@ import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -106,6 +107,11 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     private final ModuleModel moduleModel;
     private final ProtocolServiceKey consumerProtocolServiceKey;
     private final ConcurrentMap<ProtocolServiceKey, URL> customizedConsumerUrlMap = new ConcurrentHashMap<>();
+    private static final String WEIGHT_KEY = "weight";
+
+    // Invocation-level parameters that trigger invoker refresh when changed by dynamic configuration
+    private static final Set<String> INVOCATION_KEYS = new HashSet<>(Arrays.asList(
+            CommonConstants.TIMEOUT_KEY, CommonConstants.RETRIES_KEY, CommonConstants.LOADBALANCE_KEY, WEIGHT_KEY));
 
     public ServiceDiscoveryRegistryDirectory(Class<T> serviceType, URL url) {
         super(serviceType, url);
@@ -365,7 +371,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 // factor to avoid resizing.
                 oldUrlInvokerMap =
                         new LinkedHashMap<>(Math.round(1 + localUrlInvokerMap.size() / DEFAULT_HASHMAP_LOAD_FACTOR));
-                localUrlInvokerMap.forEach(oldUrlInvokerMap::put);
+                oldUrlInvokerMap.putAll(localUrlInvokerMap);
             }
             Map<ProtocolServiceKeyWithAddress, Invoker<T>> newUrlInvokerMap =
                     toInvokers(oldUrlInvokerMap, invokerUrls); // Translate url list to Invoker map
@@ -414,7 +420,6 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
      * the items that will be put into newUrlInvokeMap will be removed from oldUrlInvokerMap.
      *
      * @param oldUrlInvokerMap it might be modified during the process.
-     * @param urls
      * @return invokers
      */
     private Map<ProtocolServiceKeyWithAddress, Invoker<T>> toInvokers(
@@ -571,6 +576,15 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             }
         }
 
+        // Check if any critical invocation parameter has changed
+        for (String key : INVOCATION_KEYS) {
+            String oldVal = oldURL.getParameter(key);
+            String newVal = newURL.getParameter(key);
+            if (!Objects.equals(oldVal, newVal)) {
+                return true;
+            }
+        }
+
         MetadataInfo.ServiceInfo oldServiceInfo =
                 oldURL.getMetadataInfo().getValidServiceInfo(protocolServiceKey.toString());
         if (null == oldServiceInfo) {
@@ -647,18 +661,16 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
      * Check whether the invoker in the cache needs to be destroyed
      * If set attribute of url: refer.autodestroy=false, the invokers will only increase without decreasing,there may be a refer leak
      *
-     * @param oldUrlInvokerMap
-     * @param newUrlInvokerMap
      */
     private void destroyUnusedInvokers(
             Map<ProtocolServiceKeyWithAddress, Invoker<T>> oldUrlInvokerMap,
             Map<ProtocolServiceKeyWithAddress, Invoker<T>> newUrlInvokerMap) {
-        if (newUrlInvokerMap == null || newUrlInvokerMap.size() == 0) {
+        if (newUrlInvokerMap == null || newUrlInvokerMap.isEmpty()) {
             destroyAllInvokers();
             return;
         }
 
-        if (oldUrlInvokerMap == null || oldUrlInvokerMap.size() == 0) {
+        if (oldUrlInvokerMap == null || oldUrlInvokerMap.isEmpty()) {
             return;
         }
 
@@ -683,7 +695,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         logger.info(oldUrlInvokerMap.size() + " deprecated invokers deleted.");
     }
 
-    private class ReferenceConfigurationListener extends AbstractConfiguratorListener {
+    private static class ReferenceConfigurationListener extends AbstractConfiguratorListener {
         private final ServiceDiscoveryRegistryDirectory<?> directory;
         private final URL url;
 
