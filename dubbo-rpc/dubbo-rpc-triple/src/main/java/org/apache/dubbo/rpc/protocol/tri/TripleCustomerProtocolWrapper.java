@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -70,7 +71,8 @@ public class TripleCustomerProtocolWrapper {
             val = val << 7;
             val = val | (byteBuffer.get(index) & 0x7F);
         }
-        byteBuffer.position(currentPosition + varIntLength);
+        // be compatible with jdk8 by casting byteBuffer's type to its parent class - `java.nio.Buffer`.
+        ((Buffer) byteBuffer).position(currentPosition + varIntLength);
         return val;
     }
 
