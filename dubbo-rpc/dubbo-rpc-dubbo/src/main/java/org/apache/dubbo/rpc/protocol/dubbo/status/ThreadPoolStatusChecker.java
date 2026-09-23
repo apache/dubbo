@@ -24,6 +24,7 @@ import org.apache.dubbo.common.store.DataStore;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -44,7 +45,11 @@ public class ThreadPoolStatusChecker implements StatusChecker {
 
         StringBuilder msg = new StringBuilder();
         Status.Level level = Status.Level.OK;
-        for (Map.Entry<String, Object> entry : executors.entrySet()) {
+
+        // Use TreeMap to ensure consistent iteration order by port key
+        Map<String, Object> sortedExecutors = new TreeMap<>(executors);
+
+        for (Map.Entry<String, Object> entry : sortedExecutors.entrySet()) {
             String port = entry.getKey();
             ExecutorService executor = (ExecutorService) entry.getValue();
 
