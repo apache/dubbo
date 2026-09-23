@@ -56,6 +56,7 @@ public class DefaultHttp11ServerTransportListener
 
     private Http1ServerChannelObserver prepareResponseObserver(Http1ServerChannelObserver responseObserver) {
         responseObserver.setExceptionCustomizer(getExceptionCustomizer());
+        responseObserver.setTerminationHandler(this::closeRequest);
         RpcInvocationBuildContext context = getContext();
         responseObserver.setResponseEncoder(context == null ? JsonCodec.INSTANCE : context.getHttpMessageEncoder());
         return responseObserver;

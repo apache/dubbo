@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.http12.exception.HttpRequestTimeout;
 import org.apache.dubbo.remoting.http12.h2.Http2CancelableStreamObserver;
+import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
@@ -75,7 +76,7 @@ public abstract class AbstractServerCallListener implements ServerCallListener {
             long stInMillis = System.currentTimeMillis();
             Result response = invoker.invoke(invocation);
             if (response.hasException()) {
-                responseObserver.onError(response.getException());
+                onError(response.getException());
                 return;
             }
             response.whenCompleteWithContext((r, t) -> {
@@ -83,11 +84,11 @@ public abstract class AbstractServerCallListener implements ServerCallListener {
                     ((AttachmentHolder) responseObserver).setResponseAttachments(response.getObjectAttachments());
                 }
                 if (t != null) {
-                    responseObserver.onError(t);
+                    onError(t);
                     return;
                 }
                 if (r.hasException()) {
-                    responseObserver.onError(r.getException());
+                    onError(r.getException());
                     return;
                 }
                 long cost = System.currentTimeMillis() - stInMillis;
@@ -101,16 +102,30 @@ public abstract class AbstractServerCallListener implements ServerCallListener {
                                     "Invoke timeout at server side, ignored to send response. service=%s method=%s cost=%s",
                                     invocation.getTargetServiceUniqueName(), invocation.getMethodName(), cost));
                     HttpRequestTimeout serverSideTimeout = HttpRequestTimeout.serverSide();
-                    responseObserver.onError(serverSideTimeout);
+                    onError(serverSideTimeout);
                     return;
                 }
                 onReturn(r.getValue());
             });
         } catch (Exception e) {
-            responseObserver.onError(e);
+            onError(e);
         } finally {
             RpcContext.removeCancellationContext();
             RpcContext.removeContext();
+        }
+    }
+
+    private void onError(Throwable throwable) {
+        try {
+            responseObserver.onError(throwable);
+        } finally {
+            if (responseObserver instanceof Http2CancelableStreamObserver) {
+                CancellationContext cancellationContext =
+                        ((Http2CancelableStreamObserver<?>) responseObserver).getCancellationContext();
+                if (cancellationContext != null && cancellationContext.isCancelled()) {
+                    responseObserver.onCompleted();
+                }
+            }
         }
     }
 
