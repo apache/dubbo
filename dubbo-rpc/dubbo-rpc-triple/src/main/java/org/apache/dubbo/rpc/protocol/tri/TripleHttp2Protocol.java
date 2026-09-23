@@ -127,9 +127,14 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
 
     private Http2Connection createHttp2ClientConnection(TripleConfig tripleConfig) {
         Http2Connection connection = new DefaultHttp2Connection(false);
+        int initialWindowSize = tripleConfig.getInitialWindowSizeOrDefault();
         float windowUpdateRatio = tripleConfig.getWindowUpdateRatioOrDefault();
         connection.local().flowController(TripleHttp2LocalFlowController.newController(connection, windowUpdateRatio));
         connection.remote().flowController(TripleHttp2RemoteFlowController.newController(connection));
+        // Sync the local flow controller's initial window size with the
+        // value advertised in SETTINGS, so the local enforcement matches
+        // the window the peer is allowed to fill.
+        connection.local().flowController().initialWindowSize(initialWindowSize);
         return connection;
     }
 
@@ -265,9 +270,14 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
 
     private Http2Connection createHttp2ServerConnection(TripleConfig tripleConfig) {
         Http2Connection connection = new DefaultHttp2Connection(true);
+        int initialWindowSize = tripleConfig.getInitialWindowSizeOrDefault();
         float windowUpdateRatio = tripleConfig.getWindowUpdateRatioOrDefault();
         connection.local().flowController(TripleHttp2LocalFlowController.newController(connection, windowUpdateRatio));
         connection.remote().flowController(TripleHttp2RemoteFlowController.newController(connection));
+        // Sync the local flow controller's initial window size with the
+        // value advertised in SETTINGS, so the local enforcement matches
+        // the window the peer is allowed to fill.
+        connection.local().flowController().initialWindowSize(initialWindowSize);
         return connection;
     }
 
