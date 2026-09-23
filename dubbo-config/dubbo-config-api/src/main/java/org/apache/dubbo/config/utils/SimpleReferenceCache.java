@@ -51,7 +51,7 @@ public class SimpleReferenceCache implements ReferenceCache {
     /**
      * Create the key with the <b>Group</b>, <b>Interface</b> and <b>version</b> attribute of {@link ReferenceConfigBase}.
      * <p>
-     * key example: <code>group1/org.apache.dubbo.foo.FooService:1.0.0</code>.
+     * key example: <code>group1/org.apache.dubbo.foo.FooService:1.0.0@registry=registry1</code>
      */
     public static final KeyGenerator DEFAULT_KEY_GENERATOR = referenceConfig -> {
         String iName = referenceConfig.getInterface();
@@ -63,7 +63,15 @@ public class SimpleReferenceCache implements ReferenceCache {
             throw new IllegalArgumentException("No interface info in ReferenceConfig" + referenceConfig);
         }
 
-        return BaseServiceMetadata.buildServiceKey(iName, referenceConfig.getGroup(), referenceConfig.getVersion());
+        String key =
+                BaseServiceMetadata.buildServiceKey(iName, referenceConfig.getGroup(), referenceConfig.getVersion());
+
+        String registryIds = referenceConfig.getRegistryIds();
+        if (StringUtils.isNotEmpty(registryIds)) {
+            key += "@registry=" + registryIds;
+        }
+
+        return key;
     };
 
     private static final AtomicInteger nameIndex = new AtomicInteger();
@@ -74,7 +82,6 @@ public class SimpleReferenceCache implements ReferenceCache {
 
     private final ConcurrentMap<String, List<ReferenceConfigBase<?>>> referenceKeyMap = new ConcurrentHashMap<>();
     private final ConcurrentMap<Class<?>, List<ReferenceConfigBase<?>>> referenceTypeMap = new ConcurrentHashMap<>();
-    private final Map<ReferenceConfigBase<?>, Object> references = new ConcurrentHashMap<>();
 
     protected SimpleReferenceCache(String name, KeyGenerator generator) {
         this.name = name;
@@ -133,9 +140,11 @@ public class SimpleReferenceCache implements ReferenceCache {
         if (proxy == null) {
             List<ReferenceConfigBase<?>> referencesOfType = ConcurrentHashMapUtils.computeIfAbsent(
                     referenceTypeMap, type, _t -> Collections.synchronizedList(new ArrayList<>()));
+            assert referencesOfType != null;
             referencesOfType.add(rc);
             List<ReferenceConfigBase<?>> referenceConfigList = ConcurrentHashMapUtils.computeIfAbsent(
                     referenceKeyMap, key, _k -> Collections.synchronizedList(new ArrayList<>()));
+            assert referenceConfigList != null;
             referenceConfigList.add(rc);
             proxy = rc.get(check);
         }
@@ -300,10 +309,6 @@ public class SimpleReferenceCache implements ReferenceCache {
 
     public Map<String, List<ReferenceConfigBase<?>>> getReferenceMap() {
         return referenceKeyMap;
-    }
-
-    public Map<Class<?>, List<ReferenceConfigBase<?>>> getReferenceTypeMap() {
-        return referenceTypeMap;
     }
 
     @Override
