@@ -154,7 +154,7 @@
     <maven_source_version>3.4.0</maven_source_version>
     <maven_javadoc_version>3.12.0</maven_javadoc_version>
     <maven_checkstyle_version>3.6.0</maven_checkstyle_version>
-    <build_helper_maven_plugin_version>3.6.1</build_helper_maven_plugin_version>
+    <build_helper_maven_plugin_version>3.6.2</build_helper_maven_plugin_version>
     <maven_jacoco_version>0.8.15</maven_jacoco_version>
     <maven_flatten_version>1.7.3</maven_flatten_version>
     <maven_enforce_version>3.6.3</maven_enforce_version>
