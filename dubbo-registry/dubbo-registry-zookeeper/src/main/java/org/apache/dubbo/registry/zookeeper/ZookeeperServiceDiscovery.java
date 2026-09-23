@@ -133,9 +133,9 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
         }
 
         try {
-            this.serviceInstance = newServiceInstance;
             reportMetadata(newServiceInstance.getServiceMetadata());
             serviceDiscovery.updateService(newInstance);
+            this.serviceInstance = newServiceInstance;
         } catch (Exception e) {
             throw new RpcException(REGISTRY_EXCEPTION, "Failed register instance " + newServiceInstance.toString(), e);
         }
@@ -190,7 +190,12 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public boolean isAvailable() {
         // Fix the issue of timeout for all calls to the isAvailable method after the zookeeper is disconnected
-        return !isDestroy() && isConnected() && CollectionUtils.isNotEmpty(getServices());
+        return isConnectionAvailable() && CollectionUtils.isNotEmpty(getServices());
+    }
+
+    @Override
+    public boolean isConnectionAvailable() {
+        return !isDestroy() && isConnected();
     }
 
     private boolean isConnected() {

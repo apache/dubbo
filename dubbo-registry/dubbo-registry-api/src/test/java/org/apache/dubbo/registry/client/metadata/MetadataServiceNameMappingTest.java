@@ -88,7 +88,7 @@ class MetadataServiceNameMappingTest {
         when(configManager.getMetadataConfigs()).thenReturn(Arrays.asList(new MetadataReportConfig()));
         MetadataReportInstance reportInstance = mock(MetadataReportInstance.class);
         Mockito.when(reportInstance.getMetadataReports(true)).thenReturn(metadataReportList);
-        mapping.metadataReportInstance = reportInstance;
+        mapping.setMetadataReportInstance(reportInstance);
 
         when(metadataReport.registerServiceAppMapping(any(), any(), any())).thenReturn(true);
 
@@ -111,6 +111,7 @@ class MetadataServiceNameMappingTest {
                         return false;
                     }
                 });
+        when(metadataReport.isAvailable()).thenReturn(true);
         assertTrue(mapping.map(url));
 
         // metadata report using cas and retry, failed after 11 times retry
@@ -131,8 +132,9 @@ class MetadataServiceNameMappingTest {
         MetadataReportInstance reportInstance = mock(MetadataReportInstance.class);
         Mockito.when(reportInstance.getMetadataReport(any())).thenReturn(metadataReport);
         when(metadataReport.getServiceAppMapping(any(), any())).thenReturn(set);
+        when(metadataReport.isAvailable()).thenReturn(true);
 
-        mapping.metadataReportInstance = reportInstance;
+        mapping.setMetadataReportInstance(reportInstance);
         Set<String> result = mapping.get(url);
         assertEquals(set, result);
     }

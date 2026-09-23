@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.metadata.AbstractServiceNameMapping;
 import org.apache.dubbo.metadata.MappingChangedEvent;
 import org.apache.dubbo.metadata.MappingListener;
@@ -321,6 +322,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     @Override
     public void destroy() {
+        super.destroy();
         registryManager.removeDestroyedRegistry(this);
         // stop ServiceDiscovery
         execute(serviceDiscovery::destroy);
@@ -339,6 +341,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     }
 
     protected void subscribeURLs(URL url, NotifyListener listener, Set<String> serviceNames) {
+        removeFailedSubscribed(url, listener);
         serviceNames = toTreeSet(serviceNames);
         String serviceNamesKey = toStringKeys(serviceNames);
         String serviceKey = url.getServiceKey();
@@ -380,6 +383,14 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             } else {
                 logger.info(String.format("Listener of %s has been destroyed by another thread.", serviceNamesKey));
                 serviceListeners.remove(serviceNamesKey);
+            }
+        } catch (Exception e) {
+            if (UrlUtils.isCheck(url)) {
+                throw e;
+            } else {
+                logger.info("retry service discovery subscribe");
+                Set<String> finalServiceNames = serviceNames;
+                addFailedSubscribed(url, listener, () -> this.subscribeURLs(url, listener, finalServiceNames));
             }
         } finally {
             appSubscriptionLock.unlock();
