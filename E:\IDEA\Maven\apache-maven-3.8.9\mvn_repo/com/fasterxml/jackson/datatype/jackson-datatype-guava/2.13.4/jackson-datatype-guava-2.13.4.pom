@@ -1,0 +1,74 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <!-- This module was also published with a richer model, Gradle metadata,  -->
+  <!-- which should be used instead. Do not delete the following line which  -->
+  <!-- is to indicate to Gradle or any Gradle module metadata file consumer  -->
+  <!-- that they should prefer consuming it instead. -->
+  <!-- do_not_remove: published-with-gradle-metadata -->
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.fasterxml.jackson.datatype</groupId>
+    <artifactId>jackson-datatypes-collections</artifactId>
+    <version>2.13.4</version>
+  </parent>
+  <artifactId>jackson-datatype-guava</artifactId>
+  <name>Jackson datatype: Guava</name>
+  <packaging>bundle</packaging>
+  <description>Add-on datatype-support module for Jackson (https://github.com/FasterXML/jackson) that handles
+Guava (http://code.google.com/p/guava-libraries/) types (currently mostly just collection ones)
+  </description>
+  <url>https://github.com/FasterXML/jackson-datatypes-collections</url>
+
+  <contributors>
+    <contributor>
+      <name>Steven Schlansker</name>
+      <email>steven@nesscomputing.com</email>
+    </contributor>
+  </contributors>
+
+  <properties>
+    <!-- 19-Jul-2019, tatu: and for 2.10, 18.0 to 20.0 (last pre-Java8 version) -->
+    <!-- 02-Aug-2020, tatu: 2.12 raises baseline from 20.0 to 21.0 -->
+    <version.guava>21.0</version.guava>
+
+    <!-- Guava 21.0 and later are Java 8 (JRE variant; android one not)
+      -->
+    <javac.src.version>1.8</javac.src.version>
+    <javac.target.version>1.8</javac.target.version>
+
+    <!-- 31-Jul-2020, tatu: remove upper limit for Jackson 2.12; tested up to 29.0-jre -->
+    <version.guava.osgi>[${version.guava}.0,99)</version.guava.osgi>
+
+    <!-- Generate PackageVersion.java into this directory. -->
+    <packageVersion.dir>com/fasterxml/jackson/datatype/guava</packageVersion.dir>
+    <packageVersion.package>${project.groupId}.guava</packageVersion.package>
+      <!-- 28-Sep-2015, tatu: Export should work with defaults, but imports need
+          an override because we want wider range of versions for Guava
+        -->
+    <osgi.import>
+com.google.common.*;version="${version.guava.osgi}",
+*
+    </osgi.import>
+  </properties>
+
+  <dependencies>
+    <!-- Extends Jackson; supports Guava datatypes, so: -->
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>${version.guava}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>com.google.code.maven-replacer-plugin</groupId>
+        <artifactId>replacer</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.moditect</groupId>
+        <artifactId>moditect-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+</project>

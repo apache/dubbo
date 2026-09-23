@@ -1,0 +1,632 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-plugins</artifactId>
+    <version>36</version>
+    <relativePath />
+  </parent>
+
+  <artifactId>maven-site-plugin</artifactId>
+  <version>3.12.1</version>
+  <packaging>maven-plugin</packaging>
+
+  <name>Apache Maven Site Plugin</name>
+  <description>The Maven Site Plugin is a plugin that generates a site for the current project.</description>
+
+  <contributors>
+    <contributor>
+      <name>Naoki Nose</name>
+      <email>ikkoan@mail.goo.ne.jp</email>
+      <roles>
+        <role>Japanese translator</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Michael Wechner</name>
+      <email>michael.wechner@wyona.com</email>
+      <roles>
+        <role>German translator</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Christian Schulte</name>
+      <email>cs@schulte.it</email>
+      <roles>
+        <role>German translator</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Piotr Bzdyl</name>
+      <email>piotr@bzdyl.net</email>
+      <roles>
+        <role>Polish translator</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Domingos Creado</name>
+      <email>dcreado@users.sf.net</email>
+      <roles>
+        <role>Brazilian Portuguese translator</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>John Allen</name>
+      <email>john_h_allen@hotmail.com</email>
+    </contributor>
+    <contributor>
+      <name>Laszlo Hornyak Kocka</name>
+      <email>laszlo.hornyak@gmail.com</email>
+      <roles>
+        <role>Hungarian translator</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Hermod Opstvedt</name>
+      <email>hermod.opstvedt@dnbnor.no</email>
+      <roles>
+        <role>Norwegian translator</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Yue Ni</name>
+      <email>ni2yue4@gmail.com</email>
+      <roles>
+        <role>Chinese translator</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Arturo Vazquez</name>
+      <email>vaz@root.com.mx</email>
+      <roles>
+        <role>Spanish translator</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Woonsan Ko</name>
+      <email>woon_san@yahoo.com</email>
+      <roles>
+        <role>Korean translator</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Martin Vysny</name>
+      <email>mvy@whitestein.com</email>
+      <roles>
+        <role>Slovak translator</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Petr Ferschmann</name>
+      <email>pferschmann@softeu.com</email>
+      <roles>
+        <role>Czech translator</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Kristian Mandrup</name>
+      <email>kristian@mandrup.dk</email>
+      <roles>
+        <role>Danish translator</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Samuel Santos</name>
+      <email>samaxes@gmail.com</email>
+      <roles>
+        <role>Portuguese translator</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Mindaugas Greibus</name>
+      <email>spantus@gmail.com</email>
+      <roles>
+        <role>Lithuanian translator</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Marvin Froeder</name>
+      <email>velo.br@gmail.com</email>
+      <roles>
+        <role>msite-504</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Yevgeny Nyden</name>
+      <email>yev@curre.net</email>
+      <roles>
+        <role>Russian translator</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Daniel Fernández</name>
+      <email>daniel.fernandez.garrido@gmail.com</email>
+      <roles>
+        <role>Galician translator</role>
+      </roles>
+    </contributor>
+  </contributors>
+
+  <prerequisites>
+    <maven>${mavenVersion}</maven>
+  </prerequisites>
+
+  <scm>
+    <connection>scm:git:https://gitbox.apache.org/repos/asf/maven-site-plugin.git</connection>
+    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-site-plugin.git</developerConnection>
+    <url>https://github.com/apache/maven-site-plugin/tree/${project.scm.tag}</url>
+    <tag>maven-site-plugin-3.12.1</tag>
+  </scm>
+  <issueManagement>
+    <system>JIRA</system>
+    <url>https://issues.apache.org/jira/browse/MSITE</url>
+  </issueManagement>
+  <ciManagement>
+    <system>Jenkins</system>
+    <url>https://ci-maven.apache.org/job/Maven/job/maven-box/job/maven-site-plugin/</url>
+  </ciManagement>
+  <distributionManagement>
+    <site>
+      <id>apache.website</id>
+      <url>scm:svn:https://svn.apache.org/repos/asf/maven/website/components/${maven.site.path}</url>
+    </site>
+  </distributionManagement>
+
+  <properties>
+    <mavenVersion>3.2.5</mavenVersion>
+    <javaVersion>8</javaVersion>
+
+    <!-- for dependencies -->
+    <doxiaVersion>1.11.1</doxiaVersion>
+    <doxiaSitetoolsVersion>1.11.1</doxiaSitetoolsVersion>
+    <jettyVersion>9.4.46.v20220331</jettyVersion>
+    <wagonVersion>3.5.1</wagonVersion>
+    <slf4jVersion>1.7.36</slf4jVersion>
+    <!-- for ITs -->
+    <checkstylePluginVersion>3.1.2</checkstylePluginVersion>
+    <javadocPluginVersion>3.3.2</javadocPluginVersion>
+    <pmdPluginVersion>3.16.0</pmdPluginVersion>
+    <jxrPluginVersion>3.2.0</jxrPluginVersion>
+    <projectInfoReportsPluginVersion>3.2.2</projectInfoReportsPluginVersion>
+    <surefirePluginVersion>2.22.2</surefirePluginVersion>
+    <surefire.version>2.22.2</surefire.version>
+    <project.build.outputTimestamp>2022-07-31T18:58:29Z</project.build.outputTimestamp>
+
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.maven.reporting</groupId>
+      <artifactId>maven-reporting-api</artifactId>
+      <version>3.1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.reporting</groupId>
+      <artifactId>maven-reporting-exec</artifactId>
+      <version>1.6.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-shared-utils</artifactId>
+      <version>3.3.4</version>
+    </dependency>
+
+    <!-- Maven -->
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-artifact</artifactId>
+      <version>${mavenVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-compat</artifactId>
+      <version>${mavenVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-core</artifactId>
+      <version>${mavenVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-aether-provider</artifactId>
+      <version>${mavenVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-model</artifactId>
+      <version>${mavenVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-api</artifactId>
+      <version>${mavenVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-settings</artifactId>
+      <version>${mavenVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-settings-builder</artifactId>
+      <version>${mavenVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-archiver</artifactId>
+      <version>3.5.2</version>
+    </dependency>
+
+    <!-- dependencies to annotations -->
+    <dependency>
+      <groupId>org.apache.maven.plugin-tools</groupId>
+      <artifactId>maven-plugin-annotations</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- Plexus -->
+    <dependency>
+      <groupId>org.sonatype.sisu</groupId>
+      <artifactId>sisu-inject-plexus</artifactId>
+      <version>1.4.2</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-archiver</artifactId>
+      <version>4.2.7</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-i18n</artifactId>
+      <version>1.0-beta-10</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.codehaus.plexus</groupId>
+          <artifactId>plexus-component-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
+      <version>3.4.2</version>
+    </dependency>
+
+    <!-- Doxia -->
+    <dependency>
+      <groupId>org.apache.maven.doxia</groupId>
+      <artifactId>doxia-sink-api</artifactId>
+      <version>${doxiaVersion}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.maven.doxia</groupId>
+      <artifactId>doxia-core</artifactId>
+      <version>${doxiaVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.doxia</groupId>
+      <artifactId>doxia-module-xhtml</artifactId>
+      <version>${doxiaVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.doxia</groupId>
+      <artifactId>doxia-module-xhtml5</artifactId>
+      <version>${doxiaVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.doxia</groupId>
+      <artifactId>doxia-module-apt</artifactId>
+      <version>${doxiaVersion}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.doxia</groupId>
+      <artifactId>doxia-module-xdoc</artifactId>
+      <version>${doxiaVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.doxia</groupId>
+      <artifactId>doxia-module-fml</artifactId>
+      <version>${doxiaVersion}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.doxia</groupId>
+      <artifactId>doxia-module-markdown</artifactId>
+      <version>${doxiaVersion}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.doxia</groupId>
+      <artifactId>doxia-module-confluence</artifactId>
+      <version>${doxiaVersion}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.doxia</groupId>
+      <artifactId>doxia-module-docbook-simple</artifactId>
+      <version>${doxiaVersion}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.doxia</groupId>
+      <artifactId>doxia-module-twiki</artifactId>
+      <version>${doxiaVersion}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <!-- Doxia Sitetools -->
+    <dependency>
+      <groupId>org.apache.maven.doxia</groupId>
+      <artifactId>doxia-decoration-model</artifactId>
+      <version>${doxiaSitetoolsVersion}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.maven.doxia</groupId>
+      <artifactId>doxia-site-renderer</artifactId>
+      <version>${doxiaSitetoolsVersion}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.maven.doxia</groupId>
+      <artifactId>doxia-integration-tools</artifactId>
+      <version>${doxiaSitetoolsVersion}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.codehaus.plexus</groupId>
+          <artifactId>plexus-container-default</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <!-- Wagon -->
+    <dependency>
+      <groupId>org.apache.maven.wagon</groupId>
+      <artifactId>wagon-provider-api</artifactId>
+      <version>${wagonVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.maven.wagon</groupId>
+      <artifactId>wagon-webdav-jackrabbit</artifactId>
+      <version>${wagonVersion}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-nop</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.1.0</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-server</artifactId>
+      <version>${jettyVersion}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-servlet</artifactId>
+      <version>${jettyVersion}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-webapp</artifactId>
+      <version>${jettyVersion}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-util</artifactId>
+      <version>${jettyVersion}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-client</artifactId>
+      <version>${jettyVersion}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-proxy</artifactId>
+      <version>${jettyVersion}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4jVersion}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>${slf4jVersion}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+      <version>${slf4jVersion}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.11.0</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- test -->
+    <dependency>
+      <groupId>org.apache.maven.plugin-testing</groupId>
+      <artifactId>maven-plugin-testing-harness</artifactId>
+      <version>3.3.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <profiles>
+    <profile>
+      <id>run-its</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-invoker-plugin</artifactId>
+            <configuration>
+              <projectsDirectory>src/it/projects</projectsDirectory>
+              <settingsFile>src/it/mrm/settings.xml</settingsFile>
+              <filterProperties>
+                <mrm.repository.url>${mrm.repository.url}</mrm.repository.url>
+              </filterProperties>
+              <goals>
+                <goal>clean</goal>
+                <goal>${project.groupId}:${project.artifactId}:${project.version}:site</goal>
+              </goals>
+              <properties>
+                <maven.compiler.source>${maven.compiler.source}</maven.compiler.source>
+                <maven.compiler.target>${maven.compiler.target}</maven.compiler.target>
+              </properties>
+              <javaHome>${java.home}</javaHome>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>mrm-maven-plugin</artifactId>
+            <version>1.3.0</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>start</goal>
+                  <goal>stop</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <repositories>
+                <mockRepo>
+                  <source>src/it/mrm/repository</source>
+                </mockRepo>
+                <proxyRepo />
+              </repositories>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>reporting</id>
+      <reporting>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>l10n-maven-plugin</artifactId>
+            <version>1.0-alpha-2</version>
+            <configuration>
+              <locales>
+                <locale>ca</locale>
+                <locale>cs</locale>
+                <locale>da</locale>
+                <locale>de</locale>
+                <locale>es</locale>
+                <locale>fr</locale>
+                <locale>gl</locale>
+                <locale>hu</locale>
+                <locale>it</locale>
+                <locale>ja</locale>
+                <locale>ko</locale>
+                <locale>lt</locale>
+                <locale>nl</locale>
+                <locale>no</locale>
+                <locale>pl</locale>
+                <locale>pt</locale>
+                <locale>pt_BR</locale>
+                <locale>ru</locale>
+                <locale>sk</locale>
+                <locale>sv</locale>
+                <locale>tr</locale>
+                <locale>zh_CN</locale>
+                <locale>zh_TW</locale>
+              </locales>
+            </configuration>
+          </plugin>
+        </plugins>
+      </reporting>
+    </profile>
+
+    <profile>
+      <id>dev</id>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-site-plugin</artifactId>
+              <version>${project.version}</version>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+  </profiles>
+</project>

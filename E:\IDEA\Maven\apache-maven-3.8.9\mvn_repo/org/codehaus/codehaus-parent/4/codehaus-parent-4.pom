@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2007-2011 Sonatype, Inc. All rights reserved.
+  ~
+  ~ This program is licensed to you under the Apache License Version 2.0,
+  ~ and you may not use this file except in compliance with the Apache License Version 2.0.
+  ~ You may obtain a copy of the Apache License Version 2.0 at http://www.apache.org/licenses/LICENSE-2.0.
+  ~
+  ~ Unless required by applicable law or agreed to in writing,
+  ~ software distributed under the Apache License Version 2.0 is distributed on an
+  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.codehaus</groupId>
+	<artifactId>codehaus-parent</artifactId>
+	<version>4</version>
+	<packaging>pom</packaging>
+
+	<name>Codehaus Parent</name>
+	<url>http://codehaus.org/</url>
+	<description>The Codehaus is a collaborative environment for building open source projects with a strong emphasis on modern languages, focussed on quality components that meet real world needs. </description>
+
+	<scm>
+		<connection>scm:git:git@github.com:sonatype/codehaus-parent.git</connection>
+		<developerConnection>scm:git:git@github.com:sonatype/codehaus-parent.git</developerConnection>
+		<url>https://github.com/sonatype/codehaus-parent</url>
+	</scm>
+
+	<repositories>
+		<repository>
+			<id>codehaus-snapshots</id>
+			<name>Codehaus Snapshots</name>
+			<url>http://nexus.codehaus.org/snapshots/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>codehaus-nexus-snapshots</id>
+			<name>Codehaus Nexus Snapshots</name>
+			<url>${codehausDistMgmtSnapshotsUrl}</url>
+		</snapshotRepository>
+		<repository>
+			<id>codehaus-nexus-staging</id>
+			<name>Codehaus Release Repository</name>
+			<url>https://nexus.codehaus.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>1.0</version>
+				<executions>
+					<execution>
+						<id>enforce-maven</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<requireMavenVersion>
+									<version>(,2.1.0),(2.1.0,2.2.0),(2.2.0,)</version>
+									<message>Maven 2.1.0 and 2.2.0 produce incorrect GPG signatures and checksums respectively.</message>
+								</requireMavenVersion>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>2.1</version>
+					<configuration>
+						<mavenExecutorId>forked-path</mavenExecutorId>
+						<useReleaseProfile>false</useReleaseProfile>
+						<arguments>-Pcodehaus-release</arguments>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<codehausDistMgmtSnapshotsUrl>https://nexus.codehaus.org/content/repositories/snapshots/</codehausDistMgmtSnapshotsUrl>
+	</properties>
+
+	<profiles>
+		<profile>
+			<id>codehaus-release</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-source-plugin</artifactId>
+						<version>2.1.2</version>
+						<executions>
+							<execution>
+								<id>attach-sources</id>
+								<goals>
+									<goal>jar-no-fork</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<version>2.7</version>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>1.1</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+</project>

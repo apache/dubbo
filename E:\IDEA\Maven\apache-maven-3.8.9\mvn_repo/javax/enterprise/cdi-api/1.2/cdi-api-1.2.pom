@@ -1,0 +1,253 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.jboss.weld</groupId>
+		<artifactId>weld-parent</artifactId>
+		<version>26</version>
+		<relativePath />
+	</parent>
+
+	<groupId>javax.enterprise</groupId>
+	<artifactId>cdi-api</artifactId>
+	<packaging>jar</packaging>
+	<version>1.2</version>
+
+	<name>CDI APIs</name>
+	<description>APIs for CDI (Contexts and Dependency Injection for Java EE)</description>
+
+	<url>http://cdi-spec.org</url>
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<distribution>repo</distribution>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+		</license>
+	</licenses>
+
+	<ciManagement>
+		<system>Hudson</system>
+		<url>http://hudson.jboss.org</url>
+	</ciManagement>
+
+	<issueManagement>
+		<system>JIRA</system>
+		<url>http://jira.jboss.org/browse/CDI</url>
+	</issueManagement>
+
+	<organization>
+		<name>JBoss by Red Hat, Inc.</name>
+		<url>http://jboss.org</url>
+	</organization>
+
+	<inceptionYear>2008</inceptionYear>
+
+	<developers>
+		<developer>
+			<name>Pete Muir</name>
+			<id>pmuir</id>
+			<timezone>GMT</timezone>
+			<organization>Red Hat Inc.</organization>
+			<roles>
+				<role>Specfication Lead</role>
+			</roles>
+			<email>pmuir[at]redhat[dot]com</email>
+		</developer>
+
+		<developer>
+			<name>Antoine Sabot-Durand</name>
+			<id>asabotdu</id>
+			<timezone>CET</timezone>
+			<organization>Red Hat Inc.</organization>
+			<roles>
+				<role>Specfication co-lead</role>
+			</roles>
+			<email>asd[at]redhat[dot]com</email>
+		</developer>
+
+		<developer>
+			<name>Mark Struberg</name>
+			<id>mstruberg</id>
+			<timezone>CET</timezone>
+			<roles>
+				<role>Implementation developer</role>
+			</roles>
+			<email>struberg[at]yahoo[dot]de</email>
+		</developer>
+
+		<developer>
+			<name>Jozef Hartinger</name>
+			<id>jhartinger</id>
+			<timezone>CET</timezone>
+			<organization>Red Hat Inc.</organization>
+			<roles>
+				<role>RI tech lead</role>
+			</roles>
+			<email>jhartinger[at]redhat[dot]com</email>
+		</developer>
+
+		<developer>
+			<name>Martin Kouba</name>
+			<id>mkouba</id>
+			<organization>Red Hat Inc.</organization>
+			<roles>
+				<role>TCK tech lead</role>
+			</roles>
+			<email>mkouba[at]redhat[dot]com</email>
+		</developer>
+	</developers>
+
+
+	<properties>
+		<atinject.api.version>1</atinject.api.version>
+		<uel.api.version>3.0.0</uel.api.version>
+		<interceptor.api.version>1.2</interceptor.api.version>
+	</properties>
+
+	<!-- Configure all dependencies (e.g. testing) -->
+	<dependencyManagement>
+		<dependencies>
+
+			<dependency>
+				<groupId>org.testng</groupId>
+				<artifactId>testng</artifactId>
+				<version>5.10</version>
+				<classifier>jdk15</classifier>
+			</dependency>
+
+			<dependency>
+				<groupId>javax.inject</groupId>
+				<artifactId>javax.inject</artifactId>
+				<version>${atinject.api.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>javax.el</groupId>
+				<artifactId>javax.el-api</artifactId>
+				<version>${uel.api.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>javax.interceptor</groupId>
+				<artifactId>javax.interceptor-api</artifactId>
+				<version>${interceptor.api.version}</version>
+			</dependency>
+
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<dependency>
+			<groupId>javax.el</groupId>
+			<artifactId>javax.el-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.interceptor</groupId>
+			<artifactId>javax.interceptor-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.inject</groupId>
+			<artifactId>javax.inject</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<classifier>jdk15</classifier>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
+	<scm>
+		<connection>scm:git:git@github.com:cdi-spec/cdi.git</connection>
+		<url>scm:git:git@github.com:cdi-spec/cdi.git</url>
+		<developerConnection>scm:git:git@github.com:cdi-spec/cdi.git</developerConnection>
+	</scm>
+
+	<profiles>
+		<profile>
+			<id>jboss-public-repository</id>
+			<activation>
+				<property>
+					<name>jboss-public-repository</name>
+					<value>!false</value>
+				</property>
+			</activation>
+			<repositories>
+				<repository>
+					<id>jboss-public-repository-group</id>
+					<name>JBoss Public Maven Repository Group</name>
+					<url>http://repository.jboss.org/nexus/content/groups/public</url>
+					<releases>
+						<enabled>true</enabled>
+						<updatePolicy>never</updatePolicy>
+					</releases>
+					<snapshots>
+						<enabled>false</enabled>
+						<updatePolicy>never</updatePolicy>
+					</snapshots>
+				</repository>
+			</repositories>
+			<pluginRepositories>
+				<pluginRepository>
+					<id>jboss-public-repository-group</id>
+					<name>JBoss Public Maven Repository Group</name>
+					<url>http://repository.jboss.org/nexus/content/groups/public</url>
+					<releases>
+						<enabled>true</enabled>
+						<updatePolicy>never</updatePolicy>
+					</releases>
+					<snapshots>
+						<enabled>false</enabled>
+						<updatePolicy>never</updatePolicy>
+					</snapshots>
+				</pluginRepository>
+			</pluginRepositories>
+		</profile>
+	</profiles>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>bundle-manifest</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>manifest</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<instructions>
+						<Export-Package>
+							javax.decorator;version=1.1,
+							javax.enterprise.*;version=1.1,
+						</Export-Package>
+						<Import-Package>
+							javax.el; version=2.2,
+							*
+						</Import-Package>
+					</instructions>
+				</configuration>
+			</plugin>
+			<!-- Add the OSGi Manifest to the main jar -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+					</archive>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+
+</project>

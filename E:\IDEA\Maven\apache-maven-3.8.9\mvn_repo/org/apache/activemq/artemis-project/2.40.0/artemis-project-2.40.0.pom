@@ -1,0 +1,1181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <groupId>org.apache.activemq</groupId>
+   <artifactId>artemis-project</artifactId>
+   <packaging>pom</packaging>
+   <version>2.40.0</version>
+
+   <parent>
+      <groupId>org.apache</groupId>
+      <artifactId>apache</artifactId>
+      <version>33</version>
+   </parent>
+
+   <modules>
+      <!-- Modules that use artemis-project as their parent -->
+      <module>artemis-bom</module>
+      <module>artemis-log-annotation-processor</module>
+      <module>artemis-pom</module>
+
+      <!-- Other modules, use artemis-pom as their parent -->
+      <module>artemis-log-annotation-processor/tests</module>
+      <module>artemis-protocols</module>
+      <module>artemis-dto</module>
+      <module>artemis-cdi-client</module>
+      <module>artemis-jakarta-cdi-client</module>
+      <module>artemis-boot</module>
+      <module>artemis-cli</module>
+      <module>artemis-commons</module>
+      <module>artemis-selector</module>
+      <module>artemis-core-client</module>
+      <module>artemis-core-client-all</module>
+      <module>artemis-core-client-osgi</module>
+      <module>artemis-web</module>
+      <module>artemis-server</module>
+      <module>artemis-junit</module>
+      <module>artemis-jms-client</module>
+      <module>artemis-jms-client-all</module>
+      <module>artemis-jms-client-osgi</module>
+      <module>artemis-jakarta-client</module>
+      <module>artemis-jakarta-client-all</module>
+      <module>artemis-jms-server</module>
+      <module>artemis-jakarta-server</module>
+      <module>artemis-journal</module>
+      <module>artemis-ra</module>
+      <module>artemis-jakarta-ra</module>
+      <module>artemis-service-extensions</module>
+      <module>artemis-jakarta-service-extensions</module>
+      <module>artemis-jdbc-store</module>
+      <module>artemis-maven-plugin</module>
+      <module>artemis-server-osgi</module>
+      <module>artemis-console</module>
+      <module>artemis-distribution</module>
+      <module>artemis-unit-test-support</module>
+      <module>tests</module>
+      <module>artemis-features</module>
+      <module>artemis-lockmanager</module>
+      <module>artemis-image</module>
+      <module>artemis-image/examples</module>
+   </modules>
+
+   <name>ActiveMQ Artemis</name>
+   <url>https://activemq.apache.org/components/artemis/</url>
+
+   <properties>
+      <maven.compiler.source>17</maven.compiler.source>
+      <maven.compiler.target>17</maven.compiler.target>
+      <maven.compiler.release>17</maven.compiler.release>
+
+      <logging.config>log4j2-tests-config.properties</logging.config>
+      <modular.jdk.surefire.arg>--add-modules java.sql,jdk.unsupported </modular.jdk.surefire.arg>
+
+      <activemq-artemis-native-version>2.0.0</activemq-artemis-native-version>
+      <artemis-console-version>1.1.0</artemis-console-version>
+      <karaf.version>4.4.7</karaf.version>
+      <pax.exam.version>4.14.0</pax.exam.version>
+      <commons.config.version>2.11.0</commons.config.version>
+      <commons.lang.version>3.17.0</commons.lang.version>
+      <activemq5-version>5.19.0</activemq5-version>
+      <apache.derby.version>10.15.2.0</apache.derby.version>
+      <commons.beanutils.version>1.10.1</commons.beanutils.version>
+      <commons.logging.version>1.3.5</commons.logging.version>
+      <commons.dbcp2.version>2.13.0</commons.dbcp2.version>
+      <commons.pool2.version>2.12.1</commons.pool2.version>
+      <commons.collections.version>3.2.2</commons.collections.version>
+      <commons.text.version>1.13.0</commons.text.version>
+      <commons.io.version>2.18.0</commons.io.version>
+      <commons.codec.version>1.18.0</commons.codec.version>
+      <commons.compress.version>1.27.1</commons.compress.version>
+      <fuse.mqtt.client.version>1.16</fuse.mqtt.client.version>
+      <caffeine.version>3.2.0</caffeine.version>
+      <guava.version>33.4.0-jre</guava.version>
+      <jsr305.version>3.0.2</jsr305.version>
+      <jetty.version>12.0.15</jetty.version>
+      <jetty-servlet-api.version>5.0.2</jetty-servlet-api.version>
+      <jgroups.version>5.3.13.Final</jgroups.version>
+      <errorprone.version>2.36.0</errorprone.version>
+      <maven.bundle.plugin.version>5.1.9</maven.bundle.plugin.version>
+      <jib.maven.plugin.version>3.4.4</jib.maven.plugin.version>
+      <versions.maven.plugin.version>2.16.1</versions.maven.plugin.version>
+      <maven.pmd.plugin.version>3.26.0</maven.pmd.plugin.version>
+      <sevntu.checks.version>1.44.1</sevntu.checks.version>
+      <checkstyle.version>10.21.4</checkstyle.version>
+      <mockito.version>5.16.0</mockito.version>
+      <jctools.version>4.0.5</jctools.version>
+      <netty.version>4.1.119.Final</netty.version>
+      <hdrhistogram.version>2.2.2</hdrhistogram.version>
+      <curator.version>5.7.1</curator.version>
+      <zookeeper.version>3.9.3</zookeeper.version>
+      <woodstox.version>4.4.1</woodstox.version>
+      <pem-keystore.version>3.0.0</pem-keystore.version>
+
+      <!-- docs -->
+      <asciidoctor.maven.plugin.version>3.1.1</asciidoctor.maven.plugin.version>
+      <asciidoctorj.pdf.version>2.3.19</asciidoctorj.pdf.version>
+
+      <!-- this is basically for tests -->
+      <netty-tcnative-version>2.0.70.Final</netty-tcnative-version>
+      <proton.version>0.34.1</proton.version>
+      <protonj2.version>1.0.0-M23</protonj2.version>
+      <slf4j.version>2.0.17</slf4j.version>
+      <log4j.version>2.24.3</log4j.version>
+      <qpid.jms.version>1.13.0</qpid.jms.version>
+      <johnzon.version>1.2.21</johnzon.version>
+      <hawtbuff.version>1.11</hawtbuff.version>
+      <hawtdispatch.version>1.22</hawtdispatch.version>
+      <picocli.version>4.7.6</picocli.version>
+      <jline.version>3.29.0</jline.version>
+      <jakarta.activation-api.version>1.2.2</jakarta.activation-api.version>
+      <jakarta.annotation-api.version>1.3.5</jakarta.annotation-api.version>
+      <jakarta.ejb-api.version>3.2.6</jakarta.ejb-api.version>
+      <jakarta.enterprise.cdi-api.version>2.0.2</jakarta.enterprise.cdi-api.version>
+      <jakarta.inject-api.version>1.0.5</jakarta.inject-api.version>
+      <jakarta.jms-api.version>2.0.3</jakarta.jms-api.version>
+      <jakarta.json-api.version>1.1.6</jakarta.json-api.version>
+      <jakarta.management.j2ee-api.version>1.1.4</jakarta.management.j2ee-api.version>
+      <jakarta.resource-api.version>1.7.4</jakarta.resource-api.version>
+      <jakarta.security.auth.message-api.version>1.1.3</jakarta.security.auth.message-api.version>
+      <jakarta.transaction-api.version>1.3.3</jakarta.transaction-api.version>
+      <jakarta.ws.rs-api.version>2.1.6</jakarta.ws.rs-api.version>
+      <jakarta.xml.bind-api.version>2.3.3</jakarta.xml.bind-api.version>
+      <weld.version>2.4.8.Final</weld.version>
+      <arquillian-weld-embedded.version>2.1.0.Final</arquillian-weld-embedded.version>
+      <owb.version>2.0.27</owb.version>
+      <arquillian.version>1.8.0.Final</arquillian.version>
+      <servicemix.json-1.1.spec.version>2.9.0</servicemix.json-1.1.spec.version>
+      <version.org.jacoco>0.8.12</version.org.jacoco>
+      <version.org.jacoco.plugin>0.8.12</version.org.jacoco.plugin>
+      <version.micrometer>1.14.4</version.micrometer>
+      <hamcrest.version>3.0</hamcrest.version>
+      <junit.version>4.13.2</junit.version>
+      <junit5.version>5.12.0</junit5.version>
+      <version.jaxb.runtime>2.3.9</version.jaxb.runtime>
+      <paho.client.mqtt.version>1.2.5</paho.client.mqtt.version>
+      <postgresql.version>42.7.5</postgresql.version>
+      <testcontainers.version>1.20.6</testcontainers.version>
+      <selenium.version>4.29.0</selenium.version>
+      <exec-maven-plugin.version>3.5.0</exec-maven-plugin.version>
+      <apache.httpcore.version>4.4.16</apache.httpcore.version>
+      <apache.httpclient.version>4.5.14</apache.httpclient.version>
+      <shrinkwrap-api.version>1.2.6</shrinkwrap-api.version>
+
+      <!-- for JakartaEE -->
+      <version.batavia>1.0.15.Final</version.batavia>
+      <jakarta.jms-api.version.alt>3.1.0</jakarta.jms-api.version.alt>
+      <jakarta.transaction-api.version.alt>2.0.1</jakarta.transaction-api.version.alt>
+      <jakarta.resource-api.version.alt>2.1.0</jakarta.resource-api.version.alt>
+      <jakarta.inject-api.version.alt>2.0.1</jakarta.inject-api.version.alt>
+      <jakarta.annotation-api.version.alt>3.0.0</jakarta.annotation-api.version.alt>
+      <jakarta.enterprise.cdi-api.version.alt>4.1.0</jakarta.enterprise.cdi-api.version.alt>
+      <jakarta.ejb-api.version.alt>4.0.1</jakarta.ejb-api.version.alt>
+      <weld.version.alt>6.0.0.Final</weld.version.alt>
+      <arquillian-weld-embedded.version.alt>4.0.0.Final</arquillian-weld-embedded.version.alt>
+      <owb.version.alt>4.0.3</owb.version.alt>
+
+      <!-- used on tests -->
+      <elementary.version>3.0.0</elementary.version>
+      <groovy.version>4.0.26</groovy.version>
+      <hadoop.minikdc.version>3.4.1</hadoop.minikdc.version>
+      <mockserver.version>5.15.0</mockserver.version>
+
+      <owasp.version>12.1.0</owasp.version>
+      <spring.version>5.3.39</spring.version>
+
+      <jackson.version>2.18.3</jackson.version>
+      <jackson-databind.version>${jackson.version}</jackson-databind.version>
+
+      <activemq.version.versionName>${project.version}</activemq.version.versionName>
+      <activemq.version.majorVersion>1</activemq.version.majorVersion>
+      <activemq.version.minorVersion>0</activemq.version.minorVersion>
+      <activemq.version.microVersion>0</activemq.version.microVersion>
+      <activemq.version.incrementingVersion>136,135,134,133,132,131,130,129,128,127,126,125,124,123,122</activemq.version.incrementingVersion>
+      <activemq.version.versionTag>${project.version}</activemq.version.versionTag>
+      <ActiveMQ-Version>${project.version}(${activemq.version.incrementingVersion})</ActiveMQ-Version>
+
+      <skipUnitTests>true</skipUnitTests>
+      <skipJmsTests>true</skipJmsTests>
+      <skipExtraTests>true</skipExtraTests>
+      <skipIntegrationTests>true</skipIntegrationTests>
+      <skipFeaturesVerification>true</skipFeaturesVerification>
+      <skipIsolatedIntegrationTests>true</skipIsolatedIntegrationTests>
+      <skipLeakTests>true</skipLeakTests>
+      <skipSmokeTests>true</skipSmokeTests>
+      <skipJoramTests>true</skipJoramTests>
+      <skipTimingTests>true</skipTimingTests>
+      <skipStressTests>true</skipStressTests>
+      <skipSoakTests>true</skipSoakTests>
+      <skipPerformanceTests>true</skipPerformanceTests>
+      <skipActiveMQ5Tests>true</skipActiveMQ5Tests>
+
+      <e2e-tests.skipTests>true</e2e-tests.skipTests>
+      <e2e-tests.skipImageBuild>true</e2e-tests.skipImageBuild>
+
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+      <shade-plugin-create-sources>false</shade-plugin-create-sources>
+
+      <maven.test.failure.ignore>false</maven.test.failure.ignore>
+      <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
+
+      <!--
+
+       note for idea users:
+       Idea picks up surefire argline by default:
+       if You don't want it, you can add -Didea.maven.surefire.disable.argLine=true to idea.vmoptions files,
+       see https://intellij-support.jetbrains.com/entries/23395793
+
+       Also see: http://youtrack.jetbrains.com/issue/IDEA-125696
+
+
+       For profiling add this line and use jmc (Java Mission Control) to evaluate the results:
+           -XX:+UnlockCommercialFeatures -XX:+FlightRecorder -XX:StartFlightRecording=delay=30s,duration=120s,filename=/tmp/myrecording.jfr
+
+      -->
+
+      <!-- for tests that will need a new server created -->
+      <artemis.distribution.output>${activemq.basedir}/artemis-distribution/target/apache-artemis-${project.version}-bin/apache-artemis-${project.version}</artemis.distribution.output>
+
+      <activemq-surefire-argline>-Dbrokerconfig.maxDiskUsage=100 -Dorg.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants.DEFAULT_QUIET_PERIOD=0 -Dorg.apache.activemq.artemis.core.remoting.impl.netty.TransportConstants.DEFAULT_SHUTDOWN_TIMEOUT=0
+         -Djava.library.path="${activemq.basedir}/target/bin/lib/linux-x86_64:${activemq.basedir}/target/bin/lib/linux-i686" -Djgroups.bind_addr=localhost
+         -Djava.net.preferIPv4Stack=true -Dbasedir=${basedir}
+         -Djdk.attach.allowAttachSelf=true
+         -Dartemis.distribution.output="${artemis.distribution.output}"
+         -Dlog4j2.configurationFile="file:${activemq.basedir}/tests/config/${logging.config}"
+      </activemq-surefire-argline>
+      <activemq.basedir>${project.basedir}</activemq.basedir>
+      <proton.trace.frames>false</proton.trace.frames>
+
+      <directory-version>2.0.0.AM25</directory-version>
+      <directory-jdbm2-version>2.0.0-M3</directory-jdbm2-version>
+      <bc-java-version>1.80</bc-java-version>
+
+      <netty-transport-native-epoll-classifier>linux-x86_64</netty-transport-native-epoll-classifier>
+      <netty-transport-native-kqueue-classifier>osx-x86_64</netty-transport-native-kqueue-classifier>
+
+      <fast-tests>false</fast-tests>
+
+      <project.build.outputTimestamp>2025-03-13T19:09:59Z</project.build.outputTimestamp>
+   </properties>
+
+   <scm>
+      <connection>scm:git:https://gitbox.apache.org/repos/asf/activemq-artemis.git</connection>
+      <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/activemq-artemis.git</developerConnection>
+      <url>https://github.com/apache/activemq-artemis</url>
+      <tag>2.40.0</tag>
+   </scm>
+
+   <issueManagement>
+      <system>JIRA</system>
+      <url>https://issues.apache.org/jira/browse/ARTEMIS</url>
+   </issueManagement>
+   <developers>
+      <developer>
+         <name>The Apache ActiveMQ Team</name>
+         <email>dev@activemq.apache.org</email>
+         <url>http://activemq.apache.org</url>
+         <organization>Apache Software Foundation</organization>
+         <organizationUrl>http://apache.org/</organizationUrl>
+      </developer>
+   </developers>
+   <mailingLists>
+      <mailingList>
+         <name>User List</name>
+         <subscribe>users-subscribe@activemq.apache.org</subscribe>
+         <unsubscribe>users-unsubscribe@activemq.apache.org</unsubscribe>
+         <post>users@activemq.apache.org</post>
+      </mailingList>
+      <mailingList>
+         <name>Development List</name>
+         <subscribe>dev-subscribe@activemq.apache.org</subscribe>
+         <unsubscribe>dev-unsubscribe@activemq.apache.org</unsubscribe>
+         <post>dev@activemq.apache.org</post>
+      </mailingList>
+   </mailingLists>
+
+   <profiles>
+      <profile>
+         <id>errorprone</id>
+         <activation>
+            <property>
+               <name>errorprone</name>
+            </property>
+         </activation>
+         <build>
+            <plugins>
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-compiler-plugin</artifactId>
+                  <configuration>
+                     <fork>true</fork>
+                     <compilerArgs>
+                        <arg>-Xdiags:verbose</arg>
+                        <arg>-XDcompilePolicy=simple</arg>
+                        <arg>-Xplugin:ErrorProne -Xep:ThreadLocalUsage:ERROR -Xep:MissingOverride:ERROR -Xep:NonAtomicVolatileUpdate:ERROR -Xep:SynchronizeOnNonFinalField:ERROR -Xep:StaticQualifiedUsingExpression:ERROR -Xep:WaitNotInLoop:ERROR -Xep:BanJNDI:OFF -Xep:DepAnn -Xep:AnnotationPosition -Xep:UnescapedEntity -XepExcludedPaths:.*/generated-sources/.*</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+                        <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+                        <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+                        <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
+                        <arg>--should-stop=ifError=FLOW</arg>
+                     </compilerArgs>
+                     <annotationProcessorPaths combine.children="append">
+                        <path>
+                           <groupId>com.google.errorprone</groupId>
+                           <artifactId>error_prone_core</artifactId>
+                           <version>${errorprone.version}</version>
+                        </path>
+                     </annotationProcessorPaths>
+                  </configuration>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+      <profile>
+         <id>owasp</id>
+         <build>
+            <plugins>
+               <plugin>
+                  <groupId>org.owasp</groupId>
+                  <artifactId>dependency-check-maven</artifactId>
+                  <version>${owasp.version}</version>
+                  <configuration>
+                     <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                     <skipTestScope>true</skipTestScope>
+                     <skipProvidedScope>true</skipProvidedScope>
+                  </configuration>
+                  <executions>
+                     <execution>
+                        <goals>
+                           <!-- combine results for all modules into a single report -->
+                           <goal>aggregate</goal>
+                        </goals>
+                     </execution>
+                  </executions>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+      <profile>
+         <id>dev</id>
+         <build>
+            <plugins>
+               <plugin>
+                  <groupId>org.apache.rat</groupId>
+                  <artifactId>apache-rat-plugin</artifactId>
+                  <executions>
+                     <execution>
+                        <phase>compile</phase>
+                        <goals>
+                           <goal>check</goal>
+                        </goals>
+                     </execution>
+                  </executions>
+               </plugin>
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-checkstyle-plugin</artifactId>
+                  <executions>
+                     <execution>
+                        <phase>compile</phase>
+                        <goals>
+                           <goal>check</goal>
+                        </goals>
+                     </execution>
+                  </executions>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+      <profile>
+         <id>release</id>
+         <modules>
+            <module>artemis-website</module>
+         </modules>
+         <properties>
+            <shade-plugin-create-sources>true</shade-plugin-create-sources>
+         </properties>
+         <build>
+            <plugins>
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-enforcer-plugin</artifactId>
+                  <executions>
+                     <execution>
+                        <id>enforce-java-version</id>
+                        <goals>
+                           <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                           <rules>
+                              <requireJavaVersion>
+                                 <version>[17, 18)</version>
+                                 <message>JDK 17 is required when building the release</message>
+                              </requireJavaVersion>
+                           </rules>
+                        </configuration>
+                     </execution>
+                  </executions>
+               </plugin>
+               <plugin>
+                  <groupId>org.apache.rat</groupId>
+                  <artifactId>apache-rat-plugin</artifactId>
+                  <executions>
+                     <execution>
+                        <phase>compile</phase>
+                        <goals>
+                           <goal>check</goal>
+                        </goals>
+                     </execution>
+                  </executions>
+               </plugin>
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-checkstyle-plugin</artifactId>
+                  <executions>
+                     <execution>
+                        <phase>compile</phase>
+                        <goals>
+                           <goal>check</goal>
+                        </goals>
+                     </execution>
+                  </executions>
+               </plugin>
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-source-plugin</artifactId>
+                  <executions>
+                     <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                           <goal>jar-no-fork</goal>
+                        </goals>
+                     </execution>
+                  </executions>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+      <profile>
+         <id>apache-release</id>
+         <properties>
+            <shade-plugin-create-sources>true</shade-plugin-create-sources>
+         </properties>
+         <build>
+            <plugins>
+               <plugin>
+                  <!-- Override the apache-release profile from the parent to skip creating
+                       a source-release archive here, it is done in artemis-distribution. -->
+                  <inherited>false</inherited>
+                  <artifactId>maven-assembly-plugin</artifactId>
+                  <executions>
+                     <execution>
+                        <id>source-release-assembly</id>
+                        <configuration>
+                           <skipAssembly>true</skipAssembly>
+                        </configuration>
+                     </execution>
+                  </executions>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+      <profile>
+         <!-- tests is the profile we use to run the entire testsuite
+               Running this entire build could take up to 2 hours -->
+         <id>tests</id>
+         <properties>
+            <skipUnitTests>false</skipUnitTests>
+            <skipJmsTests>false</skipJmsTests>
+            <skipJoramTests>false</skipJoramTests>
+            <skipIntegrationTests>false</skipIntegrationTests>
+            <skipFeaturesVerification>false</skipFeaturesVerification>
+            <skipIsolatedIntegrationTests>false</skipIsolatedIntegrationTests>
+            <skipSmokeTests>false</skipSmokeTests>
+            <skipTimingTests>true</skipTimingTests>
+            <skipStressTests>true</skipStressTests>
+            <skipSoakTests>true</skipSoakTests>
+            <skipPerformanceTests>true</skipPerformanceTests>
+            <skipExtraTests>false</skipExtraTests>
+            <skipLeakTests>false</skipLeakTests>
+         </properties>
+      </profile>
+      <profile>
+         <!-- This will represent a subset of the tests
+              This is used on PR checks -->
+         <id>fast-tests</id>
+         <properties>
+            <fast-tests>true</fast-tests>
+            <skipUnitTests>false</skipUnitTests>
+            <skipJmsTests>false</skipJmsTests>
+            <skipJoramTests>false</skipJoramTests>
+            <skipLeakTests>true</skipLeakTests>
+            <!-- This enables the karaf-<foo>-integration-tests and
+                 integration-tests module tests, see fast-tests profile
+                 in the latter for specific tests it then runs -->
+            <skipIntegrationTests>false</skipIntegrationTests>
+            <skipFeaturesVerification>false</skipFeaturesVerification>
+            <!-- Only a portion of the smoke-tests are run. See the filter
+                 applied in the fast-tests profile under ./tests/smoke-tests -->
+            <skipSmokeTests>false</skipSmokeTests>
+         </properties>
+      </profile>
+      <!-- This profile generates jacoco coverage files. To generate html report use "-Pjacoco-generate-report" -->
+      <profile>
+         <id>jacoco</id>
+         <dependencies>
+            <dependency>
+               <groupId>org.jacoco</groupId>
+               <artifactId>org.jacoco.core</artifactId>
+            </dependency>
+         </dependencies>
+         <properties>
+
+            <!-- Property set by Jacoco plugin -->
+            <jacoco.agent />
+
+            <activemq-surefire-argline>
+               -Dlog4j2.configurationFile="file:${activemq.basedir}/tests/config/${logging.config}"
+               -Djava.library.path="${activemq.basedir}/activemq-artemis-native/bin" -Djgroups.bind_addr=localhost -Dorg.apache.activemq.artemis.api.core.UDPBroadcastEndpointFactory.localBindAddress=localhost
+               -Djava.net.preferIPv4Stack=true -Dbasedir=${basedir}
+               @{jacoco.agent} -Djacoco.agent=@{jacoco.agent}
+            </activemq-surefire-argline>
+         </properties>
+         <build>
+            <plugins>
+               <plugin>
+                  <groupId>org.jacoco</groupId>
+                  <artifactId>jacoco-maven-plugin</artifactId>
+                  <executions>
+                     <execution>
+                        <id>jacoco-prepare</id>
+                        <phase>validate</phase>
+                        <goals>
+                           <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                           <destFile>${project.build.directory}/jacoco.exec</destFile>
+                           <!-- Jacoco sets this property with agent configuration.
+                           This property is passed to maven-surefire-plugin -->
+                           <propertyName>jacoco.agent</propertyName>
+                        </configuration>
+                     </execution>
+                     <execution>
+                        <id>merge</id>
+                        <phase>none</phase>
+                        <goals>
+                           <goal>merge</goal>
+                        </goals>
+                     </execution>
+                  </executions>
+                  <configuration>
+                     <fileSets>
+                        <fileSet implementation="org.apache.maven.shared.model.fileset.FileSet">
+                           <directory>${activemq.basedir}</directory>
+                           <includes>
+                              <include>**/*.exec</include>
+                           </includes>
+                        </fileSet>
+                     </fileSets>
+                  </configuration>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+      <!-- This profile generates html report from jacoco coverage files. Use "-Pjacoco" profile to generate coverage. -->
+      <profile>
+         <id>jacoco-generate-report</id>
+         <build>
+            <plugins>
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-dependency-plugin</artifactId>
+                  <executions>
+                     <!-- Copy jacoco ant jar. This is needed to generate jacoco report with maven-antrun-plugin -->
+                     <execution>
+                        <goals>
+                           <goal>copy</goal>
+                        </goals>
+                        <phase>process-test-resources</phase>
+                        <inherited>false</inherited>
+                        <configuration>
+                           <artifactItems>
+                              <artifactItem>
+                                 <groupId>org.jacoco</groupId>
+                                 <artifactId>org.jacoco.ant</artifactId>
+                                 <version>${version.org.jacoco.plugin}</version>
+                              </artifactItem>
+                           </artifactItems>
+                           <stripVersion>true</stripVersion>
+                           <outputDirectory>${project.build.directory}/jacoco-jars</outputDirectory>
+                        </configuration>
+                     </execution>
+                  </executions>
+               </plugin>
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-antrun-plugin</artifactId>
+                  <executions>
+                     <execution>
+                        <phase>post-integration-test</phase>
+                        <goals><goal>run</goal></goals>
+                        <inherited>false</inherited>
+                        <configuration>
+                           <target>
+                              <property name="result.report.dir" location="target/jacoco-report" />
+                              <taskdef name="report" classname="org.jacoco.ant.ReportTask">
+                                 <classpath path="${project.build.directory}/jacoco-jars/org.jacoco.ant.jar" />
+                              </taskdef>
+                              <echo>Creating JaCoCo ActiveMQ Artemis test coverage reports...</echo>
+                              <report>
+                                 <executiondata>
+                                    <fileset dir="${basedir}">
+                                       <include name="**/target/jacoco.exec" />
+                                    </fileset>
+                                 </executiondata>
+                                 <structure name="JaCoCo ActiveMQ Artemis">
+                                    <classfiles>
+                                       <fileset dir="${activemq.basedir}/artemis-boot/target/classes" />
+                                       <fileset dir="${activemq.basedir}/artemis-cdi-client/target/classes" />
+                                       <fileset dir="${activemq.basedir}/artemis-cli/target/classes" />
+                                       <fileset dir="${activemq.basedir}/artemis-commons/target/classes" />
+                                       <fileset dir="${activemq.basedir}/artemis-core-client/target/classes" />
+                                       <fileset dir="${activemq.basedir}/artemis-dto/target/classes" />
+                                       <fileset dir="${activemq.basedir}/artemis-jdbc-store/target/classes" />
+                                       <fileset dir="${activemq.basedir}/artemis-jms-client/target/classes" />
+                                       <fileset dir="${activemq.basedir}/artemis-jms-server/target/classes" />
+                                       <fileset dir="${activemq.basedir}/artemis-journal/target/classes" />
+                                       <fileset dir="${activemq.basedir}/activemq-artemis-native/target/classes" />
+                                       <fileset dir="${activemq.basedir}/artemis-ra/target/classes" />
+                                       <fileset dir="${activemq.basedir}/artemis-selector/target/classes" />
+                                       <fileset dir="${activemq.basedir}/artemis-server/target/classes" />
+                                       <fileset dir="${activemq.basedir}/artemis-server-osgi/target/classes" />
+                                       <fileset dir="${activemq.basedir}/artemis-service-extensions/target" />
+                                       <fileset dir="${activemq.basedir}/artemis-web/target/classes" />
+                                    </classfiles>
+                                    <sourcefiles encoding="UTF-8">
+                                       <fileset dir="${activemq.basedir}/artemis-boot/src/main/java" />
+                                       <fileset dir="${activemq.basedir}/artemis-cdi-client/src/main/java" />
+                                       <fileset dir="${activemq.basedir}/artemis-cli/src/main/java" />
+                                       <fileset dir="${activemq.basedir}/artemis-commons/src/main/java" />
+                                       <fileset dir="${activemq.basedir}/artemis-core-client/src/main/java" />
+                                       <fileset dir="${activemq.basedir}/artemis-dto/src/main/java" />
+                                       <fileset dir="${activemq.basedir}/artemis-jdbc-store/src/main/java" />
+                                       <fileset dir="${activemq.basedir}/artemis-jms-client/src/main/java" />
+                                       <fileset dir="${activemq.basedir}/artemis-jms-server/src/main/java" />
+                                       <fileset dir="${activemq.basedir}/artemis-journal/src/main/java" />
+                                       <fileset dir="${activemq.basedir}/activemq-artemis-native/src/main/java" />
+                                       <fileset dir="${activemq.basedir}/artemis-ra/src/main/java" />
+                                       <fileset dir="${activemq.basedir}/artemis-selector/src/main/java" />
+                                       <fileset dir="${activemq.basedir}/artemis-server/src/main/java" />
+                                       <fileset dir="${activemq.basedir}/artemis-server-osgi/src/main/java" />
+                                       <fileset dir="${activemq.basedir}/artemis-service-extensions/src/main/java" />
+                                       <fileset dir="${activemq.basedir}/artemis-web/src/main/java" />
+                                    </sourcefiles>
+                                 </structure>
+                                 <html destdir="\${result.report.dir}" />
+                                 <xml destfile="\${result.report.dir}/report.xml" />
+                              </report>
+                           </target>
+                        </configuration>
+                     </execution>
+                  </executions>
+                  <dependencies>
+                     <dependency>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>org.jacoco.ant</artifactId>
+                        <version>${version.org.jacoco.plugin}</version>
+                     </dependency>
+                  </dependencies>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+      <profile>
+         <!-- Use along with mvn dependency:go-offline to generate props need to resolve netty deps -->
+         <id>go-offline</id>
+         <build>
+            <plugins>
+               <plugin>
+                  <groupId>kr.motd.maven</groupId>
+                  <artifactId>os-maven-plugin</artifactId>
+                  <version>1.7.1</version>
+                  <extensions>true</extensions>
+                  <executions>
+                     <execution>
+                        <phase>initialize</phase>
+                        <goals>
+                           <goal>detect</goal>
+                        </goals>
+                     </execution>
+                  </executions>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+   </profiles>
+
+   <build>
+      <pluginManagement>
+         <plugins>
+            <plugin>
+               <groupId>org.eclipse.m2e</groupId>
+               <artifactId>lifecycle-mapping</artifactId>
+               <version>1.0.0</version>
+               <configuration>
+                  <lifecycleMappingMetadata>
+                     <pluginExecutions>
+                        <pluginExecution>
+                           <pluginExecutionFilter>
+                              <groupId>org.apache.rat</groupId>
+                              <artifactId>apache-rat-plugin</artifactId>
+                              <versionRange>[0.12,)</versionRange>
+                              <goals>
+                                 <goal>check</goal>
+                              </goals>
+                           </pluginExecutionFilter>
+                           <action>
+                              <ignore />
+                           </action>
+                        </pluginExecution>
+                        <pluginExecution>
+                           <pluginExecutionFilter>
+                              <groupId>
+                                 org.apache.servicemix.tooling
+                           </groupId>
+                              <artifactId>
+                                 depends-maven-plugin
+                           </artifactId>
+                              <versionRange>
+                                 [1.2,)
+                           </versionRange>
+                              <goals>
+                                 <goal>
+                                    generate-depends-file
+                              </goal>
+                              </goals>
+                           </pluginExecutionFilter>
+                           <action>
+                              <ignore />
+                           </action>
+                        </pluginExecution>
+                     </pluginExecutions>
+                  </lifecycleMappingMetadata>
+               </configuration>
+            </plugin>
+            <plugin>
+               <groupId>org.codehaus.mojo</groupId>
+               <artifactId>javacc-maven-plugin</artifactId>
+               <version>3.1.0</version>
+               <executions>
+                  <execution>
+                     <id>javacc</id>
+                     <goals>
+                        <goal>javacc</goal>
+                     </goals>
+                  </execution>
+               </executions>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-rar-plugin</artifactId>
+               <version>3.0.0</version>
+            </plugin>
+            <plugin>
+               <groupId>net.sf.maven-sar</groupId>
+               <artifactId>maven-sar-plugin</artifactId>
+               <version>1.0</version>
+            </plugin>
+            <plugin>
+               <groupId>org.eclipse.jetty</groupId>
+               <artifactId>jetty-maven-plugin</artifactId>
+               <version>${jetty.version}</version>
+            </plugin>
+            <plugin>
+               <groupId>org.wildfly.extras.batavia</groupId>
+               <artifactId>transformer-tools-mvn</artifactId>
+               <version>${version.batavia}</version>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-surefire-plugin</artifactId>
+               <configuration>
+                  <forkCount>1</forkCount>
+                  <reuseForks>true</reuseForks>
+                  <runOrder>alphabetical</runOrder>
+                  <argLine>${activemq-surefire-argline}</argLine>
+                  <environmentVariables>
+                     <PN_TRACE_FRM>${proton.trace.frames}</PN_TRACE_FRM>
+                  </environmentVariables>
+                  <statelessTestsetReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter">
+                     <version>3.0</version>
+                     <usePhrasedTestCaseMethodName>true</usePhrasedTestCaseMethodName>
+                  </statelessTestsetReporter>
+               </configuration>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-surefire-report-plugin</artifactId>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-pmd-plugin</artifactId>
+               <version>${maven.pmd.plugin.version}</version>
+               <configuration>
+                  <linkXRef>true</linkXRef>
+                  <minimumTokens>100</minimumTokens>
+               </configuration>
+            </plugin>
+            <plugin>
+               <groupId>org.codehaus.mojo</groupId>
+               <artifactId>build-helper-maven-plugin</artifactId>
+               <version>3.6.0</version>
+            </plugin>
+            <!-- Many examples use it -->
+            <plugin>
+               <groupId>org.apache.activemq</groupId>
+               <artifactId>artemis-maven-plugin</artifactId>
+               <version>${project.version}</version>
+            </plugin>
+            <plugin>
+               <groupId>org.jacoco</groupId>
+               <artifactId>jacoco-maven-plugin</artifactId>
+               <version>${version.org.jacoco.plugin}</version>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-checkstyle-plugin</artifactId>
+               <dependencies>
+                  <dependency>
+                     <groupId>com.github.sevntu-checkstyle</groupId>
+                     <artifactId>sevntu-checks</artifactId>
+                     <version>${sevntu.checks.version}</version>
+                  </dependency>
+                  <dependency>
+                     <groupId>com.puppycrawl.tools</groupId>
+                     <artifactId>checkstyle</artifactId>
+                     <version>${checkstyle.version}</version>
+                  </dependency>
+               </dependencies>
+               <configuration>
+                  <configLocation>${activemq.basedir}/etc/checkstyle.xml</configLocation>
+                  <suppressionsLocation>${activemq.basedir}/etc/checkstyle-suppressions.xml</suppressionsLocation>
+                  <failsOnError>false</failsOnError>
+                  <failOnViolation>true</failOnViolation>
+                  <consoleOutput>true</consoleOutput>
+                  <includeTestSourceDirectory>true</includeTestSourceDirectory>
+               </configuration>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.rat</groupId>
+               <artifactId>apache-rat-plugin</artifactId>
+               <configuration>
+                  <excludes>
+                     <exclude>**/src/main/webapp/hawtconfig.json</exclude>
+                     <exclude>.repository/**</exclude>
+                     <exclude>.travis.yml</exclude>
+                     <exclude>.github/workflows/*</exclude>
+                     <exclude>**/footer.html</exclude>
+                     <exclude>**/*.txt</exclude>
+                     <exclude>**/*.md</exclude>
+                     <exclude>**/*.adoc</exclude>
+                     <exclude>etc/ide-settings/**</exclude>
+                     <exclude>**/*.json</exclude>
+                     <exclude>docs/resources/font-awesome/**/*</exclude>
+                     <exclude>docs/user-manual/_diagrams/*.svg</exclude>
+                     <exclude>docs/user-manual/02-27-00-scripts-profiles.diff</exclude>
+                     <exclude>docs/user-manual/02-27-00-scripts-profiles-windows.diff</exclude>
+                     <exclude>**/target/</exclude>
+                     <exclude>**/META-INF/services/*</exclude>
+                     <exclude>**/META-INF/MANIFEST.MF</exclude>
+                     <exclude>**/META-INF/detectors</exclude>
+                     <exclude>**/*.iml</exclude>
+                     <exclude>**/*.jceks</exclude>
+                     <exclude>**/*.jks</exclude>
+                     <exclude>**/*.p12</exclude>
+                     <exclude>**/xml.xsd</exclude>
+                     <exclude>**/*.pemcfg</exclude>
+                     <exclude>**/org/apache/activemq/artemis/utils/json/**</exclude>
+                     <exclude>**/enable-log-bundle-annotation-processor</exclude>
+                     <exclude>**/.settings/**</exclude>
+                     <exclude>**/.project</exclude>
+                     <exclude>**/.classpath</exclude>
+                     <exclude>**/.editorconfig</exclude>
+                     <exclude>**/.checkstyle</exclude>
+                     <exclude>**/.factorypath</exclude>
+                     <exclude>**/org.apache.activemq.artemis.cfg</exclude>
+                     <exclude>**/nb-configuration.xml</exclude>
+                     <exclude>**/nbactions-tests.xml</exclude>
+                     <exclude>**/.vscode/settings.json</exclude>
+                     <!-- activemq5 unit tests exclude -->
+                     <exclude>**/*.data</exclude>
+                     <exclude>**/*.bin</exclude>
+                     <exclude>**/src/test/resources/keystore</exclude>
+                     <exclude>**/src/test/java/org/apache/activemq/security/*.ts</exclude>
+                     <exclude>**/*.log</exclude>
+                     <exclude>**/*.redo</exclude>
+
+                     <!-- NPM files -->
+                     <exclude>**/node/**</exclude>
+                     <exclude>**/node_modules/**</exclude>
+                     <exclude>**/package.json</exclude>
+                     <exclude>**/package-lock.json</exclude>
+
+                     <!-- Build time overlay folder -->
+                     <exclude>**/overlays/**</exclude>
+
+                     <!-- things from cmake on the native build -->
+                     <exclude>**/CMakeFiles/</exclude>
+                     <exclude>**/Makefile</exclude>
+                     <exclude>**/cmake_install.cmake</exclude>
+                     <exclude>activemq-artemis-native/src/main/c/org_apache_activemq_artemis_jlibaio_LibaioContext.h</exclude>
+                     <exclude>**/dependency-reduced-pom.xml</exclude>
+
+                     <!-- Mockito -->
+                     <exclude>**/src/test/resources/mockito-extensions/org.mockito.plugins.MockMaker</exclude>
+
+                     <!-- .NET Examples-->
+                     <exclude>examples/protocols/amqp/dotnet/**/obj/**/*</exclude>
+                     <exclude>examples/protocols/amqp/dotnet/**/bin/**/*</exclude>
+                     <exclude>examples/protocols/amqp/dotnet/**/readme.md</exclude>
+                     <exclude>examples/protocols/amqp/**/readme.md</exclude>
+
+                     <!-- DB Test config files -->
+                     <exclude>tests/db-tests/jdbc-drivers/**/*</exclude>
+                  </excludes>
+               </configuration>
+            </plugin>
+            <plugin>
+               <groupId>org.codehaus.mojo</groupId>
+               <artifactId>exec-maven-plugin</artifactId>
+               <version>${exec-maven-plugin.version}</version>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-release-plugin</artifactId>
+               <configuration>
+                  <autoVersionSubmodules>true</autoVersionSubmodules>
+                  <tagNameFormat>@{project.version}</tagNameFormat>
+                  <arguments>-DskipTests</arguments>
+               </configuration>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-compiler-plugin</artifactId>
+               <configuration>
+                  <annotationProcessorPaths>
+                     <!-- This is a dummy path, it has no processor, used here to stop
+                          implicit processor search of main dependencies.
+                          Append desired paths to annotationProcessorPaths in child
+                          module poms to enable the desired processors.
+                          Avoids use of 'proc:full', which needs newest JDK < 21 builds -->
+                     <path>
+                        <groupId>org.apache.apache.resources</groupId>
+                        <artifactId>apache-jar-resource-bundle</artifactId>
+                        <version>${version.apache-resource-bundles}</version>
+                     </path>
+                  </annotationProcessorPaths>
+                  <annotationProcessorPathsUseDepMgmt>true</annotationProcessorPathsUseDepMgmt>
+               </configuration>
+            </plugin>
+         </plugins>
+      </pluginManagement>
+
+      <plugins>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-enforcer-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>enforce-java-version</id>
+                  <goals>
+                     <goal>enforce</goal>
+                  </goals>
+                  <configuration>
+                     <rules>
+                        <requireJavaVersion>
+                           <version>[17,)</version>
+                           <message>You must use JDK 17+ when building</message>
+                        </requireJavaVersion>
+                     </rules>
+                  </configuration>
+               </execution>
+               <execution>
+                  <id>enforce-maven-version</id>
+                  <goals>
+                     <goal>enforce</goal>
+                  </goals>
+                  <configuration>
+                     <rules>
+                        <requireMavenVersion>
+                           <version>3.5.0</version>
+                           <message>You must use Maven 3.5.0+ to build</message>
+                        </requireMavenVersion>
+                     </rules>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <configuration>
+               <noindex>true</noindex>
+               <doclint>all,-missing</doclint>
+            </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-help-plugin</artifactId>
+         </plugin>
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>findbugs-maven-plugin</artifactId>
+            <version>3.0.5</version>
+            <configuration>
+               <excludeFilterFile>${user.dir}/etc/findbugs-exclude.xml</excludeFilterFile>
+               <findbugsXmlOutput>true</findbugsXmlOutput>
+               <xmlOutput>true</xmlOutput>
+               <effort>Max</effort>
+               <failOnError>false</failOnError>
+            </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>maven-bundle-plugin</artifactId>
+            <version>${maven.bundle.plugin.version}</version>
+            <extensions>true</extensions>
+         </plugin>
+
+         <!-- This is placing the .so in the root target/bin/ dir, so the testsuite can use it, by
+              leveraging the surefire argLine. This avoids having to build a distribution to run tests.
+              Note the plugin config is not inherited, we only do this at the root. -->
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <inherited>false</inherited>
+            <executions>
+               <execution>
+                  <id>copy</id>
+                  <phase>generate-sources</phase>
+                  <goals>
+                     <goal>unpack</goal>
+                  </goals>
+               </execution>
+            </executions>
+            <configuration>
+               <artifactItems>
+                  <artifactItem>
+                     <groupId>org.apache.activemq</groupId>
+                     <artifactId>activemq-artemis-native</artifactId>
+                     <version>${activemq-artemis-native-version}</version>
+                     <type>jar</type>
+                     <overWrite>false</overWrite>
+                     <outputDirectory>${project.build.directory}/bin</outputDirectory>
+                     <includes>**/*.so</includes>
+                  </artifactItem>
+               </artifactItems>
+            </configuration>
+         </plugin>
+         <plugin>
+            <groupId>com.google.cloud.tools</groupId>
+            <artifactId>jib-maven-plugin</artifactId>
+            <version>${jib.maven.plugin.version}</version>
+         </plugin>
+      </plugins>
+   </build>
+
+   <reporting>
+      <plugins>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-checkstyle-plugin</artifactId>
+            <configuration>
+               <configLocation>${activemq.basedir}/etc/checkstyle.xml</configLocation>
+               <suppressionsLocation>${activemq.basedir}/etc/checkstyle-suppressions.xml</suppressionsLocation>
+               <failsOnError>false</failsOnError>
+            </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>findbugs-maven-plugin</artifactId>
+            <version>3.0.5</version>
+            <configuration>
+               <excludeFilterFile>${user.dir}/etc/findbugs-exclude.xml</excludeFilterFile>
+               <effort>Max</effort>
+               <failOnError>false</failOnError>
+            </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <configuration>
+               <minmemory>128m</minmemory>
+               <maxmemory>1024m</maxmemory>
+               <noindex>true</noindex>
+               <quiet>false</quiet>
+               <!-- XXX FIXME 'aggregate' is deprecated -->
+               <aggregate>true</aggregate>
+               <excludePackageNames>com.restfully.*:org.jboss.resteasy.examples.*:org.jboss.resteasy.tests.*
+               </excludePackageNames>
+            </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-project-info-reports-plugin</artifactId>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-report-plugin</artifactId>
+         </plugin>
+         <plugin>
+            <groupId>org.owasp</groupId>
+            <artifactId>dependency-check-maven</artifactId>
+            <version>${owasp.version}</version>
+            <reportSets>
+               <reportSet>
+                  <reports>
+                     <report>aggregate</report>
+                  </reports>
+               </reportSet>
+            </reportSets>
+         </plugin>
+      </plugins>
+   </reporting>
+
+   <!--
+     un comment this session here to validate repository releases.
+     <repositories>
+      <repository>
+         <id>release validation</id>
+         <name>Maven 1.0.0 release</name>
+         <layout>default</layout>
+         <url>https://repository.apache.org/content/repositories/orgapacheactivemq-XXXX</url>
+         <snapshots>
+            <enabled>false</enabled>
+         </snapshots>
+      </repository>
+   </repositories> -->
+</project>

@@ -1,0 +1,660 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.fasterxml</groupId>
+  <artifactId>oss-parent</artifactId>
+  <version>43</version>
+  <packaging>pom</packaging>
+
+  <name>FasterXML.com parent pom</name>
+  <description>FasterXML.com parent pom</description>
+  <url>http://github.com/FasterXML/</url>
+  <organization>
+    <name>FasterXML</name>
+    <url>http://fasterxml.com/</url>
+  </organization>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <!-- to fill in mostly by children, but stupid Sonatype REQUIRES
+       one developer already here
+    -->
+  <developers>
+    <developer>
+      <id>cowtowncoder</id>
+      <name>Tatu Saloranta</name>
+      <email>tatu@fasterxml.com</email>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git@github.com:FasterXML/oss-parent.git</connection>
+    <developerConnection>scm:git:git@github.com:FasterXML/oss-parent.git</developerConnection>
+    <url>http://github.com/FasterXML/oss-parent</url>
+    <tag>oss-parent-43</tag>
+  </scm>
+  <issueManagement>
+    <system>GitHub Issue Management</system>
+    <url>https://github.com/FasterXML/${project.artifactId}/issues</url>
+  </issueManagement>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>sonatype-nexus-snapshots</id>
+      <name>Sonatype Nexus Snapshots</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+
+    <repository>
+      <id>sonatype-nexus-staging</id>
+      <name>Nexus Release Repository</name>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+  </distributionManagement>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.build.resourceEncoding>UTF-8</project.build.resourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+    <generatedSourcesDir>${project.build.directory}/generated-sources</generatedSourcesDir>
+
+    <javadoc.maxmemory>1g</javadoc.maxmemory>
+
+    <!-- Use 1.6 as default baseline -->
+    <javac.src.version>1.6</javac.src.version>
+    <javac.target.version>1.6</javac.target.version>
+
+    <!-- By default, include all debug info; "vars" and "lines" both add 10-15% in size,
+         "source" very little
+     -->
+    <javac.debuglevel>lines,source,vars</javac.debuglevel>
+    <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ssZ</maven.build.timestamp.format>
+    <!--
+     | Configuration properties for the OSGi maven-bundle-plugin
+    -->
+    <osgi.export>${project.groupId}.*;version=${project.version}</osgi.export>
+    <osgi.import>*</osgi.import>
+    <osgi.dynamicImport />
+    <osgi.private />
+    <osgi.requiredExecutionEnvironment />
+    <osgi.versionpolicy>${range;[===,=+);${@}}</osgi.versionpolicy>
+    <osgi.includeResource>{maven-resources}</osgi.includeResource>
+    <!-- 27-Dec-2015, tatu: Allow use of "Main-Class" too, default to empty -->
+    <osgi.mainClass />
+
+    <!--
+     | shared build/report plugins version
+    -->
+
+    <!-- 04-Nov-2016, tatu: 3.2.0 for Jackson 2.9
+         05-Mar-2019, tatu: 4.2.0 for Jackson 2.10
+         31-Jul-2020, tatu: 5.1.1 for Jackson 2.12
+      -->
+    <version.plugin.bundle>5.1.1</version.plugin.bundle>
+
+    <version.plugin.clean>3.1.0</version.plugin.clean>
+    <version.plugin.cobertura>2.7</version.plugin.cobertura>
+
+    <!-- 31-Jul-2020, tatu: 3.8.1 for Jackson 2.12
+      -->
+    <version.plugin.compiler>3.8.1</version.plugin.compiler>
+    <version.plugin.deploy>3.0.0-M1</version.plugin.deploy>
+
+    <!-- 08-Aug-2017, tatu: Enforcer plugin will not work with Java 9
+          prior to 3.0.0
+      -->
+    <version.plugin.enforcer>3.0.0-M3</version.plugin.enforcer>
+    <version.plugin.gpg>1.6</version.plugin.gpg>
+
+    <version.plugin.install>3.0.0-M1</version.plugin.install>
+    <version.plugin.jacoco>0.8.7</version.plugin.jacoco>
+    <version.plugin.jar>3.2.0</version.plugin.jar>
+
+    <version.plugin.javadoc>3.3.0</version.plugin.javadoc>
+
+    <!-- 04-Mar-2019, latest property with v35, for Java 9+ Modules support 
+             (originally added in v34)
+     -->
+    <version.plugin.moditect>1.0.0.RC1</version.plugin.moditect>
+
+    <version.plugin.release>3.0.0-M1</version.plugin.release>
+    <version.plugin.replacer>1.5.3</version.plugin.replacer>
+    <version.plugin.resources>3.1.0</version.plugin.resources>
+
+    <version.plugin.shade>3.2.4</version.plugin.shade>
+    <version.plugin.site>3.9.1</version.plugin.site>
+
+    <version.plugin.source>3.2.1</version.plugin.source>
+
+    <!-- 05-Dec-2018, 2.17 -> 2.22.0 -->
+    <!-- 19-May-2019, 2.22.0 -> 2.22.2 (for JDK 11) -->
+    <!-- 31-Jul-2020, 2.22.2 -> 3.0.0-M5 -->
+    <version.plugin.surefire>2.22.2</version.plugin.surefire>
+
+    <!-- other "well-known" lib versions -->
+    <!-- 13-Oct-2020, 4.13 -> 4.13.1 (version 41) -->
+    <version.junit>4.13.1</version.junit>
+
+  </properties>
+
+  <repositories>
+    <repository>
+      <id>sonatype-nexus-snapshots</id>
+      <name>Sonatype Nexus Snapshots</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>1.7</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>${version.plugin.clean}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>3.1.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>${version.plugin.deploy}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>${version.plugin.gpg}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>${version.plugin.install}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>${version.plugin.javadoc}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>${version.plugin.resources}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>${version.plugin.shade}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>${version.plugin.site}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>${version.plugin.source}</version>
+        </plugin>
+        <!-- 05-Dec-2018, tatu: v34 adds "moditect" plug-in, for Java 9+ Module support -->
+        <plugin>
+          <groupId>org.moditect</groupId>
+          <artifactId>moditect-maven-plugin</artifactId>
+          <version>${version.plugin.moditect}</version>
+        </plugin>
+
+        <plugin>
+          <!-- 26-Mar-2018, tatu: This is a weird component; up to 1.4.1 has
+                  artifact `maven-replacer-plugin`; from 1.5 just `replacer`?!?!
+            -->
+          <groupId>com.google.code.maven-replacer-plugin</groupId>
+          <artifactId>replacer</artifactId>
+<!--
+          <artifactId>maven-replacer-plugin</artifactId>
+-->
+          <version>${version.plugin.replacer}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>cobertura-maven-plugin</artifactId>
+          <version>${version.plugin.cobertura}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.felix</groupId>
+          <artifactId>maven-bundle-plugin</artifactId>
+          <version>${version.plugin.bundle}</version>
+          <configuration>
+            <instructions>
+              <!--
+               | stops the "uses" clauses being added to "Export-Package" manifest entry
+              -->
+<!-- 04-Nov-2016, tatu: Not quite sure why it was disabled; see
+
+  https://github.com/FasterXML/jackson-jaxrs-providers/issues/93
+
+  for problem caused. Because of this, removed from Jackson 2.9
+
+              <_nouses>true</_nouses>
+-->
+
+              <!--
+               | Stop the JAVA_1_n_HOME variables from being treated as headers by Bnd
+              -->
+              <_removeheaders>Include-Resource,JAVA_1_3_HOME,JAVA_1_4_HOME,JAVA_1_5_HOME,JAVA_1_6_HOME,JAVA_1_7_HOME</_removeheaders>
+              <_versionpolicy>${osgi.versionpolicy}</_versionpolicy>
+              <Bundle-Name>${project.name}</Bundle-Name>
+              <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
+              <Bundle-Description>${project.description}</Bundle-Description>
+              <Export-Package>${osgi.export}</Export-Package>
+              <Private-Package>${osgi.private}</Private-Package>
+              <Import-Package>${osgi.import}</Import-Package>
+              <DynamicImport-Package>${osgi.dynamicImport}</DynamicImport-Package>
+              <Include-Resource>${osgi.includeResource}</Include-Resource>
+              <Bundle-DocURL>${project.url}</Bundle-DocURL>
+              <Bundle-RequiredExecutionEnvironment>${osgi.requiredExecutionEnvironment}</Bundle-RequiredExecutionEnvironment>
+
+              <Implementation-Build-Date>${maven.build.timestamp}</Implementation-Build-Date>
+              <X-Compile-Source-JDK>${javac.src.version}</X-Compile-Source-JDK>
+              <X-Compile-Target-JDK>${javac.target.version}</X-Compile-Target-JDK>
+
+              <Implementation-Title>${project.name}</Implementation-Title>
+              <Implementation-Version>${project.version}</Implementation-Version>
+              <Implementation-Vendor-Id>${project.groupId}</Implementation-Vendor-Id>
+              <Implementation-Vendor>${project.organization.name}</Implementation-Vendor>
+
+              <Specification-Title>${project.name}</Specification-Title>
+              <Specification-Version>${project.version}</Specification-Version>
+              <Specification-Vendor>${project.organization.name}</Specification-Vendor>
+
+              <Main-Class>${osgi.mainClass}</Main-Class>
+            </instructions>
+          </configuration>
+        </plugin>
+
+        <!-- Plug-in settings needed for Maven/Nexus release handling
+          -->
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>${version.plugin.release}</version>
+          <configuration>
+            <mavenExecutorId>forked-path</mavenExecutorId>
+            <useReleaseProfile>false</useReleaseProfile>
+            <arguments>-Prelease</arguments>
+          </configuration>
+        </plugin>
+	<!-- 05-Mar-2021, tatu: I don't think this is in use at all?
+
+        <plugin>
+          <groupId>org.sonatype.plugins</groupId>
+          <artifactId>nexus-maven-plugin</artifactId>
+          <version>2.1</version>
+          <configuration>
+            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+            <serverAuthId>sonatype-nexus-staging</serverAuthId>
+          </configuration>
+        </plugin>
+-->
+
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <!-- In Alphabetic order by 'artifactId' -->
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-generated-sources</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${generatedSourcesDir}</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${version.plugin.jacoco}</version>
+      </plugin>
+      
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${version.plugin.compiler}</version>
+        <!-- 05-Dec-2018, tatu: Looks like override needed for some reason 
+          (probably for Java 9+ Module support) 
+        -->
+        <dependencies>
+          <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+            <version>7.0</version>
+          </dependency>
+        </dependencies>
+        <configuration>
+          <source>${javac.src.version}</source>
+          <target>${javac.target.version}</target>
+          <showDeprecation>true</showDeprecation>
+          <showWarnings>true</showWarnings>
+          <optimize>true</optimize>
+          <!-- 16-Apr-2013, tatu: As per Nick W's suggestions, let's 
+              use these to reduce jar size 
+            -->
+          <debug>true</debug>
+          <debuglevel>${javac.debuglevel}</debuglevel>
+        </configuration>
+      </plugin>
+      
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>${version.plugin.enforcer}</version>
+        <executions>
+          <execution>
+            <id>enforce-java</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <!-- 08-Aug-2017, tatu: No FX/CTC lib allows 1.5 any more -->
+                <requireJavaVersion>
+                  <version>[1.6,)</version>
+                  <message>[ERROR] The currently supported version of Java is 1.6 or higher</message>
+                </requireJavaVersion>
+                <requireMavenVersion>
+                  <version>[3.0,)</version>
+                  <message>[ERROR] The currently supported version of Maven is 3.0 or higher</message>
+                </requireMavenVersion>
+                <requirePluginVersions>
+                  <banLatest>true</banLatest>
+                  <banRelease>true</banRelease>
+                  <banSnapshots>true</banSnapshots>
+                  <phases>clean,deploy,site</phases>
+                  <message>[ERROR] Best Practice is to always define plugin versions!</message>
+                </requirePluginVersions>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <extensions>true</extensions>
+      </plugin>
+      
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>${version.plugin.jar}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-scm-plugin</artifactId>
+        <version>1.9.1</version>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.maven.scm</groupId>
+            <artifactId>maven-scm-provider-gitexe</artifactId>
+            <version>1.9.1</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-descriptor</id>
+            <goals>
+              <goal>attach-descriptor</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${version.plugin.surefire}</version>
+      </plugin>
+
+    </plugins>
+
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.scm</groupId>
+        <artifactId>maven-scm-provider-gitexe</artifactId>
+        <version>1.9.1</version>
+      </extension>
+
+      <extension>
+        <groupId>org.apache.maven.scm</groupId>
+        <artifactId>maven-scm-manager-plexus</artifactId>
+        <version>1.9.1</version>
+      </extension>
+
+      <!-- WTH is this? -->
+      <extension>
+        <groupId>org.kathrynhuxtable.maven.wagon</groupId>
+        <artifactId>wagon-gitsite</artifactId>
+        <version>0.3.1</version>
+      </extension>
+    </extensions>
+  </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>${version.plugin.javadoc}</version>
+        <configuration>
+          <bootclasspath>${sun.boot.class.path}</bootclasspath>
+          <doclet>com.google.doclava.Doclava</doclet>
+          <useStandardDocletOptions>false</useStandardDocletOptions>
+          <additionalJOption>-J-Xmx1024m</additionalJOption>
+          <maxmemory>${javadoc.maxmemory}</maxmemory>
+          <links>
+            <link>http://docs.oracle.com/javase/8/docs/api/</link>
+          </links>
+          <docletArtifact>
+            <groupId>com.google.doclava</groupId>
+            <artifactId>doclava</artifactId>
+            <version>1.0.3</version>
+          </docletArtifact>
+          <additionalparam>
+            -hdf project.name "${project.name}"
+            -d ${project.reporting.outputDirectory}/apidocs
+          </additionalparam>
+        </configuration>
+        <reportSets>
+          <reportSet>
+            <id>default</id>
+            <reports>
+              <report>javadoc</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>2.5</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jxr-plugin</artifactId>
+        <version>2.3</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>jdepend-maven-plugin</artifactId>
+        <version>2.0</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+        <version>${version.plugin.surefire}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <version>2.7.1</version>
+        <configuration>
+          <linkXref>true</linkXref>
+          <minimumTokens>100</minimumTokens>
+          <targetJdk>1.5</targetJdk>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>taglist-maven-plugin</artifactId>
+        <version>2.4</version>
+        <configuration>
+          <tagListOptions>
+            <tagClasses>
+              <tagClass>
+                <displayName>Todo Work</displayName>
+                <tags>
+                  <tag>
+                    <matchString>TODO</matchString>
+                    <matchType>ignoreCase</matchType>
+                  </tag>
+                  <tag>
+                    <matchString>FIXME</matchString>
+                    <matchType>ignoreCase</matchType>
+                  </tag>
+                </tags>
+              </tagClass>
+            </tagClasses>
+          </tagListOptions>
+        </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
+
+  <profiles>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>${version.plugin.source}</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+                <configuration>
+                  <archive>
+                    <manifest>
+                      <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                      <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                    </manifest>
+                    <manifestEntries>
+                      <Implementation-Build-Date>${maven.build.timestamp}</Implementation-Build-Date>
+                      <X-Compile-Source-JDK>${javac.src.version}</X-Compile-Source-JDK>
+                      <X-Compile-Target-JDK>${javac.target.version}</X-Compile-Target-JDK>
+                    </manifestEntries>
+                  </archive>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>${version.plugin.javadoc}</version>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+                <configuration>
+                  <quiet>true</quiet>
+                  <archive>
+                    <manifest>
+                      <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                      <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                    </manifest>
+                    <manifestEntries>
+                      <Implementation-Build-Date>${maven.build.timestamp}</Implementation-Build-Date>
+                      <X-Compile-Source-JDK>${javac.src.version}</X-Compile-Source-JDK>
+                      <X-Compile-Target-JDK>${javac.target.version}</X-Compile-Target-JDK>
+                    </manifestEntries>
+                  </archive>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+</project>

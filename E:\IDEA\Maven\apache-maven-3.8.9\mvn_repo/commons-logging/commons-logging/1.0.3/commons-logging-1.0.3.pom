@@ -1,0 +1,31 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>commons-logging</groupId>
+  <artifactId>commons-logging</artifactId>
+  <name>Logging</name>
+  <version>1.0.3</version>
+  <description>Commons Logging</description>
+  <url>http://jakarta.apache.org/commons/logging/</url>
+  <inceptionYear>2001</inceptionYear>
+  <build />
+  <dependencies>
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>1.2.6</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>logkit</groupId>
+      <artifactId>logkit</artifactId>
+      <version>1.0.1</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.7</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>

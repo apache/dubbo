@@ -1,0 +1,249 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>commons-collections</groupId>
+  <artifactId>commons-collections</artifactId>
+  <version>3.1</version>
+  <description>Types that extend and augment the Java Collections Framework.</description>
+  <inceptionYear>2001</inceptionYear>
+  <developers>
+    <developer>
+      <id>scolebourne</id>
+      <name>Stephen Colebourne</name>
+      <email></email>
+      <organization></organization>
+    </developer>
+    <developer>
+      <id>morgand</id>
+      <name>Morgan Delagrange</name>
+      <email></email>
+      <organization></organization>
+    </developer>
+    <developer>
+      <id>matth</id>
+      <name>Matthew Hawthorne</name>
+      <email></email>
+      <organization></organization>
+    </developer>
+    <developer>
+      <id>geirm</id>
+      <name>Geir Magnusson</name>
+      <email></email>
+      <organization></organization>
+    </developer>
+    <developer>
+      <id>craigmcc</id>
+      <name>Craig McClanahan</name>
+      <email></email>
+      <organization></organization>
+    </developer>
+    <developer>
+      <id>psteitz</id>
+      <name>Phil Steitz</name>
+      <email></email>
+      <organization></organization>
+    </developer>
+    <developer>
+      <id>amamment</id>
+      <name>Arun M. Thomas</name>
+      <email></email>
+      <organization></organization>
+    </developer>
+    <developer>
+      <id>rwaldhoff</id>
+      <name>Rodney Waldhoff</name>
+      <email></email>
+      <organization></organization>
+    </developer>
+    <developer>
+      <id>bayard</id>
+      <name>Henri Yandell</name>
+      <email></email>
+      <organization></organization>
+    </developer>
+  </developers>
+  <contributors>
+    <contributor>
+      <name>Max Rydahl Andersen</name>
+    </contributor>
+    <contributor>
+      <name>Federico Barbieri</name>
+    </contributor>
+    <contributor>
+      <name>Arron Bates</name>
+    </contributor>
+    <contributor>
+      <name>Nicola Ken Barozzi</name>
+    </contributor>
+    <contributor>
+      <name>Ola Berg</name>
+    </contributor>
+    <contributor>
+      <name>Christopher Berry</name>
+    </contributor>
+    <contributor>
+      <name>Janek Bogucki</name>
+    </contributor>
+    <contributor>
+      <name>Chuck Burdick</name>
+    </contributor>
+    <contributor>
+      <name>Dave Bryson</name>
+    </contributor>
+    <contributor>
+      <name>Julien Buret</name>
+    </contributor>
+    <contributor>
+      <name>Jonathan Carlson</name>
+    </contributor>
+    <contributor>
+      <name>Ram Chidambaram</name>
+    </contributor>
+    <contributor>
+      <name>Peter Donald</name>
+    </contributor>
+    <contributor>
+      <name>Steve Downey</name>
+    </contributor>
+    <contributor>
+      <name>Rich Dougherty</name>
+    </contributor>
+    <contributor>
+      <name>Stefano Fornari</name>
+    </contributor>
+    <contributor>
+      <name>Andrew Freeman</name>
+    </contributor>
+    <contributor>
+      <name>Gerhard Froehlich</name>
+    </contributor>
+    <contributor>
+      <name>Paul Jack</name>
+    </contributor>
+    <contributor>
+      <name>Eric Johnson</name>
+    </contributor>
+    <contributor>
+      <name>Kent Johnson</name>
+    </contributor>
+    <contributor>
+      <name>Marc Johnson</name>
+    </contributor>
+    <contributor>
+      <name>Nissim Karpenstein</name>
+    </contributor>
+    <contributor>
+      <name>Mohan Kishore</name>
+    </contributor>
+    <contributor>
+      <name>Simon Kitching</name>
+    </contributor>
+    <contributor>
+      <name>Peter KoBek</name>
+    </contributor>
+    <contributor>
+      <name>David Leppik</name>
+    </contributor>
+    <contributor>
+      <name>Berin Loritsch</name>
+    </contributor>
+    <contributor>
+      <name>Stefano Mazzocchi</name>
+    </contributor>
+    <contributor>
+      <name>Brian McCallister</name>
+    </contributor>
+    <contributor>
+      <name>Leon Messerschmidt</name>
+    </contributor>
+    <contributor>
+      <name>Mauricio S. Moura</name>
+    </contributor>
+    <contributor>
+      <name>Kasper Nielsen</name>
+    </contributor>
+    <contributor>
+      <name>Steve Phelps</name>
+    </contributor>
+    <contributor>
+      <name>Ilkka Priha</name>
+    </contributor>
+    <contributor>
+      <name>Herve Quiroz</name>
+    </contributor>
+    <contributor>
+      <name>Daniel Rall</name>
+    </contributor>
+    <contributor>
+      <name>Henning P. Schmiedehausen</name>
+    </contributor>
+    <contributor>
+      <name>Howard Lewis Ship</name>
+    </contributor>
+    <contributor>
+      <name>Joe Raysa</name>
+    </contributor>
+    <contributor>
+      <name>Michael Smith</name>
+    </contributor>
+    <contributor>
+      <name>Jan Sorensen</name>
+    </contributor>
+    <contributor>
+      <name>Jon S. Stevens</name>
+    </contributor>
+    <contributor>
+      <name>James Strachan</name>
+    </contributor>
+    <contributor>
+      <name>Leo Sutic</name>
+    </contributor>
+    <contributor>
+      <name>Neil O'Toole</name>
+    </contributor>
+    <contributor>
+      <name>Jeff Turner</name>
+    </contributor>
+    <contributor>
+      <name>Jeff Varszegi</name>
+    </contributor>
+    <contributor>
+      <name>Ralph Wagner</name>
+    </contributor>
+    <contributor>
+      <name>David Weinrich</name>
+    </contributor>
+    <contributor>
+      <name>Dieter Wimberger</name>
+    </contributor>
+    <contributor>
+      <name>Serhiy Yevtushenko</name>
+    </contributor>
+    <contributor>
+      <name>Jason van Zyl</name>
+    </contributor>
+  </contributors>
+  <organization>
+    <name>Apache Software Foundation</name>
+    <url>http://www.apache.org</url>
+  </organization>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <includes>
+            <include>org/apache/commons/collections/TestAllPackages.java</include>
+          </includes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>

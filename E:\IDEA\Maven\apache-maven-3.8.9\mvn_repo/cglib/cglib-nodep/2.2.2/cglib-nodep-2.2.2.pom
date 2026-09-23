@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>cglib</groupId>
+  <artifactId>cglib-nodep</artifactId>
+  <name>Code Generation Library</name>
+  <version>2.2.2</version>
+  <url>http://cglib.sourceforge.net/</url>
+  <description>Code generation library with shaded ASM dependecies</description>
+  <licenses>
+    <license>
+            <name>ASF 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <scm>
+    <connection>scm:cvs:pserver:anonymous@cglib.cvs.sourceforge.net:/cvsroot/cglib:cglib</connection>
+    <url>http://cglib.cvs.sourceforge.net/cglib</url>
+  </scm>
+  <dependencies>
+    <dependency>
+      <groupId>ant</groupId>
+      <artifactId>ant</artifactId>
+      <version>1.6.2</version>
+      <optional>true</optional>
+    </dependency>
+  </dependencies>
+  <developers>
+    <developer>
+      <id>baliuka</id>
+      <name>Juozas Baliuka</name>
+    </developer>
+    <developer>
+      <id>herbyderby</id>
+      <name>Chris Nokleberg</name>
+    </developer>
+    <developer>
+      <id>sameb</id>
+      <name>Sam Berlin</name>
+    </developer>
+  </developers>
+</project>

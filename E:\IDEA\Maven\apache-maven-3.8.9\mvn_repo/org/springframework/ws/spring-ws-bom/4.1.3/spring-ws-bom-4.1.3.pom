@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.springframework.ws</groupId>
+  <artifactId>spring-ws-bom</artifactId>
+  <version>4.1.3</version>
+  <packaging>pom</packaging>
+  <name>spring-ws-bom</name>
+  <description>Spring WS – Bill of Materials (BOM)</description>
+  <url>https://spring.io/projects/spring-ws</url>
+  <organization>
+    <name>Broadcom Inc.</name>
+    <url>https://www.spring.io</url>
+  </organization>
+  <licenses>
+    <license>
+      <name>The Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <name>Spring</name>
+      <email>ask@spring.io</email>
+      <organization>Broadcom Inc.</organization>
+      <organizationUrl>https://www.spring.io</organizationUrl>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:git://github.com/spring-projects/spring-ws.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com:spring-projects/spring-ws.git</developerConnection>
+    <url>https://github.com/spring-projects/spring-ws</url>
+  </scm>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.ws</groupId>
+        <artifactId>spring-ws-core</artifactId>
+        <version>4.1.3</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.ws</groupId>
+        <artifactId>spring-ws-security</artifactId>
+        <version>4.1.3</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.ws</groupId>
+        <artifactId>spring-ws-support</artifactId>
+        <version>4.1.3</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.ws</groupId>
+        <artifactId>spring-ws-test</artifactId>
+        <version>4.1.3</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.ws</groupId>
+        <artifactId>spring-xml</artifactId>
+        <version>4.1.3</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+</project>

@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+   <groupId>com.fasterxml</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>27</version>
+  </parent>
+
+  <groupId>com.fasterxml.jackson</groupId>
+  <artifactId>jackson-parent</artifactId>
+  <version>2.8</version>
+  <packaging>pom</packaging>
+
+  <name>Jackson parent poms</name>
+  <description>Parent pom for all Jackson components</description>
+  <url>http://github.com/FasterXML/</url>
+  <organization>
+    <name>FasterXML</name>
+    <url>http://fasterxml.com/</url>
+  </organization>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>cowtowncoder</id>
+      <name>Tatu Saloranta</name>
+      <email>tatu@fasterxml.com</email>
+    </developer>
+    <developer>
+      <id>christophercurrie</id>
+      <name>Christopher Currie</name>
+      <email />
+    </developer>
+    <developer>
+      <id>prb</id>
+      <name>Paul Brown</name>
+      <email>prb@fasterxml.com</email>
+    </developer>
+  </developers>
+  <contributors>
+    <contributor>
+      <name>Simone Tripodi</name>
+      <email>simonetripodi@apache.org</email>
+    </contributor>
+  </contributors>
+
+  <scm>
+    <connection>scm:git:git@github.com:FasterXML/jackson-parent.git</connection>
+    <developerConnection>scm:git:git@github.com:FasterXML/jackson-parent.git</developerConnection>
+    <url>http://github.com/FasterXML/jackson-parent</url>
+    <tag>jackson-parent-2.8</tag>
+  </scm>
+
+  <properties>
+    <version.jackson.annotations>2.8.0</version.jackson.annotations>
+
+    <!-- 02-Oct-2015, tatu: Jackson 2.4 and above are Java 6 (earlier versions Java 5);
+          Jackson 2.7 and above Java 6 (with exception of `jackson-core`/`jackson-annotations` still Java 6)
+      -->
+    <javac.src.version>1.7</javac.src.version>
+    <javac.target.version>1.7</javac.target.version>
+    <javac.debuglevel>lines,source,vars</javac.debuglevel>
+
+    <!-- Versions for other dependencies -->
+    <version.junit>4.12</version.junit>
+
+    <!--
+     | For automatically generating PackageVersion.java. Your child pom.xml must define
+     | packageVersion.dir and packageVersion.package, and must set the phase of the
+     | process-packageVersion execution of maven-replacer-plugin to 'generate-sources'.
+    -->
+    <packageVersion.template.input>${basedir}/src/main/java/${packageVersion.dir}/PackageVersion.java.in</packageVersion.template.input>
+    <packageVersion.template.output>${generatedSourcesDir}/${packageVersion.dir}/PackageVersion.java</packageVersion.template.output>
+
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-annotations</artifactId>
+        <version>${version.jackson.annotations}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${version.junit}</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+
+        <!-- Jackson has stricter enforced requirements than parent pom -->
+        <plugin>
+         <groupId>org.apache.maven.plugins</groupId>
+         <artifactId>maven-enforcer-plugin</artifactId>
+         <version>1.4.1</version>
+         <executions>
+          <execution>
+            <id>enforce-java</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireJavaVersion>
+                  <version>[1.7,)</version>
+                  <message>[ERROR] The currently supported version of Java is 1.7 or higher</message>
+                </requireJavaVersion>
+                <requireMavenVersion>
+                  <version>[3.0,)</version>
+                  <message>[ERROR] The currently supported version of Maven is 3.0 or higher</message>
+                </requireMavenVersion>
+                <requirePluginVersions>
+                  <banLatest>true</banLatest>
+                  <banRelease>true</banRelease>
+                  <banSnapshots>true</banSnapshots>
+                  <phases>clean,deploy,site</phases>
+                  <message>[ERROR] Best Practice is to always define plugin versions!</message>
+                </requirePluginVersions>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+        </plugin>
+        <!-- use of replacer plug-in specific to Jackson -->
+        <plugin>
+          <groupId>com.google.code.maven-replacer-plugin</groupId>
+          <artifactId>replacer</artifactId>
+          <version>${version.plugin.replacer}</version>
+          <executions>
+            <execution>
+              <id>process-packageVersion</id>
+              <goals>
+                <goal>replace</goal>
+              </goals>
+              <!--
+               | We explicitly omit 'phase' here so child poms can opt in to
+               | generating their PackageVersion.java file.
+               |
+               | If your child pom wants a PackageVersion.java file, define
+               | the 'packageVersion.dir' and 'packageVersion.package' properties
+               | and include the commented-out section in your child pom's plugin
+               | for this execution ID.
+               <phase>generate-sources</phase>
+              -->
+            </execution>
+          </executions>
+          <configuration>
+            <file>${packageVersion.template.input}</file>
+            <outputFile>${packageVersion.template.output}</outputFile>
+            <replacements>
+              <replacement>
+                <token>@package@</token>
+                <value>${packageVersion.package}</value>
+              </replacement>
+              <replacement>
+                <token>@projectversion@</token>
+                <value>${project.version}</value>
+              </replacement>
+              <replacement>
+                <token>@projectgroupid@</token>
+                <value>${project.groupId}</value>
+              </replacement>
+              <replacement>
+                <token>@projectartifactid@</token>
+                <value>${project.artifactId}</value>
+              </replacement>
+            </replacements>
+          </configuration>
+        </plugin>
+        <plugin>
+          <!-- Work around Eclipse incompatibility (http://code.google.com/p/maven-replacer-plugin/issues/detail?id=66) -->
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>com.google.code.maven-replacer-plugin</groupId>
+                    <artifactId>replacer</artifactId>
+                    <versionRange>[${version.plugin.replacer},)</versionRange>
+                    <goals>
+                      <goal>replace</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <execute>
+                      <runOnIncremental>false</runOnIncremental>
+                    </execute>
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+</project>
