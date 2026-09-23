@@ -65,7 +65,7 @@ public class ConnectionTest {
         url = url.setScopeModel(applicationModel);
         ModuleModel moduleModel = applicationModel.getDefaultModule();
         url = url.putAttribute(CommonConstants.SCOPE_MODEL, moduleModel);
-        server = new NettyPortUnificationServer(url, new DefaultPuHandler());
+        server = NettyPortUnificationServer.create(url, new DefaultPuHandler());
         server.bind();
         connectionManager = url.getOrDefaultFrameworkModel()
                 .getExtensionLoader(ConnectionManager.class)
@@ -130,7 +130,7 @@ public class ConnectionTest {
         int port = NetUtils.getAvailablePort();
         URL url = URL.valueOf("empty://127.0.0.1:" + port + "?foo=bar");
         NettyPortUnificationServer nettyPortUnificationServer =
-                new NettyPortUnificationServer(url, new DefaultPuHandler());
+                NettyPortUnificationServer.create(url, new DefaultPuHandler());
         nettyPortUnificationServer.bind();
         final AbstractConnectionClient connectionClient = connectionManager.connect(url, new DefaultPuHandler());
         Assertions.assertTrue(connectionClient.isAvailable());

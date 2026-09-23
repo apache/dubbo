@@ -49,7 +49,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
 
     private ExecutorRepository executorRepository;
 
-    public AbstractServer(URL url, ChannelHandler handler) throws RemotingException {
+    protected AbstractServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
         executorRepository = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel());
         localAddress = getUrl().toInetSocketAddress();
@@ -61,6 +61,9 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
         }
         bindAddress = new InetSocketAddress(bindIp, bindPort);
         this.accepts = url.getParameter(ACCEPTS_KEY, DEFAULT_ACCEPTS);
+    }
+
+    protected final void init() throws RemotingException {
         try {
             doOpen();
             if (logger.isInfoEnabled()) {
@@ -69,14 +72,14 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
             }
         } catch (Throwable t) {
             throw new RemotingException(
-                    url.toInetSocketAddress(),
+                    getUrl().toInetSocketAddress(),
                     null,
                     "Failed to bind " + getClass().getSimpleName() + " on " + bindAddress + ", cause: "
                             + t.getMessage(),
                     t);
         }
-        executors.add(
-                executorRepository.createExecutorIfAbsent(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME)));
+        executors.add(executorRepository.createExecutorIfAbsent(
+                ExecutorUtil.setThreadName(getUrl(), SERVER_THREAD_POOL_NAME)));
     }
 
     protected abstract void doOpen() throws Throwable;

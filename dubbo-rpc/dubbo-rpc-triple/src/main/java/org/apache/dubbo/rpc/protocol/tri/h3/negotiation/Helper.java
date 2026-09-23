@@ -34,7 +34,7 @@ public class Helper {
 
     public static AbstractConnectionClient createHttp3Client(URL url, ChannelHandler handler) {
         try {
-            return new NettyHttp3ConnectionClient(url, handler);
+            return NettyHttp3ConnectionClient.create(url, handler);
         } catch (RemotingException e) {
             throw ExceptionUtils.wrap(e);
         }
