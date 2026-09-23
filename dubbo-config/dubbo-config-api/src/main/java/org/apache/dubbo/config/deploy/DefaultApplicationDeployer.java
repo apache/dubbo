@@ -1296,7 +1296,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void doExportMetadataService() {
-        if (!isStarting() && !isStarted() && !isCompletion()) {
+        // Skip only when the application is shutting down or has failed.
+        // PENDING is allowed so that programmatic ServiceConfig.export() invoked
+        // before the application has been started can still trigger the
+        // metadata service export (see issue #14859).
+        if (isStopping() || isStopped() || isFailed()) {
             return;
         }
         for (DeployListener<ApplicationModel> listener : listeners) {
