@@ -57,11 +57,11 @@ public class AdaptiveMetrics {
         if (metrics.currentTime > 0) {
             long multiple = (System.currentTimeMillis() - metrics.currentTime) / timeout + 1;
             if (multiple > 0) {
-                if (metrics.currentProviderTime == metrics.currentTime) {
+                if (metrics.currentProviderTime > metrics.currentTime) {
                     // penalty value
                     metrics.lastLatency = timeout * 2L;
                 } else {
-                    metrics.lastLatency = metrics.lastLatency >> multiple;
+                    metrics.lastLatency = Math.max(1L, metrics.lastLatency >> multiple);
                 }
                 metrics.ewma = metrics.beta * metrics.ewma + (1 - metrics.beta) * metrics.lastLatency;
                 metrics.currentTime = System.currentTimeMillis();
