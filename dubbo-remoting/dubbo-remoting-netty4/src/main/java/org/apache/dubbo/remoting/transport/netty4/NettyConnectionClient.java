@@ -48,6 +48,7 @@ import io.netty.util.concurrent.Promise;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_CLIENT_CONNECT_TIMEOUT;
+import static org.apache.dubbo.remoting.transport.netty4.NettyClient.configureSocks5Proxy;
 import static org.apache.dubbo.remoting.transport.netty4.NettyEventLoopFactory.socketChannelClass;
 
 public final class NettyConnectionClient extends AbstractNettyConnectionClient {
@@ -70,6 +71,7 @@ public final class NettyConnectionClient extends AbstractNettyConnectionClient {
         super.initConnectionClient();
     }
 
+    @Override
     protected void initBootstrap() {
         channelInitializedPromiseRef = new AtomicReference<>();
         Bootstrap bootstrap = new Bootstrap();
@@ -87,8 +89,9 @@ public final class NettyConnectionClient extends AbstractNettyConnectionClient {
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel ch) {
-                NettyChannel nettyChannel = NettyChannel.getOrAddChannel(ch, getUrl(), getChannelHandler());
+                URL url = getUrl();
                 ChannelPipeline pipeline = ch.pipeline();
+                NettyChannel nettyChannel = NettyChannel.getOrAddChannel(ch, url, getChannelHandler());
                 NettySslContextOperator nettySslContextOperator = new NettySslContextOperator();
 
                 if (sslContext != null) {
@@ -97,13 +100,13 @@ public final class NettyConnectionClient extends AbstractNettyConnectionClient {
 
                 //                pipeline.addLast("logging", new LoggingHandler(LogLevel.INFO)); //for debug
 
-                int heartbeat = UrlUtils.getHeartbeat(getUrl());
+                int heartbeat = UrlUtils.getHeartbeat(url);
                 pipeline.addLast("client-idle-handler", new IdleStateHandler(heartbeat, 0, 0, MILLISECONDS));
 
                 pipeline.addLast(Constants.CONNECTION_HANDLER_NAME, connectionHandler);
 
                 NettyConfigOperator operator = new NettyConfigOperator(nettyChannel, getChannelHandler());
-                protocol.configClientPipeline(getUrl(), operator, nettySslContextOperator);
+                protocol.configClientPipeline(url, operator, nettySslContextOperator);
 
                 ChannelHandlerContext http2FrameCodecHandlerCtx = pipeline.context(Http2FrameCodec.class);
                 if (http2FrameCodecHandlerCtx == null) {
@@ -124,7 +127,8 @@ public final class NettyConnectionClient extends AbstractNettyConnectionClient {
 
                 // set null but do not close this client, it will be reconnecting in the future
                 ch.closeFuture().addListener(channelFuture -> clearNettyChannel());
-                // TODO support Socks5
+                // support Socks5
+                configureSocks5Proxy(url, pipeline);
 
                 // set channel initialized promise to success if necessary.
                 Promise<Void> channelInitializedPromise = channelInitializedPromiseRef.get();
