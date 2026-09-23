@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -61,6 +62,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_REFLECTIVE_OPERATION_FAILED;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNTRUSTED_SERIALIZE_CLASS;
 import static org.apache.dubbo.common.utils.ClassUtils.isAssignableFrom;
 
 /**
@@ -461,6 +463,22 @@ public class PojoUtils {
                     } catch (ClassNotFoundException e) {
                         CLASS_NOT_FOUND_CACHE.put((String) className, NOT_FOUND_VALUE);
                     }
+                }
+            }
+
+            // When the Map does not carry a "class" key, the type comes from the
+            // method signature.  We still need to enforce the Serializable contract
+            // so that non-Serializable DTOs are rejected consistently (they are
+            // already rejected when a "class" key is present, via
+            // DefaultSerializeClassChecker.loadClass).
+            if (!(className instanceof String) && !type.isPrimitive() && !Serializable.class.isAssignableFrom(type)) {
+                DefaultSerializeClassChecker checker = DefaultSerializeClassChecker.getInstance();
+                String msg = "[Serialization Security] Serialized class " + type.getName()
+                        + " has not implement Serializable interface. "
+                        + "Current mode is strict check, will disallow to deserialize it by default. ";
+                logger.error(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "", msg);
+                if (checker.isCheckSerializable()) {
+                    throw new IllegalArgumentException(msg);
                 }
             }
 
