@@ -37,7 +37,7 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric> implemen
 
     @Override
     public void inc(S source, K metricName) {
-        getAtomicCounter(source, metricName).incrementAndGet();
+        incrementAndGetCreated(source, metricName);
     }
 
     @Override
@@ -47,7 +47,7 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric> implemen
 
     protected abstract void countConfigure(MetricsCountSampleConfigurer<S, K, M> sampleConfigure);
 
-    private AtomicLong getAtomicCounter(S source, K metricsName) {
+    protected boolean incrementAndGetCreated(S source, K metricsName) {
         MetricsCountSampleConfigurer<S, K, M> sampleConfigure = new MetricsCountSampleConfigurer<>();
         sampleConfigure.setSource(source);
         sampleConfigure.setMetricsName(metricsName);
@@ -63,12 +63,10 @@ public abstract class SimpleMetricsCountSampler<S, K, M extends Metric> implemen
 
         Assert.notNull(sampleConfigure.getMetric(), "metrics is null");
 
-        AtomicLong atomicCounter = metricAtomic.get(sampleConfigure.getMetric());
-
-        if (atomicCounter == null) {
-            atomicCounter = ConcurrentHashMapUtils.computeIfAbsent(
-                    metricAtomic, sampleConfigure.getMetric(), k -> new AtomicLong());
-        }
-        return atomicCounter;
+        AtomicLong newCounter = new AtomicLong();
+        AtomicLong atomicCounter =
+                ConcurrentHashMapUtils.computeIfAbsent(metricAtomic, sampleConfigure.getMetric(), k -> newCounter);
+        atomicCounter.incrementAndGet();
+        return atomicCounter == newCounter;
     }
 }
