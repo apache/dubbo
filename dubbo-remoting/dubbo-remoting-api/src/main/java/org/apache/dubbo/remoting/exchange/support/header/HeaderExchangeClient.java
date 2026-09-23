@@ -148,9 +148,14 @@ public class HeaderExchangeClient implements ExchangeClient {
         channel.send(message, sent);
     }
 
+    /**
+     * Check both HeaderExchangeChannel and underlying transport client,
+     * because the transport client may be closed independently (e.g., by protocol destroy)
+     * without going through HeaderExchangeClient.close().
+     */
     @Override
     public boolean isClosed() {
-        return channel.isClosed();
+        return channel.isClosed() || client.isClosed();
     }
 
     @Override
