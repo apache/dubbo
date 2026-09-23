@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Type;
 
 public class DefaultMultipleSerialization implements MultipleSerialization {
 
@@ -44,6 +45,17 @@ public class DefaultMultipleSerialization implements MultipleSerialization {
                 .getExtension(serializeType);
         final ObjectInput in = serialization.deserialize(null, os);
         return in.readObject(clz);
+    }
+
+    @Override
+    public Object deserialize(URL url, String serializeType, Class<?> clz, Type type, InputStream os)
+            throws IOException, ClassNotFoundException {
+        serializeType = convertHessian(serializeType);
+        final Serialization serialization = url.getOrDefaultFrameworkModel()
+                .getExtensionLoader(Serialization.class)
+                .getExtension(serializeType);
+        final ObjectInput in = serialization.deserialize(null, os);
+        return in.readObject(clz, type);
     }
 
     private String convertHessian(String ser) {
