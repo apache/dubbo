@@ -368,10 +368,9 @@ public class DubboCertManager {
     private String generatePemKey(String type, byte[] content) throws IOException {
         PemObject pemObject = new PemObject(type, content);
         StringWriter str = new StringWriter();
-        JcaPEMWriter jcaPEMWriter = new JcaPEMWriter(str);
-        jcaPEMWriter.writeObject(pemObject);
-        jcaPEMWriter.close();
-        str.close();
+        try (JcaPEMWriter jcaPEMWriter = new JcaPEMWriter(str)) {
+            jcaPEMWriter.writeObject(pemObject);
+        }
         return str.toString();
     }
 
