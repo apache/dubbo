@@ -42,7 +42,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.modelcontextprotocol.spec.McpSchema;
 
 public class DubboOpenApiToolConverter {
@@ -50,7 +49,6 @@ public class DubboOpenApiToolConverter {
     private static final ErrorTypeAwareLogger logger =
             LoggerFactory.getErrorTypeAwareLogger(DubboOpenApiToolConverter.class);
     private final DefaultOpenAPIService openApiService;
-    private final ObjectMapper objectMapper = new ObjectMapper();
     private final Map<String, Operation> opCache = new ConcurrentHashMap<>();
 
     public DubboOpenApiToolConverter(DefaultOpenAPIService openApiService) {
@@ -107,20 +105,12 @@ public class DubboOpenApiToolConverter {
         String toolName = generateToolName(op, toolConfig);
         String desc = generateToolDescription(op, toolConfig, path, method);
 
-        Map<String, Object> paramsSchemaMap = extractParameterSchema(op);
-        String schemaJson;
-        try {
-            schemaJson = objectMapper.writeValueAsString(paramsSchemaMap);
-        } catch (Exception e) {
-            logger.error(
-                    LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION,
-                    "Failed to serialize parameter schema for tool {}: {}",
-                    opId,
-                    e.getMessage(),
-                    e);
-            schemaJson = "{\"type\":\"object\",\"properties\":{}}";
-        }
-        return new McpSchema.Tool(toolName, desc, schemaJson);
+        McpSchema.JsonSchema inputSchema = extractParameterSchema(op);
+        return McpSchema.Tool.builder()
+                .name(toolName)
+                .description(desc)
+                .inputSchema(inputSchema)
+                .build();
     }
 
     private String generateToolName(Operation op, McpServiceFilter.McpToolConfig toolConfig) {
@@ -155,10 +145,8 @@ public class DubboOpenApiToolConverter {
         return desc;
     }
 
-    private Map<String, Object> extractParameterSchema(Operation op) {
-        Map<String, Object> schema = new HashMap<>();
+    private McpSchema.JsonSchema extractParameterSchema(Operation op) {
         Map<String, Object> props = new HashMap<>();
-        schema.put(McpConstant.SCHEMA_PROPERTY_TYPE, JsonSchemaType.OBJECT_SCHEMA.getJsonSchemaType());
 
         if (op.getParameters() != null) {
             for (Parameter apiParam : op.getParameters()) {
@@ -313,8 +301,8 @@ public class DubboOpenApiToolConverter {
                 }
             });
         }
-        schema.put(McpConstant.SCHEMA_PROPERTY_PROPERTIES, props);
-        return schema;
+        return new McpSchema.JsonSchema(
+                JsonSchemaType.OBJECT_SCHEMA.getJsonSchemaType(), props, null, null, null, null);
     }
 
     private Map<String, Object> convertOpenApiSchemaToMcpMap(Schema openApiSchema) {
