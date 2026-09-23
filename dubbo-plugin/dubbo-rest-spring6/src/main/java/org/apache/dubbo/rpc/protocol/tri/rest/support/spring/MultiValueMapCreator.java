@@ -14,18 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.protocol.tri.rest.support.spring;
 
-package org.apache.dubbo.rpc.protocol.tri.rest.support.spring
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.protocol.tri.rest.argument.ArgumentConverter;
+import org.apache.dubbo.rpc.protocol.tri.rest.mapping.meta.ParameterMeta;
 
-import org.apache.dubbo.rpc.protocol.tri.rest.support.spring.service.SpringDemoService
-import org.apache.dubbo.rpc.protocol.tri.rest.support.spring.service.SpringDemoServiceImpl
-import org.apache.dubbo.rpc.protocol.tri.rest.test.RestProtocolTestContract
-import org.apache.dubbo.rpc.protocol.tri.test.TestRunnerBuilder
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
-class RestProtocolTest extends RestProtocolTestContract {
+@Activate(onClass = "org.springframework.util.MultiValueMap")
+public class MultiValueMapCreator implements ArgumentConverter<Integer, MultiValueMap<?, ?>> {
 
     @Override
-    void setupService(TestRunnerBuilder builder) {
-        builder.provider(SpringDemoService.class, new SpringDemoServiceImpl())
+    public MultiValueMap<?, ?> convert(Integer value, ParameterMeta parameter) {
+        return new LinkedMultiValueMap<>(value);
     }
 }

@@ -1,0 +1,1 @@
+spring-response=org.apache.dubbo.rpc.protocol.tri.rest.support.spring.SpringResponseRestFilter

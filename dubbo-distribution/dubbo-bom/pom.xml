@@ -329,6 +329,11 @@
       </dependency>
       <dependency>
         <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-rest-spring6</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-rest-openapi</artifactId>
         <version>${project.version}</version>
       </dependency>
