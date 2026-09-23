@@ -32,39 +32,68 @@ import org.apache.dubbo.rpc.model.ModelConstants;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ApplicationContextEvent;
-import org.springframework.context.event.ContextClosedEvent;
-import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.SmartLifecycle;
 import org.springframework.core.Ordered;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_START_MODEL;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_STOP_DUBBO_ERROR;
-import static org.springframework.util.ObjectUtils.nullSafeEquals;
 
 /**
- * An ApplicationListener to control Dubbo application.
+ * Integrates Dubbo lifecycle management with Spring.
+ *
+ * <p>Uses {@link SmartLifecycle} to ensure Dubbo starts automatically with the
+ * Spring context and shuts down last to support graceful shutdown.
+ * The legacy name {@code DubboDeployApplicationListener} is retained for
+ * backward compatibility.</p>
  */
-public class DubboDeployApplicationListener
-        implements ApplicationListener<ApplicationContextEvent>, ApplicationContextAware, Ordered {
+public class DubboDeployApplicationListener implements SmartLifecycle, ApplicationContextAware, Ordered {
 
     private static final ErrorTypeAwareLogger logger =
             LoggerFactory.getErrorTypeAwareLogger(DubboDeployApplicationListener.class);
+
+    private static final String DUBBO_SHUTDOWN_PHASE_KEY = "dubbo.spring.shutdown.phase";
 
     private ApplicationContext applicationContext;
 
     private ApplicationModel applicationModel;
     private ModuleModel moduleModel;
 
+    private final AtomicBoolean running = new AtomicBoolean(false);
+    private volatile int shutdownPhase = Integer.MIN_VALUE + 2000;
+
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
         this.applicationModel = DubboBeanUtils.getApplicationModel(applicationContext);
         this.moduleModel = DubboBeanUtils.getModuleModel(applicationContext);
+
+        String configuredValue = null;
+        try {
+            // Parse the user-configured shutdown phase.
+            // Spring stops SmartLifecycle beans in descending phase order.
+            // To ensure Dubbo shuts down LAST, we use a very LOW phase value by default.
+            configuredValue = ConfigurationUtils.getProperty(moduleModel, DUBBO_SHUTDOWN_PHASE_KEY);
+            if (configuredValue != null) {
+                int parsed = Integer.parseInt(configuredValue.trim());
+                shutdownPhase = Math.max(Integer.MIN_VALUE + 1, parsed);
+            }
+        } catch (NumberFormatException nfe) {
+            String msg = "Invalid integer value for property: " + DUBBO_SHUTDOWN_PHASE_KEY
+                    + " = '" + configuredValue + "'. "
+                    + "Expected an integer between " + (Integer.MIN_VALUE + 1) + " and " + Integer.MAX_VALUE + ".";
+            logger.warn(CONFIG_FAILED_START_MODEL, "", "", msg, nfe);
+        } catch (Exception e) {
+            String msg = "Failed to read property: " + DUBBO_SHUTDOWN_PHASE_KEY + ". Using default shutdown phase = "
+                    + shutdownPhase + ".";
+            logger.warn(CONFIG_FAILED_START_MODEL, "", "", msg, e);
+        }
+
         // listen deploy events and publish DubboApplicationStateEvent
         applicationModel.getDeployer().addDeployListener(new DeployListenerAdapter<ApplicationModel>() {
             @Override
@@ -94,7 +123,7 @@ public class DubboDeployApplicationListener
 
             @Override
             public void onFailure(ApplicationModel scopeModel, Throwable cause) {
-                publishApplicationEvent(DeployState.FAILED, cause);
+                publishApplicationEvent(cause);
             }
         });
         moduleModel.getDeployer().addDeployListener(new DeployListenerAdapter<ModuleModel>() {
@@ -125,7 +154,7 @@ public class DubboDeployApplicationListener
 
             @Override
             public void onFailure(ModuleModel scopeModel, Throwable cause) {
-                publishModuleEvent(DeployState.FAILED, cause);
+                publishModuleEvent(cause);
             }
         });
     }
@@ -134,80 +163,130 @@ public class DubboDeployApplicationListener
         applicationContext.publishEvent(new DubboApplicationStateEvent(applicationModel, state));
     }
 
-    private void publishApplicationEvent(DeployState state, Throwable cause) {
-        applicationContext.publishEvent(new DubboApplicationStateEvent(applicationModel, state, cause));
+    private void publishApplicationEvent(Throwable cause) {
+        applicationContext.publishEvent(new DubboApplicationStateEvent(applicationModel, DeployState.FAILED, cause));
     }
 
     private void publishModuleEvent(DeployState state) {
         applicationContext.publishEvent(new DubboModuleStateEvent(moduleModel, state));
     }
 
-    private void publishModuleEvent(DeployState state, Throwable cause) {
-        applicationContext.publishEvent(new DubboModuleStateEvent(moduleModel, state, cause));
+    private void publishModuleEvent(Throwable cause) {
+        applicationContext.publishEvent(new DubboModuleStateEvent(moduleModel, DeployState.FAILED, cause));
     }
 
     @Override
-    public void onApplicationEvent(ApplicationContextEvent event) {
-        if (nullSafeEquals(applicationContext, event.getSource())) {
-            if (event instanceof ContextRefreshedEvent) {
-                onContextRefreshedEvent((ContextRefreshedEvent) event);
-            } else if (event instanceof ContextClosedEvent) {
-                onContextClosedEvent((ContextClosedEvent) event);
+    public boolean isAutoStartup() {
+        return true;
+    }
+
+    @Override
+    public void start() {
+        // Atomic check to ensure start logic runs only once.
+        if (running.compareAndSet(false, true)) {
+            ModuleDeployer deployer = moduleModel.getDeployer();
+            Assert.notNull(deployer, "Module deployer is null");
+            Object singletonMutex = LockUtils.getSingletonMutex(applicationContext);
+
+            Future<?> future;
+            synchronized (singletonMutex) {
+                // Start the Dubbo module via the deployer.
+                future = deployer.start();
+            }
+
+            // If not running in background, wait for the startup to finish.
+            if (!deployer.isBackground()) {
+                try {
+                    future.get();
+                } catch (InterruptedException e) {
+                    // Preserve interrupt status
+                    Thread.currentThread().interrupt();
+                    logger.warn(
+                            CONFIG_FAILED_START_MODEL,
+                            "",
+                            "",
+                            "Interrupted while waiting for dubbo module start: " + e.getMessage());
+                    running.set(false);
+                } catch (Exception e) {
+                    logger.warn(CONFIG_FAILED_START_MODEL, "", "", "Error starting dubbo module: " + e.getMessage(), e);
+                    // If start fails, reset the running state to allow proper shutdown
+                    running.set(false);
+                }
             }
         }
     }
 
-    private void onContextRefreshedEvent(ContextRefreshedEvent event) {
-        ModuleDeployer deployer = moduleModel.getDeployer();
-        Assert.notNull(deployer, "Module deployer is null");
-        Object singletonMutex = LockUtils.getSingletonMutex(applicationContext);
-        // start module
-        Future future = null;
-        synchronized (singletonMutex) {
-            future = deployer.start();
-        }
-
-        // if the module does not start in background, await finish
-        if (!deployer.isBackground()) {
-            try {
-                future.get();
-            } catch (InterruptedException e) {
-                logger.warn(
-                        CONFIG_FAILED_START_MODEL,
-                        "",
-                        "",
-                        "Interrupted while waiting for dubbo module start: " + e.getMessage());
-            } catch (Exception e) {
-                logger.warn(
-                        CONFIG_FAILED_START_MODEL,
-                        "",
-                        "",
-                        "An error occurred while waiting for dubbo module start: " + e.getMessage(),
-                        e);
-            }
-        }
+    @Override
+    public void stop() {
+        stopInternal();
     }
 
-    private void onContextClosedEvent(ContextClosedEvent event) {
+    @Override
+    public void stop(@NonNull Runnable callback) {
         try {
-            Object value = moduleModel.getAttribute(ModelConstants.KEEP_RUNNING_ON_SPRING_CLOSED);
-            if (value == null) {
-                value = ConfigurationUtils.getProperty(moduleModel, ModelConstants.KEEP_RUNNING_ON_SPRING_CLOSED_KEY);
+            stopInternal();
+        } finally {
+            try {
+                callback.run();
+            } catch (Throwable t) {
+                logger.warn(
+                        CONFIG_STOP_DUBBO_ERROR, "", "", "Exception while executing SmartLifecycle stop callback", t);
             }
-            boolean keepRunningOnClosed = Boolean.parseBoolean(String.valueOf(value));
-            if (!keepRunningOnClosed && !moduleModel.isDestroyed()) {
-                moduleModel.destroy();
-            }
-        } catch (Exception e) {
-            logger.error(
-                    CONFIG_STOP_DUBBO_ERROR,
-                    "",
-                    "",
-                    "Unexpected error occurred when stop dubbo module: " + e.getMessage(),
-                    e);
         }
-        // remove context bind cache
-        DubboSpringInitializer.remove(event.getApplicationContext());
+    }
+
+    private void stopInternal() {
+        // Ensure shutdown logic is executed only once.
+        boolean changed = running.compareAndSet(true, false);
+        if (changed) {
+            logger.info("Stopping Dubbo module (SmartLifecycle) — phase={}", shutdownPhase);
+            try {
+                // Determine whether Dubbo should remain running after Spring context shutdown
+                Object value = moduleModel.getAttribute(ModelConstants.KEEP_RUNNING_ON_SPRING_CLOSED);
+                if (value == null) {
+                    value = ConfigurationUtils.getProperty(
+                            moduleModel, ModelConstants.KEEP_RUNNING_ON_SPRING_CLOSED_KEY);
+                }
+                boolean keepRunningOnClosed = Boolean.parseBoolean(String.valueOf(value));
+
+                // Destroy the module only if not explicitly configured to keep running.
+                if (!keepRunningOnClosed && !moduleModel.isDestroyed()) {
+                    moduleModel.destroy();
+                } else {
+                    logger.info("KEEP_RUNNING_ON_SPRING_CLOSED is true — skipping module destroy");
+                }
+            } catch (Throwable e) {
+                logger.error(CONFIG_STOP_DUBBO_ERROR, "", "", "Error stopping dubbo module: " + e.getMessage(), e);
+            } finally {
+                try {
+                    DubboSpringInitializer.remove(applicationContext);
+                } catch (Throwable t) {
+                    logger.warn(CONFIG_STOP_DUBBO_ERROR, "", "", "Failed to remove DubboSpringInitializer binding", t);
+                }
+            }
+        } else {
+            // Even if already stopped, ensure cleanup happens to be safe.
+            try {
+                DubboSpringInitializer.remove(applicationContext);
+            } catch (Throwable t) {
+                logger.warn(
+                        CONFIG_STOP_DUBBO_ERROR,
+                        "",
+                        "",
+                        "Failed to remove DubboSpringInitializer binding on repeated stop",
+                        t);
+            }
+        }
+    }
+
+    @Override
+    public boolean isRunning() {
+        return running.get();
+    }
+
+    @Override
+    public int getPhase() {
+        return shutdownPhase;
     }
 
     @Override
