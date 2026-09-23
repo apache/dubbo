@@ -40,6 +40,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -125,6 +126,44 @@ class JavaConfigBeanTest {
         }
     }
 
+    @Test
+    void testConditionalOnMissingBeanForDubboService() {
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+                ConditionalTestConfiguration.class,
+                ExistingServiceConfiguration.class,
+                ConditionalServiceConfiguration.class);
+        try {
+            Assertions.assertFalse(context.containsBeanDefinition("conditionalDemoService"));
+
+            Map<String, ServiceBean> serviceBeans = context.getBeansOfType(ServiceBean.class);
+            Assertions.assertEquals(0, serviceBeans.size());
+
+            Map<String, DemoService> demoServices = context.getBeansOfType(DemoService.class);
+            Assertions.assertEquals(1, demoServices.size());
+            Assertions.assertNotNull(demoServices.get("existingDemoService"));
+        } finally {
+            context.close();
+        }
+    }
+
+    @Test
+    void testConditionalOnMissingBeanForDubboServiceWhenMissing() {
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+                ConditionalTestConfiguration.class, ConditionalServiceConfiguration.class);
+        try {
+            Assertions.assertTrue(context.containsBeanDefinition("conditionalDemoService"));
+
+            Map<String, ServiceBean> serviceBeans = context.getBeansOfType(ServiceBean.class);
+            Assertions.assertEquals(1, serviceBeans.size());
+
+            Map<String, DemoService> demoServices = context.getBeansOfType(DemoService.class);
+            Assertions.assertEquals(1, demoServices.size());
+            Assertions.assertNotNull(demoServices.get("conditionalDemoService"));
+        } finally {
+            context.close();
+        }
+    }
+
     @EnableDubbo(scanBasePackages = "org.apache.dubbo.config.spring.annotation.consumer")
     @Configuration
     static class TestConfiguration {
@@ -162,6 +201,33 @@ class JavaConfigBeanTest {
         }
     }
 
+    @EnableDubbo(scanBasePackages = "")
+    @Configuration
+    static class ConditionalTestConfiguration {
+
+        @Bean("dubbo-demo-application")
+        public ApplicationConfig applicationConfig() {
+            ApplicationConfig applicationConfig = new ApplicationConfig();
+            applicationConfig.setName("dubbo-demo-application");
+            return applicationConfig;
+        }
+
+        @Bean(MY_PROTOCOL_ID)
+        public ProtocolConfig protocolConfig() {
+            ProtocolConfig protocolConfig = new ProtocolConfig();
+            protocolConfig.setName("dubbo");
+            protocolConfig.setPort(12345);
+            return protocolConfig;
+        }
+
+        @Bean(MY_REGISTRY_ID)
+        public RegistryConfig registryConfig() {
+            RegistryConfig registryConfig = new RegistryConfig();
+            registryConfig.setAddress("N/A");
+            return registryConfig;
+        }
+    }
+
     @Configuration
     static class ConsumerConfiguration {
 
@@ -178,6 +244,26 @@ class JavaConfigBeanTest {
         @Bean
         @DubboService(group = "demo")
         public DemoService demoServiceImpl() {
+            return new DemoServiceImpl();
+        }
+    }
+
+    @Configuration
+    static class ExistingServiceConfiguration {
+
+        @Bean
+        public DemoService existingDemoService() {
+            return new DemoServiceImpl();
+        }
+    }
+
+    @Configuration
+    static class ConditionalServiceConfiguration {
+
+        @Bean
+        @ConditionalOnMissingBean(DemoService.class)
+        @DubboService(group = "demo")
+        public DemoService conditionalDemoService() {
             return new DemoServiceImpl();
         }
     }
