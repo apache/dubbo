@@ -17,11 +17,13 @@
 package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.http3.Http3SslContexts;
 
+import java.net.InetSocketAddress;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -114,6 +116,22 @@ public final class NettyHttp3ConnectionClient extends AbstractNettyConnectionCli
         };
         bootstrap.connect().addListener(listener);
         return promise;
+    }
+
+    /**
+     * Override this method to preserve the configured loopback address.
+     * The superclass implementation may rewrite it to a non-loopback local IP,
+     * potentially causing a peer-address mismatch on multi-homed hosts.
+     * QUIC requires the peer's IP address to remain stable until the handshake
+     * is confirmed.
+     */
+    @Override
+    public InetSocketAddress getConnectAddress() {
+        String host = getUrl().getHost();
+        if (NetUtils.isLocalHost(host)) {
+            return getUrl().toInetSocketAddress();
+        }
+        return super.getConnectAddress();
     }
 
     @Override
