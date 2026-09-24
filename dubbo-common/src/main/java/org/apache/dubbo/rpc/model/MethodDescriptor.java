@@ -48,6 +48,20 @@ public interface MethodDescriptor {
 
     Class<?>[] getParameterClasses();
 
+    /**
+     * Retrieves the generic parameter types of the method.
+     * <p>
+     * For parameterized parameters like {@code List<Byte>} this returns the
+     * {@link java.lang.reflect.ParameterizedType} instead of just the raw {@code Class},
+     * which allows deserializers to preserve narrow element types (Byte/Short/Float)
+     * nested inside generic collections.
+     *
+     * @return the generic parameter types
+     */
+    default Type[] getGenericParameterTypes() {
+        return getParameterClasses();
+    }
+
     Class<?> getReturnClass();
 
     Type[] getReturnTypes();
