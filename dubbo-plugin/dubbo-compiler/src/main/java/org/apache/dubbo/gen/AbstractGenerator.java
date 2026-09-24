@@ -53,6 +53,8 @@ public abstract class AbstractGenerator {
     private static final MustacheFactory MUSTACHE_FACTORY = new DefaultMustacheFactory();
     private static final int SERVICE_NUMBER_OF_PATHS = 2;
     private static final int METHOD_NUMBER_OF_PATHS = 4;
+    private static final String GOOGLE_PROTOBUF_EMPTY_PROTO_TYPE = ".google.protobuf.Empty";
+    private static final String GOOGLE_PROTOBUF_EMPTY_JAVA_TYPE = "com.google.protobuf.Empty";
 
     protected abstract String getClassPrefix();
 
@@ -184,11 +186,17 @@ public abstract class AbstractGenerator {
         MethodContext methodContext = new MethodContext();
         methodContext.originMethodName = methodProto.getName();
         methodContext.methodName = lowerCaseFirst(methodProto.getName());
-        methodContext.inputType = typeMap.toJavaTypeName(methodProto.getInputType());
-        methodContext.outputType = typeMap.toJavaTypeName(methodProto.getOutputType());
+        methodContext.inputType = toJavaTypeName(methodProto.getInputType(), typeMap);
+        methodContext.outputType = toJavaTypeName(methodProto.getOutputType(), typeMap);
         methodContext.deprecated = methodProto.getOptions().getDeprecated();
         methodContext.isManyInput = methodProto.getClientStreaming();
         methodContext.isManyOutput = methodProto.getServerStreaming();
+        methodContext.isEmptyOutput = GOOGLE_PROTOBUF_EMPTY_PROTO_TYPE.equals(methodProto.getOutputType());
+        methodContext.returnType = methodContext.isEmptyOutput
+                        && !methodContext.isManyInput
+                        && !methodContext.isManyOutput
+                ? "void"
+                : methodContext.outputType;
         methodContext.methodNumber = methodNumber;
 
         // compile google.api.http option
@@ -249,6 +257,13 @@ public abstract class AbstractGenerator {
             methodContext.grpcCallsMethodName = "asyncBidiStreamingCall";
         }
         return methodContext;
+    }
+
+    private String toJavaTypeName(String protoTypeName, ProtoTypeMap typeMap) {
+        if (GOOGLE_PROTOBUF_EMPTY_PROTO_TYPE.equals(protoTypeName)) {
+            return GOOGLE_PROTOBUF_EMPTY_JAVA_TYPE;
+        }
+        return typeMap.toJavaTypeName(protoTypeName);
     }
 
     private HttpRule parseHttpRule(MethodDescriptorProto methodProto) {
@@ -383,6 +398,10 @@ public abstract class AbstractGenerator {
                     .collect(Collectors.toList());
         }
 
+        public boolean hasEmptyUnaryMethods() {
+            return unaryMethods().stream().anyMatch(m -> m.isEmptyOutput);
+        }
+
         public List<MethodContext> serverStreamingMethods() {
             return methods.stream()
                     .filter(m -> !m.isManyInput && m.isManyOutput)
@@ -413,14 +432,16 @@ public abstract class AbstractGenerator {
      */
     private static class MethodContext {
 
-        // CHECKSTYLE DISABLE VisibilityModifier FOR 10 LINES
+        // CHECKSTYLE DISABLE VisibilityModifier FOR 12 LINES
         public String originMethodName;
         public String methodName;
         public String inputType;
         public String outputType;
+        public String returnType;
         public boolean deprecated;
         public boolean isManyInput;
         public boolean isManyOutput;
+        public boolean isEmptyOutput;
         public String reactiveCallsMethodName;
         public String grpcCallsMethodName;
         public int methodNumber;

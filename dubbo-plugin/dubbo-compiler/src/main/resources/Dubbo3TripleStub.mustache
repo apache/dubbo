@@ -131,9 +131,16 @@ public final class {{className}} {
     {{#unaryMethods}}
 
         @Override
+    {{#isEmptyOutput}}
+        public void {{methodName}}({{inputType}} request){
+            StubInvocationUtil.unaryCall(invoker, {{methodName}}Method, request);
+        }
+    {{/isEmptyOutput}}
+    {{^isEmptyOutput}}
         public {{outputType}} {{methodName}}({{inputType}} request){
             return StubInvocationUtil.unaryCall(invoker, {{methodName}}Method, request);
         }
+    {{/isEmptyOutput}}
 
         public CompletableFuture<{{outputType}}> {{methodName}}Async({{inputType}} request){
             return StubInvocationUtil.unaryCall(invoker, {{methodName}}AsyncMethod, request);
@@ -181,12 +188,37 @@ public final class {{className}} {
                 }
             };
         }
+        {{#hasEmptyUnaryMethods}}
+        private <T, R> BiConsumer<T, StreamObserver<R>> syncToAsyncVoid(java.util.function.Consumer<T> syncFun,
+                                                                        R response) {
+            return new BiConsumer<T, StreamObserver<R>>() {
+                @Override
+                public void accept(T t, StreamObserver<R> observer) {
+                    try {
+                        syncFun.accept(t);
+                        observer.onNext(response);
+                        observer.onCompleted();
+                    } catch (Throwable e) {
+                        observer.onError(e);
+                    }
+                }
+            };
+        }
+        {{/hasEmptyUnaryMethods}}
         {{#unaryMethods}}
 
         @Override
+        {{#isEmptyOutput}}
+        public CompletableFuture<{{outputType}}> {{methodName}}Async({{inputType}} request){
+                {{methodName}}(request);
+                return CompletableFuture.completedFuture({{outputType}}.getDefaultInstance());
+        }
+        {{/isEmptyOutput}}
+        {{^isEmptyOutput}}
         public CompletableFuture<{{outputType}}> {{methodName}}Async({{inputType}} request){
                 return CompletableFuture.completedFuture({{methodName}}(request));
         }
+        {{/isEmptyOutput}}
         {{/unaryMethods}}
 
         // This server stream type unary method is <b>only</b> used for generated stub to support async unary method.
@@ -221,7 +253,12 @@ public final class {{className}} {
         {{#unaryMethods}}
             BiConsumer<{{inputType}}, StreamObserver<{{outputType}}>> {{methodName}}Func = this::{{methodName}};
             handlers.put({{methodName}}Method.getMethodName(), new UnaryStubMethodHandler<>({{methodName}}Func));
+        {{#isEmptyOutput}}
+            BiConsumer<{{inputType}}, StreamObserver<{{outputType}}>> {{methodName}}AsyncFunc = syncToAsyncVoid(this::{{methodName}}, {{outputType}}.getDefaultInstance());
+        {{/isEmptyOutput}}
+        {{^isEmptyOutput}}
             BiConsumer<{{inputType}}, StreamObserver<{{outputType}}>> {{methodName}}AsyncFunc = syncToAsync(this::{{methodName}});
+        {{/isEmptyOutput}}
             handlers.put({{methodName}}ProxyAsyncMethod.getMethodName(), new UnaryStubMethodHandler<>({{methodName}}AsyncFunc));
         {{/unaryMethods}}
         {{#serverStreamingMethods}}
@@ -239,7 +276,7 @@ public final class {{className}} {
     {{#unaryMethods}}
 
         @Override
-        public {{outputType}} {{methodName}}({{inputType}} request){
+        public {{returnType}} {{methodName}}({{inputType}} request){
             throw unimplementedMethodException({{methodName}}Method);
         }
     {{/unaryMethods}}
