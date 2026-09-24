@@ -112,4 +112,81 @@ class FrameworkStatusReportServiceTest {
 
         frameworkModel.destroy();
     }
+
+    @Test
+    void testReportRegistrationOutcomeSuccess() {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        ApplicationConfig app = new ApplicationConfig("APP");
+        applicationModel.getApplicationConfigManager().setApplication(app);
+        FrameworkStatusReportService reportService =
+                applicationModel.getBeanFactory().getBean(FrameworkStatusReportService.class);
+
+        reportService.reportRegistrationOutcome(
+                "INTERFACE_REGISTER", "127.0.0.1:2181", "GroupA/DemoService:1.0.0", true, null);
+
+        MockFrameworkStatusReporter statusReporter =
+                (MockFrameworkStatusReporter) applicationModel.getExtension(FrameworkStatusReporter.class, "mock");
+        Object registrationStatus = statusReporter.getReportContent().get(REGISTRATION_STATUS);
+        Assertions.assertNotNull(registrationStatus, "registration outcome should be reported");
+        Map<String, String> payload = JsonUtils.toJavaObject(String.valueOf(registrationStatus), Map.class);
+        Assertions.assertEquals("APP", payload.get("application"));
+        Assertions.assertEquals("INTERFACE_REGISTER", payload.get("mode"));
+        Assertions.assertEquals("127.0.0.1:2181", payload.get("registry"));
+        Assertions.assertEquals("GroupA/DemoService:1.0.0", payload.get("service"));
+        Assertions.assertEquals("SUCCESS", payload.get("status"));
+        Assertions.assertNull(payload.get("error"), "success outcome must not carry an error field");
+
+        frameworkModel.destroy();
+    }
+
+    @Test
+    void testReportRegistrationOutcomeFailure() {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        ApplicationConfig app = new ApplicationConfig("APP");
+        applicationModel.getApplicationConfigManager().setApplication(app);
+        FrameworkStatusReportService reportService =
+                applicationModel.getBeanFactory().getBean(FrameworkStatusReportService.class);
+
+        reportService.reportRegistrationOutcome(
+                "INSTANCE_REGISTER", "127.0.0.1:2181", "GroupA/DemoService:1.0.0", false, "NoNode for /dubbo/...");
+
+        MockFrameworkStatusReporter statusReporter =
+                (MockFrameworkStatusReporter) applicationModel.getExtension(FrameworkStatusReporter.class, "mock");
+        Object registrationStatus = statusReporter.getReportContent().get(REGISTRATION_STATUS);
+        Map<String, String> payload = JsonUtils.toJavaObject(String.valueOf(registrationStatus), Map.class);
+        Assertions.assertEquals("INSTANCE_REGISTER", payload.get("mode"));
+        Assertions.assertEquals("FAILED", payload.get("status"));
+        Assertions.assertEquals("NoNode for /dubbo/...", payload.get("error"));
+
+        frameworkModel.destroy();
+    }
+
+    @Test
+    void testReportRegistrationOutcomePendingRetry() {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        ApplicationConfig app = new ApplicationConfig("APP");
+        applicationModel.getApplicationConfigManager().setApplication(app);
+        FrameworkStatusReportService reportService =
+                applicationModel.getBeanFactory().getBean(FrameworkStatusReportService.class);
+
+        reportService.reportRegistrationOutcome(
+                "INTERFACE_REGISTER",
+                "127.0.0.1:2181",
+                "GroupA/DemoService:1.0.0",
+                FrameworkStatusReportService.OUTCOME_PENDING_RETRY,
+                "initial registration attempt failed; waiting for retry");
+
+        MockFrameworkStatusReporter statusReporter =
+                (MockFrameworkStatusReporter) applicationModel.getExtension(FrameworkStatusReporter.class, "mock");
+        Map<String, String> payload = JsonUtils.toJavaObject(
+                String.valueOf(statusReporter.getReportContent().get(REGISTRATION_STATUS)), Map.class);
+        Assertions.assertEquals("INTERFACE_REGISTER", payload.get("mode"));
+        Assertions.assertEquals("PENDING_RETRY", payload.get("status"));
+        Assertions.assertEquals("initial registration attempt failed; waiting for retry", payload.get("error"));
+
+        frameworkModel.destroy();
+    }
 }
