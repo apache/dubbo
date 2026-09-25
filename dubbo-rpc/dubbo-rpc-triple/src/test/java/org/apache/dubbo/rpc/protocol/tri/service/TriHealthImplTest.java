@@ -93,6 +93,46 @@ class TriHealthImplTest {
         Assertions.assertTrue(watches.isEmpty());
     }
 
+    @Test
+    void testMultipleClientsWatchingSameService() throws Exception {
+        TriHealthImpl triHealth = new TriHealthImpl();
+        HealthCheckRequest request = HealthCheckRequest.newBuilder()
+                .setService("multi-client-service")
+                .build();
+        triHealth.setStatus(request.getService(), ServingStatus.SERVING);
+
+        RpcContext.removeCancellationContext();
+
+        // Create multiple mock clients
+        StreamObserver<HealthCheckResponse> client1 = new MockStreamObserver();
+        StreamObserver<HealthCheckResponse> client2 = new MockStreamObserver();
+        StreamObserver<HealthCheckResponse> client3 = new MockStreamObserver();
+
+        // Register all clients
+        triHealth.watch(request, client1);
+        triHealth.watch(request, client2);
+        triHealth.watch(request, client3);
+
+        // Verify all are registered
+        HashMap<String, IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean>> watches = getWatches(triHealth);
+        Assertions.assertEquals(watches.get(request.getService()).size(), 3);
+
+        // When status changes, all clients should be notified
+        triHealth.setStatus(request.getService(), ServingStatus.NOT_SERVING);
+
+        MockStreamObserver mock1 = (MockStreamObserver) client1;
+        MockStreamObserver mock2 = (MockStreamObserver) client2;
+        MockStreamObserver mock3 = (MockStreamObserver) client3;
+
+        // Initial + status change
+        Assertions.assertEquals(mock1.getCount(), 2);
+        Assertions.assertEquals(mock2.getCount(), 2);
+        Assertions.assertEquals(mock3.getCount(), 2);
+
+        RpcContext.getCancellationContext().close();
+        Assertions.assertTrue(watches.isEmpty());
+    }
+
     private void turnOffTerminal(TriHealthImpl triHealth) throws NoSuchFieldException, IllegalAccessException {
         Field terminalField = triHealth.getClass().getDeclaredField("terminal");
         terminalField.setAccessible(true);
