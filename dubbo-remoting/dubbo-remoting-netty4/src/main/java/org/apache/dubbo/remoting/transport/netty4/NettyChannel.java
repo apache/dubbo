@@ -150,6 +150,23 @@ final class NettyChannel extends AbstractChannel {
         }
     }
 
+    /**
+     * Look up the existing NettyChannel from cache without creating a new one.
+     * Used by handlers (e.g. {@link NettyConnectionHandler#channelInactive}) that
+     * only need to read state from an already-registered channel and must not
+     * allocate transient unregistered NettyChannel instances when the underlying
+     * Netty channel is no longer active.
+     *
+     * @param ch netty channel
+     * @return cached NettyChannel or null if absent
+     */
+    static NettyChannel getChannelIfPresent(Channel ch) {
+        if (ch == null) {
+            return null;
+        }
+        return CHANNEL_MAP.get(ch);
+    }
+
     @Override
     public InetSocketAddress getLocalAddress() {
         return AddressUtils.getLocalAddress(this);
