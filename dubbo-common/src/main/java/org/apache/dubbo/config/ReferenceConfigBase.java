@@ -32,6 +32,8 @@ import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
+import javax.annotation.Nonnull;
+
 import java.beans.Transient;
 import java.io.File;
 import java.io.FileInputStream;
@@ -388,12 +390,14 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         return shouldReferAsync;
     }
 
+    @Nonnull
     @Transient
     public abstract T get(boolean check);
 
     @Transient
     public abstract void checkOrDestroy(long timeout);
 
+    @Nonnull
     @Transient
     public final T get() {
         return get(true);

@@ -21,6 +21,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
 import org.apache.dubbo.common.utils.StringUtils;
 
+import javax.annotation.Nullable;
+
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.List;
@@ -532,6 +534,7 @@ public class RpcContext {
      * @param key
      * @return attachment
      */
+    @Nullable
     public String getAttachment(String key) {
         String client = CLIENT_ATTACHMENT.get().getAttachment(key);
         if (StringUtils.isEmpty(client)) {
