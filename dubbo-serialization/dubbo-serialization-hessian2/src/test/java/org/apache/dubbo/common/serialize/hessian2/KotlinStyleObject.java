@@ -23,6 +23,9 @@ import java.io.Serializable;
  * constructor, {@code public static final INSTANCE} field of its own type, and the
  * {@code kotlin.Metadata} annotation the Kotlin compiler emits. Written in Java so that the module
  * needs no Kotlin compiler; the detection only inspects these bytecode features.
+ *
+ * <p>Carries one instance field, because a Kotlin {@code object} may hold properties and the
+ * deserializer has to read that serialized field data to keep the stream position correct.
  */
 @kotlin.Metadata
 public final class KotlinStyleObject implements Serializable {
@@ -31,5 +34,15 @@ public final class KotlinStyleObject implements Serializable {
 
     public static final KotlinStyleObject INSTANCE = new KotlinStyleObject();
 
+    private String state = "initial";
+
     private KotlinStyleObject() {}
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
 }
