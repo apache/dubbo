@@ -18,6 +18,8 @@ package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.Experimental;
 
+import javax.annotation.Nullable;
+
 import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -50,6 +52,7 @@ public interface Result extends Serializable {
      *
      * @return result. if no result return null.
      */
+    @Nullable
     Object getValue();
 
     void setValue(Object value);
@@ -59,6 +62,7 @@ public interface Result extends Serializable {
      *
      * @return exception. if no exception return null.
      */
+    @Nullable
     Throwable getException();
 
     void setException(Throwable t);
