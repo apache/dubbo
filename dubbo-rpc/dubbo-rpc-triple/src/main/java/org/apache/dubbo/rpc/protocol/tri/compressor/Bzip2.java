@@ -57,17 +57,14 @@ public class Bzip2 implements Compressor, DeCompressor {
             return new byte[0];
         }
 
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        BZip2CompressorOutputStream cos;
-        try {
-            cos = new BZip2CompressorOutputStream(out);
-            cos.write(payloadByteArr);
-            cos.close();
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            try (BZip2CompressorOutputStream cos = new BZip2CompressorOutputStream(out)) {
+                cos.write(payloadByteArr);
+            }
+            return out.toByteArray();
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
-
-        return out.toByteArray();
     }
 
     @Override
@@ -85,11 +82,10 @@ public class Bzip2 implements Compressor, DeCompressor {
             return new byte[0];
         }
 
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ByteArrayInputStream in = new ByteArrayInputStream(payloadByteArr);
-        try {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
+                ByteArrayInputStream in = new ByteArrayInputStream(payloadByteArr);
+                BZip2CompressorInputStream unZip = new BZip2CompressorInputStream(in)) {
             int totalBytesRead = 0;
-            BZip2CompressorInputStream unZip = new BZip2CompressorInputStream(in);
             byte[] buffer = new byte[2048];
             int n;
             while ((n = unZip.read(buffer)) >= 0) {
@@ -100,9 +96,9 @@ public class Bzip2 implements Compressor, DeCompressor {
                 }
                 out.write(buffer, 0, n);
             }
+            return out.toByteArray();
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
-        return out.toByteArray();
     }
 }
