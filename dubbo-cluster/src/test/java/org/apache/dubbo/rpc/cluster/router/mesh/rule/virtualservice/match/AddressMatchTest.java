@@ -16,43 +16,164 @@
  */
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
 
+import org.apache.dubbo.common.utils.PojoUtils;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.jupiter.api.Test;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AddressMatchTest {
 
     @Test
-    void cirdMatchIpv4AddressWithPort() {
+    void cidrMatchIpv4AddressWithPort() {
         AddressMatch addressMatch = new AddressMatch();
-        addressMatch.setCird("192.168.1.*:90");
+        addressMatch.setCidr("192.168.1.*:90");
 
         assertTrue(addressMatch.isMatch("192.168.1.63:90"));
         assertFalse(addressMatch.isMatch("192.168.1.63:80"));
     }
 
     @Test
-    void cirdMatchIpv4AddressWithoutPort() {
+    void cidrMatchIpv4AddressWithoutPort() {
         AddressMatch addressMatch = new AddressMatch();
-        addressMatch.setCird("192.168.1.*");
+        addressMatch.setCidr("192.168.1.*");
 
         assertTrue(addressMatch.isMatch("192.168.1.63"));
     }
 
     @Test
-    void cirdMatchExactAddress() {
+    void cidrMatchExactAddress() {
         AddressMatch addressMatch = new AddressMatch();
-        addressMatch.setCird("192.168.1.63:90");
+        addressMatch.setCidr("192.168.1.63:90");
 
         assertTrue(addressMatch.isMatch("192.168.1.63:90"));
     }
 
     @Test
-    void cirdMatchIpv6Address() {
+    void cidrMatchIpv6Address() {
         AddressMatch addressMatch = new AddressMatch();
-        addressMatch.setCird("234e:0:4567:0:0:0:3d:*");
+        addressMatch.setCidr("234e:0:4567:0:0:0:3d:*");
 
         assertTrue(addressMatch.isMatch("234e:0:4567::3d:ff"));
+    }
+
+    @Test
+    void cidrMatchInvalidAddressReturnsFalse() {
+        AddressMatch addressMatch = new AddressMatch();
+        addressMatch.setCidr("192.168.1.*");
+
+        assertFalse(addressMatch.isMatch("invalid host"));
+    }
+
+    @Test
+    void cidrMatchNullAddressReturnsFalse() {
+        AddressMatch addressMatch = new AddressMatch();
+        addressMatch.setCidr("192.168.1.*");
+
+        assertFalse(addressMatch.isMatch(null));
+    }
+
+    @Test
+    void wildcardMatchAddress() {
+        AddressMatch addressMatch = new AddressMatch();
+        addressMatch.setWildcard("192.168.1.*");
+
+        assertTrue(addressMatch.isMatch("192.168.1.63"));
+        assertFalse(addressMatch.isMatch("10.0.0.1"));
+    }
+
+    @Test
+    void wildcardAnyAddressMatches() {
+        AddressMatch wildcardAny = new AddressMatch();
+        wildcardAny.setWildcard(ANY_VALUE);
+        assertTrue(wildcardAny.isMatch("192.168.1.63"));
+
+        AddressMatch wildcardAnyHost = new AddressMatch();
+        wildcardAnyHost.setWildcard(ANYHOST_VALUE);
+        assertTrue(wildcardAnyHost.isMatch("192.168.1.63"));
+    }
+
+    @Test
+    void wildcardMatchNullAddressReturnsFalse() {
+        AddressMatch addressMatch = new AddressMatch();
+        addressMatch.setWildcard("192.168.1.*");
+
+        assertFalse(addressMatch.isMatch(null));
+    }
+
+    @Test
+    void exactMatchAddress() {
+        AddressMatch addressMatch = new AddressMatch();
+        addressMatch.setExact("192.168.1.63");
+
+        assertTrue(addressMatch.isMatch("192.168.1.63"));
+        assertFalse(addressMatch.isMatch("192.168.1.64"));
+    }
+
+    @Test
+    void exactMatchNullAddressReturnsFalse() {
+        AddressMatch addressMatch = new AddressMatch();
+        addressMatch.setExact("192.168.1.63");
+
+        assertFalse(addressMatch.isMatch(null));
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    void deprecatedCirdAccessorsRemainCompatible() {
+        AddressMatch addressMatch = new AddressMatch();
+        addressMatch.setCird("192.168.1.*:90");
+
+        assertTrue(addressMatch.isMatch("192.168.1.63:90"));
+        assertEquals(addressMatch.getCidr(), addressMatch.getCird());
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    void cidrAndDeprecatedCirdAccessorsShareTheSameValue() {
+        AddressMatch addressMatch = new AddressMatch();
+        addressMatch.setCidr("192.168.1.*:90");
+        addressMatch.setCird("10.0.0.*:20880");
+
+        assertEquals("10.0.0.*:20880", addressMatch.getCidr());
+        assertEquals(addressMatch.getCidr(), addressMatch.getCird());
+    }
+
+    @Test
+    void cidrFallsBackToDeprecatedCirdField() throws ReflectiveOperationException {
+        AddressMatch addressMatch = new AddressMatch();
+        java.lang.reflect.Field cirdField = AddressMatch.class.getDeclaredField("cird");
+        cirdField.setAccessible(true);
+        cirdField.set(addressMatch, "192.168.1.*:90");
+
+        assertEquals("192.168.1.*:90", addressMatch.getCidr());
+        assertTrue(addressMatch.isMatch("192.168.1.63:90"));
+    }
+
+    @Test
+    void cidrFieldCanBeMappedToPojo() throws ReflectiveOperationException {
+        Map<String, Object> map = new HashMap<>();
+        map.put("cidr", "192.168.1.*:90");
+
+        AddressMatch addressMatch = PojoUtils.mapToPojo(map, AddressMatch.class);
+
+        assertTrue(addressMatch.isMatch("192.168.1.63:90"));
+    }
+
+    @Test
+    void deprecatedCirdFieldCanBeMappedToPojo() throws ReflectiveOperationException {
+        Map<String, Object> map = new HashMap<>();
+        map.put("cird", "192.168.1.*:90");
+
+        AddressMatch addressMatch = PojoUtils.mapToPojo(map, AddressMatch.class);
+
+        assertTrue(addressMatch.isMatch("192.168.1.63:90"));
     }
 }

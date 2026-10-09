@@ -724,7 +724,7 @@ public final class NetUtils {
     /**
      * Check if address matches with specified pattern.
      *
-     * @param pattern cird pattern
+     * @param pattern CIDR pattern
      * @param address address
      * @return true if address matches with the pattern
      * @deprecated use {@link #matchIpExpression(String, String, int)} with separated host and port instead.
