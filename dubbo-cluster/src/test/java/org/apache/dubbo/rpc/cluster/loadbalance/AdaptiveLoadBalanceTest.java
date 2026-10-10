@@ -21,6 +21,7 @@ import org.apache.dubbo.rpc.AdaptiveMetrics;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -164,5 +165,94 @@ class AdaptiveLoadBalanceTest extends LoadBalanceBaseTest {
         Assertions.assertTrue(
                 Math.abs(sumInvoker5 / (weightMap.get(weightInvoker5) * ewma5) - expectWeightValue) < maxDeviation,
                 "select failed!");
+    }
+
+    @Test
+    @Order(2)
+    void testAdaptiveMetricsDecayWithoutProviderUpdate() throws Exception {
+        AdaptiveMetrics metrics = new AdaptiveMetrics();
+
+        String id = "test";
+        int timeout = 100;
+
+        Map<String, String> map = new HashMap<>();
+        map.put("curTime", String.valueOf(System.currentTimeMillis()));
+        map.put("rt", "200");
+        map.put("load", "0.5");
+
+        metrics.setProviderMetrics(id, map);
+
+        AdaptiveMetrics status = metrics.getStatus(id);
+
+        long past = System.currentTimeMillis() - 500;
+        setLongField(status, "currentTime", past);
+        setLongField(status, "currentProviderTime", past);
+
+        long before = getLongField(status, "lastLatency");
+
+        metrics.getLoad(id, 100, timeout);
+
+        Thread.sleep(150);
+
+        metrics.getLoad(id, 100, timeout);
+
+        long after = getLongField(status, "lastLatency");
+
+        Assertions.assertTrue(after > 0);
+        Assertions.assertNotEquals(timeout * 2L, after);
+        Assertions.assertNotEquals(before, after);
+    }
+
+    private long getLongField(Object obj, String name) throws Exception {
+        Field field = obj.getClass().getDeclaredField(name);
+        field.setAccessible(true);
+        return (long) field.get(obj);
+    }
+
+    private void setLongField(Object obj, String name, long value) throws Exception {
+        Field field = obj.getClass().getDeclaredField(name);
+        field.setAccessible(true);
+        field.set(obj, value);
+    }
+
+    @Test
+    @Order(3)
+    void testAdaptiveMetricsDecayHighQps() throws Exception {
+        AdaptiveMetrics metrics = new AdaptiveMetrics();
+
+        String id = "highQpsTest";
+        int timeout = 100;
+
+        Map<String, String> map = new HashMap<>();
+        map.put("curTime", String.valueOf(System.currentTimeMillis()));
+        map.put("rt", "300");
+        map.put("load", "1");
+
+        metrics.setProviderMetrics(id, map);
+
+        AdaptiveMetrics status = metrics.getStatus(id);
+
+        long past = System.currentTimeMillis() - 1000;
+        setLongField(status, "currentTime", past);
+        setLongField(status, "currentProviderTime", past);
+
+        long before = getLongField(status, "lastLatency");
+
+        // simulate high QPS: many rapid getLoad calls without provider updates
+        for (int i = 0; i < 1000; i++) {
+            metrics.getLoad(id, 100, timeout);
+        }
+
+        Thread.sleep(120);
+
+        for (int i = 0; i < 1000; i++) {
+            metrics.getLoad(id, 100, timeout);
+        }
+
+        long after = getLongField(status, "lastLatency");
+
+        Assertions.assertTrue(after > 0);
+        Assertions.assertNotEquals(before, after);
+        Assertions.assertNotEquals(timeout * 2L, after);
     }
 }
