@@ -297,21 +297,37 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
             Class interfaceClass = beanClass;
 
-            // set attribute instead of property values
-            beanDefinition.setAttribute(Constants.REFERENCE_PROPS, attributes);
-            beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_CLASS, interfaceClass);
-            beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_NAME, interfaceName);
+            setReferenceBeanDefinitionProperties(beanDefinition, interfaceClass, interfaceName, attributes);
         } else {
             // raw reference bean
             // the ReferenceBean is not yet initialized
-            beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_CLASS, beanClass);
-            if (beanClass != GenericService.class) {
-                beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_NAME, beanClass.getName());
-            }
+            String interfaceName = beanClass != GenericService.class ? beanClass.getName() : null;
+            setReferenceBeanDefinitionProperties(beanDefinition, beanClass, interfaceName, null);
         }
 
         // set id
         beanDefinition.getPropertyValues().add(ReferenceAttributes.ID, beanName);
+    }
+
+    private void setReferenceBeanDefinitionProperties(
+            BeanDefinition beanDefinition,
+            Class<?> interfaceClass,
+            String interfaceName,
+            Map<String, Object> referenceProps) {
+        if (referenceProps != null) {
+            beanDefinition.setAttribute(Constants.REFERENCE_PROPS, referenceProps);
+        }
+        if (interfaceClass != null) {
+            beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_CLASS, interfaceClass);
+            beanDefinition.getPropertyValues().add(ReferenceAttributes.INTERFACE_CLASS, interfaceClass);
+        }
+        if (interfaceName != null) {
+            beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_NAME, interfaceName);
+            beanDefinition.getPropertyValues().add(ReferenceAttributes.INTERFACE_NAME, interfaceName);
+        }
+        if (referenceProps != null && AotWithSpringDetector.isAotProcessing()) {
+            beanDefinition.getPropertyValues().add("referencePropsJson", JsonUtils.toJson(referenceProps));
+        }
     }
 
     @Override
@@ -539,17 +555,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         beanDefinition.setBeanClassName(ReferenceBean.class.getName());
         beanDefinition.getPropertyValues().add(ReferenceAttributes.ID, referenceBeanName);
 
-        // set attribute instead of property values
-        beanDefinition.setAttribute(Constants.REFERENCE_PROPS, attributes);
-        beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_CLASS, interfaceClass);
-        beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_NAME, interfaceName);
-
-        beanDefinition.getPropertyValues().add(ReferenceAttributes.INTERFACE_CLASS, interfaceClass);
-        beanDefinition.getPropertyValues().add(ReferenceAttributes.INTERFACE_NAME, interfaceName);
-
-        if (AotWithSpringDetector.isAotProcessing()) {
-            beanDefinition.getPropertyValues().add("referencePropsJson", JsonUtils.toJson(attributes));
-        }
+        setReferenceBeanDefinitionProperties(beanDefinition, interfaceClass, interfaceName, attributes);
         // create decorated definition for reference bean, Avoid being instantiated when getting the beanType of
         // ReferenceBean
         // see org.springframework.beans.factory.support.AbstractBeanFactory#getTypeForFactoryBean()
