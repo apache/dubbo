@@ -38,7 +38,11 @@ public class DefaultStreamingDecoder implements StreamingDecoder {
     @Override
     public void decode(InputStream inputStream) throws DecodeException {
         if (closed) {
-            // ignored
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                throw new DecodeException(e);
+            }
             return;
         }
         accumulate.addInputStream(inputStream);
