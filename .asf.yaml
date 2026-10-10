@@ -27,6 +27,8 @@ notifications:
 github:
   homepage: https://dubbo.apache.org/
   description: "The java implementation of Apache Dubbo. An RPC and microservice framework."
+  dependabot_alerts: false
+  dependabot_updates: false
   features:
     # Enable wiki for documentation
     wiki: true
