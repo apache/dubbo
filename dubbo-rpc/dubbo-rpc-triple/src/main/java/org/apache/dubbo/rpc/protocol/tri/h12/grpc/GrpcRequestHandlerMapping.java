@@ -61,6 +61,9 @@ public final class GrpcRequestHandlerMapping implements RequestHandlerMapping {
         String version = request.header(TripleHeaderEnum.SERVICE_VERSION.getKey());
         Invoker<?> invoker = pathResolver.resolve(path.getPath(), group, version);
         if (invoker == null) {
+            if (url.getOrDefaultApplicationModel().getDeployer().isStopping()) {
+                throw unavailable();
+            }
             throw notFound();
         }
 
@@ -77,6 +80,11 @@ public final class GrpcRequestHandlerMapping implements RequestHandlerMapping {
 
     private static HttpStatusException notFound() {
         return new HttpStatusException(HttpStatus.NOT_FOUND.getCode(), "Invoker for gRPC not found");
+    }
+
+    private static HttpStatusException unavailable() {
+        return new HttpStatusException(
+                HttpStatus.SERVICE_UNAVAILABLE.getCode(), "Invoker for gRPC not found, service is shutting down");
     }
 
     @Override
