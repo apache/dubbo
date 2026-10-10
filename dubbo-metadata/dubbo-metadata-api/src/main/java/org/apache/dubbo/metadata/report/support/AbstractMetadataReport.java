@@ -374,9 +374,25 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     public void destroy() {
         if (reportCacheExecutor != null) {
             reportCacheExecutor.shutdown();
+            try {
+                if (!reportCacheExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+                    reportCacheExecutor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                reportCacheExecutor.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
         }
         if (reportTimerScheduler != null) {
             reportTimerScheduler.shutdown();
+            try {
+                if (!reportTimerScheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+                    reportTimerScheduler.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                reportTimerScheduler.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
         }
         if (metadataReportRetry != null) {
             metadataReportRetry.destroy();
@@ -547,6 +563,14 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                 retryScheduledFuture.cancel(false);
             }
             retryExecutor.shutdown();
+            try {
+                if (!retryExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+                    retryExecutor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                retryExecutor.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
         }
 
         void destroy() {
