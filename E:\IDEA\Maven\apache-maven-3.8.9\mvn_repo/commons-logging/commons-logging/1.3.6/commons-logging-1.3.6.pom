@@ -1,0 +1,812 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <!--
+      Note that due to the special requirements of logging unit-tests, most
+      tests are executed in the "integration-test" phase rather than the
+      "test" phase. Please run "mvn integration-test" to run the full suite of
+      available unit tests.
+    -->
+  <parent>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-parent</artifactId>
+    <version>97</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>commons-logging</groupId>
+  <artifactId>commons-logging</artifactId>
+  <name>Apache Commons Logging</name>
+  <version>1.3.6</version>
+  <description>Apache Commons Logging is a thin adapter allowing configurable bridging to other,
+    well-known logging systems.</description>
+  <url>https://commons.apache.org/proper/commons-logging/</url>
+  <properties>
+    <animal-sniffer.signature>java18</animal-sniffer.signature>
+    <commons.logging.javaversion>1.8</commons.logging.javaversion>
+    <maven.compiler.source>${commons.logging.javaversion}</maven.compiler.source>
+    <maven.compiler.target>${commons.logging.javaversion}</maven.compiler.target>
+    <commons.componentid>logging</commons.componentid>
+    <commons.module.name>org.apache.commons.logging</commons.module.name>
+    <commons.release.version>1.3.6</commons.release.version>
+    <commons.release.next>1.3.7</commons.release.next>
+    <commons.bc.version>1.3.5</commons.bc.version>
+    <commons.release.isDistModule>true</commons.release.isDistModule>
+    <commons.jira.id>LOGGING</commons.jira.id>
+    <commons.jira.pid>12310484</commons.jira.pid>
+    <!-- The RC version used in the staging repository URL. -->
+    <commons.rc.version>RC1</commons.rc.version>
+    <skipSurefireReport>true</skipSurefireReport>
+    <!-- Since version 3.2 additional classpath dependencies are allowed. -->
+    <commons.failsafe.version>3.2.1</commons.failsafe.version>
+    <!-- Allow default test run order to be changed -->
+    <failsafe.runorder>filesystem</failsafe.runorder>
+    <log4j2.version>2.25.3</log4j2.version>
+    <logback.version>1.3.16</logback.version>
+    <slf4j.version>2.0.17</slf4j.version>
+    <findsecbugs.version>1.14.0</findsecbugs.version>
+    <commons.osgi.import>
+      javax.servlet;version="[2.1.0, 5.0.0)";resolution:=optional,
+      org.apache.avalon.framework.logger;version="[4.1.3, 4.1.5]";resolution:=optional,
+      org.apache.log;version="[1.0.1, 1.0.1]";resolution:=optional,
+      org.apache.log4j;version="[1.2.15, 2.0.0)";resolution:=optional,
+      org.apache.logging.log4j;version="[2.0, 4.0)";resolution:=optional,
+      org.apache.logging.log4j.spi;version="[2.0, 4.0)";resolution:=optional,
+      org.apache.logging.log4j.util;version="[2.0, 4.0)";resolution:=optional,
+      org.slf4j;version="[1.7, 3)";resolution:=optional,
+      org.slf4j.spi;version="[1.7, 3)";resolution:=optional
+    </commons.osgi.import>
+    <!-- project.build.outputTimestamp is managed by Maven plugins, see https://maven.apache.org/guides/mini/guide-reproducible-builds.html -->
+    <project.build.outputTimestamp>2026-03-04T23:05:20Z</project.build.outputTimestamp>
+    <!-- JaCoCo: Don't make code coverage worse than: -->
+    <commons.jacoco.haltOnFailure>true</commons.jacoco.haltOnFailure>
+    <commons.jacoco.classRatio>0.42</commons.jacoco.classRatio>
+    <commons.jacoco.instructionRatio>0.52</commons.jacoco.instructionRatio>
+    <commons.jacoco.methodRatio>0.61</commons.jacoco.methodRatio>
+    <commons.jacoco.branchRatio>0.34</commons.jacoco.branchRatio>
+    <commons.jacoco.lineRatio>0.44</commons.jacoco.lineRatio>
+    <commons.jacoco.complexityRatio>0.42</commons.jacoco.complexityRatio>
+  </properties>
+  <issueManagement>
+    <system>JIRA</system>
+    <url>https://issues.apache.org/jira/browse/LOGGING</url>
+  </issueManagement>
+  <inceptionYear>2001</inceptionYear>
+  <scm>
+    <connection>scm:git:https://gitbox.apache.org/repos/asf/commons-logging</connection>
+    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/commons-logging</developerConnection>
+    <url>https://gitbox.apache.org/repos/asf/commons-logging</url>
+  </scm>
+  <ciManagement>
+    <system>GitHub</system>
+    <url>https://github.com/apache/commons-logging/actions</url>
+  </ciManagement>
+  <build>
+    <!-- TODO spotbugs:check -->
+    <defaultGoal>clean verify apache-rat:check japicmp:cmp javadoc:javadoc checkstyle:check pmd:check</defaultGoal>
+    <plugins>
+      <!--
+          We want to create four jarfiles from this project: normal, tests, api
+          and adapters. The first two are handled by the normal jar:jar and
+          jar:test-jar targets.
+          The jar plugin with some includes/excludes is used to create the other
+          ones.
+        -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <!--
+                The custom test framework requires the unit test code to be
+                in a jarfile so it can control its place in the classpath.
+              -->
+            <id>create-test-jar</id>
+            <phase>package</phase>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>create-api-jar</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <configuration>
+              <classifier>api</classifier>
+              <includes>
+                <include>org/apache/commons/logging/*.class</include>
+                <include>org/apache/commons/logging/impl/LogFactoryImpl*.class</include>
+                <include>org/apache/commons/logging/impl/WeakHashtable*.class</include>
+                <include>org/apache/commons/logging/impl/SimpleLog*.class</include>
+                <include>org/apache/commons/logging/impl/NoOpLog*.class</include>
+                <include>org/apache/commons/logging/impl/Jdk14Logger.class</include>
+                <include>META-INF/LICENSE.txt</include>
+                <include>META-INF/NOTICE.txt</include>
+              </includes>
+              <excludes>
+                <exclude>**/package.html</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+          <execution>
+            <id>create-adapters-jar</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <configuration>
+              <classifier>adapters</classifier>
+              <includes>
+                <include>org/apache/commons/logging/impl/**.class</include>
+                <include>META-INF/LICENSE.txt</include>
+                <include>META-INF/NOTICE.txt</include>
+              </includes>
+              <excludes>
+                <exclude>org/apache/commons/logging/impl/WeakHashtable*.class</exclude>
+                <exclude>org/apache/commons/logging/impl/LogFactoryImpl*.class</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+        </executions>
+        <configuration>
+          <archive combine.children="append">
+            <manifestEntries>
+              <Automatic-Module-Name>org.apache.commons.logging</Automatic-Module-Name>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>site.resources</id>
+            <phase>site</phase>
+            <configuration>
+              <target>
+                <copy todir="${project.reporting.outputDirectory}">
+                  <fileset dir="${basedir}">
+                    <include name="RELEASE-NOTES.txt" />
+                  </fileset>
+                </copy>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <!--
+            Many of JCL's tests use tricky techniques to place the generated
+            JCL jarfiles on the classpath in various configurations. This means
+            that those tests must be run *after* the "package" build phase.
+           
+            In order to not mess with the Ant build we "disable" the normal test
+            phase. This is done by skipping the execution of the surefire plugin.
+          -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.moditect</groupId>
+        <artifactId>moditect-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-module-infos</id>
+            <configuration>
+              <module>
+                <moduleInfo>
+                  <requires>
+                    static java.logging;
+                    *;
+                  </requires>
+                </moduleInfo>
+              </module>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <!--
+            Many of JCL's tests use tricky techniques to place the generated
+            JCL jarfiles on the classpath in various configurations. This means
+            that those tests must be run *after* the "package" build phase.
+           
+            For this we use the failsafe plugin which is bound to the
+            "integration-test" phase by default.
+          -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <!-- Span a different JVM per test -->
+        <configuration>
+          <reuseForks>false</reuseForks>
+        </configuration>
+        <executions>
+          <execution>
+            <id>integration-test</id>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+            <configuration>
+              <runOrder>${failsafe.runorder}</runOrder>
+              <classpathDependencyExcludes>
+                <exclude>ch.qos.logback:*</exclude>
+                <exclude>org.apache.logging.log4j:*</exclude>
+                <exclude>org.slf4j:*</exclude>
+              </classpathDependencyExcludes>
+              <excludes>
+                <exclude>org/apache/commons/logging/log4j/log4j12/**</exclude>
+                <exclude>org/apache/commons/logging/log4j2/**</exclude>
+                <exclude>org/apache/commons/logging/slf4j/**</exclude>
+                <exclude>org/apache/commons/logging/serviceloader/**</exclude>
+              </excludes>
+              <includes>
+                <include>**/*TestCase.java</include>
+              </includes>
+              <systemPropertyVariables>
+                <!--
+                  <org.apache.commons.logging.diagnostics.dest>STDOUT</org.apache.commons.logging.diagnostics.dest>
+                -->
+                <log4j12>${org.apache.logging.log4j:log4j-1.2-api:jar}</log4j12>
+                <log4j-api>${org.apache.logging.log4j:log4j-api:jar}</log4j-api>
+                <logkit>${logkit:logkit:jar}</logkit>
+                <servlet-api>${javax.servlet:javax.servlet-api:jar}</servlet-api>
+                <commons-logging>target/${project.build.finalName}.jar</commons-logging>
+                <commons-logging-api>target/${project.build.finalName}-api.jar</commons-logging-api>
+                <commons-logging-adapters>target/${project.build.finalName}-adapters.jar</commons-logging-adapters>
+                <testclasses>target/${project.build.finalName}-tests.jar</testclasses>
+                <commons-lang3>${org.apache.commons:commons-lang3:jar}</commons-lang3>
+              </systemPropertyVariables>
+            </configuration>
+          </execution>
+          <!--
+              The ServiceLoaderTestCase uses a custom implementation of LogFactory,
+              therefore it requires a separate execution.
+            -->
+          <execution>
+            <id>serviceLoader-test</id>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+            <configuration>
+              <additionalClasspathElements>
+                <additionalClasspathElement>${project.build.testOutputDirectory}/serviceloader</additionalClasspathElement>
+              </additionalClasspathElements>
+              <includes>
+                <include>org/apache/commons/logging/serviceloader/*TestCase.java</include>
+              </includes>
+            </configuration>
+          </execution>
+          <!-- Tests logging through the Log4j 2 API. -->
+          <execution>
+            <id>log4j-test</id>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+            <configuration>
+              <additionalClasspathDependencies>
+                <dependency>
+                  <groupId>org.apache.logging.log4j</groupId>
+                  <artifactId>log4j-core</artifactId>
+                  <version>${log4j2.version}</version>
+                </dependency>
+              </additionalClasspathDependencies>
+              <includes>
+                <include>org/apache/commons/logging/log4j2/*TestCase.java</include>
+              </includes>
+              <systemPropertyVariables>
+                <!-- Due to a bug in `log4j-core-test`,
+                     the default LogEventFactory loses the location info.
+                     We need to force the usage of the reusable version.
+                <log4j2.messageFactory>org.apache.logging.log4j.message.ParameterizedMessageFactory</log4j2.messageFactory>
+                  -->
+                <log4j2.logEventFactory>org.apache.logging.log4j.core.impl.ReusableLogEventFactory</log4j2.logEventFactory>
+              </systemPropertyVariables>
+            </configuration>
+          </execution>
+          <!-- Tests logging through the Log4j 2 API for 1.2. -->
+          <execution>
+            <id>log4j12-test</id>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+            <configuration>
+              <additionalClasspathDependencies>
+                <dependency>
+                  <groupId>org.apache.logging.log4j</groupId>
+                  <artifactId>log4j-1.2-api</artifactId>
+                  <version>${log4j2.version}</version>
+                </dependency>
+                <dependency>
+                  <groupId>org.apache.logging.log4j</groupId>
+                  <artifactId>log4j-api</artifactId>
+                  <version>${log4j2.version}</version>
+                </dependency>
+                <dependency>
+                  <groupId>org.apache.logging.log4j</groupId>
+                  <artifactId>log4j-core</artifactId>
+                  <version>${log4j2.version}</version>
+                </dependency>
+              </additionalClasspathDependencies>
+              <includes>
+                <include>org/apache/commons/logging/log4j/log4j12/*TestCase.java</include>
+              </includes>
+              <systemPropertyVariables>
+                <!-- Due to a bug in `log4j-core-test`,
+                     the default LogEventFactory loses the location info.
+                     We need to force the usage of the reusable version.
+                <log4j2.messageFactory>org.apache.logging.log4j.message.ParameterizedMessageFactory</log4j2.messageFactory>
+                   -->
+                <log4j2.logEventFactory>org.apache.logging.log4j.core.impl.ReusableLogEventFactory</log4j2.logEventFactory>
+                <log4j12>${org.apache.logging.log4j:log4j-1.2-api:jar}</log4j12>
+                <log4j2-api>${org.apache.logging.log4j:log4j-api:jar}</log4j2-api>
+                <log4j2-core>${org.apache.logging.log4j:log4j-core:jar}</log4j2-core>
+                <commons-logging>target/${project.build.finalName}.jar</commons-logging>
+                <commons-logging-api>target/${project.build.finalName}-api.jar</commons-logging-api>
+                <testclasses>target/${project.build.finalName}-tests.jar</testclasses>
+                <!-- Use the Log4j 1.2 version of Log -->
+                <org.apache.commons.logging.LogFactory>org.apache.commons.logging.impl.LogFactoryImpl</org.apache.commons.logging.LogFactory>
+              </systemPropertyVariables>
+            </configuration>
+          </execution>
+          <!-- Tests falling back to the SLF4J API, when the Log4j API is absent. -->
+          <execution>
+            <id>slf4j-test</id>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+            <configuration>
+              <additionalClasspathDependencies>
+                <dependency>
+                  <groupId>ch.qos.logback</groupId>
+                  <artifactId>logback-classic</artifactId>
+                  <version>${logback.version}</version>
+                  <scope>test</scope>
+                </dependency>
+              </additionalClasspathDependencies>
+              <classpathDependencyExcludes>
+                <exclude>org.apache.logging.log4j:*</exclude>
+              </classpathDependencyExcludes>
+              <includes>
+                <include>org/apache/commons/logging/slf4j/*TestCase.java</include>
+              </includes>
+            </configuration>
+          </execution>
+          <!-- Tests falling back to the SLF4J API, when the Log4j API is present, but redirected to SLF4J. -->
+          <execution>
+            <id>log4j-to-slf4j-test</id>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+            <configuration>
+              <additionalClasspathDependencies>
+                <dependency>
+                  <groupId>org.apache.logging.log4j</groupId>
+                  <artifactId>log4j-to-slf4j</artifactId>
+                  <version>${log4j2.version}</version>
+                  <!-- Conflicts with the version used by the project -->
+                  <exclusions>
+                    <exclusion>
+                      <groupId>org.slf4j</groupId>
+                      <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                  </exclusions>
+                </dependency>
+              </additionalClasspathDependencies>
+              <classpathDependencyExcludes>
+                <exclude>org.apache.logging.log4j:log4j-core</exclude>
+                <exclude>org.apache.logging.log4j:log4j-core-test</exclude>
+              </classpathDependencyExcludes>
+              <includes>
+                <include>org/apache/commons/logging/slf4j/*TestCase.java</include>
+              </includes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptors>
+            <descriptor>src/main/assembly/bin.xml</descriptor>
+            <descriptor>src/main/assembly/src.xml</descriptor>
+          </descriptors>
+          <tarLongFileMode>gnu</tarLongFileMode>
+        </configuration>
+      </plugin>
+      <!-- Define properties for referencing dependencies -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>properties</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-scm-publish-plugin</artifactId>
+        <configuration>
+          <ignorePathsToDelete>
+            <ignorePathToDelete>javadocs</ignorePathToDelete>
+            <ignorePathToDelete>commons-logging-**</ignorePathToDelete>
+          </ignorePathsToDelete>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <configuration>
+          <configLocation>${basedir}/src/conf/checkstyle.xml</configLocation>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
+          <enableRulesSummary>false</enableRulesSummary>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <configuration>
+          <targetJdk>1.8</targetJdk>
+          <rulesets>
+            <ruleset>${basedir}/src/conf/pmd.xml</ruleset>
+          </rulesets>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+        <configuration>
+          <excludeFilterFile>src/conf/spotbugs-excludes.xml</excludeFilterFile>
+          <plugins>
+            <plugin>
+              <groupId>com.h3xstream.findsecbugs</groupId>
+              <artifactId>findsecbugs-plugin</artifactId>
+              <version>${findsecbugs.version}</version>
+            </plugin>
+          </plugins>
+        </configuration>
+      </plugin>
+      <!-- Ban Commons Logging clones. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>ban-jcl-clones</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <bannedDependencies>
+                  <excludes>
+                    <exclude>org.slf4j:jcl-over-slf4j</exclude>
+                    <exclude>org.springframework:spring-jcl</exclude>
+                  </excludes>
+                </bannedDependencies>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.felix</groupId>
+          <artifactId>maven-bundle-plugin</artifactId>
+          <configuration>
+            <instructions>
+              <Require-Capability><![CDATA[ 
+                osgi.extender;filter:="(&(osgi.extender=osgi.serviceloader.processor)(version>=1.0.0)(!(version>=2.0.0)))";resolution:=optional,
+                osgi.serviceloader;filter:="(osgi.serviceloader=org.apache.commons.logging.LogFactory)";osgi.serviceloader="org.apache.commons.logging.LogFactory";resolution:=optional;cardinality:=multiple
+              ]]></Require-Capability>
+            </instructions>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>avalon-framework</groupId>
+      <artifactId>avalon-framework</artifactId>
+      <version>4.1.5</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-1.2-api</artifactId>
+      <version>${log4j2.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>${log4j2.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>logkit</groupId>
+      <artifactId>logkit</artifactId>
+      <version>2.0</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>4.0.1</version>
+      <scope>provided</scope>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.20.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>${log4j2.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core-test</artifactId>
+      <version>${log4j2.version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <!-- Commons Logging clone -->
+        <exclusion>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-jcl</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>${logback.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-core</artifactId>
+      <version>${logback.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-core</artifactId>
+      <version>${logback.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <configuration>
+          <configLocation>${basedir}/src/conf/checkstyle.xml</configLocation>
+          <enableRulesSummary>false</enableRulesSummary>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+        <configuration>
+          <excludeFilterFile>src/conf/spotbugs-excludes.xml</excludeFilterFile>
+            <plugins>
+              <plugin>
+                <groupId>com.h3xstream.findsecbugs</groupId>
+                <artifactId>findsecbugs-plugin</artifactId>
+                <version>${findsecbugs.version}</version>
+              </plugin>
+            </plugins>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <configuration>
+          <targetJdk>1.8</targetJdk>
+          <rulesets>
+            <ruleset>${basedir}/src/conf/pmd.xml</ruleset>
+          </rulesets>
+        </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
+  <distributionManagement>
+    <site>
+      <id>apache.website</id>
+      <name>Apache Commons Site</name>
+      <url>scm:svn:https://svn.apache.org/repos/infra/websites/production/commons/content/proper/commons-logging/</url>
+    </site>
+  </distributionManagement>
+  <developers>
+    <developer>
+      <id>baliuka</id>
+      <name>Juozas Baliuka</name>
+      <email>baliuka@apache.org</email>
+      <roles>
+        <role>Java Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>morgand</id>
+      <name>Morgan Delagrange</name>
+      <email>morgand@apache.org</email>
+      <organization>Apache</organization>
+      <roles>
+        <role>Java Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>donaldp</id>
+      <name>Peter Donald</name>
+      <email>donaldp@apache.org</email>
+    </developer>
+    <developer>
+      <id>rdonkin</id>
+      <name>Robert Burrell Donkin</name>
+      <email>rdonkin@apache.org</email>
+      <organization>The Apache Software Foundation</organization>
+    </developer>
+    <developer>
+      <id>skitching</id>
+      <name>Simon Kitching</name>
+      <email>skitching@apache.org</email>
+      <organization>The Apache Software Foundation</organization>
+    </developer>
+    <developer>
+      <id>dennisl</id>
+      <name>Dennis Lundberg</name>
+      <email>dennisl@apache.org</email>
+      <organization>The Apache Software Foundation</organization>
+    </developer>
+    <developer>
+      <id>costin</id>
+      <name>Costin Manolache</name>
+      <email>costin@apache.org</email>
+      <organization>The Apache Software Foundation</organization>
+    </developer>
+    <developer>
+      <id>craigmcc</id>
+      <name>Craig McClanahan</name>
+      <email>craigmcc@apache.org</email>
+      <organization>The Apache Software Foundation</organization>
+    </developer>
+    <developer>
+      <id>tn</id>
+      <name>Thomas Neidhart</name>
+      <email>tn@apache.org</email>
+      <organization>The Apache Software Foundation</organization>
+    </developer>
+    <developer>
+      <id>sanders</id>
+      <name>Scott Sanders</name>
+      <email>sanders@apache.org</email>
+      <organization>The Apache Software Foundation</organization>
+    </developer>
+    <developer>
+      <id>rsitze</id>
+      <name>Richard Sitze</name>
+      <email>rsitze@apache.org</email>
+      <organization>The Apache Software Foundation</organization>
+    </developer>
+    <developer>
+      <id>bstansberry</id>
+      <name>Brian Stansberry</name>
+    </developer>
+    <developer>
+      <id>rwaldhoff</id>
+      <name>Rodney Waldhoff</name>
+      <email>rwaldhoff@apache.org</email>
+      <organization>The Apache Software Foundation</organization>
+    </developer>
+    <developer>
+      <id>ggregory</id>
+      <name>Gary Gregory</name>
+      <email>ggregory at apache.org</email>
+      <url>https://www.garygregory.com</url>
+      <organization>The Apache Software Foundation</organization>
+      <organizationUrl>https://www.apache.org/</organizationUrl>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>America/New_York</timezone>
+      <properties>
+        <picUrl>https://people.apache.org/~ggregory/img/garydgregory80.png</picUrl>
+      </properties>
+    </developer>
+  </developers>
+  <contributors>
+    <contributor>
+      <name>Matthew P. Del Buono</name>
+      <roles>
+        <role>Provided patch</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Vince Eagen</name>
+      <email>vince256 at comcast dot net</email>
+      <roles>
+        <role>Lumberjack logging abstraction</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Peter Lawrey</name>
+      <roles>
+        <role>Provided patch</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Berin Loritsch</name>
+      <email>bloritsch at apache dot org</email>
+      <roles>
+        <role>Lumberjack logging abstraction</role>
+        <role>JDK 1.4 logging abstraction</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Philippe Mouawad</name>
+      <roles>
+        <role>Provided patch</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Neeme Praks</name>
+      <email>neeme at apache dot org</email>
+      <roles>
+        <role>Avalon logging abstraction</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Arturo Bernal</name>
+      <email>arturobernalg@yahoo.com</email>
+    </contributor>
+  </contributors>
+</project>

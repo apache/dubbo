@@ -1,0 +1,1026 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   ====================================================================
+   Licensed to the Apache Software Foundation (ASF) under one
+   or more contributor license agreements.  See the NOTICE file
+   distributed with this work for additional information
+   regarding copyright ownership.  The ASF licenses this file
+   to you under the Apache License, Version 2.0 (the
+   "License"); you may not use this file except in compliance
+   with the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing,
+   software distributed under the License is distributed on an
+   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+   KIND, either express or implied.  See the License for the
+   specific language governing permissions and limitations
+   under the License.
+   ====================================================================
+
+   This software consists of voluntary contributions made by many
+   individuals on behalf of the Apache Software Foundation.  For more
+   information on the Apache Software Foundation, please see
+   <http://www.apache.org/>.
+ -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache</groupId>
+    <artifactId>apache</artifactId>
+    <version>21</version>
+  </parent>
+  <groupId>org.apache.httpcomponents</groupId>
+  <artifactId>httpcomponents-parent</artifactId>
+  <version>11</version>
+  <packaging>pom</packaging>
+  <name>Apache HttpComponents Parent</name>
+  <url>http://hc.apache.org/</url>
+  <description>Apache components to build HTTP enabled services</description>
+  <inceptionYear>2005</inceptionYear>
+
+
+<!--
+Version 11 - changes since version 10
+=====================================
+
+org.apache.apache 18 -> 21
+maven-jar-plugin 3.0.2 ->
+maven-resources-plugin 3.0.2 -> 3.1.0
+maven-resources-plugin 2.5 -> 3.0.0
+maven-project-info-reports-plugin 2.9 -> 3.0.0
+maven-site-plugin 3.6 -> 3.7.1 (allows building with Java 9)
+wagon-ssh 2.10 -> 3.2.0.
+Added dependency-check-maven 3.3.1
+maven-javadoc-plugin 3.0.0-M1 -> 3.0.1
+maven-bundle-plugin 3.3.0 -> 3.5.1
+jacoco-maven-plugin 0.7.9 -> 0.8.1
+maven-clean-plugin 3.0.0 -> 3.1.0
+maven-compiler-plugin 3.7.0 -> 3.8.0
+maven-surefire-plugin 2.22.1 -> 2.22.1 
+
+Version 10 - changes since version 9
+====================================
+
+HC style check definition 1 -> 2
+maven-surefire-plugin 2.20 -> 2.21.0 (required to build with Java 9 and Java 10)
+
+Version 9 - changes since version 8
+===================================
+
+Removed obsolete notice plugin
+Removed obsolete svn-buildnumber plugin and profiles
+Removed obsolete clover plugin and profile
+build-helper-maven-plugin 1.12 -> 3.0.0
+maven-gpg-plugin 1.4 -> 1.6
+maven-assembly-plugin 3.0.0 -> 3.1.0
+maven-compiler-plugin 3.6.0 -> 3.6.1
+maven-compiler-plugin 3.6.1 -> 3.6.2
+maven-compiler-plugin 3.6.2 -> 3.7.0
+maven-surefire-plugin 2.19.1 -> 2.20
+maven-resources-plugin 3.0.1 -> 3.0.2
+maven-bundle-plugin 3.2.0 -> 3.3.0
+jacaoco-maven-plugin 0.7.7.201606060606 -> 0.7.9
+Renamed artifactId to httpcomponents-parent
+Added use-toolchains profile; activated if ~/.m2/toolchains.xml exists
+maven-javadoc-plugin 2.10.4 -> 3.0.0-M1 (allows building on Java 9.)
+animal-sniffer-maven-plugin 1.15 -> 1.16
+
+Version 8 - changes since version 7
+===================================
+
+Dropped definition of maven.compiler.(source|target).
+These must now be defined at component level.
+
+add profile nodoclint
+maven-checkstyle-plugin 2.9.1 -> 2.17
+maven-project-info-reports-plugin 2.8.1 -> 2.9
+maven-clover2-plugin 3.1.11 -> 4.0.6
+clirr-maven-plugin 2.7 -> 2.8
+docbkx-maven-plugin 2.16 -> 2.17
+maven-site-plugin 3.4 -> 3.6
+maven-resources-plugin 2.7 -> 3.0.1
+org.apache:apache POM 13 -> 18
+animal-sniffer-maven-plugin 1.11 => 1.15
+docbkx-maven-plugin 2.0.15 => 2.0.16
+hc.rat.version 0.11 -> 0.12
+Javadoc 2.9.1 => 2.10.4
+Surefire 2.15 => 2.19
+JXR 2.3 => 2.5
+Clirr 2.5 => 2.7
+maven-antrun-plugin 2.4.1 => 2.6
+maven-assembly-plugin 2.4 => 3.0.0
+maven-clean-plugin 2.5 => 3.0.0
+maven-compiler-plugin 3.1 => 3.6.0
+maven-deploy-plugin 2.7 => 2.8.2
+build-helper-maven-plugin 1.9.1 => 1.12
+maven-install-plugin 2.4 => 2.5.2
+maven-jar-plugin 2.4 => 3.0.2
+maven-javadoc-plugin 2.10.1 => 2.10.3
+maven-release-plugin 2.4.1 => 2.5.3
+maven-resources-plugin 2.6 => 2.7
+maven-site-plugin 3.3 => 3.4
+maven-surefire-plugin 2.19 -> 2.19.1
+maven-surefire-report-plugin 2.19 -> 2.19.1
+wagon-ssh 2.0 => 2.7
+maven-source-plugin 2.3 => 3.0.1
+docbkx-maven-plugin 2.14 => 2.15
+maven-bundle-plugin 2.4.0 => 3.2.0
+buildnumber-maven-plugin 1.2 => 1.4
+wagon-ssh 2.7 => 2.10
+
+Version 7 - changes since version 6
+===================================
+
+Fixed maven.compile.* properties => maven.compiler.*
+Unfortunately cannot drop the configuration of compiler plugin as the Apache POM
+defines the source/target directly rather than using properties.
+See: https://issues.apache.org/jira/browse/MPOM-44
+
+Also maven.compile.deprecation => maven.compiler.showDeprecation
+
+** N.B. Child POMs may need to be adjusted when upgrading to parent pom 7 **
+
+Added Maven pre-requisite of 3.0.3 (minimum)
+Dropped maven-3 profile as no longer needed
+Added Apache parent POM 13; dropped distributionManagement/repository and snapshotRepository
+apache.website now uses property ${hc.site.url}
+Added optional clover profile
+
+Assembly 2.2.1 => 2.4
+Antrun 1.6 => 1.7
+Buildnumber 1.0 => 1.2
+Bundle 2.3.7 => 2.4.0
+Clean 2.4.1 => 2.5
+Clirr 2.3 => 2.5
+Clover2 2.6.3 => 3.1.11
+Compiler 2.3.2 => 3.1
+Dokbkx 2.0.13 => 2.0.14
+Install 2.3.1 => 2.4
+Jar 2.3.2 => 2.4
+Javadoc 2.8 => 2.9.1
+Project-Info 2.4 => 2.7
+Release 2.2.1 => 2.4.1
+Resources 2.5 => 2.6
+Site 3.0 => 3.3
+Source 2.1.2 => 2.2.1
+Surefire 2.9 => 2.15
+Surefire-Report 2.9 => 2.15
+Stylecheck = 2.9.1
+
+Changed issueManagement URL to point to JIRA group
+
+Updated developers list
+
+Changes since previous version (5)
+==============================
+
+Added httpasyncclient module
+
+Buildnumber plugin changes:
+ - can now be disabled (-DbuildNumber.skip)
+ - defaults to SVN CLI, because javasvn currently fails with SVN 1.7 clients
+ - can revert to javasvn with -Pjavasvn
+
+Added default manifest entries to source jars
+
+Felix bundle plugin updated: 2.3.5 -> 2.3.7 (fixes Java 1.5 issue) 
+
+Fixed JIRA link
+ -->
+
+  <organization>
+    <name>Apache Software Foundation</name>
+    <url>http://www.apache.org/</url>
+  </organization>
+
+  <issueManagement>
+    <system>Jira</system>
+    <!-- The following URL is for the HttpComponents group -->
+    <url>https://issues.apache.org/jira/secure/BrowseProjects.jspa?selectedCategory=10280</url>
+  </issueManagement>
+
+  <scm>
+    <connection>scm:git:https://git-wip-us.apache.org/repos/asf/httpcomponents-parent.git</connection>
+    <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/httpcomponents-parent.git</developerConnection>
+    <url>https://github.com/apache/httpcomponents-parent/tree/${project.scm.tag}</url>
+    <tag>master</tag>
+  </scm>
+
+  <developers>
+    <developer>
+      <name>Ortwin Glueck</name>
+      <id>oglueck</id>
+      <email>oglueck -at- apache.org</email>
+      <organization></organization>
+      <roles>
+        <role>Emeritus PMC</role>
+      </roles>
+      <url>http://www.odi.ch/</url>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <name>Oleg Kalnichevski</name>
+      <id>olegk</id>
+      <email>olegk -at- apache.org</email>
+      <roles>
+        <role>Committer</role>
+        <role>PMC</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <name>Asankha C. Perera</name>
+      <id>asankha</id>
+      <email>asankha -at- apache.org</email>
+      <roles>
+        <role>Committer</role>
+        <role>PMC Chair</role>
+      </roles>
+      <url>https://www.adroitlogic.com/</url>
+      <timezone>+5.5</timezone>
+    </developer>
+    <developer>
+      <name>Sebastian Bazley</name>
+      <id>sebb</id>
+      <email>sebb -at- apache.org</email>
+      <roles>
+        <role>Committer</role>
+        <role>PMC</role>
+      </roles>
+      <timezone></timezone>
+    </developer>
+    <developer>
+      <name>Erik Abele</name>
+      <id>erikabele</id>
+      <email>erikabele -at- apache.org</email>
+      <roles>
+        <role>Committer</role>
+        <role>PMC</role>
+      </roles>
+      <url>http://www.codefaktor.de/</url>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <name>Ant Elder</name>
+      <id>antelder</id>
+      <email>antelder -at- apache.org</email>
+      <roles>
+        <role>Committer</role>
+        <role>PMC</role>
+      </roles>
+      <timezone></timezone>
+    </developer>
+    <developer>
+      <name>Paul Fremantle</name>
+      <id>pzf</id>
+      <email>pzf -at- apache.org</email>
+      <roles>
+        <role>Committer</role>
+        <role>PMC</role>
+      </roles>
+      <timezone></timezone>
+    </developer>
+    <developer>
+      <name>Roland Weber</name>
+      <id>rolandw</id>
+      <email>rolandw -at- apache.org</email>
+      <roles>
+        <role>Emeritus PMC</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <name>Sam Berlin</name>
+      <id>sberlin</id>
+      <email>sberlin -at- apache.org</email>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>-4</timezone>
+    </developer>
+    <developer>
+      <name>Sean C. Sullivan</name>
+      <id>sullis</id>
+      <email>sullis -at- apache.org</email>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>-8</timezone>
+    </developer>
+    <developer>
+      <name>Jonathan Moore</name>
+      <id>jonm</id>
+      <email>jonm -at- apache.org</email>
+      <roles>
+        <role>Committer</role>
+        <role>PMC</role>
+      </roles>
+      <timezone>-5</timezone>
+    </developer>
+    <developer>
+      <name>Gary Gregory</name>
+      <id>ggregory</id>
+      <email>ggregory -at- apache.org</email>
+      <timezone>-8</timezone>
+      <roles>
+        <role>Committer</role>
+        <role>PMC</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>William Speirs</name>
+      <id>wspeirs</id>
+      <email>wspeirs at apache.org</email>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>-5</timezone>
+    </developer>
+    <developer>
+      <name>Karl Wright</name>
+      <id>kwright</id>
+      <email>kwright -at- apache.org</email>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>-5</timezone>
+    </developer>
+    <developer>
+      <name>Francois-Xavier Bonnet</name>
+      <id>fx</id>
+      <email>fx -at- apache.org</email>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+  </developers>
+
+  <contributors>
+    <contributor>
+      <name>Julius Davies</name>
+      <email>juliusdavies -at- cucbc.com</email>
+    </contributor>
+    <contributor>
+      <name>Andrea Selva</name>
+      <email>selva.andre -at- gmail.com</email>
+    </contributor>
+    <contributor>
+      <name>Steffen Pingel</name>
+      <email>spingel -at- limewire.com</email>
+    </contributor>
+    <contributor>
+      <name>Quintin Beukes</name>
+      <email>quintin -at- last.za.net</email>
+    </contributor>
+    <contributor>
+      <name>Marc Beyerle</name>
+      <email>marc.beyerle -at- de.ibm.com</email>
+    </contributor>
+    <contributor>
+      <name>James Abley</name>
+      <email>james.abley -at- gmail.com</email>
+    </contributor>
+    <contributor>
+      <name>Michajlo Matijkiw</name>
+      <email>michajlo_matijkiw -at- comcast.com</email>
+    </contributor>
+  </contributors>
+  <mailingLists>
+    <mailingList>
+      <name>HttpClient User List</name>
+      <subscribe>httpclient-users-subscribe@hc.apache.org</subscribe>
+      <unsubscribe>httpclient-users-unsubscribe@hc.apache.org</unsubscribe>
+      <post>httpclient-users@hc.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/hc-httpclient-users/</archive>
+      <otherArchives>
+        <otherArchive>http://www.nabble.com/HttpClient-User-f20180.html</otherArchive>
+        <otherArchive>http://marc.info/?l=httpclient-users</otherArchive>
+        <otherArchive>http://httpclient-users.markmail.org/search/</otherArchive>
+        <otherArchive>http://hc.apache.org/mail/httpclient-users/</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>HttpComponents Dev List</name>
+      <subscribe>dev-subscribe@hc.apache.org</subscribe>
+      <unsubscribe>dev-unsubscribe@hc.apache.org</unsubscribe>
+      <post>dev@hc.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/hc-dev/</archive>
+      <otherArchives>
+        <otherArchive>http://www.nabble.com/HttpComponents-Dev-f20179.html</otherArchive>
+        <otherArchive>http://marc.info/?l=httpclient-commons-dev</otherArchive>
+        <otherArchive>http://apache-hc-dev.markmail.org/search/</otherArchive>
+        <otherArchive>http://hc.apache.org/mail/dev/</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>HttpComponents Commits List</name>
+      <subscribe>commits-subscribe@hc.apache.org</subscribe>
+      <unsubscribe>commits-unsubscribe@hc.apache.org</unsubscribe>
+      <post>(Read Only)</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/hc-commits/</archive>
+      <otherArchives>
+        <otherArchive>http://marc.info/?l=httpcomponents-commits</otherArchive>
+        <otherArchive>http://hc-commits.markmail.org/search/</otherArchive>
+        <otherArchive>http://hc.apache.org/mail/commits/</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>Apache Announce List</name>
+      <subscribe>announce-subscribe@apache.org</subscribe>
+      <unsubscribe>announce-unsubscribe@apache.org</unsubscribe>
+      <archive>http://mail-archives.apache.org/mod_mbox/www-announce/</archive>
+      <otherArchives>
+        <otherArchive>http://org-apache-announce.markmail.org/search/</otherArchive>
+      </otherArchives>
+    </mailingList>
+  </mailingLists>
+
+  <distributionManagement>
+    <site>
+      <id>apache.website</id>
+      <name>Apache HttpComponents Website</name>
+      <url>${hc.site.url}</url>
+    </site>
+  </distributionManagement>
+
+  <repositories>
+    <!-- allow snapshot dependencies to be resolved -->
+    <repository>
+      <id>apache.snapshots</id>
+      <name>Apache Snapshot Repository</name>
+      <url>http://repository.apache.org/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+    </repository>
+  </repositories>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <!-- Should agree with config in reporting section -->
+        <configuration>
+          <!--
+               If you wish to override this list in the component (child) pom, ensure you use
+                   <excludes combine.children="merge">
+               so that the child pom entries replace the parent entries
+           -->
+          <excludes combine.children="append">
+            <exclude>.pmd</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestEntries>
+              <Specification-Title>Apache ${project.name}</Specification-Title>
+              <Specification-Version>${project.version}</Specification-Version>
+              <Specification-Vendor>Apache Software Foundation</Specification-Vendor>
+              <Implementation-Title>Apache HttpComponents ${project.name}</Implementation-Title>
+              <Implementation-Version>${project.version}</Implementation-Version>
+              <Implementation-Vendor>Apache Software Foundation</Implementation-Vendor>
+              <Implementation-Vendor-Id>org.apache</Implementation-Vendor-Id>
+              <!-- from buildnumber plugin and properties -->
+              <Implementation-Build>${implementation.build}</Implementation-Build>
+              <X-Compile-Source-JDK>${maven.compiler.source}</X-Compile-Source-JDK>
+              <X-Compile-Target-JDK>${maven.compiler.target}</X-Compile-Target-JDK>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+
+    <pluginManagement>
+      <plugins>
+        <!-- org.apache.maven.plugins, alpha order by artifact id -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>3.1.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>1.8</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>3.1.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.8.0</version>
+          <configuration>
+            <source>${maven.compiler.source}</source>
+            <target>${maven.compiler.target}</target>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>2.8.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>1.6</version>
+          <executions>
+            <execution>
+              <id>sign-artifacts</id>
+              <phase>verify</phase>
+              <goals>
+                <goal>sign</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>2.5.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.1.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>${hc.javadoc.version}</version>
+          <configuration>
+            <!-- reduce console output. Can override with -Dquiet=false -->
+            <quiet>true</quiet>
+            <archive>
+              <manifest>
+                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+              </manifest>
+            </archive>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jxr-plugin</artifactId>
+          <version>${hc.jxr.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-project-info-reports-plugin</artifactId>
+          <version>${hc.project-info.version}</version><!-- needed for direct goal use -->
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>2.5.3</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>3.1.0</version>
+          <executions>
+            <execution>
+              <id>copy-resources</id>
+              <phase>pre-site</phase>
+              <goals>
+                <goal>copy-resources</goal>
+              </goals>
+              <configuration>
+                <outputDirectory>${basedir}/target/site/examples</outputDirectory>
+                <resources>          
+                  <resource>
+                    <directory>src/examples</directory>
+                    <filtering>false</filtering>
+                  </resource>
+                </resources>              
+              </configuration>            
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.7.1</version>
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.maven.wagon</groupId>
+              <artifactId>wagon-ssh</artifactId>
+              <version>3.2.0</version>
+            </dependency>
+          </dependencies>
+          <executions>
+            <execution>
+              <id>attach-descriptor</id>
+              <goals>
+                <goal>attach-descriptor</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>3.0.1</version>
+          <configuration>
+            <archive>
+              <manifest>
+                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+              </manifest>
+            </archive>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${hc.surefire.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-report-plugin</artifactId>
+          <version>${hc.surefire-report.version}</version>
+        </plugin>
+        <!-- Other plugins, alpha order by groupId and artifactId -->
+        <plugin>
+          <groupId>com.agilejava.docbkx</groupId>
+          <artifactId>docbkx-maven-plugin</artifactId>
+          <version>2.0.17</version>
+          <dependencies>
+            <dependency>
+              <groupId>org.docbook</groupId>
+              <artifactId>docbook-xml</artifactId>
+              <version>4.4</version>
+              <scope>runtime</scope>
+            </dependency>
+          </dependencies>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.felix</groupId>
+          <artifactId>maven-bundle-plugin</artifactId>
+          <version>3.5.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>buildnumber-maven-plugin</artifactId>
+          <version>1.4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>clirr-maven-plugin</artifactId>
+          <version>${hc.clirr.version}</version>
+          <configuration>
+            <minSeverity>${minSeverity}</minSeverity>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>${hc.checkstyle.version}</version>
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.httpcomponents</groupId>
+              <artifactId>hc-stylecheck</artifactId>
+              <version>2</version>
+            </dependency>
+          </dependencies>
+          <configuration>
+            <encoding>${project.build.sourceEncoding}</encoding>
+          </configuration>
+          <executions>
+            <execution>
+              <id>validate</id>
+              <phase>validate</phase>
+              <configuration>
+                <configLocation>hc-stylecheck/default.xml</configLocation>
+                <headerLocation>hc-stylecheck/asl2.header</headerLocation>
+                <consoleOutput>true</consoleOutput>
+                <failsOnError>true</failsOnError>
+                <linkXRef>false</linkXRef>
+              </configuration>
+              <goals>
+                <goal>checkstyle</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>${hc.project-info.version}</version><!-- needed for mvn site -->
+        <!-- in particular, we don't want mailing-list to be inherited -->
+        <inherited>false</inherited>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>project-team</report>
+              <report>issue-tracking</report>
+              <report>scm</report>
+              <report>mailing-list</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+    </plugins>
+  </reporting>
+
+  <profiles>
+
+    <profile>
+      <!--
+        Make the version parts of the maven.compiler.target property
+        available as separate properties, so that they can be used to define
+        the java signature artifactId used by animal-sniffer etc.
+      -->
+      <id>parse-target-version</id>
+      <activation>
+        <property>
+          <!--
+             This property should always be defined.
+             The intention is to ensure that the profile is always enabled.
+             (activeByDefault only applies if other profiles are not enabled) 
+          -->
+          <name>user.home</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>3.0.0</version>
+            <executions>
+              <execution>
+                <id>parse-version</id>
+                <!-- binds to the validate phase by default -->
+                <goals>
+                  <goal>parse-version</goal>
+                </goals>
+                <configuration>
+                  <propertyPrefix>javaTarget</propertyPrefix>
+                  <versionString>${maven.compiler.target}</versionString>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- 
+         Runs the Animal Sniffer plugin to check that generated code does not included references
+         to methods/classes etc that are not present in the standard Java runtime for the defined target version.
+         To bypass the checks, define "animal.sniffer.skip" as true, or create the file "src/site/resources/profile.noanimal" 
+    -->
+  
+    <profile>
+      <id>animal-sniffer</id>
+      <activation>
+        <!--  active unless the file is found -->
+        <file>
+          <missing>src/site/resources/profile.noanimal</missing>
+        </file>
+      </activation>
+      
+      <properties>
+        <!-- define this as a property to allow command-line override -->
+        <animal-sniffer.signature>java${javaTarget.majorVersion}${javaTarget.minorVersion}</animal-sniffer.signature>
+      </properties>
+  
+      <build>
+        <plugins>
+  
+          <!-- Run the Animal Sniffer checks -->
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>animal-sniffer-maven-plugin</artifactId>
+            <version>${hc.animal-sniffer.version}</version>
+            <executions>
+              <execution>
+                <id>checkAPIcompatibility</id>
+                <!-- binds to the process-classes phase by default -->
+                <goals>
+                  <goal>check</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <signature>
+                <groupId>org.codehaus.mojo.signature</groupId>
+                <artifactId>${animal-sniffer.signature}</artifactId>
+                <version>${hc.animal-sniffer.signature.version}</version>
+              </signature>
+            </configuration>
+          </plugin>
+  
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <!-- 
+     | Profile to allow testing of deploy phase
+     | e.g.
+     | mvn deploy -Ptest-deploy -Prelease -Dgpg.skip
+     -->
+    <profile>
+      <id>test-deploy</id>
+      <properties>
+        <altDeploymentRepository>id::default::file:target/deploy</altDeploymentRepository>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>nodoclint</id>
+      <build>
+        <plugins>
+         <plugin>
+           <groupId>org.apache.maven.plugins</groupId>
+           <artifactId>maven-javadoc-plugin</artifactId>
+             <configuration>
+               <additionalparam>-Xdoclint:none</additionalparam>
+             </configuration>
+           </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>lax-doclint</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <configuration>
+              <additionalparam>-Xdoclint:-missing</additionalparam>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>travis-cobertura</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>cobertura-maven-plugin</artifactId>
+            <version>${hc.cobertura.version}</version>
+            <configuration>
+              <formats>
+                <format>xml</format>
+              </formats>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.eluder.coveralls</groupId>
+            <artifactId>coveralls-maven-plugin</artifactId>
+            <version>${hc.coveralls.version}</version>
+            <configuration>
+              <timestampFormat>${hc.coveralls.timestampFormat}</timestampFormat>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>travis-jacoco</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>${hc.jacoco.version}</version>
+          </plugin>
+          <plugin>
+            <groupId>org.eluder.coveralls</groupId>
+            <artifactId>coveralls-maven-plugin</artifactId>
+            <version>${hc.coveralls.version}</version>
+            <configuration>
+              <timestampFormat>${hc.coveralls.timestampFormat}</timestampFormat>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <!--
+        Use toolchains plugin to select compiler version if the toolchains.xml file exists.
+        To override this behaviour, disable the profile using: -P-use-toolchains
+      -->
+      <id>use-toolchains</id>
+      <activation>
+       <file>
+         <exists>${user.home}/.m2/toolchains.xml</exists>
+       </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-toolchains-plugin</artifactId>
+            <version>1.1</version>
+            <configuration>
+              <toolchains>
+                <jdk>
+                  <version>${maven.compiler.source}</version>
+                </jdk>
+              </toolchains>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>toolchain</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>owasp</id>
+      <reporting>
+        <plugins>
+          <plugin>
+            <groupId>org.owasp</groupId>
+            <artifactId>dependency-check-maven</artifactId>
+            <version>3.3.1</version>
+            <reportSets>
+              <reportSet>
+                <reports>
+                  <report>aggregate</report>
+                </reports>
+              </reportSet>
+            </reportSets>
+          </plugin>
+        </plugins>
+      </reporting>
+    </profile>
+  </profiles>
+
+  <prerequisites>
+    <maven>3.0.5</maven>
+  </prerequisites>
+
+  <properties>
+    <!-- compiler source and target must now be defined at component level -->
+    <maven.compiler.optimize>true</maven.compiler.optimize>
+    <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <hc.site.url>scp://people.apache.org/www/hc.apache.org/</hc.site.url>
+
+    <!-- Define versions of all report plugins, because they should match usage in pluginManagement and modules -->
+    <hc.clirr.version>2.8</hc.clirr.version>
+    <hc.javadoc.version>3.0.1</hc.javadoc.version>
+    <hc.jxr.version>3.0.0</hc.jxr.version>
+    <hc.surefire-report.version>2.22.0</hc.surefire-report.version>
+    <hc.surefire.version>2.22.1</hc.surefire.version>
+    <hc.project-info.version>3.0.0</hc.project-info.version>
+    <hc.checkstyle.version>2.17</hc.checkstyle.version>
+    <hc.rat.version>0.12</hc.rat.version>
+    <hc.animal-sniffer.version>1.16</hc.animal-sniffer.version>
+    <hc.animal-sniffer.signature.version>1.0</hc.animal-sniffer.signature.version>
+    <hc.jacoco.version>0.8.1</hc.jacoco.version>
+    <hc.cobertura.version>2.7</hc.cobertura.version>
+    <hc.coveralls.version>4.3.0</hc.coveralls.version>
+    <hc.coveralls.timestampFormat>EpochMillis</hc.coveralls.timestampFormat>
+    
+    <!-- build meta inf -->
+    <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ssZ</maven.build.timestamp.format>
+    <implementation.build>${scmBranch}@r${buildNumber}; ${maven.build.timestamp}</implementation.build>
+
+    <!-- Allow Clirr severity to be overriden by the command-line option -DminSeverity=level -->
+    <minSeverity>info</minSeverity>
+  </properties>
+</project>

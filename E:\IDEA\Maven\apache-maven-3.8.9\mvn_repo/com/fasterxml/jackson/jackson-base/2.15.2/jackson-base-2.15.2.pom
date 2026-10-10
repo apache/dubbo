@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.fasterxml.jackson</groupId>
+    <artifactId>jackson-bom</artifactId>
+    <version>2.15.2</version>
+  </parent>
+  <artifactId>jackson-base</artifactId>
+  <name>Jackson Base</name>
+  <packaging>pom</packaging>
+  <description>Parent pom for components of Jackson dataprocessor: includes base settings as well
+as consistent set of dependencies across components. NOTE: NOT to be used by components outside
+of Jackson: application code should only rely on `jackson-bom`
+  </description>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <properties>
+    <!-- 06-May-2023, tatu: uUntil upgraded in oss-parent/51 need override here: -->
+    <version.plugin.moditect>1.0.0.Final</version.plugin.moditect>
+
+    <moditect.sourceGroup>${project.groupId}</moditect.sourceGroup>
+    <moditect.sourceArtifact>${project.artifactId}</moditect.sourceArtifact>
+    <moditect.sourceVersion>${project.version}</moditect.sourceVersion>
+
+    <!-- To fix [jackson-bom#52] need to first use better default version for
+         parent pom, and then also allow override as need be
+      -->
+    <jackson-bom.version>${project.parent.version}</jackson-bom.version>
+
+    <!-- for Reproducible Builds -->
+    <project.build.outputTimestamp>2023-05-30T20:28:33Z</project.build.outputTimestamp>
+  </properties>
+
+  <dependencies>
+    <dependency> <!-- all components use junit for testing -->
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${version.junit}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- JPMS Libraries-->
+      <dependency>
+        <groupId>javax.activation</groupId>
+        <artifactId>javax.activation-api</artifactId>
+        <version>${javax.activation.version}</version>
+      </dependency>
+    </dependencies>
+
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <!-- Verify existence of certain settings
+          -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>enforce-java</id>
+              <phase>validate</phase>
+              <goals>
+		<goal>enforce</goal>
+              </goals>
+              <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <version>[3.0,)</version>
+                  <message>[ERROR] The currently supported version of Maven is 3.0 or higher</message>
+                </requireMavenVersion>
+                <requirePluginVersions>
+                  <banLatest>true</banLatest>
+                  <banRelease>true</banRelease>
+                  <banSnapshots>true</banSnapshots>
+                  <phases>clean,deploy,site</phases>
+                  <message>[ERROR] Best Practice is to always define plugin versions!</message>
+                </requirePluginVersions>
+	      </rules>
+	      </configuration>
+	    </execution>
+            <execution>
+              <id>enforce-properties</id>
+              <phase>validate</phase>
+
+<!-- important! Do NOT enable here since parent does not define, build would fail
+    BUT: alas means child has specify settings for phase AND goals like so:
+              <phase>validate</phase>
+              <goals>
+		<goal>enforce</goal>
+              </goals>
+-->
+              <configuration>
+		<rules>
+                  <!-- Needed both for Replacer plug-in AND for Automatic Module Name -->
+                  <requireProperty>
+                    <property>packageVersion.package</property>
+                  </requireProperty>
+                  <requireProperty>
+                    <property>packageVersion.dir</property>
+                  </requireProperty>
+		</rules>
+              </configuration>
+            </execution>
+          </executions>
+	</plugin>
+
+	<plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <configuration>
+<!-- Disable Java 8 javadoc warnings -->
+<!-- 26-Mar-2018: Not for 2.9... (was left in for 2.9.5, alas)
+            <additionalparam>-Xdoclint:none</additionalparam>
+-->
+<!-- ... if on Java 8 -->
+<!-- otherwise just: -->
+            <failOnError>false</failOnError>
+            <links>
+              <link>http://docs.oracle.com/javase/8/docs/api/</link>
+            </links>
+          </configuration>
+	</plugin>
+        <!-- Bind replacer execution (defined in `jackson-parent` for 2.x)
+             to "generate-sources" phase (see
+ https://avajava.com/tutorials/lessons/what-are-the-phases-of-the-maven-default-lifecycle.html
+             ) by default; but do not trigger it (project still needs to add plugin
+             in build section)
+          -->
+	<plugin>
+          <groupId>com.google.code.maven-replacer-plugin</groupId>
+          <artifactId>replacer</artifactId>
+          <executions>
+            <execution>
+              <id>process-packageVersion</id>
+              <phase>generate-sources</phase>
+            </execution>
+          </executions>
+	</plugin>
+
+	<plugin>
+          <groupId>org.moditect</groupId>
+          <artifactId>moditect-maven-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>add-module-infos</id>
+              <phase>package</phase>
+              <goals>
+		<goal>add-module-info</goal>
+              </goals>
+              <configuration>
+                <overwriteExistingFiles>true</overwriteExistingFiles>
+                <module>
+                  <moduleInfoFile>src/moditect/module-info.java</moduleInfoFile>
+                </module>
+              </configuration>
+            </execution>
+          </executions>
+          <!-- 22-Feb-2021, tatu: For Jackson 2.13+, put `module-info.class` 
+              under "META-INF/versions/11" (instead of root, /); helps pre-Java9
+              libraries, frameworks, as well as avoids warnings by tooling
+            -->
+          <!-- 27-Jan-2022, tatu: as per [databind#3380] etc, really need to use
+               "META-INF/versions/9" for tooling compatibility
+            -->
+          <configuration>
+            <jvmVersion>9</jvmVersion>
+          </configuration>
+	</plugin>
+
+        <plugin>
+          <groupId>de.jjohannes</groupId>
+          <artifactId>gradle-module-metadata-maven-plugin</artifactId>
+          <version>0.4.0</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>gmm</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <platformDependencies>
+              <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson-bom.version}</version>
+              </dependency>
+            </platformDependencies>
+          </configuration>
+        </plugin>
+
+      <!-- 03-Nov-2020, tatu: For 2.12, defaults for better LICENSE inclusion -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-resource</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>add-resource</goal>
+            </goals>
+            <configuration>
+              <resources>
+                <resource>
+                  <directory>${project.basedir}</directory>
+                  <targetPath>META-INF</targetPath>
+                  <includes>
+                    <include>LICENSE</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- 27-Nov-2022, tatu: [bom#56] Configure Felix-bundle and maven-jar plugins to
+         use fixed Timestamp correctly for included class files (needed for Reproducible
+         Builds)
+	-->
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>bundle-manifest</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>manifest</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+          </archive>
+        </configuration>
+      </plugin>
+      
+    </plugins>
+  </pluginManagement>
+
+  <!-- And one more odd thing... we actually MUST disable checks just for this
+         pom (but not on something that extends i)
+      -->
+   <plugins>
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-properties</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- 12-Oct-2019, tatu: Copied from
+           https://github.com/stephenc/git-timestamp-maven-plugin/blob/master/pom.xml#L327-L337
+        -->
+      <!-- 01-Aug-2020, tatu: Upgrade 1.6.6 -> 1.6.8 -->
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <version>1.6.8</version>
+        <extensions>true</extensions>
+        <configuration>
+          <serverId>sonatype-nexus-staging</serverId>
+          <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+          <stagingProfileId>b34f19b9cc6224</stagingProfileId>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <!-- 08-Mar-2019, tatu: Add option to generate `module-info.java` with Moditect
+        under profile `moditect`
+    -->
+  <profiles>
+    <profile>
+      <id>moditect</id>
+      <properties>
+        <!-- Not only do we need JDK 9+, must target later JDK too -->
+        <java.version>1.9</java.version>
+      </properties>
+      <build>
+	<plugins>
+	  <plugin>
+	    <groupId>org.moditect</groupId>
+	    <artifactId>moditect-maven-plugin</artifactId>
+	    <executions>
+	      <execution>
+		<id>generate-module-info</id>
+		<phase>generate-sources</phase>
+		<goals>
+		  <goal>generate-module-info</goal>
+		</goals>
+		<configuration>
+		  <modules>
+		    <module>
+		      <artifact>
+			<groupId>${moditect.sourceGroup}</groupId>
+			<artifactId>${moditect.sourceArtifact}</artifactId>
+			<version>${moditect.sourceVersion}</version>
+		      </artifact>
+		    </module>
+		  </modules>
+		</configuration>
+	      </execution>
+	    </executions>
+	  </plugin>
+	</plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

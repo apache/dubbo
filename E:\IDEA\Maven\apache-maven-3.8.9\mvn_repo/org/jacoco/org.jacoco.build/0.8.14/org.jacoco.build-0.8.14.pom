@@ -1,0 +1,1373 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Copyright (c) 2009, 2025 Mountainminds GmbH & Co. KG and Contributors
+   This program and the accompanying materials are made available under
+   the terms of the Eclipse Public License 2.0 which is available at
+   http://www.eclipse.org/legal/epl-2.0
+
+   SPDX-License-Identifier: EPL-2.0
+
+   Contributors:
+      Evgeny Mandrikov - initial API and implementation
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.jacoco</groupId>
+  <artifactId>org.jacoco.build</artifactId>
+  <version>0.8.14</version>
+  <packaging>pom</packaging>
+
+  <name>JaCoCo</name>
+  <description>JaCoCo - Java Code Coverage Library</description>
+  <url>http://jacoco.org</url>
+  <inceptionYear>2009</inceptionYear>
+  <organization>
+    <name>Mountainminds GmbH &amp; Co. KG</name>
+  </organization>
+  <licenses>
+    <license>
+      <name>EPL-2.0</name>
+      <url>https://www.eclipse.org/legal/epl-2.0/</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>mtnminds</id>
+      <name>Marc R. Hoffmann</name>
+      <email>hoffmann@mountainminds.com</email>
+      <timezone>+1</timezone>
+      <roles>
+        <role>Project Lead</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>brock_j</id>
+      <name>Brock Janiczak</name>
+      <email>brockj@gmail.com</email>
+      <timezone>+10</timezone>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>mandrikov</id>
+      <name>Evgeny Mandrikov</name>
+      <email>mandrikov@gmail.com</email>
+      <url>http://godin.net.ru</url>
+      <organization>SonarSource</organization>
+      <organizationUrl>http://www.sonarsource.com</organizationUrl>
+      <timezone>+3</timezone>
+      <roles>
+        <role>Build and release manager</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>mfriedenhagen</id>
+      <name>Mirko Friedenhagen</name>
+      <email>mfriedenhagen@gmail.com</email>
+      <timezone>+1</timezone>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+  </developers>
+
+  <contributors>
+    <contributor>
+      <name>Radek Liba</name>
+    </contributor>
+    <contributor>
+      <name>Christoph Beck</name>
+    </contributor>
+  </contributors>
+
+  <modules>
+    <!-- Order is important: org.jacoco.agent.rt embeds into org.jacoco.agent and JaCoCo Agent used during tests -->
+    <module>../org.jacoco.core</module>
+    <module>../org.jacoco.report</module>
+    <module>../org.jacoco.agent.rt</module>
+    <module>../org.jacoco.agent</module>
+    <module>../org.jacoco.ant</module>
+    <module>../org.jacoco.cli</module>
+    <module>../org.jacoco.examples</module>
+    <module>../jacoco-maven-plugin</module>
+
+    <module>../org.jacoco.tests</module>
+
+    <module>../org.jacoco.doc</module>
+    <module>../jacoco</module>
+  </modules>
+
+  <scm>
+    <connection>scm:git:git://github.com/jacoco/jacoco.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com:jacoco/jacoco.git</developerConnection>
+    <url>https://github.com/jacoco/jacoco</url>
+  </scm>
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/jacoco/jacoco/issues</url>
+  </issueManagement>
+  <distributionManagement>
+    <repository>
+      <id>sonatype-nexus-staging</id>
+      <name>Nexus Release Repository</name>
+      <url>https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/</url>
+    </repository>
+    <snapshotRepository>
+      <id>sonatype-nexus-snapshots</id>
+      <name>Sonatype Nexus Snapshots</name>
+      <url>${sonatypeOssDistMgmtSnapshotsUrl}</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <sonatypeOssDistMgmtSnapshotsUrl>https://central.sonatype.com/repository/maven-snapshots/</sonatypeOssDistMgmtSnapshotsUrl>
+
+    <maven.build.timestamp.format>yyyyMMddhhmm</maven.build.timestamp.format>
+    <jacoco.home.url>http://www.jacoco.org/jacoco</jacoco.home.url>
+    <copyright.years>${project.inceptionYear}, 2025</copyright.years>
+
+    <bytecode.version>1.5</bytecode.version>
+    <maven.compiler.source>${bytecode.version}</maven.compiler.source>
+    <maven.compiler.target>${bytecode.version}</maven.compiler.target>
+
+    <jvm.args></jvm.args>
+    <argLine>${jvm.args}</argLine>
+
+    <!-- Dependencies versions -->
+    <asm.version>9.9</asm.version>
+    <ant.version>1.9.16</ant.version>
+    <args4j.version>2.0.28</args4j.version>
+    <junit.version>4.13.2</junit.version>
+    <googlecodeprettify.version>20100721</googlecodeprettify.version>
+
+    <!-- ================== -->
+    <!-- For SonarQube analysis -->
+    <!-- ================== -->
+    <sonar.coverage.jacoco.xmlReportPaths>../org.jacoco.doc/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+    <sonar.surefire.reportsPath>../${project.artifactId}.test/target/surefire-reports/</sonar.surefire.reportsPath>
+
+    <!-- See http://jira.codehaus.org/browse/SONAR-2096 -->
+    <sonar.java.source>1.5</sonar.java.source>
+    <sonar.java.target>1.5</sonar.java.target>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- Project dependencies -->
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>org.jacoco.core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>org.jacoco.report</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>org.jacoco.agent</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>org.jacoco.agent</artifactId>
+        <classifier>runtime</classifier>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>org.jacoco.agent.rt</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>org.jacoco.ant</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>org.jacoco.ant</artifactId>
+        <classifier>nodeps</classifier>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>org.jacoco.cli</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>org.jacoco.examples</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <!-- Third-party dependencies -->
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm-bom</artifactId>
+        <version>${asm.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.ant</groupId>
+        <artifactId>ant</artifactId>
+        <version>${ant.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.ant</groupId>
+        <artifactId>ant-junit</artifactId>
+        <version>${ant.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.ant</groupId>
+        <artifactId>ant-junit4</artifactId>
+        <version>${ant.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.ant</groupId>
+        <artifactId>ant-launcher</artifactId>
+        <version>${ant.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.ant</groupId>
+        <artifactId>ant-antunit</artifactId>
+        <version>1.4.1</version>
+      </dependency>
+      <dependency>
+        <groupId>args4j</groupId>
+        <artifactId>args4j</artifactId>
+        <version>${args4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${junit.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src</directory>
+        <filtering>false</filtering>
+        <excludes>
+          <exclude>**/*.java</exclude>
+          <exclude>**/*.kt</exclude>
+          <exclude>**/*.groovy</exclude>
+          <exclude>**/*.scala</exclude>
+          <exclude>**/*.properties</exclude>
+        </excludes>
+      </resource>
+      <resource>
+        <directory>src</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>**/*.properties</include>
+        </includes>
+        <excludes>
+          <exclude>**/*-test.properties</exclude>
+        </excludes>
+      </resource>
+      <resource>
+        <directory>src</directory>
+        <filtering>false</filtering>
+        <includes>
+          <include>**/*-test.properties</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>.</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>about.html</include>
+        </includes>
+      </resource>
+    </resources>
+
+    <pluginManagement>
+      <plugins>
+        <!-- Apache plugins -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>3.1.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>3.7.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>3.5.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <!-- latest version which works with JDK 5 -->
+          <version>3.12.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>3.9.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>3.1.4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>3.6.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>3.1.4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-invoker-plugin</artifactId>
+          <version>3.9.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>3.2.8</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.4.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>3.11.2</version>
+          <configuration>
+            <quiet>true</quiet>
+            <detectOfflineLinks>false</detectOfflineLinks>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-plugin-plugin</artifactId>
+          <version>3.6.4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>3.1.1</version>
+          <configuration>
+            <autoVersionSubmodules>true</autoVersionSubmodules>
+            <mavenExecutorId>forked-path</mavenExecutorId>
+            <useReleaseProfile>false</useReleaseProfile>
+            <!--
+            Allows to activate release profile during release.
+            We don't use releaseProfiles parameter, because it affects only release:perform goal
+            -->
+            <arguments>-Prelease</arguments>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>3.3.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>3.6.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>3.3.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <!--  latest version which runs with Java 5 -->
+          <version>2.19.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.12.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-toolchains-plugin</artifactId>
+          <version>3.2.0</version>
+        </plugin>
+        <!-- Mojo plugins -->
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>animal-sniffer-maven-plugin</artifactId>
+          <version>1.24</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>3.6.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>buildnumber-maven-plugin</artifactId>
+          <version>3.2.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>xml-maven-plugin</artifactId>
+          <version>1.1.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>3.5.1</version>
+        </plugin>
+        <!-- Third-party plugins -->
+        <plugin>
+          <groupId>com.github.genthaler</groupId>
+          <artifactId>beanshell-maven-plugin</artifactId>
+          <version>1.4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.felix</groupId>
+          <artifactId>maven-bundle-plugin</artifactId>
+          <version>6.0.0</version>
+        </plugin>
+        <plugin>
+          <groupId>com.diffplug.spotless</groupId>
+          <artifactId>spotless-maven-plugin</artifactId>
+          <version>3.0.0</version>
+       </plugin>
+       <plugin>
+         <groupId>org.sonarsource.scanner.maven</groupId>
+         <artifactId>sonar-maven-plugin</artifactId>
+         <version>5.2.0.4988</version>
+       </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <testSourceDirectory>${project.build.sourceDirectory}</testSourceDirectory>
+          <testClassesDirectory>${project.build.outputDirectory}</testClassesDirectory>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <configuration>
+          <createDependencyReducedPom>false</createDependencyReducedPom>
+          <filters>
+            <!-- Don't include signatures -->
+            <filter>
+              <artifact>*:*</artifact>
+              <excludes>
+                <exclude>META-INF/*.SF</exclude>
+                <exclude>META-INF/*.DSA</exclude>
+                <exclude>META-INF/*.RSA</exclude>
+              </excludes>
+            </filter>
+          </filters>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <archiverConfig>
+            <!-- Workaround for http://jira.codehaus.org/browse/MASSEMBLY-422 -->
+            <!-- 420(dec) = 644(oct) -->
+            <fileMode>420</fileMode>
+            <!-- 493(dec) = 755(oct) -->
+            <directoryMode>493</directoryMode>
+            <defaultDirectoryMode>493</defaultDirectoryMode>
+          </archiverConfig>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireJavaVersion>
+                  <version>17</version>
+                </requireJavaVersion>
+                <requireMavenVersion>
+                  <version>3.9.11</version>
+                </requireMavenVersion>
+                <requireNoRepositories>
+                  <message>The rules for repo1.maven.org are that pom.xml files should not include repository definitions.</message>
+                  <banRepositories>true</banRepositories>
+                  <banPluginRepositories>true</banPluginRepositories>
+                </requireNoRepositories>
+                <requireReleaseDeps>
+                  <message>No SNAPSHOT versions allowed for dependencies</message>
+                  <onlyWhenRelease>true</onlyWhenRelease>
+                </requireReleaseDeps>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <configuration>
+          <java>
+            <lineEndings>UNIX</lineEndings>
+            <includes>
+              <include>src/**/*.java</include>
+            </includes>
+            <eclipse>
+              <version>4.30</version>
+              <file>../org.jacoco.core/.settings/org.eclipse.jdt.core.prefs</file>
+            </eclipse>
+            <importOrder>
+              <order>java,javax,org,com,</order>
+              <semanticSort>true</semanticSort>
+            </importOrder>
+            <trimTrailingWhitespace/>
+            <endWithNewline/>
+          </java>
+          <formats>
+            <format>
+              <includes>
+                <include>**/*.properties</include>
+                <include>**/*.html</include>
+                <include>**/*.css</include>
+                <include>**/*.js</include>
+                <include>**/*.xml</include>
+                <include>**/*.xsl</include>
+                <include>**/*.dtd</include>
+              </includes>
+              <excludes>
+                <exclude>target/**</exclude>
+              </excludes>
+              <lineEndings>UNIX</lineEndings>
+              <trimTrailingWhitespace/>
+              <endWithNewline/>
+            </format>
+          </formats>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>check-license-header</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <fileset dir="${basedir}" includes="**/*.java,**/*.xml,**/*.bsh" excludes="target/**,.idea/**,nb-configuration.xml" id="missinglicense.fileset">
+                  <include name="**/*.kt"/>
+                  <include name="**/*.groovy"/>
+                  <include name="**/*.scala"/>
+                  <not>
+                    <and>
+                      <contains text="Copyright (c) ${copyright.years} Mountainminds GmbH &amp; Co. KG and Contributors"/>
+                      <contains text="This program and the accompanying materials are made available under"/>
+                      <contains text="the terms of the Eclipse Public License 2.0 which is available at"/>
+                      <contains text="http://www.eclipse.org/legal/epl-2.0"/>
+                      <contains text="SPDX-License-Identifier: EPL-2.0"/>
+                    </and>
+                  </not>
+                </fileset>
+                <pathconvert property="missing" refid="missinglicense.fileset"/>
+                <fail message="Invalid license info in: ${missing}">
+                  <condition>
+                    <not>
+                      <equals arg1="${missing}" arg2=""/>
+                    </not>
+                  </condition>
+                </fail>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>parse-version</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>parse-version</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>buildnumber-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>validate</phase>
+            <goals>
+              <goal>create</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <doCheck>false</doCheck>
+          <doUpdate>false</doUpdate>
+          <getRevisionOnlyOnce>true</getRevisionOnlyOnce>
+          <revisionOnScmFailure>0000000</revisionOnScmFailure>
+          <buildNumberPropertyName>build.commitId</buildNumberPropertyName>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>com.github.genthaler</groupId>
+        <artifactId>beanshell-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>parse-version</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <quiet>true</quiet>
+              <script><![CDATA[
+                major = project.getProperties().get("parsedVersion.majorVersion");
+                minor = project.getProperties().get("parsedVersion.minorVersion");
+                incremental = project.getProperties().get("parsedVersion.incrementalVersion");
+                unqualifiedVersion = major + "." + minor + "." + incremental;
+                project.getProperties().setProperty("unqualifiedVersion", unqualifiedVersion);
+
+                qualifier = "${maven.build.timestamp}";
+                project.getProperties().setProperty("buildQualifier", qualifier);
+
+                qualifiedVersion = unqualifiedVersion + "." + qualifier;
+                project.getProperties().setProperty("qualified.bundle.version", qualifiedVersion);
+
+                buildDate = qualifier.substring(0, 4) + "/" + qualifier.substring(4, 6) + "/" + qualifier.substring(6, 8);
+                project.getProperties().setProperty("build.date", buildDate);
+
+                commitId = project.getProperties().get("build.commitId");
+                pkgName = commitId.substring(commitId.length() - 7, commitId.length());
+                project.getProperties().setProperty("jacoco.runtime.package.name", "org.jacoco.agent.rt.internal_" + pkgName);
+
+                void loadLicense(String libraryId) {
+                    version = project.getProperties().get(libraryId + ".version");
+                    path = project.getBasedir().toPath().resolve("../org.jacoco.build/licenses/" + libraryId + "-" + version + ".html");
+                    license = new String(java.nio.file.Files.readAllBytes(path), "UTF-8");
+                    project.getProperties().setProperty(libraryId + ".license", license);
+                }
+                loadLicense("args4j");
+                loadLicense("asm");
+                loadLicense("googlecodeprettify");
+              ]]>
+              </script>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <configuration>
+          <instructions>
+            <Automatic-Module-Name>${project.artifactId}</Automatic-Module-Name>
+            <Bundle-Version>${qualified.bundle.version}</Bundle-Version>
+            <Bundle-Name>${project.description}</Bundle-Name>
+            <Export-Package>
+              !about.html,
+              *.internal*;x-internal:=true;version="${version;===;${Bundle-Version}}",
+              *;version="${version;===;${Bundle-Version}}"
+            </Export-Package>
+            <Import-Package>
+              org.jacoco.*;version="${range;[===,==+);${Bundle-Version}}",
+              org.objectweb.asm.*;version="${range;[===,=+);${asm.version}}"
+            </Import-Package>
+            <Bundle-RequiredExecutionEnvironment>J2SE-1.5</Bundle-RequiredExecutionEnvironment>
+            <Eclipse-SourceReferences>scm:git:git://github.com/jacoco/jacoco.git;path="${project.artifactId}";commitId=${build.commitId}</Eclipse-SourceReferences>
+          </instructions>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <!-- http://openjdk.java.net/jeps/182 -->
+    <profile>
+      <id>maven-jdk9</id>
+      <activation>
+        <jdk>[9,12)</jdk>
+      </activation>
+      <properties>
+        <bytecode.version>6</bytecode.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>maven-jdk12</id>
+      <activation>
+        <jdk>[12,20)</jdk>
+      </activation>
+      <properties>
+        <bytecode.version>7</bytecode.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <!-- https://bugs.openjdk.org/browse/JDK-8173605 -->
+      <id>maven-jdk20</id>
+      <activation>
+        <jdk>[20,)</jdk>
+      </activation>
+      <properties>
+        <bytecode.version>8</bytecode.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>maven-jdk23</id>
+      <activation>
+        <jdk>[23,)</jdk>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <configuration>
+              <additionalOptions>
+                <!-- https://bugs.openjdk.org/browse/JDK-8324774 -->
+                <option>--no-fonts</option>
+              </additionalOptions>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!--
+    Following profile is automatically activated in IntelliJ IDEA
+    and used to set the correct Java language level in it
+    -->
+    <profile>
+      <id>intellij</id>
+      <activation>
+        <property>
+          <name>idea.maven.embedder.version</name>
+        </property>
+      </activation>
+      <properties>
+        <bytecode.version>5</bytecode.version>
+      </properties>
+    </profile>
+
+    <!-- This profile enables use of JDK from Maven Toolchains -->
+    <profile>
+      <id>integration-tests</id>
+      <activation>
+        <property>
+          <name>jdk.version</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <!-- See http://maven.apache.org/guides/mini/guide-using-toolchains.html -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-toolchains-plugin</artifactId>
+            <executions>
+              <execution>
+                <phase>validate</phase>
+                <goals>
+                  <goal>toolchain</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <toolchains>
+                <jdk>
+                  <version>${jdk.version}</version>
+                </jdk>
+              </toolchains>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!--
+    Following profiles enable compilation into bytecode version 17
+    when requested "bytecode.version" greater than 17. This is needed even though
+    maven-shade-plugin 3.6.0 can process bytecode up to version 22
+    and maven-plugin-plugin 3.6.4 can process bytecode up to version 18,
+    because we use JDK 17 to launch Maven while compiling by more recent JDKs
+    and unfortunately maven-plugin-plugin loads project classes using the same JDK that is used for Maven
+    (see https://github.com/apache/maven-plugin-tools/blob/maven-plugin-tools-3.6.4/maven-plugin-tools-generators/src/main/java/org/apache/maven/tools/plugin/generator/GeneratorUtils.java#L661-L720)
+    and maven-invoker-plugin for forked Maven invocations uses the same JDK that is used for Maven.
+    This is overridden for tests.
+    -->
+    <profile>
+      <id>java18-bytecode</id>
+      <activation>
+        <property>
+          <name>bytecode.version</name>
+          <value>18</value>
+        </property>
+      </activation>
+      <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>java19-bytecode</id>
+      <activation>
+        <property>
+          <name>bytecode.version</name>
+          <value>19</value>
+        </property>
+      </activation>
+      <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>java20-bytecode</id>
+      <activation>
+        <property>
+          <name>bytecode.version</name>
+          <value>20</value>
+        </property>
+      </activation>
+      <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>java21-bytecode</id>
+      <activation>
+        <property>
+          <name>bytecode.version</name>
+          <value>21</value>
+        </property>
+      </activation>
+      <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>java22-bytecode</id>
+      <activation>
+        <property>
+          <name>bytecode.version</name>
+          <value>22</value>
+        </property>
+      </activation>
+      <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>java23-bytecode</id>
+      <activation>
+        <property>
+          <name>bytecode.version</name>
+          <value>23</value>
+        </property>
+      </activation>
+      <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>java24-bytecode</id>
+      <activation>
+        <property>
+          <name>bytecode.version</name>
+          <value>24</value>
+        </property>
+      </activation>
+      <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>java25-bytecode</id>
+      <activation>
+        <property>
+          <name>bytecode.version</name>
+          <value>25</value>
+        </property>
+      </activation>
+      <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>java26-bytecode</id>
+      <activation>
+        <property>
+          <name>bytecode.version</name>
+          <value>26</value>
+        </property>
+      </activation>
+      <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+      </properties>
+    </profile>
+
+    <!-- This profile enables use of ECJ -->
+    <profile>
+      <id>ecj</id>
+      <activation>
+        <property>
+          <name>ecj</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <compilerId>eclipse</compilerId>
+            </configuration>
+            <dependencies>
+              <dependency>
+                <groupId>org.eclipse.jdt</groupId>
+                <artifactId>ecj</artifactId>
+                <version>3.41.0</version>
+              </dependency>
+              <dependency>
+                <groupId>org.codehaus.plexus</groupId>
+                <artifactId>plexus-compiler-eclipse</artifactId>
+                <version>2.8.5</version>
+              </dependency>
+            </dependencies>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!--
+    Profiles for different JDK versions:
+    -->
+
+    <profile>
+      <id>jdk6</id>
+      <activation>
+        <property>
+          <name>jdk.version</name>
+          <value>6</value>
+        </property>
+      </activation>
+      <properties>
+        <jvm.args>-XX:-FailOverToOldVerifier -Xverify:all</jvm.args>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>jdk7</id>
+      <activation>
+        <property>
+          <name>jdk.version</name>
+          <value>7</value>
+        </property>
+      </activation>
+      <properties>
+        <jvm.args>-XX:-FailOverToOldVerifier -Xverify:all</jvm.args>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>jdk8</id>
+      <activation>
+        <property>
+          <name>jdk.version</name>
+          <value>8</value>
+        </property>
+      </activation>
+      <properties>
+        <jvm.args>-XX:-FailOverToOldVerifier -Xverify:all</jvm.args>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>jdk9</id>
+      <activation>
+        <property>
+          <name>jdk.version</name>
+          <value>9</value>
+        </property>
+      </activation>
+      <properties>
+        <bytecode.version>6</bytecode.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>jdk10</id>
+      <activation>
+        <property>
+          <name>jdk.version</name>
+          <value>10</value>
+        </property>
+      </activation>
+      <properties>
+        <bytecode.version>6</bytecode.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>jdk11</id>
+      <activation>
+        <property>
+          <name>jdk.version</name>
+          <value>11</value>
+        </property>
+      </activation>
+      <properties>
+        <bytecode.version>6</bytecode.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>jdk12</id>
+      <activation>
+        <property>
+          <name>jdk.version</name>
+          <value>12</value>
+        </property>
+      </activation>
+      <properties>
+        <bytecode.version>7</bytecode.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>jdk23</id>
+      <activation>
+        <property>
+          <name>jdk.version</name>
+          <value>23</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <configuration>
+              <additionalOptions>
+                <!-- https://bugs.openjdk.org/browse/JDK-8324774 -->
+                <option>--no-fonts</option>
+              </additionalOptions>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- This profile enables generation of JARs with sources and javadocs -->
+    <profile>
+      <id>sources</id>
+      <activation>
+        <file>
+          <exists>src/</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <!-- Generates jar with sources -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <!-- Generates Javadoc -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- This profile is activated when a project is released. -->
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-enforcer-plugin</artifactId>
+            <inherited>false</inherited>
+            <executions>
+              <execution>
+                <id>enforce-release-rules</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>enforce</goal>
+                </goals>
+                <configuration>
+                  <rules>
+                    <requireReleaseVersion/>
+                    <requireProperty>
+                      <property>build.commitId</property>
+                      <regex>[0-9a-f]{40}</regex>
+                    </requireProperty>
+                  </rules>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <!-- Checks compatibility with Java API -->
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>animal-sniffer-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>enforce-java-api-compatibility</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>check</goal>
+                </goals>
+                <configuration>
+                  <signature>
+                    <groupId>org.codehaus.mojo.signature</groupId>
+                    <artifactId>java15</artifactId>
+                    <version>1.0</version>
+                  </signature>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <!-- Signs artifacts -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- This profile is active only when used from Eclipse m2e and is used only to store settings. -->
+    <profile>
+      <id>m2e</id>
+      <activation>
+        <property>
+          <name>m2e.version</name>
+        </property>
+      </activation>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+            <plugin>
+              <groupId>org.eclipse.m2e</groupId>
+              <artifactId>lifecycle-mapping</artifactId>
+              <version>1.0.0</version>
+              <configuration>
+                <lifecycleMappingMetadata>
+                  <pluginExecutions>
+                    <pluginExecution>
+                      <pluginExecutionFilter>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <versionRange>[0,)</versionRange>
+                        <goals>
+                          <goal>run</goal>
+                        </goals>
+                      </pluginExecutionFilter>
+                      <action>
+                        <ignore></ignore>
+                      </action>
+                    </pluginExecution>
+                    <pluginExecution>
+                      <pluginExecutionFilter>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-invoker-plugin</artifactId>
+                        <versionRange>[0,)</versionRange>
+                        <goals>
+                          <goal>install</goal>
+                        </goals>
+                      </pluginExecutionFilter>
+                      <action>
+                        <ignore></ignore>
+                      </action>
+                    </pluginExecution>
+                    <pluginExecution>
+                      <pluginExecutionFilter>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <versionRange>[0,)</versionRange>
+                        <goals>
+                          <goal>unpack</goal>
+                          <goal>copy-dependencies</goal>
+                        </goals>
+                      </pluginExecutionFilter>
+                      <action>
+                        <ignore></ignore>
+                      </action>
+                    </pluginExecution>
+                    <pluginExecution>
+                      <pluginExecutionFilter>
+                        <groupId>org.codehaus.groovy.maven</groupId>
+                        <artifactId>gmaven-plugin</artifactId>
+                        <versionRange>[0,)</versionRange>
+                        <goals>
+                          <goal>execute</goal>
+                        </goals>
+                      </pluginExecutionFilter>
+                      <action>
+                        <ignore></ignore>
+                      </action>
+                    </pluginExecution>
+                    <pluginExecution>
+                      <pluginExecutionFilter>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>xml-maven-plugin</artifactId>
+                        <versionRange>[0,)</versionRange>
+                        <goals>
+                          <goal>transform</goal>
+                        </goals>
+                      </pluginExecutionFilter>
+                      <action>
+                        <ignore></ignore>
+                      </action>
+                    </pluginExecution>
+                    <pluginExecution>
+                      <pluginExecutionFilter>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <versionRange>[0,)</versionRange>
+                        <goals>
+                          <goal>prepare-agent</goal>
+                        </goals>
+                      </pluginExecutionFilter>
+                      <action>
+                        <ignore></ignore>
+                      </action>
+                    </pluginExecution>
+                    <pluginExecution>
+                      <pluginExecutionFilter>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <versionRange>[0,)</versionRange>
+                        <goals>
+                          <goal>enforce</goal>
+                        </goals>
+                      </pluginExecutionFilter>
+                      <action>
+                        <ignore></ignore>
+                      </action>
+                    </pluginExecution>
+                    <pluginExecution>
+                      <pluginExecutionFilter>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <versionRange>[0,)</versionRange>
+                        <goals>
+                          <goal>parse-version</goal>
+                        </goals>
+                      </pluginExecutionFilter>
+                      <action>
+                        <ignore></ignore>
+                      </action>
+                    </pluginExecution>
+                  </pluginExecutions>
+                </lifecycleMappingMetadata>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+  </profiles>
+
+</project>

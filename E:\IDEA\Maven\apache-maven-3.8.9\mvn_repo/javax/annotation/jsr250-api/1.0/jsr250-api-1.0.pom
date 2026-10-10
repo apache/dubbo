@@ -1,0 +1,26 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                        http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>javax.annotation</groupId>
+  <artifactId>jsr250-api</artifactId>
+  <version>1.0</version>
+  <name>JSR-250 Common Annotations for the JavaTM Platform</name>
+  <description>JSR-250 Reference Implementation by Glassfish</description>
+  <url>http://jcp.org/aboutJava/communityprocess/final/jsr250/index.html</url>
+
+  <licenses>
+    <license>
+      <name>COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0</name>
+      <url>https://glassfish.dev.java.net/public/CDDLv1.0.html</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <dependencies/>
+
+  <distributionManagement>
+    <downloadUrl>http://jcp.org/aboutJava/communityprocess/final/jsr250/index.html</downloadUrl>
+  </distributionManagement>
+</project>

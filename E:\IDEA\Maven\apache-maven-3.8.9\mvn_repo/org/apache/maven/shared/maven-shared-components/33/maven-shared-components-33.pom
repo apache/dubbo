@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.apache.maven</groupId>
+    <artifactId>maven-parent</artifactId>
+    <version>33</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <groupId>org.apache.maven.shared</groupId>
+  <artifactId>maven-shared-components</artifactId>
+  <packaging>pom</packaging>
+
+  <name>Apache Maven Shared Components</name>
+  <description>Maven shared components</description>
+  <url>https://maven.apache.org/shared/</url>
+
+  <issueManagement>
+    <system>jira</system>
+    <url>https://issues.apache.org/jira/browse/MSHARED</url>
+  </issueManagement>
+  <ciManagement>
+    <system>Jenkins</system>
+    <url>https://builds.apache.org/job/maven-shared/</url>
+  </ciManagement>
+  <distributionManagement>
+    <site>
+      <id>apache.website</id>
+      <url>scm:svn:https://svn.apache.org/repos/asf/maven/website/components/shared-archives/</url>
+    </site>
+  </distributionManagement>
+
+  <properties>
+    <maven.site.path>shared-archives/${project.artifactId}-LATEST</maven.site.path>
+  </properties>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-changes-plugin</artifactId>
+          <configuration>
+            <issueManagementSystems>
+              <issueManagementSystem>JIRA</issueManagementSystem>
+            </issueManagementSystems>
+            <maxEntries>1000</maxEntries>
+            <runOnlyAtExecutionRoot>true</runOnlyAtExecutionRoot>
+            <versionPrefix>${project.artifactId}-</versionPrefix>
+            <!-- Used by announcement-generate goal -->
+            <templateDirectory>org/apache/maven/shared</templateDirectory>
+            <!-- Used by announcement-mail goal -->
+            <subject>[ANN] ${project.name} ${project.version} Released</subject>
+            <toAddresses>
+              <toAddress implementation="java.lang.String">announce@maven.apache.org</toAddress>
+              <toAddress implementation="java.lang.String">users@maven.apache.org</toAddress>
+            </toAddresses>
+            <ccAddresses>
+              <ccAddress implementation="java.lang.String">dev@maven.apache.org</ccAddress>
+            </ccAddresses>
+            <!-- These values need to be specified as properties in the profile apache-release in your settings.xml -->
+            <fromDeveloperId>${apache.availid}</fromDeveloperId>
+            <smtpHost>${smtp.host}</smtpHost>
+          </configuration>
+          <dependencies>
+            <!-- Used by announcement-generate goal -->
+            <dependency>
+              <groupId>org.apache.maven.shared</groupId>
+              <artifactId>maven-shared-resources</artifactId>
+              <version>2</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+        <plugin>
+          <artifactId>maven-release-plugin</artifactId>
+          <configuration>
+            <tagBase>https://svn.apache.org/repos/asf/maven/shared/tags</tagBase>
+          </configuration>
+        </plugin>
+        <!-- publish mono-module site with "mvn site-deploy" -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <configuration>
+            <skipDeploy>true</skipDeploy><!-- don't deploy site with maven-site-plugin -->
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-scm-publish-plugin</artifactId>
+          <configuration>
+            <content>${project.reporting.outputDirectory}</content><!-- no need for site:stage, use target/site -->
+          </configuration>
+          <executions>
+            <execution>
+              <id>scm-publish</id>
+              <phase>site-deploy</phase><!-- deploy site with maven-scm-publish-plugin -->
+              <goals>
+                <goal>publish-scm</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+</project>

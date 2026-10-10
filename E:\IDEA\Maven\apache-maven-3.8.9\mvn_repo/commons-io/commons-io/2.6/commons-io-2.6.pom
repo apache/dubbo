@@ -1,0 +1,444 @@
+<?xml version="1.0"?>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-parent</artifactId>
+    <version>42</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>commons-io</groupId>
+  <artifactId>commons-io</artifactId>
+  <version>2.6</version>
+  <name>Apache Commons IO</name>
+
+  <inceptionYear>2002</inceptionYear>
+  <description>
+The Apache Commons IO library contains utility classes, stream implementations, file filters,
+file comparators, endian transformation classes, and much more.
+  </description>
+
+  <url>http://commons.apache.org/proper/commons-io/</url>
+
+  <issueManagement>
+    <system>jira</system>
+    <url>http://issues.apache.org/jira/browse/IO</url>
+  </issueManagement>
+
+  <distributionManagement>
+    <site>
+      <id>apache.website</id>
+      <name>Apache Commons Site</name>
+      <url>scm:svn:https://svn.apache.org/repos/infra/websites/production/commons/content/proper/commons-io/</url>
+    </site>
+  </distributionManagement>
+
+  <scm>
+    <connection>scm:git:http://git-wip-us.apache.org/repos/asf/commons-io.git</connection>
+    <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/commons-io.git</developerConnection>
+    <url>https://git-wip-us.apache.org/repos/asf?p=commons-io.git</url>
+    <tag>commons-io-2.6</tag>
+  </scm>
+
+  <developers>
+    <developer>
+      <name>Scott Sanders</name>
+      <id>sanders</id>
+      <email>sanders@apache.org</email>
+      <organization />
+      <roles>
+        <role>Java Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>dIon Gillard</name>
+      <!-- Note: first name is correctly capitalised above -->
+      <id>dion</id>
+      <email>dion@apache.org</email>
+      <organization />
+      <roles>
+        <role>Java Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Nicola Ken Barozzi</name>
+      <id>nicolaken</id>
+      <email>nicolaken@apache.org</email>
+      <organization />
+      <roles>
+        <role>Java Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Henri Yandell</name>
+      <id>bayard</id>
+      <email>bayard@apache.org</email>
+      <organization />
+      <roles>
+        <role>Java Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Stephen Colebourne</name>
+      <id>scolebourne</id>
+      <organization />
+      <roles>
+        <role>Java Developer</role>
+      </roles>
+      <timezone>0</timezone>
+    </developer>
+    <developer>
+      <name>Jeremias Maerki</name>
+      <id>jeremias</id>
+      <email>jeremias@apache.org</email>
+      <organization />
+      <roles>
+        <role>Java Developer</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <name>Matthew Hawthorne</name>
+      <id>matth</id>
+      <email>matth@apache.org</email>
+      <organization />
+      <roles>
+        <role>Java Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Martin Cooper</name>
+      <id>martinc</id>
+      <email>martinc@apache.org</email>
+      <organization />
+      <roles>
+        <role>Java Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Rob Oxspring</name>
+      <id>roxspring</id>
+      <email>roxspring@apache.org</email>
+      <organization />
+      <roles>
+        <role>Java Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Jochen Wiedmann</name>
+      <id>jochen</id>
+      <email>jochen.wiedmann@gmail.com</email>
+    </developer>
+    <developer>
+      <name>Niall Pemberton</name>
+      <id>niallp</id>
+      <roles>
+        <role>Java Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Jukka Zitting</name>
+      <id>jukka</id>
+      <roles>
+        <role>Java Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Gary Gregory</name>
+      <id>ggregory</id>
+      <email>ggregory@apache.org</email>
+      <url>http://www.garygregory.com</url>
+      <timezone>-5</timezone>
+    </developer>
+    <developer>
+      <name>Kristian Rosenvold</name>
+      <id>krosenvold</id>
+      <email>krosenvold@apache.org</email>
+      <timezone>+1</timezone>
+    </developer>
+  </developers>
+
+  <contributors>
+    <contributor>
+      <name>Rahul Akolkar</name>
+    </contributor>
+    <contributor>
+      <name>Jason Anderson</name>
+    </contributor>
+    <contributor>
+      <name>Nathan Beyer</name>
+    </contributor>
+    <contributor>
+      <name>Emmanuel Bourg</name>
+    </contributor>
+    <contributor>
+      <name>Chris Eldredge</name>
+    </contributor>
+    <contributor>
+      <name>Magnus Grimsell</name>
+    </contributor>
+    <contributor>
+      <name>Jim Harrington</name>
+    </contributor>
+    <contributor>
+      <name>Thomas Ledoux</name>
+    </contributor>
+    <contributor>
+      <name>Andy Lehane</name>
+    </contributor>
+    <contributor>
+      <name>Marcelo Liberato</name>
+    </contributor>
+    <contributor>
+      <name>Alban Peignier</name>
+      <email>alban.peignier at free.fr</email>
+    </contributor>
+    <contributor>
+      <name>Ian Springer</name>
+    </contributor>
+    <contributor>
+      <name>Dominik Stadler</name>
+    </contributor>
+    <contributor>
+      <name>Masato Tezuka</name>
+    </contributor>
+    <contributor>
+      <name>James Urie</name>
+    </contributor>
+    <contributor>
+      <name>Frank W. Zammetti</name>
+    </contributor>
+  </contributors>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <properties>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
+    <commons.componentid>io</commons.componentid>
+    <commons.module.name>org.apache.commons.io</commons.module.name>
+    <commons.rc.version>RC1</commons.rc.version>
+    <commons.release.version>2.6</commons.release.version>
+    <commons.release.desc>(requires JDK 1.7+)</commons.release.desc>
+    <commons.jira.id>IO</commons.jira.id>
+    <commons.jira.pid>12310477</commons.jira.pid>
+    <commons.osgi.export>
+        <!-- Explicit list of packages from IO 1.4 -->
+        org.apache.commons.io;
+        org.apache.commons.io.comparator;
+        org.apache.commons.io.filefilter;
+        org.apache.commons.io.input;
+        org.apache.commons.io.output;version=1.4.9999;-noimport:=true,
+        <!-- Same list plus * for new packages -->
+        org.apache.commons.io;
+        org.apache.commons.io.comparator;
+        org.apache.commons.io.filefilter;
+        org.apache.commons.io.input;
+        org.apache.commons.io.output;
+        org.apache.commons.io.*;version=${project.version};-noimport:=true
+    </commons.osgi.export>
+
+    <commons.scmPubCheckoutDirectory>site-content</commons.scmPubCheckoutDirectory>
+    <!-- Override clirr version to be able to build the site on Java 8 -->
+    <commons.clirr.version>2.8</commons.clirr.version>
+    <checkstyle.plugin.version>2.17</checkstyle.plugin.version>
+  </properties>
+
+  <build>
+    <defaultGoal>clean verify apache-rat:check clirr:check checkstyle:check javadoc:javadoc</defaultGoal>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.rat</groupId>
+          <artifactId>apache-rat-plugin</artifactId>
+          <configuration>
+            <excludes>
+              <exclude>src/test/resources/**/*.bin</exclude>
+              <exclude>test/**</exclude>
+            </excludes>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
+        <!-- Temporary fix for IO-551, remove this after this has implemented in parent pom -->
+        <configuration>
+          <archive combine.children="append">
+            <manifestEntries>
+              <Automatic-Module-Name>org.apache.commons.io</Automatic-Module-Name>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <classpathDependencyExcludes>
+            <classpathDependencyExclude>xerces:xercesImpl</classpathDependencyExclude>
+          </classpathDependencyExcludes>
+          <forkCount>1</forkCount>
+          <reuseForks>false</reuseForks>
+          <!-- limit memory size see IO-161 -->
+          <argLine>-Xmx25M</argLine>
+          <includes>
+            <!-- Only include test classes, not test data -->
+            <include>**/*Test*.class</include>
+          </includes>
+          <excludes>
+            <exclude>**/*AbstractTestCase*</exclude>
+            <exclude>**/testtools/**</exclude>
+            <!-- http://jira.codehaus.org/browse/SUREFIRE-44 -->
+            <exclude>**/*$*</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptors>
+            <descriptor>src/assembly/bin.xml</descriptor>
+            <descriptor>src/assembly/src.xml</descriptor>
+          </descriptors>
+          <tarLongFileMode>gnu</tarLongFileMode>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${checkstyle.plugin.version}</version>
+        <configuration>
+          <configLocation>${basedir}/checkstyle.xml</configLocation>
+          <enableRulesSummary>false</enableRulesSummary>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-scm-publish-plugin</artifactId>
+        <configuration>
+          <ignorePathsToDelete>
+            <ignorePathToDelete>javadocs</ignorePathToDelete>
+          </ignorePathsToDelete>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cobertura-maven-plugin</artifactId>
+        <version>${commons.cobertura.version}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${checkstyle.plugin.version}</version>
+        <configuration>
+          <configLocation>${basedir}/checkstyle.xml</configLocation>
+          <enableRulesSummary>false</enableRulesSummary>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <version>${commons.findbugs.version}</version>
+        <configuration>
+          <threshold>Normal</threshold>
+          <effort>Default</effort>
+          <excludeFilterFile>${basedir}/findbugs-exclude-filter.xml</excludeFilterFile>
+        </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
+  <profiles>
+    <profile>
+      <id>setup-checkout</id>
+      <activation>
+        <file>
+          <missing>site-content</missing>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>prepare-checkout</id>
+                <phase>pre-site</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <exec executable="svn">
+                      <arg line="checkout --depth immediates ${commons.scmPubUrl} ${commons.scmPubCheckoutDirectory}" />
+                    </exec>
+
+                    <exec executable="svn">
+                      <arg line="update --set-depth exclude ${commons.scmPubCheckoutDirectory}/javadocs" />
+                    </exec>
+
+                    <pathconvert pathsep=" " property="dirs">
+                      <dirset dir="${commons.scmPubCheckoutDirectory}" includes="*" />
+                    </pathconvert>
+                    <exec executable="svn">
+                      <arg line="update --set-depth infinity ${dirs}" />
+                    </exec>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>java9</id>
+      <activation>
+        <jdk>9</jdk>
+      </activation>
+      <properties>
+        <!-- versions below 3.0.0 do not work with java 9 -->
+        <commons.javadoc.version>3.0.0-M1</commons.javadoc.version>
+        <!-- coverall version 4.3.0 does not work with java 9, see https://github.com/trautonen/coveralls-maven-plugin/issues/112 -->
+        <coveralls.skip>true</coveralls.skip>
+      </properties>
+    </profile>
+  </profiles>
+</project>

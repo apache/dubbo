@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 1997, 2021 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0, which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the
+    Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+    version 2 with the GNU Classpath Exception, which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.eclipse.ee4j</groupId>
+        <artifactId>project</artifactId>
+        <version>1.0.7</version>
+    </parent>
+    <groupId>jakarta.platform</groupId>
+    <artifactId>jakartaee-api-parent</artifactId>
+    <version>9.1.0</version>
+    <packaging>pom</packaging>
+    <name>Jakarta EE API parent</name>
+    <description>Jakarta EE API parent</description>
+
+    <modules>
+        <module>jakartaee-bom</module>
+        <module>jakartaee-web-api</module>
+        <module>jakartaee-api</module>
+    </modules>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <jakartaee.version>9.0.0</jakartaee.version>
+        <extra.excludes />
+
+        <!-- Web Profile -->
+        <jakarta.servlet-api.version>5.0.0</jakarta.servlet-api.version>
+        <jakarta.servlet.jsp-api.version>3.0.0</jakarta.servlet.jsp-api.version>
+        <jakarta.servlet.jsp.jstl-api.version>2.0.0</jakarta.servlet.jsp.jstl-api.version>
+        <jakarta.faces-api.version>3.0.0</jakarta.faces-api.version>
+        <jakarta.el-api.version>4.0.0</jakarta.el-api.version>
+        <jakarta.websocket-api.version>2.0.0</jakarta.websocket-api.version>
+        <jakarta.json-api.version>2.0.1</jakarta.json-api.version>
+        <jakarta.json.bind-api.version>2.0.0</jakarta.json.bind-api.version>
+        <jakarta.annotation-api.version>2.0.0</jakarta.annotation-api.version>
+        <jakarta.ejb-api.version>4.0.0</jakarta.ejb-api.version>
+        <jakarta.transaction-api.version>2.0.0</jakarta.transaction-api.version>
+        <jakarta.persistence-api.version>3.0.0</jakarta.persistence-api.version>
+        <jakarta.validation-api.version>3.0.0</jakarta.validation-api.version>
+        <jakarta.interceptor-api.version>2.0.0</jakarta.interceptor-api.version>
+        <jakarta.enterprise.cdi-api.version>3.0.0</jakarta.enterprise.cdi-api.version>
+        <jakarta.inject.version>2.0.0</jakarta.inject.version>
+        <jakarta.authentication-api.version>2.0.0</jakarta.authentication-api.version>
+        <jakarta.security.enterprise-api.version>2.0.0</jakarta.security.enterprise-api.version>
+        <jakarta.ws.rs-api.version>3.0.0</jakarta.ws.rs-api.version>
+
+        <!--  Full platform -->
+        <jakarta.jms-api.version>3.0.0</jakarta.jms-api.version>
+        <jakarta.activation-api.version>2.0.1</jakarta.activation-api.version>
+        <jakarta.mail-api.version>2.0.1</jakarta.mail-api.version>
+        <jakarta.resource-api.version>2.0.0</jakarta.resource-api.version>
+        <jakarta.authorization-api.version>2.0.0</jakarta.authorization-api.version>
+        <jakarta.enterprise.concurrent-api.version>2.0.0</jakarta.enterprise.concurrent-api.version>
+        <jakarta.batch-api.version>2.0.0</jakarta.batch-api.version>
+
+        <!-- Optional APIs -->
+        <jakarta.xml.bind-api.version>3.0.1</jakarta.xml.bind-api.version>
+        <jakarta.xml.ws-api.version>3.0.1</jakarta.xml.ws-api.version>
+        <jakarta.xml.soap-api.version>2.0.1</jakarta.xml.soap-api.version>
+        <jakarta.jws-api.version>3.0.0</jakarta.jws-api.version>
+
+        <!-- Other dependencies -->
+        <copyright-plugin.version>1.50</copyright-plugin.version>
+
+        <!-- Compile-time dependencies -->
+        <mojarra.version>3.0.0</mojarra.version>
+    </properties>
+
+
+    <build>
+        <defaultGoal>package</defaultGoal>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <useDefaultManifestFile>true</useDefaultManifestFile>
+                    <archive>
+                        <manifest>
+                            <addClasspath>false</addClasspath>
+                            <addDefaultSpecificationEntries>false</addDefaultSpecificationEntries>
+                            <addDefaultImplementationEntries>false</addDefaultImplementationEntries>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-resource-files</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}/sources-dependency</directory>
+                                    <includes>
+                                        <include>**/*.properties</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                            <outputDirectory>${project.build.directory}/classes</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-javadoc-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}/sources-dependency</directory>
+                                    <includes>
+                                        <include>**/*.jpg</include>
+                                        <include>**/*.gif</include>
+                                        <include>**/*.pdf</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                            <outputDirectory>${project.build.directory}/site/apidocs</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <configuration>
+                            <source>1.8</source>
+                            <target>1.8</target>
+                            <!--
+                            <excludes>
+                                <exclude>
+                                  module-info.java
+                                </exclude>
+                            </excludes>
+                            -->
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>default-testCompile</id>
+                        <configuration>
+                            <source>1.8</source>
+                            <target>1.8</target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+                <inherited>false</inherited>
+            </plugin>
+        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>2.4</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>2.4.3</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.7.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>2.1</version>
+                    <configuration>
+                        <attach>true</attach>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>2.8.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.glassfish.build</groupId>
+                    <artifactId>glassfishbuild-maven-plugin</artifactId>
+                    <version>3.2.28</version>
+                    <executions>
+                        <execution>
+                            <id>unpack-sources</id>
+                            <phase>process-sources</phase>
+                            <configuration>
+                                <attachSources>true</attachSources>
+                                <excludeArtifactIds>tools-jar,servlet-api,jakarta.faces</excludeArtifactIds>
+                                <excludes>${extra.excludes}</excludes>
+                                <includes>jakarta/**, resources/**</includes>
+                                <excludeTransitive>true</excludeTransitive>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>generate-pom</id>
+                            <phase>package</phase>
+                            <configuration>
+                                <parent>
+                                    <groupId>org.eclipse.ee4j</groupId>
+                                    <artifactId>project</artifactId>
+                                    <version>1.0</version>
+                                </parent>
+                                <groupId>jakarta.platform</groupId>
+                                <artifactId>${project.artifactId}</artifactId>
+                                <version>${jakartaee.version}</version>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>attach-all-artifacts</id>
+                            <phase>verify</phase>
+                            <configuration>
+                                <pomFile>${project.build.directory}/pom.xml</pomFile>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.1.0</version>
+                    <configuration>
+                        <failOnError>false</failOnError>
+                        <additionalparam>${javadoc.options}</additionalparam>
+                        <docfilessubdirs>true</docfilessubdirs>
+                        <javadocDirectory>${project.basedir}/../src/main/javadoc</javadocDirectory>
+                        <attach>true</attach>
+                        <doclint>none</doclint>
+                        <doctitle>${project.name}</doctitle>
+                        <windowtitle>${project.name}</windowtitle>
+                        <header><![CDATA[<br>${project.name} v${project.version}]]></header>
+                        <bottom>
+<![CDATA[
+<p align="left">Copyright &#169; 2018,2020 Eclipse Foundation.<br>Use is subject to
+<a href="{@docRoot}/doc-files/speclicense.html" target="_top">license terms</a>.]]>
+                        </bottom>
+                        <tags>
+                            <tag>
+                                <name>implSpec</name>
+                                <placement>a</placement>
+                                <head>Implementation Specification:</head>
+                            </tag>
+                        </tags>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <resources>
+            <resource>
+                <targetPath>META-INF/</targetPath>
+                <filtering>false</filtering>
+                <directory>${project.basedir}/..</directory>
+                <includes>
+                    <include>LICENSE.txt</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
+
+    <profiles>
+        <!--
+            A profile to report serialVersionUID errors when compiling
+            the API source files.
+        -->
+        <profile>
+            <id>check-serial-version-uid</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <useIncrementalCompilation>false</useIncrementalCompilation>
+                            <showWarnings>true</showWarnings>
+                            <compilerArgs>
+                                <arg>-Xlint:serial</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

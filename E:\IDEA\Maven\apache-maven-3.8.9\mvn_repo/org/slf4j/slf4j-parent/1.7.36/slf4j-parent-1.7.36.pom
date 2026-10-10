@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.slf4j</groupId>
+  <artifactId>slf4j-parent</artifactId>
+  <version>1.7.36</version>
+
+  <packaging>pom</packaging>
+  <name>SLF4J</name>
+  <description>Top SLF4J project pom.xml file</description>
+  <url>http://www.slf4j.org</url>
+
+  <organization>
+    <name>QOS.ch</name>
+    <url>http://www.qos.ch</url>
+  </organization>
+  <inceptionYear>2005</inceptionYear>
+
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>http://www.opensource.org/licenses/mit-license.php</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <scm>
+    <url>https://github.com/qos-ch/slf4j</url>
+    <connection>git@github.com:qos-ch/slf4j.git</connection>
+  </scm>  
+
+  <properties>
+    <!-- yyyy-MM-dd'T'HH:mm:ss'Z' -->
+    <project.build.outputTimestamp>2022-02-08T13:31:00Z</project.build.outputTimestamp>    
+
+    <required.jdk.version>1.5</required.jdk.version>
+    <maven.compiler.source>${required.jdk.version}</maven.compiler.source>
+    <maven.compiler.target>${required.jdk.version}</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.build.resourceEncoding>UTF-8</project.build.resourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <!-- used in integration testing -->
+    <slf4j.api.minimum.compatible.version>1.6.0</slf4j.api.minimum.compatible.version>
+    <cal10n.version>0.8.1</cal10n.version>
+    <reload4j.version>1.2.19</reload4j.version>    
+    <logback.version>1.2.10</logback.version>
+    <junit.version>4.13</junit.version>
+    <maven-site-plugin.version>3.3</maven-site-plugin.version>
+    <maven-source-plugin.version>3.2.0</maven-source-plugin.version>
+    <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
+    <javadoc.plugin.version>3.1.0</javadoc.plugin.version>
+    <doclint>none</doclint>
+  </properties>
+
+  <developers>
+    <developer>
+      <id>ceki</id>
+      <name>Ceki Gulcu</name>
+      <email>ceki@qos.ch</email>
+    </developer>
+  </developers>
+
+  <modules>
+    <module>slf4j-api</module>
+    <module>slf4j-simple</module>
+    <module>slf4j-nop</module>
+    <module>slf4j-jdk14</module>
+    <module>slf4j-log4j12</module>
+    <module>slf4j-reload4j</module>    
+    <module>slf4j-jcl</module> 
+    <module>slf4j-android</module>
+    <module>slf4j-ext</module>
+    <module>jcl-over-slf4j</module>
+    <module>log4j-over-slf4j</module>
+    <module>jul-to-slf4j</module>
+    <module>osgi-over-slf4j</module>
+    <module>integration</module>
+    <module>slf4j-site</module>
+    <module>slf4j-migrator</module>
+  </modules>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <dependencyManagement>
+    <dependencies>
+
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-jdk14</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>ch.qos.reload4j</groupId>
+        <artifactId>reload4j</artifactId>
+        <version>${reload4j.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>ch.qos.cal10n</groupId>
+        <artifactId>cal10n-api</artifactId>
+        <version>${cal10n.version}</version>
+      </dependency>
+
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-ssh</artifactId>
+        <version>2.0</version>
+      </extension>
+    </extensions>
+
+    <resources>
+      <resource>
+        <directory>${project.basedir}/src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>animal-sniffer-maven-plugin</artifactId>
+          <version>1.14</version>
+          <configuration>
+            <signature>
+              <groupId>org.codehaus.mojo.signature</groupId>
+              <artifactId>java15</artifactId>
+              <version>1.0</version>
+            </signature>
+          </configuration>
+        </plugin>
+      </plugins>
+      </pluginManagement>
+
+    <plugins>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.3</version>
+        <configuration>
+          <source>${required.jdk.version}</source>
+          <target>${required.jdk.version}</target>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>${maven-jar-plugin.version}</version>
+        <configuration>
+          <archive>
+            <manifestEntries>
+              <Bundle-Version>${parsedVersion.osgiVersion}</Bundle-Version>
+              <Bundle-Description>${project.description}</Bundle-Description>
+              <X-Compile-Source-JDK>${maven.compiler.source}</X-Compile-Source-JDK>
+              <X-Compile-Target-JDK>${maven.compiler.target}</X-Compile-Target-JDK>
+              <Implementation-Version>${project.version}</Implementation-Version>
+            </manifestEntries>
+            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+          </archive>
+          <skipIfEmpty>true</skipIfEmpty>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>${maven-source-plugin.version}</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.19.1</version>
+        <configuration>
+          <forkCount>2C</forkCount>
+          <reuseForks>true</reuseForks>
+          <reportFormat>plain</reportFormat>
+          <trimStackTrace>false</trimStackTrace>
+          <excludes>
+            <exclude>**/AllTest.java</exclude>
+            <exclude>**/PackageTest.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.2</version>
+        <configuration>
+          <descriptors>
+            <descriptor>src/main/assembly/source.xml</descriptor>
+          </descriptors>
+          <finalName>slf4j-${project.version}</finalName>
+          <appendAssemblyId>false</appendAssemblyId>
+          <outputDirectory>target/site/dist/</outputDirectory>
+        </configuration>
+      </plugin>
+
+      <!-- as suggested in http://jira.qos.ch/browse/SLF4J-143 -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>1.7</version>
+        <executions>
+          <execution>
+            <id>parse-version</id>
+            <goals>
+              <goal>parse-version</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- ====== site plugin ===== -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <version>${maven-site-plugin.version}</version>
+        <configuration>
+          <reportPlugins>
+
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-jxr-plugin</artifactId>
+              <version>2.3</version>
+              <configuration>
+                <aggregate>true</aggregate>
+                <javadocDir>target/site/apidocs/</javadocDir>
+                <linkJavadoc>true</linkJavadoc>
+              </configuration>
+            </plugin>
+
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-javadoc-plugin</artifactId>
+              <version>${javadoc.plugin.version}</version>
+              <configuration>
+                <linksource>true</linksource>
+                <doclint>none</doclint>
+                                
+                <!--<aggregate>true</aggregate>-->
+                <excludePackageNames>org.slf4j.migrator:org.slf4j.migrator.*</excludePackageNames>
+                <links>
+                  <link>
+                    http://java.sun.com/j2se/1.5.0/docs/api
+                  </link>
+                </links>
+                <groups>
+                  <group>
+                    <title>SLF4J packages</title>
+                    <packages>org.slf4j:org.slf4j.*</packages>
+                  </group>
+
+                  <group>
+                    <title>SLF4J extensions</title>
+                    <packages>
+                      org.slf4j.cal10n:org.slf4j.profiler:org.slf4j.ext:org.slf4j.instrumentation:org.slf4j.agent
+                    </packages>
+                  </group>
+
+                  <group>
+                    <title>Jakarta Commons Logging packages</title>
+                    <packages>org.apache.commons.*</packages>
+                  </group>
+
+                  <group>
+                    <title>java.util.logging (JUL) to SLF4J bridge</title>
+                    <packages>org.slf4j.bridge</packages>
+                  </group>
+
+                  <group>
+                    <title>Apache log4j</title>
+                    <packages>org.apache.log4j:org.apache.log4j.*</packages>
+                  </group>
+                </groups>
+              </configuration>
+            </plugin>
+
+          </reportPlugins>
+        </configuration>
+      </plugin>
+    </plugins>
+
+  </build>
+
+  <profiles>
+    <profile>
+      <id>skipTests</id>
+      <properties>
+        <maven.test.skip>true</maven.test.skip>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>javadocjar</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>${javadoc.plugin.version}</version>
+            <configuration>
+              <doclint>none</doclint>
+            </configuration>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>license</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.google.code.maven-license-plugin</groupId>
+            <artifactId>maven-license-plugin</artifactId>
+            <configuration>
+              <header>src/main/licenseHeader.txt</header>
+              <quiet>false</quiet>
+              <failIfMissing>true</failIfMissing>
+              <aggregate>true</aggregate>
+              <includes>
+                <include>src/**/*.java</include>
+              </includes>
+              <useDefaultExcludes>true</useDefaultExcludes>
+              <useDefaultMapping>true</useDefaultMapping>
+              <properties>
+                <year>1999</year>
+              </properties>
+              <headerDefinitions>
+                <headerDefinition>src/main/javadocHeaders.xml</headerDefinition>
+              </headerDefinitions>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+
+      <pluginRepositories>
+        <pluginRepository>
+          <id>mc-release</id>
+          <name>Local Maven repository of releases</name>
+          <url>http://mc-repo.googlecode.com/svn/maven2/releases</url>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+        </pluginRepository>
+      </pluginRepositories>
+    </profile>
+
+    <profile>
+      <id>sign-artifacts</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.1</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+  </profiles>
+
+  <pluginRepositories>
+  </pluginRepositories>
+
+  <distributionManagement>
+    <site>
+      <id>qos_ch</id>
+      <url>scp://te.qos.ch/var/www/www.slf4j.org/htdocs/</url>
+    </site>
+
+    <repository>
+      <!--<id>pixie</id>-->
+      <!--<url>scp://pixie.qos.ch/var/mvnrepo/</url>-->
+      <id>sonatype-nexus-staging</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+
+  </distributionManagement>
+
+</project>

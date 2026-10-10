@@ -1,0 +1,225 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.googlecode.concurrent-trees</groupId>
+    <artifactId>concurrent-trees</artifactId>
+    <version>2.6.1</version>
+    <packaging>jar</packaging>
+    <name>Concurrent-Trees</name>
+    <description>Concurrent Radix Trees and Concurrent Suffix Trees for Java.</description>
+    <url>https://github.com/npgall/concurrent-trees</url>
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <scm>
+        <url>https://github.com/npgall/${project.artifactId}.git</url>
+        <connection>scm:git:https://github.com/npgall/${project.artifactId}.git</connection>
+        <developerConnection>scm:git:git@github.com:npgall/${project.artifactId}.git</developerConnection>
+        <tag>2.6.1</tag>
+    </scm>
+    <developers>
+        <developer>
+            <id>npgall</id>
+            <name>Niall Gallagher</name>
+            <email>niall@npgall.com</email>
+            <url>http://www.npgall.com</url>
+            <roles>
+                <role>owner</role>
+            </roles>
+        </developer>
+    </developers>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+    <build>
+        <plugins>
+            <plugin>
+                <!--
+                    Configure javac compiler for Java 6 compatibility.
+                    Note that actually the library might also be compatible with Java 5, but this has not been tested.
+                -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <!-- Add OSGi entries to jar manifest -->
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-maven-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <bnd><![CDATA[-exportcontents:com.googlecode.concurrenttrees.*]]></bnd>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals><goal>bnd-process</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <archive>
+                        <!-- This is required by bnd-maven-plugin -->
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <!-- Deploy a "-sources.jar" along with build -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.1.2</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <!-- Deploy a "-javadoc.jar" along with build -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.8.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.8.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <profiles>
+        <profile>
+        <!-- This profile should be enabled when deploying a release to Maven central, to:
+             - validate that open-source license headers are present on all files, and
+             - GPG-signs the jars
+        -->
+        <id>release-sign-artifacts</id>
+        <activation>
+            <activeByDefault>false</activeByDefault>
+            <property>
+                <name>performRelease</name>
+            </property>
+        </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <!--
+                            Plugin to PGP-sign all artifacts automatically when running mvn deploy,
+                            as required for deployment to the Sonatype/Maven Central repo.
+
+                            This requires GnuPG (aka GPG) to be installed and configured on the machine on which this is run,
+                            and for the public key to be uploaded to key servers (e.g. pool.sks-keyservers.net).
+
+                            See: https://docs.sonatype.org/display/Repository/How+To+Generate+PGP+Signatures+With+Maven
+                         -->
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.4</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <!--suppress MavenModelInspection -->
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <!--
+                            Plugin to check that all source files have the appropriate open source license header.
+
+                            This will fail the build if any source files don't have the open source license header.
+
+                            To actually apply the header to new source files, run: mvn license:format
+                        -->
+                        <groupId>com.mycila.maven-license-plugin</groupId>
+                        <artifactId>maven-license-plugin</artifactId>
+                        <version>1.10.b1</version>
+                        <configuration>
+                            <header>src/etc/header.txt</header>
+                            <excludes>
+                                <exclude>src/test/resources/**</exclude>
+                                <exclude>src/main/java/com/googlecode/concurrenttrees/common/LazyIterator.java</exclude>
+                            </excludes>
+                            <strictCheck>true</strictCheck>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-release-plugin</artifactId>
+                        <version>2.5.3</version>
+                        <executions>
+                            <execution>
+                                <id>default</id>
+                                <goals>
+                                    <goal>perform</goal>
+                                </goals>
+                                <configuration>
+                                    <pomFileName>code/pom.xml</pomFileName>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <!-- Prevent JavaDoc warnings from failing the build under Java 8... -->
+            <id>doclint-java8-disable</id>
+            <activation>
+                <jdk>[1.8,)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+                            <additionalparam>-Xdoclint:none</additionalparam>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

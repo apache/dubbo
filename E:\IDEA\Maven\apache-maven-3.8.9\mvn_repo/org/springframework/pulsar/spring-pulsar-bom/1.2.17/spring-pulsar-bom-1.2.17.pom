@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <!-- This module was also published with a richer model, Gradle metadata,  -->
+  <!-- which should be used instead. Do not delete the following line which  -->
+  <!-- is to indicate to Gradle or any Gradle module metadata file consumer  -->
+  <!-- that they should prefer consuming it instead. -->
+  <!-- do_not_remove: published-with-gradle-metadata -->
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.springframework.pulsar</groupId>
+  <artifactId>spring-pulsar-bom</artifactId>
+  <version>1.2.17</version>
+  <packaging>pom</packaging>
+  <name>spring-pulsar-bom</name>
+  <description>Spring Pulsar (Bill of Materials)</description>
+  <url>https://github.com/spring-projects/spring-pulsar</url>
+  <organization>
+    <name>Pivotal Software, Inc.</name>
+    <url>https://spring.io</url>
+  </organization>
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>schacko</id>
+      <name>Soby Chacko</name>
+      <email>chackos@vmware.com</email>
+    </developer>
+    <developer>
+      <id>onobc</id>
+      <name>Chris Bono</name>
+      <email>cbono@vmware.com</email>
+    </developer>
+  </developers>
+  <scm>
+    <connection>https://github.com/spring-projects/spring-pulsar.git</connection>
+    <developerConnection>git@github.com:spring-projects/spring-pulsar.git</developerConnection>
+    <url>https://github.com/spring-projects/spring-pulsar</url>
+  </scm>
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/spring-projects/spring-pulsar/issues</url>
+  </issueManagement>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.pulsar</groupId>
+        <artifactId>spring-pulsar</artifactId>
+        <version>1.2.17</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.pulsar</groupId>
+        <artifactId>spring-pulsar-cache-provider</artifactId>
+        <version>1.2.17</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.pulsar</groupId>
+        <artifactId>spring-pulsar-cache-provider-caffeine</artifactId>
+        <version>1.2.17</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.pulsar</groupId>
+        <artifactId>spring-pulsar-reactive</artifactId>
+        <version>1.2.17</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.pulsar</groupId>
+        <artifactId>spring-pulsar-test</artifactId>
+        <version>1.2.17</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+</project>

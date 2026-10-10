@@ -1,0 +1,1053 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache</groupId>
+    <artifactId>apache</artifactId>
+    <!-- Version 10 is broken; see https://issues.apache.org/jira/browse/MPOM-32 -->
+    <version>9</version>
+  </parent>
+  <groupId>org.apache.commons</groupId>
+  <artifactId>commons-parent</artifactId>
+  <packaging>pom</packaging>
+  <!-- Must agree with commons.release.version below -->
+  <version>22</version>
+  <name>Commons Parent</name>
+  <url>http://commons.apache.org/</url>
+  <description>The Apache Commons Parent Pom provides common settings for all Apache Commons components.</description>
+
+  <ciManagement>
+    <system>continuum</system>
+    <url>http://vmbuild.apache.org/continuum/</url>
+  </ciManagement>
+
+  <!--
+    Starting with version 22, the RAT plugin has changed Maven group and id, so any existing configuration
+    needs to be updated.
+    To fix component POMs, please change any occurrences of:
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>rat-maven-plugin</artifactId>
+    to the new values:
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        
+    Site deployment
+    ===============
+    Cannot define this here at present, see https://issues.apache.org/jira/browse/COMMONSSITE-26.
+
+    The following should be added to the component POM:
+   
+    <distributionManagement>
+      <site>
+        <id>apache.website</id>
+        <name>Apache Commons Site</name>
+        <url>${commons.deployment.protocol}://people.apache.org/www/commons.apache.org/${commons.componentid}</url>
+      </site>
+    </distributionManagement>
+
+  -->
+
+  <!--
+    This section *must* be overwritten by subprojects. It is only to allow
+    a release of the commons-parent POM.
+  -->
+  <scm>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/commons/proper/commons-parent/trunk</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/commons/proper/commons-parent/trunk</developerConnection>
+    <url>http://svn.apache.org/viewvc/commons/proper/commons-parent/trunk</url>
+  </scm>
+
+  <mailingLists>
+    <!-- N.B. commons-site now uses the Apache POM so has its own copy of the mailing list definitions -->
+    <!-- 
+        Components should normally override the default mailing list report by using the comnand
+        mvn commons:mail-page
+        This generates the file src/site/xdoc/mail-lists.xml which when processed will replace the PIR version.
+     -->
+    <!-- Changes to this list should be synchronised with the commons build plugin -->
+    <mailingList>
+      <name>Commons User List</name>
+      <subscribe>user-subscribe@commons.apache.org</subscribe>
+      <unsubscribe>user-unsubscribe@commons.apache.org</unsubscribe>
+      <post>user@commons.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/commons-user/</archive>
+      <otherArchives>
+        <otherArchive>http://markmail.org/list/org.apache.commons.users/</otherArchive>
+        <otherArchive>http://old.nabble.com/Commons---User-f319.html</otherArchive>
+        <otherArchive>http://www.mail-archive.com/user@commons.apache.org/</otherArchive>
+        <otherArchive>http://news.gmane.org/gmane.comp.jakarta.commons.user</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>Commons Dev List</name>
+      <subscribe>dev-subscribe@commons.apache.org</subscribe>
+      <unsubscribe>dev-unsubscribe@commons.apache.org</unsubscribe>
+      <post>dev@commons.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/commons-dev/</archive>
+      <otherArchives>
+        <otherArchive>http://markmail.org/list/org.apache.commons.dev/</otherArchive>
+        <otherArchive>http://old.nabble.com/Commons---Dev-f317.html</otherArchive>
+        <otherArchive>http://www.mail-archive.com/dev@commons.apache.org/</otherArchive>
+        <otherArchive>http://news.gmane.org/gmane.comp.jakarta.commons.devel</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>Commons Issues List</name>
+      <subscribe>issues-subscribe@commons.apache.org</subscribe>
+      <unsubscribe>issues-unsubscribe@commons.apache.org</unsubscribe>
+      <archive>http://mail-archives.apache.org/mod_mbox/commons-issues/</archive>
+      <otherArchives>
+        <otherArchive>http://markmail.org/list/org.apache.commons.issues/</otherArchive>
+        <otherArchive>http://old.nabble.com/Commons---Issues-f25499.html</otherArchive>
+        <otherArchive>http://www.mail-archive.com/issues@commons.apache.org/</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>Commons Commits List</name>
+      <subscribe>commits-subscribe@commons.apache.org</subscribe>
+      <unsubscribe>commits-unsubscribe@commons.apache.org</unsubscribe>
+      <archive>http://mail-archives.apache.org/mod_mbox/commons-commits/</archive>
+      <otherArchives>
+        <otherArchive>http://markmail.org/list/org.apache.commons.commits/</otherArchive>
+        <otherArchive>http://www.mail-archive.com/commits@commons.apache.org/</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>Apache Announce List</name>
+      <subscribe>announce-subscribe@apache.org</subscribe>
+      <unsubscribe>announce-unsubscribe@apache.org</unsubscribe>
+      <archive>http://mail-archives.apache.org/mod_mbox/www-announce/</archive>
+      <otherArchives>
+        <otherArchive>http://markmail.org/list/org.apache.announce/</otherArchive>
+        <otherArchive>http://old.nabble.com/Apache-News-and-Announce-f109.html</otherArchive>
+        <otherArchive>http://www.mail-archive.com/announce@apache.org/</otherArchive>
+        <otherArchive>http://news.gmane.org/gmane.comp.apache.announce</otherArchive>
+      </otherArchives>
+    </mailingList>
+  </mailingLists>
+  <build>
+    <!-- TODO find a better way to add N&L files to jars and test jars
+         See also maven-remote-resources-plugin configuration below. 
+    -->
+    <resources>
+      <!-- This is the default setting from the super-pom -->
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+      <!-- hack to ensure the N&L appear in jars -->
+      <resource>
+        <directory>${basedir}</directory>
+        <targetPath>META-INF</targetPath>
+        <includes>
+          <include>NOTICE.txt</include>
+          <include>LICENSE.txt</include>
+        </includes>
+      </resource>
+    </resources>
+    <!-- ensure test jars also get NOTICE & LICENSE files -->
+    <testResources>
+      <!-- This is the default setting from the super-pom -->
+      <testResource>
+        <directory>src/test/resources</directory>
+      </testResource>
+      <!-- hack to ensure the N&L appear in jars -->
+      <testResource>
+        <directory>${basedir}</directory>
+        <targetPath>META-INF</targetPath>
+        <includes>
+          <include>NOTICE.txt</include>
+          <include>LICENSE.txt</include>
+        </includes>
+      </testResource>
+    </testResources>
+    <pluginManagement>
+      <plugins>
+        <!-- org.apache.maven.plugins, alpha order by artifact id -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>1.6</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>2.2.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>2.4.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>2.3.2</version>
+          <configuration>
+            <source>${maven.compile.source}</source>
+            <target>${maven.compile.target}</target>
+            <encoding>${commons.encoding}</encoding>
+            <fork>${commons.compiler.fork}</fork>
+            <compilerVersion>${commons.compiler.compilerVersion}</compilerVersion>
+            <executable>${commons.compiler.javac}</executable>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>2.7</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>1.4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>2.3.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>2.3.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>${commons.javadoc.version}</version>
+          <configuration>
+            <!-- keep only errors and warnings -->
+            <quiet>true</quiet>
+            <encoding>${commons.encoding}</encoding>
+            <docEncoding>${commons.docEncoding}</docEncoding>
+            <links>
+              <link>${commons.javadoc.java.link}</link>
+              <link>${commons.javadoc.javaee.link}</link>
+            </links>
+            <archive>
+              <manifest>
+                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+              </manifest>
+            </archive>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>2.2.1</version>
+        </plugin>
+        <plugin>
+          <!-- TODO see above - find better way to add N&L files to jars and test jars -->
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-remote-resources-plugin</artifactId>
+          <configuration>
+            <!--
+                apache parent pom automatically adds "LICENSE" and "NOTICE" files
+                to jars - duplicating the "LICENSE.txt" and "NOTICE.txt"
+                files that components already have.
+             -->
+            <skip>true</skip>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>2.5</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>2.1.2</version>
+          <configuration>
+            <archive>
+              <manifest>
+                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+              </manifest>
+            </archive>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${commons.surefire.version}</version>
+        </plugin>
+        <!-- Other plugins, alpha order by groupId and artifactId -->
+        <plugin>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-build-plugin</artifactId>
+          <version>1.3</version>
+          <configuration>
+            <commons.release.name>${commons.release.name}</commons.release.name>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.felix</groupId>
+          <artifactId>maven-bundle-plugin</artifactId>
+          <!-- N.B. 2.3.5 does not work on Java 5; see profile java-1.5-detected for the workround -->
+          <version>2.3.5</version>
+          <inherited>true</inherited>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>buildnumber-maven-plugin</artifactId>
+          <version>1.0</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <!-- org.apache.maven.plugins, alpha order by artifact id -->
+      <plugin>
+        <!--
+          - Copy LICENSE.txt and NOTICE.txt so that they are included
+          - in the -javadoc jar file for the component.
+          -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>javadoc.resources</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <copy todir="${project.build.directory}/apidocs/META-INF">
+                  <fileset dir="${basedir}">
+                    <include name="LICENSE.txt" />
+                    <include name="NOTICE.txt" />
+                  </fileset>
+                </copy>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestFile>${commons.manifestfile}</manifestFile>
+            <manifestEntries>
+              <Specification-Title>${project.name}</Specification-Title>
+              <Specification-Version>${project.version}</Specification-Version>
+              <Specification-Vendor>${project.organization.name}</Specification-Vendor>
+              <Implementation-Title>${project.name}</Implementation-Title>
+              <Implementation-Version>${project.version}</Implementation-Version>
+              <Implementation-Vendor>${project.organization.name}</Implementation-Vendor>
+              <Implementation-Vendor-Id>org.apache</Implementation-Vendor-Id>
+              <Implementation-Build>${implementation.build}</Implementation-Build>
+              <X-Compile-Source-JDK>${maven.compile.source}</X-Compile-Source-JDK>
+              <X-Compile-Target-JDK>${maven.compile.target}</X-Compile-Target-JDK>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <jvm>${commons.surefire.java}</jvm>
+        </configuration>
+      </plugin>
+      <!-- Other plugins, alpha order by groupId and artifactId -->
+      <plugin>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-build-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <configuration>
+          <!-- 
+            dummy entry to stop bundle plugin from picking up jar config and reporting
+            WARNING: Duplicate name in Manifest
+            See http://markmail.org/message/mpkl24wk3jrjhhjg 
+          -->
+          <archive> 
+            <forced>true</forced> 
+          </archive>
+          <excludeDependencies>true</excludeDependencies>
+          <manifestLocation>target/osgi</manifestLocation>
+          <instructions>
+            <!-- stops the "uses" clauses being added to "Export-Package" manifest entry -->
+            <_nouses>true</_nouses>
+            <!-- Stop the JAVA_1_n_HOME variables from being treated as headers by Bnd -->
+            <_removeheaders>JAVA_1_3_HOME,JAVA_1_4_HOME,JAVA_1_5_HOME,JAVA_1_6_HOME</_removeheaders>
+            <Bundle-SymbolicName>${commons.osgi.symbolicName}</Bundle-SymbolicName>
+            <Export-Package>${commons.osgi.export}</Export-Package>
+            <Private-Package>${commons.osgi.private}</Private-Package>
+            <Import-Package>${commons.osgi.import}</Import-Package>
+            <DynamicImport-Package>${commons.osgi.dynamicImport}</DynamicImport-Package>
+            <Bundle-DocURL>${project.url}</Bundle-DocURL>
+          </instructions>
+        </configuration>
+        <executions>
+          <execution>
+            <id>bundle-manifest</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>manifest</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Needed for command-line access, e.g mvn apache-rat:rat and mvn apache-rat:check -->
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <version>${commons.rat.version}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>buildnumber-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>validate</phase>
+            <goals>
+              <goal>create</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <!-- Use committed revision so it does not change every time svn update is run -->
+          <useLastCommittedRevision>true</useLastCommittedRevision>
+          <!-- default revision number if unavailable -->
+          <revisionOnScmFailure>??????</revisionOnScmFailure>
+          <!-- svnjava works even if an svn command-line client is not on the path -->
+          <providerImplementations>
+            <svn>javasvn</svn>
+          </providerImplementations>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <reporting>
+    <!-- N.B. plugins defined here in the <reporting> section ignore what's defined in <pluginManagement>
+         in the <build> section above, so we have to define the versions here. -->
+    <plugins>
+      <!-- org.apache.maven.plugins, alpha order by artifact id -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>${commons.javadoc.version}</version>
+        <configuration> 
+          <!-- keep only errors and warnings -->
+          <quiet>true</quiet>
+          <source>${maven.compile.source}</source>
+          <encoding>${commons.encoding}</encoding>
+          <docEncoding>${commons.docEncoding}</docEncoding>
+          <linksource>true</linksource>
+          <links>
+            <link>${commons.javadoc.java.link}</link>
+            <link>${commons.javadoc.javaee.link}</link>
+          </links>
+        </configuration> 
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jxr-plugin</artifactId>
+        <version>${commons.jxr.version}</version>
+        <configuration> 
+          <aggregate>false</aggregate>
+        </configuration> 
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>${commons.project-info.version}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <version>3.0</version>
+        <configuration>
+          <!-- Exclude the navigation file for Maven 1 sites
+               and the changes file used by the changes-plugin,
+               as they interfere with the site generation. -->
+          <moduleExcludes>
+            <xdoc>navigation.xml,changes.xml</xdoc>
+          </moduleExcludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+        <version>${commons.surefire.version}</version>
+      </plugin>
+      <!-- Other plugins, alpha order by groupId and artifactId -->
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <version>${commons.rat.version}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>jdepend-maven-plugin</artifactId>
+        <version>2.0-beta-2</version>
+      </plugin>
+      <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>clirr-maven-plugin</artifactId>
+          <version>${commons.clirr.version}</version>
+          <configuration>
+              <minSeverity>${minSeverity}</minSeverity>
+          </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
+
+  <profiles>
+
+    <profile>
+      <id>ci</id>
+      <distributionManagement>
+        <repository>
+          <id>apache.snapshots</id>
+          <name>Apache Development Snapshot Repository</name>
+          <url>${commons.deployment.protocol}://people.apache.org/www/people.apache.org/repo/m2-snapshot-repository</url>
+        </repository>
+        <snapshotRepository>
+          <id>apache.snapshots</id>
+          <name>Apache Development Snapshot Repository</name>
+          <url>${commons.deployment.protocol}://people.apache.org/www/people.apache.org/repo/m2-snapshot-repository</url>
+        </snapshotRepository>
+      </distributionManagement>
+    </profile>
+
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <!-- We want to sign the artifact, the POM, and all attached artifacts -->
+          <plugin>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <configuration>
+              <passphrase>${gpg.passphrase}</passphrase>
+            </configuration>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-install-plugin</artifactId>
+            <configuration>
+              <createChecksum>true</createChecksum>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-source-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>create-source-jar</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+                <phase>package</phase>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-release-plugin</artifactId>
+            <configuration>
+              <!-- Pass these arguments to the deploy plugin. -->
+              <arguments>-Prelease</arguments>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>create-javadoc-jar</id>
+                <goals>
+                  <goal>javadoc</goal>
+                  <goal>jar</goal>
+                </goals>
+                <phase>package</phase>
+              </execution>
+            </executions>
+            <configuration>
+              <source>${maven.compile.source}</source>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+                <phase>package</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>rc</id>
+      <distributionManagement>
+        <repository>
+          <id>apache.snapshots</id>
+          <name>Apache Development Snapshot Repository</name>
+          <url>${commons.deployment.protocol}://people.apache.org/www/people.apache.org/builds/commons/${commons.componentid}/${commons.release.version}/${commons.rc.version}/staged</url>
+        </repository>
+      </distributionManagement>
+      <build>
+        <plugins>
+          <!-- We want to sign the artifact, the POM, and all attached artifacts -->
+          <plugin>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <configuration>
+              <passphrase>${gpg.passphrase}</passphrase>
+            </configuration>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-install-plugin</artifactId>
+            <configuration>
+              <createChecksum>true</createChecksum>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-source-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>create-source-jar</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+                <phase>package</phase>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-release-plugin</artifactId>
+            <configuration>
+              <!-- Pass these arguments to the deploy plugin. -->
+              <arguments>-Prc</arguments>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>create-javadoc-jar</id>
+                <goals>
+                  <goal>javadoc</goal>
+                  <goal>jar</goal>
+                </goals>
+                <phase>package</phase>
+              </execution>
+            </executions>
+            <configuration>
+              <source>${maven.compile.source}</source>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+                <phase>package</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>apache-release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-release-plugin</artifactId>
+            <configuration>
+                <releaseProfiles>apache-release</releaseProfiles>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-test-sources</id>
+                <goals>
+                  <goal>test-jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-install-plugin</artifactId>
+            <configuration>
+              <createChecksum>true</createChecksum>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>test-jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>          
+        </plugins>
+      </build>
+    </profile>
+
+    <!--
+       Profile for running the build using JDK 1.3
+       (JAVA_1_3_HOME needs to be defined, e.g. in settings.xml or an environment variable)
+      -->
+    <profile>
+      <id>java-1.3</id>
+      <properties>
+        <commons.compiler.fork>true</commons.compiler.fork>
+        <commons.compiler.compilerVersion>1.3</commons.compiler.compilerVersion>
+        <commons.compiler.javac>${JAVA_1_3_HOME}/bin/javac</commons.compiler.javac>
+        <commons.surefire.java>${JAVA_1_3_HOME}/bin/java</commons.surefire.java>
+      </properties>
+    </profile>
+
+    <!--
+       Profile for running the build using JDK 1.4
+       (JAVA_1_4_HOME needs to be defined, e.g. in settings.xml or an environment variable)
+      -->
+    <profile>
+      <id>java-1.4</id>
+      <properties>
+        <commons.compiler.fork>true</commons.compiler.fork>
+        <commons.compiler.compilerVersion>1.4</commons.compiler.compilerVersion>
+        <commons.compiler.javac>${JAVA_1_4_HOME}/bin/javac</commons.compiler.javac>
+        <commons.surefire.java>${JAVA_1_4_HOME}/bin/java</commons.surefire.java>
+      </properties>
+    </profile>
+
+    <!--
+       Profile for running the build using JDK 1.5
+       (JAVA_1_5_HOME needs to be defined, e.g. in settings.xml or an environment variable)
+      -->
+    <profile>
+      <id>java-1.5</id>
+      <properties>
+        <commons.compiler.fork>true</commons.compiler.fork>
+        <commons.compiler.compilerVersion>1.5</commons.compiler.compilerVersion>
+        <commons.compiler.javac>${JAVA_1_5_HOME}/bin/javac</commons.compiler.javac>
+        <commons.surefire.java>${JAVA_1_5_HOME}/bin/java</commons.surefire.java>
+      </properties>
+    </profile>
+
+    <!--
+       Profile for running the build using JDK 1.6
+       (JAVA_1_6_HOME needs to be defined, e.g. in settings.xml or an environment variable)
+      -->
+    <profile>
+      <id>java-1.6</id>
+      <properties>
+        <commons.compiler.fork>true</commons.compiler.fork>
+        <commons.compiler.compilerVersion>1.6</commons.compiler.compilerVersion>
+        <commons.compiler.javac>${JAVA_1_6_HOME}/bin/javac</commons.compiler.javac>
+        <commons.surefire.java>${JAVA_1_6_HOME}/bin/java</commons.surefire.java>
+      </properties>
+    </profile>
+
+    <!-- N.B. when adding new java profiles, be sure to update 
+         the _removeheaders list in the maven_bundle_plugin configuration -->
+
+    <!-- 
+     | Profile to allow testing of deploy phase
+     | e.g.
+     | mvn deploy -Ptest-deploy -Prelease -Dgpg.skip
+     -->
+    <profile>
+      <id>test-deploy</id>
+      <properties>
+        <altDeploymentRepository>id::default::file:target/deploy</altDeploymentRepository>
+      </properties>
+    </profile>
+   
+    <!--
+      Profile to build all Commons "proper" components.
+
+      The trunks of all "proper" components can be checked out using:
+          https://svn.apache.org/repos/asf/commons/trunks-proper/
+
+      This profile is a convenience which can be used, for example, to build all the component sites:
+          mvn -Ptrunks-proper site
+
+      or, to clean up:
+          mvn -Ptrunks-proper clean
+
+      see http://issues.apache.org/jira/browse/COMMONSSITE-30
+      -->
+    <profile>
+      <id>trunks-proper</id>
+      <modules>
+        <module>../beanutils</module>
+        <module>../betwixt</module>
+        <module>../chain</module>
+        <module>../cli</module>
+        <module>../codec</module>
+        <module>../collections</module>
+        <module>../compress</module>
+        <module>../configuration</module>
+        <module>../daemon</module>
+        <module>../dbcp</module>
+        <module>../dbutils</module>
+        <module>../digester</module>
+        <module>../discovery</module>
+        <module>../el</module>
+        <module>../email</module>
+        <module>../exec</module>
+        <module>../fileupload</module>
+        <module>../io</module>
+        <module>../jci</module>
+        <module>../jexl</module>
+        <module>../jxpath</module>
+        <module>../lang</module>
+        <module>../launcher</module>
+        <module>../logging</module>
+        <module>../math</module>
+        <module>../modeler</module>
+        <module>../net</module>
+        <module>../pool</module>
+        <module>../primitives</module>
+        <module>../proxy</module>
+        <module>../sanselan</module>
+        <module>../scxml</module>
+        <module>../validator</module>
+        <module>../vfs</module>
+      </modules>
+    </profile>
+
+    <!-- 
+        Configure site plugin to support both Maven2 and Maven3, see:
+        http://maven.apache.org/plugins/maven-site-plugin/maven-3.html#Using_the_same_version_of_maven-site-plugin_for_both_Maven_2_and_Maven_3
+    -->
+    <profile>
+      <id>maven-3</id>
+      <activation>
+        <file>
+          <!--  The basedir expression is only recognized by Maven 3.x (see MNG-2363) -->
+          <exists>${basedir}</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-site-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-descriptor</id>
+                <goals>
+                  <goal>attach-descriptor</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    
+    <profile>
+      <!-- This profile detects Java 1.5 -->
+      <id>java-1.5-detected</id>
+      <activation>
+        <jdk>1.5</jdk>
+      </activation>
+      <build>
+        <plugins>
+          <!-- workround for FELIX-3037 which applies to bundle 2.3.5 -->
+          <plugin>
+            <!-- version 2.3.5 depends on bndlib 1.43.0 which requires Java 6; fix this -->
+            <groupId>org.apache.felix</groupId>
+            <artifactId>maven-bundle-plugin</artifactId>
+            <dependencies>
+              <dependency>
+                <groupId>biz.aQute</groupId>
+                <artifactId>bndlib</artifactId>
+                <!-- 1.43.0 requires Java 6; use previous version which works with Java 5--> 
+                <version>1.15.0</version>
+              </dependency>
+            </dependencies>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <!-- 
+          Generate release notes in top-level directory from src/changes/changes.xml
+          Usage:
+          mvn changes:announcement-generate -Prelease-notes
+          
+          Requires file src/changes/release-notes.vm.
+          A sample template is available from:
+          https://svn.apache.org/repos/asf/commons/proper/commons-parent/trunk/src/changes/release-notes.vm
+       -->
+      <id>release-notes</id>
+      <build>
+        <plugins>
+           <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-changes-plugin</artifactId>
+            <version>${commons.changes.version}</version>
+            <configuration>
+              <template>release-notes.vm</template>
+              <templateDirectory>src/changes</templateDirectory>
+              <runOnlyAtExecutionRoot>true</runOnlyAtExecutionRoot>
+              <outputDirectory>.</outputDirectory>
+              <announcementFile>RELEASE-NOTES.txt</announcementFile>
+              <announceParameters>
+                <releaseVersion>${commons.release.version}</releaseVersion>
+              </announceParameters>
+            </configuration>
+            <executions>
+              <execution>
+                <id>create-release-notes</id>
+                <phase>generate-resources</phase>
+                <goals>
+                  <goal>announcement-generate</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>      
+    </profile>
+  </profiles>
+
+  <properties>
+    <!-- configuration bits for cutting a release candidate, must be overridden by components -->
+    <!-- must agree with project.version above -->
+    <commons.release.version>22</commons.release.version>
+    <commons.rc.version>RC1</commons.rc.version>
+
+    <!-- Default configuration for compiler source and target JVM -->
+    <maven.compile.source>1.3</maven.compile.source>
+    <maven.compile.target>1.3</maven.compile.target>
+
+    <!-- compiler and surefire plugin settings for "java" profiles -->
+    <commons.compiler.fork>false</commons.compiler.fork>
+    <commons.compiler.compilerVersion />
+    <commons.compiler.javac />
+    <commons.surefire.java />
+    
+    <!-- plugin versions (allows same value in reporting and build sections) -->
+    <commons.surefire.version>2.9</commons.surefire.version>
+    <commons.surefire-report.version>2.9</commons.surefire-report.version>
+    <commons.javadoc.version>2.8</commons.javadoc.version>
+    <commons.rat.version>0.7</commons.rat.version>
+    <commons.changes.version>2.6</commons.changes.version>
+    <commons.clirr.version>2.3</commons.clirr.version>
+    <commons.jxr.version>2.3</commons.jxr.version>
+    <commons.project-info.version>2.4</commons.project-info.version>
+
+
+    <!-- Default values for the download-page generation by commons-build-plugin -->
+    <commons.release.name>${project.artifactId}-${commons.release.version}</commons.release.name>
+    <commons.release.desc />
+    <commons.binary.suffix>-bin</commons.binary.suffix>
+    <commons.release.2.name>${project.artifactId}-${commons.release.2.version}</commons.release.2.name>
+    <commons.release.2.desc />
+    <commons.release.2.binary.suffix>-bin</commons.release.2.binary.suffix>
+
+    <!-- Commons Component Id -->
+    <commons.componentid>${project.artifactId}</commons.componentid>
+
+    <!-- The RC version used in the staging repository URL. -->
+    <commons.rc.version>RC1</commons.rc.version>
+
+    <!-- Configuration properties for the OSGi maven-bundle-plugin -->
+    <commons.osgi.symbolicName>org.apache.commons.${commons.componentid}</commons.osgi.symbolicName>
+    <commons.osgi.export>org.apache.commons.*;version=${project.version};-noimport:=true</commons.osgi.export>
+    <commons.osgi.import>*</commons.osgi.import>
+    <commons.osgi.dynamicImport />
+    <commons.osgi.private />
+
+    <!-- location of any manifest file used by maven-jar-plugin -->
+    <commons.manifestfile>target/osgi/MANIFEST.MF</commons.manifestfile>
+
+    <!--
+      Make the deployment protocol pluggable. This allows to switch to
+      other protocols like scpexe, which some users prefer over scp.
+    -->
+    <commons.deployment.protocol>scp</commons.deployment.protocol>
+
+    <!--
+      Encoding of Java source files: Make sure, that the compiler and
+      the javadoc generator use the right encoding. Subprojects may
+      overwrite this, if they are using another encoding.
+    -->
+    <commons.encoding>iso-8859-1</commons.encoding>
+    <commons.docEncoding>${commons.encoding}</commons.docEncoding>
+    <!-- Define encoding for filtering -->
+    <project.build.sourceEncoding>${commons.encoding}</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>${commons.encoding}</project.reporting.outputEncoding>
+
+    <!-- Javadoc link to Java API.  Default is Java 1.6; components can override to other versions -->
+    <commons.javadoc.java.link>http://download.oracle.com/javase/6/docs/api/</commons.javadoc.java.link>
+    <commons.javadoc.javaee.link>http://download.oracle.com/javaee/6/api/</commons.javadoc.javaee.link>
+
+    <!-- build meta inf -->
+    <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ssZ</maven.build.timestamp.format>
+    <implementation.build>${scmBranch}@r${buildNumber}; ${maven.build.timestamp}</implementation.build>
+
+    <!-- Allow Clirr severity to be overriden by the command-line option -DminSeverity=level -->
+    <minSeverity>info</minSeverity>
+  </properties>
+
+</project>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.eclipse.platform</groupId>
+  <artifactId>org.eclipse.osgi</artifactId>
+  <version>3.18.300</version>
+  <name>OSGi System Bundle</name>
+  <description>%systemBundle</description>
+  <url>https://projects.eclipse.org/projects/eclipse.equinox</url>
+  <licenses>
+    <license>
+      <name>Eclipse Public License - v 2.0</name>
+      <url>https://www.eclipse.org/legal/epl-2.0/</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <organization>
+    <name>Eclipse Foundation</name>
+    <url>https://www.eclipse.org/</url>
+  </organization>
+  <issueManagement>
+    <system>Github</system>
+    <url>https://github.com/eclipse-equinox/equinox/issues</url>
+  </issueManagement>
+  <scm>
+    <connection>scm:git:https://github.com/eclipse-equinox/equinox.git</connection>
+    <url>https://github.com/eclipse-equinox/equinox</url>
+  </scm>
+  <developers>
+    <developer>
+      <url>https://projects.eclipse.org/projects/eclipse.equinox/who</url>
+    </developer>
+  </developers>
+</project>

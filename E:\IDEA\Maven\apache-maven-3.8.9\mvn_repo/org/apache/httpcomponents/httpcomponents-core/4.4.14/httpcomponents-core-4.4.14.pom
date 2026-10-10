@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   ====================================================================
+   Licensed to the Apache Software Foundation (ASF) under one
+   or more contributor license agreements.  See the NOTICE file
+   distributed with this work for additional information
+   regarding copyright ownership.  The ASF licenses this file
+   to you under the Apache License, Version 2.0 (the
+   "License"); you may not use this file except in compliance
+   with the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing,
+   software distributed under the License is distributed on an
+   "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+   KIND, either express or implied.  See the License for the
+   specific language governing permissions and limitations
+   under the License.
+   ====================================================================
+
+   This software consists of voluntary contributions made by many
+   individuals on behalf of the Apache Software Foundation.  For more
+   information on the Apache Software Foundation, please see
+   <http://www.apache.org />.
+ --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+    <!-- Parent 8 -->
+    <groupId>org.apache.httpcomponents</groupId>
+    <artifactId>httpcomponents-parent</artifactId>
+    <version>11</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>httpcomponents-core</artifactId>
+  <name>Apache HttpComponents Core</name>
+  <version>4.4.14</version>
+  <description>Apache HttpComponents Core is a library of components for building HTTP enabled services</description>
+  <url>http://hc.apache.org/httpcomponents-core-ga</url>
+  <inceptionYear>2005</inceptionYear>
+  <packaging>pom</packaging>
+
+  <organization>
+    <name>The Apache Software Foundation</name>
+    <url>http://www.apache.org/</url>
+  </organization>
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <issueManagement>
+    <system>Jira</system>
+    <url>http://issues.apache.org/jira/browse/HTTPCORE</url>
+  </issueManagement>
+
+  <scm>
+    <connection>scm:git:https://git-wip-us.apache.org/repos/asf/httpcomponents-core.git</connection>
+    <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/httpcomponents-core.git</developerConnection>
+    <url>https://github.com/apache/httpcomponents-core/tree/${project.scm.tag}</url>
+    <tag>4.4.14</tag>
+  </scm>
+
+  <modules>
+    <module>httpcore</module>
+    <module>httpcore-nio</module>
+    <module>httpcore-osgi</module>
+    <module>httpcore-ab</module>
+  </modules>
+
+  <properties>
+    <!-- Override parent 7 setting for deprecation (only - other settings stand)-->
+    <maven.compiler.source>1.6</maven.compiler.source>
+    <maven.compiler.target>1.6</maven.compiler.target>
+    <maven.compiler.showDeprecation>false</maven.compiler.showDeprecation>
+    <conscrypt.version>2.2.1</conscrypt.version>
+    <junit.version>4.12</junit.version>
+    <mockito.version>1.10.19</mockito.version>
+    <commons-logging.version>1.2</commons-logging.version>
+    <api.comparison.version>4.4</api.comparison.version>
+    <hc.stylecheck.version>1</hc.stylecheck.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.conscrypt</groupId>
+        <artifactId>conscrypt-openjdk-uber</artifactId>
+        <version>${conscrypt.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${junit.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>${mockito.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>commons-logging</groupId>
+        <artifactId>commons-logging</artifactId>
+        <version>${commons-logging.version}</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestEntries>
+              <Specification-Title>HttpComponents ${project.name}</Specification-Title>
+              <Specification-Version>${project.version}</Specification-Version>
+              <Specification-Vendor>The Apache Software Foundation</Specification-Vendor>
+              <Implementation-Title>HttpComponents ${project.name}</Implementation-Title>
+              <Implementation-Version>${project.version}</Implementation-Version>
+              <Implementation-Vendor>The Apache Software Foundation</Implementation-Vendor>
+              <Implementation-Vendor-Id>org.apache</Implementation-Vendor-Id>
+              <url>${project.url}</url>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-source-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <!-- reduce console output. Can override with -Dquiet=false -->
+          <quiet>true</quiet>
+          <source>${maven.compiler.source}</source>
+          <links>
+            <link>http://docs.oracle.com/javase/6/docs/api/</link>
+          </links>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-site-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>com.agilejava.docbkx</groupId>
+        <artifactId>docbkx-maven-plugin</artifactId>
+        <dependencies>
+          <dependency>
+            <groupId>org.docbook</groupId>
+            <artifactId>docbook-xml</artifactId>
+            <version>4.4</version>
+            <scope>runtime</scope>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <id>tutorial-site</id>
+            <goals>
+              <goal>generate-html</goal>
+              <goal>generate-pdf</goal>
+            </goals>
+            <phase>pre-site</phase>
+          </execution>
+        </executions>
+        <configuration>
+          <includes>index.xml</includes>
+          <chunkedOutput>true</chunkedOutput>
+          <xincludeSupported>true</xincludeSupported>
+          <foCustomization>src/docbkx/resources/xsl/fopdf.xsl</foCustomization>
+          <htmlCustomization>src/docbkx/resources/xsl/html_chunk.xsl</htmlCustomization>
+          <htmlStylesheet>css/hc-tutorial.css</htmlStylesheet>
+          <entities>
+            <entity>
+              <name>version</name>
+              <value>${project.version}</value>
+            </entity>
+          </entities>
+          <postProcess>
+            <copy todir="target/site/tutorial/html" failonerror="false">
+              <fileset dir="target/docbkx/html/index">
+                <include name="**/*.html"/>
+              </fileset>
+            </copy>
+            <copy todir="target/site/tutorial/html" failonerror="false">
+              <fileset dir="src/docbkx/resources">
+                <include name="**/*.css"/>
+                <include name="**/*.png"/>
+                <include name="**/*.gif"/>
+                <include name="**/*.jpg"/>
+              </fileset>
+            </copy>
+            <copy file="target/docbkx/pdf/index.pdf" tofile="target/site/tutorial/pdf/httpcore-tutorial.pdf" failonerror="false"/>
+          </postProcess>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <phase>pre-site</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${basedir}/target/site/examples</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>src/examples</directory>
+                  <filtering>false</filtering>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <configuration>
+          <encoding>UTF-8</encoding>
+        </configuration>
+        <executions>
+          <execution>
+            <id>validate-main</id>
+            <phase>validate</phase>
+            <configuration>
+              <configLocation>hc-stylecheck/default.xml</configLocation>
+              <headerLocation>hc-stylecheck/asl2.header</headerLocation>
+              <consoleOutput>true</consoleOutput>
+              <failsOnError>true</failsOnError>
+              <linkXRef>false</linkXRef>
+              <sourceDirectory>${basedir}/src/main</sourceDirectory>
+            </configuration>
+            <goals>
+              <goal>checkstyle</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>validate-test</id>
+            <phase>validate</phase>
+            <configuration>
+              <configLocation>hc-stylecheck/default.xml</configLocation>
+              <headerLocation>hc-stylecheck/asl2.header</headerLocation>
+              <consoleOutput>true</consoleOutput>
+              <failsOnError>true</failsOnError>
+              <linkXRef>false</linkXRef>
+              <sourceDirectory>${basedir}/src/test</sourceDirectory>
+            </configuration>
+            <goals>
+              <goal>checkstyle</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>validate-examples</id>
+            <phase>validate</phase>
+            <configuration>
+              <configLocation>hc-stylecheck/minimal.xml</configLocation>
+              <headerLocation>hc-stylecheck/asl2.header</headerLocation>
+              <consoleOutput>true</consoleOutput>
+              <failsOnError>true</failsOnError>
+              <linkXRef>false</linkXRef>
+              <sourceDirectory>${basedir}/src/examples</sourceDirectory>
+            </configuration>
+            <goals>
+              <goal>checkstyle</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>clirr-maven-plugin</artifactId>
+        <configuration>
+          <comparisonVersion>${api.comparison.version}</comparisonVersion>
+          <excludes>
+            <exclude>org/apache/http/annotation/**</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <excludes>
+            <exclude>**/.externalToolBuilders/**</exclude>			
+            <exclude>**/.pmd</exclude>			
+            <exclude>**/maven-eclipse.xml</exclude>
+            <exclude>**/.checkstyle</exclude>
+            <exclude>src/docbkx/resources/**</exclude>
+            <exclude>src/test/resources/*.truststore</exclude>
+            <exclude>src/test/resources/*.p12</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <reporting>
+    <plugins>
+
+      <plugin>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <inherited>false</inherited>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>dependency-info</report>
+              <report>dependency-management</report>
+              <report>issue-management</report>
+              <report>licenses</report>
+              <report>mailing-lists</report>
+              <report>scm</report>
+              <report>summary</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>clirr-maven-plugin</artifactId>
+        <version>${hc.clirr.version}</version>
+        <configuration>
+          <comparisonVersion>${api.comparison.version}</comparisonVersion>
+        </configuration>
+      </plugin>
+
+    </plugins>
+  </reporting>
+
+</project>

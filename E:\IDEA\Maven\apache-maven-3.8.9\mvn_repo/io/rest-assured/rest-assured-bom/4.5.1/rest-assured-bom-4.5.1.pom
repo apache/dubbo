@@ -1,0 +1,149 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>io.rest-assured</groupId>
+    <artifactId>rest-assured-bom</artifactId>
+    <version>4.5.1</version>
+    <name>REST Assured: BOM</name>
+    <packaging>pom</packaging>
+    <description>Centralized dependencyManagement for the Rest Assured Project</description>
+    
+        <url>http://code.google.com/p/rest-assured</url>    
+        <licenses>
+            <license>
+                <name>Apache 2.0</name>
+                <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+                <distribution>repo</distribution>
+            </license>
+        </licenses>
+    
+    
+        <scm>
+            <connection>scm:git:git://github.com/rest-assured/rest-assured.git</connection>
+            <developerConnection>scm:git:ssh://git@github.com/rest-assured/rest-assured.git</developerConnection>
+            <url>http://github.com/rest-assured/rest-assured/tree/master</url>
+            <tag>HEAD</tag>
+        </scm>
+    
+            <developers>
+            <developer>
+                <id>johan.haleby</id>
+                <name>Johan Haleby</name>
+                <email>johan.haleby at gmail.com</email>
+                <organization>Jayway</organization>
+                <organizationUrl>http://www.jayway.com</organizationUrl>
+            </developer>
+        </developers>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.rest-assured</groupId>
+                <artifactId>json-schema-validator</artifactId>
+                <version>4.5.1</version>
+            </dependency>
+            <dependency>
+                <groupId>io.rest-assured</groupId>
+                <artifactId>rest-assured-common</artifactId>
+                <version>4.5.1</version>
+            </dependency>
+            <dependency>
+                <groupId>io.rest-assured</groupId>
+                <artifactId>json-path</artifactId>
+                <version>4.5.1</version>
+            </dependency>
+            <dependency>
+                <groupId>io.rest-assured</groupId>
+                <artifactId>xml-path</artifactId>
+                <version>4.5.1</version>
+            </dependency>
+            <dependency>
+                <groupId>io.rest-assured</groupId>
+                <artifactId>rest-assured</artifactId>
+                <version>4.5.1</version>
+            </dependency>
+            <dependency>
+                <groupId>io.rest-assured</groupId>
+                <artifactId>spring-commons</artifactId>
+                <version>4.5.1</version>
+            </dependency>
+            <dependency>
+                <groupId>io.rest-assured</groupId>
+                <artifactId>spring-mock-mvc</artifactId>
+                <version>4.5.1</version>
+            </dependency>
+            <dependency>
+                <groupId>io.rest-assured</groupId>
+                <artifactId>scala-support</artifactId>
+                <version>4.5.1</version>
+            </dependency>
+            <dependency>
+                <groupId>io.rest-assured</groupId>
+                <artifactId>spring-web-test-client</artifactId>
+                <version>4.5.1</version>
+            </dependency>
+            <dependency>
+                <groupId>io.rest-assured</groupId>
+                <artifactId>kotlin-extensions</artifactId>
+                <version>4.5.1</version>
+            </dependency>
+            <dependency>
+                <groupId>io.rest-assured</groupId>
+                <artifactId>spring-mock-mvc-kotlin-extensions</artifactId>
+                <version>4.5.1</version>
+            </dependency>
+            <dependency>
+                <groupId>io.rest-assured</groupId>
+                <artifactId>rest-assured-all</artifactId>
+                <version>4.5.1</version>
+            </dependency>
+            <dependency>
+                <groupId>io.rest-assured.examples</groupId>
+                <artifactId>scalatra-example</artifactId>
+                <version>4.5.1</version>
+            </dependency>
+            <dependency>
+                <groupId>io.rest-assured.examples</groupId>
+                <artifactId>scalatra-webapp</artifactId>
+                <version>4.5.1</version>
+                <type>war</type>
+            </dependency>
+            <dependency>
+                <groupId>io.rest-assured.examples</groupId>
+                <artifactId>rest-assured-itest-java</artifactId>
+                <version>4.5.1</version>
+            </dependency>
+            <dependency>
+                <groupId>io.rest-assured.examples</groupId>
+                <artifactId>spring-mvc-webapp</artifactId>
+                <version>4.5.1</version>
+                <type>war</type>
+            </dependency>
+            <dependency>
+                <groupId>io.rest-assured.examples</groupId>
+                <artifactId>scala-example</artifactId>
+                <version>4.5.1</version>
+            </dependency>
+            <dependency>
+                <groupId>io.rest-assured.examples</groupId>
+                <artifactId>scala-mock-mvc-example</artifactId>
+                <version>4.5.1</version>
+            </dependency>
+            <dependency>
+                <groupId>io.rest-assured.examples</groupId>
+                <artifactId>kotlin-example</artifactId>
+                <version>4.5.1</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    
+        <build>
+            <pluginManagement>
+                <plugins>
+                </plugins>
+            </pluginManagement>
+        </build>
+    
+</project>

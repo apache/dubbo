@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.google.guava</groupId>
+    <artifactId>guava-parent</artifactId>
+    <version>16.0.1</version>
+  </parent>
+  <artifactId>guava</artifactId>
+  <name>Guava: Google Core Libraries for Java</name>
+  <packaging>bundle</packaging>
+  <description>
+    Guava is a suite of core and expanded libraries that include
+    utility classes, google's collections, io classes, and much
+    much more.
+
+    Guava has only one code dependency - javax.annotation,
+    per the JSR-305 spec.
+  </description>
+  <dependencies>
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+      <optional>true</optional><!-- needed only for annotations -->
+    </dependency>
+    <!-- TODO(cpovirk): want this only for dependency plugin but seems not to work there? Maven runs without failure, but the resulting Javadoc is missing the hoped-for inherited text -->
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <version>2.3.7</version>
+        <extensions>true</extensions>
+        <executions>
+          <execution>
+            <id>bundle-manifest</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>manifest</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <instructions>
+            <Export-Package>!com.google.common.base.internal,com.google.common.*</Export-Package>
+            <Import-Package>
+              javax.annotation;resolution:=optional,
+              javax.inject;resolution:=optional,
+              sun.misc.*;resolution:=optional
+            </Import-Package>
+          </instructions>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-source-plugin</artifactId>
+      </plugin>
+      <!-- TODO(cpovirk): include JDK sources when building testlib doc, too -->
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unpack-jdk-sources</id>
+            <phase>site</phase>
+            <goals><goal>unpack-dependencies</goal></goals>
+            <configuration>
+              <includeArtifactIds>srczip</includeArtifactIds>
+              <overWrite>true</overWrite>
+              <outputDirectory>${project.build.directory}/jdk-sources</outputDirectory>
+              <silent>false</silent>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>animal-sniffer-maven-plugin</artifactId>
+        <configuration>
+          <signature>
+            <groupId>org.codehaus.mojo.signature</groupId>
+            <artifactId>java16-sun</artifactId>
+            <version>1.0</version>
+          </signature>
+        </configuration>
+        <executions>
+          <execution>
+            <id>check-java16-sun</id>
+            <phase>test</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <encoding>UTF-8</encoding>
+          <docencoding>UTF-8</docencoding>
+          <charset>UTF-8</charset>
+          <additionalparam>-XDignore.symbol.file</additionalparam>
+          <excludePackageNames>com.google.common.base.internal</excludePackageNames>
+          <linksource>true</linksource>
+          <links>
+            <link>http://jsr-305.googlecode.com/svn/trunk/javadoc</link>
+            <link>http://docs.oracle.com/javase/7/docs/api/</link>
+          </links>
+          <!-- TODO(cpovirk): can we use includeDependencySources and a local com.oracle.java:jdk-lib:noversion:sources instead of all this unzipping and manual sourcepath modification? -->
+          <sourcepath>${project.build.sourceDirectory}:${project.build.directory}/jdk-sources</sourcepath>
+          <subpackages>com.google.common</subpackages>
+        </configuration>
+        <executions>
+          <execution>
+            <id>attach-docs</id>
+          </execution>
+          <execution>
+            <id>generate-javadoc-site-report</id>
+            <phase>site</phase>
+            <goals><goal>javadoc</goal></goals>
+          </execution>
+          <execution>
+            <id>generate-jdiff-site-report</id>
+            <phase>site</phase>
+            <goals><goal>javadoc</goal></goals>
+            <configuration>
+              <doclet>jdiff.JDiff</doclet>
+              <docletPath>${project.basedir}/lib/jdiff.jar</docletPath>
+              <additionalparam>
+                -XDignore.symbol.file -apiname 'Guava ${project.version}'
+              </additionalparam>
+              <useStandardDocletOptions>false</useStandardDocletOptions>
+              <reportOutputDirectory>${project.reporting.outputDirectory}</reportOutputDirectory>
+              <destDir>jdiff</destDir>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  <profiles>
+    <profile>
+      <id>srczip</id>
+      <activation>
+        <file>
+          <exists>${java.home}/../src.zip</exists>
+        </file>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>jdk</groupId>
+          <artifactId>srczip</artifactId>
+          <version>999</version>
+          <scope>system</scope>
+          <systemPath>${java.home}/../src.zip</systemPath>
+          <optional>true</optional>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
+</project>

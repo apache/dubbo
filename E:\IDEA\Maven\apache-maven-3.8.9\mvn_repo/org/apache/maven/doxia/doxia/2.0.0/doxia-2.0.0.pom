@@ -1,0 +1,477 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.apache.maven</groupId>
+    <artifactId>maven-parent</artifactId>
+    <version>43</version>
+    <relativePath />
+  </parent>
+
+  <groupId>org.apache.maven.doxia</groupId>
+  <artifactId>doxia</artifactId>
+  <version>2.0.0</version>
+  <packaging>pom</packaging>
+
+  <name>Doxia</name>
+  <description>Doxia is a content generation framework that provides powerful techniques for generating static and dynamic content, supporting a variety of markup languages.</description>
+  <url>https://maven.apache.org/doxia/doxia/</url>
+  <inceptionYear>2005</inceptionYear>
+
+  <contributors>
+    <contributor>
+      <name>James Agnew</name>
+    </contributor>
+    <contributor>
+      <name>Manuel Blechschmidt</name>
+    </contributor>
+    <contributor>
+      <name>Masatake Iwasaki</name>
+    </contributor>
+    <contributor>
+      <name>Valters Vingolds</name>
+    </contributor>
+  </contributors>
+
+  <modules>
+    <module>doxia-sink-api</module>
+    <module>doxia-test-docs</module>
+    <module>doxia-core</module>
+    <module>doxia-modules</module>
+  </modules>
+
+  <scm>
+    <connection>scm:git:https://gitbox.apache.org/repos/asf/maven-doxia.git</connection>
+    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-doxia.git</developerConnection>
+    <tag>doxia-2.0.0</tag>
+    <url>https://github.com/apache/maven-doxia/tree/${project.scm.tag}</url>
+  </scm>
+  <issueManagement>
+    <system>jira</system>
+    <url>https://issues.apache.org/jira/browse/DOXIA</url>
+  </issueManagement>
+  <ciManagement>
+    <system>Jenkins</system>
+    <url>https://ci-maven.apache.org/job/Maven/job/maven-box/job/maven-doxia/</url>
+  </ciManagement>
+  <distributionManagement>
+    <site>
+      <id>apache.website</id>
+      <url>scm:svn:https://svn.apache.org/repos/asf/maven/doxia/website/components/${maven.site.path}</url>
+    </site>
+  </distributionManagement>
+
+  <properties>
+    <javaVersion>8</javaVersion>
+    <maven.site.path>doxia-archives/doxia-LATEST</maven.site.path>
+    <checkstyle.violation.ignore>RedundantThrows,NewlineAtEndOfFile,ParameterNumber,MethodLength,FileLength,MethodName,InnerAssignment,MagicNumber</checkstyle.violation.ignore>
+    <project.build.outputTimestamp>2024-09-28T17:57:44Z</project.build.outputTimestamp>
+    <slf4jVersion>1.7.36</slf4jVersion>
+    <xmlunitVersion>2.10.0</xmlunitVersion>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- doxia -->
+      <dependency>
+        <groupId>org.apache.maven.doxia</groupId>
+        <artifactId>doxia-sink-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.doxia</groupId>
+        <artifactId>doxia-test-docs</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.doxia</groupId>
+        <artifactId>doxia-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.doxia</groupId>
+        <artifactId>doxia-core</artifactId>
+        <version>${project.version}</version>
+        <type>test-jar</type>
+      </dependency>
+
+      <!-- doxia modules -->
+      <dependency>
+        <groupId>org.apache.maven.doxia</groupId>
+        <artifactId>doxia-module-apt</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.doxia</groupId>
+        <artifactId>doxia-module-fml</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.doxia</groupId>
+        <artifactId>doxia-module-xdoc</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.doxia</groupId>
+        <artifactId>doxia-module-xhtml5</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.doxia</groupId>
+        <artifactId>doxia-module-markdown</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <!-- test -->
+      <dependency>
+        <groupId>org.xmlunit</groupId>
+        <artifactId>xmlunit-core</artifactId>
+        <version>${xmlunitVersion}</version>
+        <scope>test</scope>
+        <!-- Exclude due to https://github.com/xmlunit/xmlunit/issues/248 -->
+        <exclusions>
+          <exclusion>
+            <groupId>jakarta.activation</groupId>
+            <artifactId>jakarta.activation-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.xmlunit</groupId>
+        <artifactId>xmlunit-matchers</artifactId>
+        <version>${xmlunitVersion}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-testing</artifactId>
+        <version>1.4.0</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.hamcrest</groupId>
+        <artifactId>hamcrest-core</artifactId>
+        <version>3.0</version>
+        <scope>test</scope>
+      </dependency>
+
+      <!-- Plexus -->
+      <dependency>
+        <groupId>com.google.inject</groupId>
+        <artifactId>guice</artifactId>
+        <version>6.0.0</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>javax.inject</groupId>
+        <artifactId>javax.inject</artifactId>
+        <version>1</version>
+      </dependency>
+
+      <!--  SLF4J -->
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4jVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${slf4jVersion}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>5.11.1</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>3.17.0</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>2.17.0</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <id>apache.snapshots</id>
+      <name>Apache Snapshot Repository</name>
+      <url>https://repository.apache.org/snapshots</url>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+      <resource>
+        <directory>${project.build.directory}/generated-site/xsd</directory>
+        <includes>
+          <include>**/*.xsd</include>
+        </includes>
+      </resource>
+    </resources>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>clirr-maven-plugin</artifactId>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <configuration>
+            <topSiteURL>scm:svn:https://svn.apache.org/repos/asf/maven/doxia/website/components/${maven.site.path}</topSiteURL>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-scm-publish-plugin</artifactId>
+          <configuration>
+            <checkoutDirectory>${maven.site.cache}/doxia/${maven.site.path}</checkoutDirectory>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.rat</groupId>
+          <artifactId>apache-rat-plugin</artifactId>
+          <configuration>
+            <excludes combine.children="append">
+              <exclude>src/main/resources/xml.xsd</exclude>
+              <exclude>src/test/resources/**/*.apt</exclude>
+              <exclude>src/test/resources/**/*.apt.vm</exclude>
+              <exclude>src/test/resources/**/*.md</exclude>
+              <exclude>src/it/**/site/**/*.md</exclude>
+              <exclude>src/it/**/site/**/*.markdown</exclude>
+            </excludes>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.eclipse.sisu</groupId>
+        <artifactId>sisu-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>main-index</goal>
+              <goal>test-index</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!--
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>clirr-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <configuration>
+              <comparisonVersion>1.9.1</comparisonVersion>
+              <excludes>
+                DOXIA-614 expected API changes to 1.9.1
+                <exclude>org/apache/maven/doxia/Doxia</exclude>
+                <exclude>org/apache/maven/doxia/parser/AbstractParser</exclude>
+                <exclude>org/apache/maven/doxia/parser/AbstractXmlParser</exclude>
+                <exclude>org/apache/maven/doxia/parser/FmlParser</exclude>
+                <exclude>org/apache/maven/doxia/parser/XhtmlBaseParser</exclude>
+                <exclude>org/apache/maven/doxia/parser/Xhtml5BaseParser</exclude>
+                <exclude>org/apache/maven/doxia/module/fml/FmlParser</exclude>
+                <exclude>org/apache/maven/doxia/module/markdown/MarkdownParser</exclude>
+                <exclude>org/apache/maven/doxia/module/xdoc/XdocParser</exclude>
+                <exclude>org/apache/maven/doxia/module/xhtml/XhtmlParser</exclude>
+                <exclude>org/apache/maven/doxia/module/xhtml5/Xhtml5Parser</exclude>
+              </excludes>
+              <ignored>
+                DOXIA-616
+                <difference>
+                  <differenceType>8001</differenceType>
+                  <className>org/apache/maven/doxia/module/markdown/FlexmarkDoxiaNodeRenderer$Factory</className>
+                </difference>
+              </ignored>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      -->
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <!-- AbstractXmlParser.CachedFileEntityResolver downloads DTD/XSD files in ${java.io.tmpdir} -->
+      <id>remove-temp</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>clean-download</id>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <phase>clean</phase>
+                <configuration>
+                  <tasks>
+                    <delete>
+                      <fileset dir="${java.io.tmpdir}" includes="**/*.dtd, **/*.ent, **/*.xsd" />
+                    </delete>
+                  </tasks>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>dev</id>
+      <!-- inject current Doxia version into maven-site-plugin for dev test -->
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-site-plugin</artifactId>
+              <dependencies>
+                <dependency>
+                  <groupId>org.apache.maven.doxia</groupId>
+                  <artifactId>doxia-module-xhtml5</artifactId>
+                  <version>${project.version}</version>
+                </dependency>
+                <dependency>
+                  <groupId>org.apache.maven.doxia</groupId>
+                  <artifactId>doxia-module-apt</artifactId>
+                  <version>${project.version}</version>
+                </dependency>
+                <dependency>
+                  <groupId>org.apache.maven.doxia</groupId>
+                  <artifactId>doxia-module-xdoc</artifactId>
+                  <version>${project.version}</version>
+                </dependency>
+                <dependency>
+                  <groupId>org.apache.maven.doxia</groupId>
+                  <artifactId>doxia-module-fml</artifactId>
+                  <version>${project.version}</version>
+                </dependency>
+                <dependency>
+                  <groupId>org.apache.maven.doxia</groupId>
+                  <artifactId>doxia-module-markdown</artifactId>
+                  <version>${project.version}</version>
+                </dependency>
+              </dependencies>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+    <profile>
+      <id>reporting</id>
+      <reporting>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jxr-plugin</artifactId>
+            <reportSets>
+              <reportSet>
+                <id>non-aggregate</id>
+                <reports>
+                  <report>jxr</report>
+                </reports>
+              </reportSet>
+              <reportSet>
+                <id>aggregate</id>
+                <reports>
+                  <report>aggregate</report>
+                </reports>
+              </reportSet>
+            </reportSets>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <configuration>
+              <doclint>none</doclint>
+              <failOnWarnings>false</failOnWarnings>
+              <failOnError>false</failOnError>
+              <linksource>true</linksource>
+              <groups>
+                <group>
+                  <title>Doxia Core</title>
+                  <packages>org.apache.maven.doxia*:org.apache.maven.doxia.module.site*</packages>
+                </group>
+                <group>
+                  <title>Doxia Sink API</title>
+                  <packages>org.apache.maven.doxia.sink:org.codehaus.doxia.sink</packages>
+                </group>
+                <group>
+                  <title>Doxia Logging API</title>
+                  <packages>org.apache.maven.doxia.logging</packages>
+                </group>
+                <group>
+                  <title>Doxia Modules</title>
+                  <packages>org.apache.maven.doxia.module*</packages>
+                </group>
+              </groups>
+            </configuration>
+            <reportSets>
+              <reportSet>
+                <id>non-aggregate</id>
+                <reports>
+                  <report>javadoc</report>
+                </reports>
+              </reportSet>
+              <reportSet>
+                <id>aggregate</id>
+                <reports>
+                  <report>aggregate</report>
+                </reports>
+              </reportSet>
+            </reportSets>
+          </plugin>
+        </plugins>
+      </reporting>
+    </profile>
+  </profiles>
+</project>

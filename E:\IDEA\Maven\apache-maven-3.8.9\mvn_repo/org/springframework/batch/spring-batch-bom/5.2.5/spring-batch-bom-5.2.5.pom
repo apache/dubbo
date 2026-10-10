@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.springframework.batch</groupId>
+  <artifactId>spring-batch-bom</artifactId>
+  <version>5.2.5</version>
+  <packaging>pom</packaging>
+  <name>Spring Batch BOM</name>
+  <description>Bill of materials for Spring Batch modules</description>
+  <url>https://projects.spring.io/spring-batch</url>
+  <organization>
+    <name>Spring</name>
+    <url>https://spring.io</url>
+  </organization>
+  <licenses>
+    <license>
+      <name>Apache 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>dsyer</id>
+      <name>Dave Syer</name>
+      <email>dsyer@vmware.com</email>
+    </developer>
+    <developer>
+      <id>nebhale</id>
+      <name>Ben Hale</name>
+      <email>bhale@vmware.com</email>
+    </developer>
+    <developer>
+      <id>lward</id>
+      <name>Lucas Ward</name>
+    </developer>
+    <developer>
+      <id>robokaso</id>
+      <name>Robert Kasanicky</name>
+      <email>robokaso@gmail.com</email>
+    </developer>
+    <developer>
+      <id>trisberg</id>
+      <name>Thomas Risberg</name>
+      <email>trisberg@vmware.com</email>
+    </developer>
+    <developer>
+      <id>dhgarrette</id>
+      <name>Dan Garrette</name>
+      <email>dhgarrette@gmail.com</email>
+    </developer>
+    <developer>
+      <id>mminella</id>
+      <name>Michael Minella</name>
+      <email>mminella@vmware.com</email>
+      <roles>
+        <role>Project Lead</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>chrisjs</id>
+      <name>Chris Schaefer</name>
+      <email>cschaefer@vmware.com</email>
+    </developer>
+    <developer>
+      <id>fmbenhassine</id>
+      <name>Mahmoud Ben Hassine</name>
+      <email>mbenhassine@vmware.com</email>
+      <roles>
+        <role>Project Lead</role>
+      </roles>
+    </developer>
+  </developers>
+  <scm>
+    <connection>git://github.com/spring-projects/spring-batch.git</connection>
+    <developerConnection>git@github.com:spring-projects/spring-batch.git</developerConnection>
+    <url>https://github.com/spring-projects/spring-batch</url>
+  </scm>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.batch</groupId>
+        <artifactId>spring-batch-core</artifactId>
+        <version>5.2.5</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.batch</groupId>
+        <artifactId>spring-batch-infrastructure</artifactId>
+        <version>5.2.5</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.batch</groupId>
+        <artifactId>spring-batch-integration</artifactId>
+        <version>5.2.5</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.batch</groupId>
+        <artifactId>spring-batch-test</artifactId>
+        <version>5.2.5</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+</project>

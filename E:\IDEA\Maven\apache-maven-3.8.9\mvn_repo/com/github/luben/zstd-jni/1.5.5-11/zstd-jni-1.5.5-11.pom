@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.github.luben</groupId>
+    <artifactId>zstd-jni</artifactId>
+    <packaging>jar</packaging>
+    <description>JNI bindings for Zstd native library that provides fast and high compression lossless algorithm for Java and all JVM languages.</description>
+    <version>1.5.5-11</version>
+    <licenses>
+        <license>
+            <name>BSD 2-Clause License</name>
+            <url>https://opensource.org/licenses/BSD-2-Clause</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <name>zstd-jni</name>
+    <organization>
+        <name>com.github.luben</name>
+    </organization>
+    <url>https://github.com/luben/zstd-jni</url>
+    <scm>
+        <url>git@github.com:luben/zstd-jni.git</url>
+        <connection>scm:git:git@github.com:luben/zstd-jni.git</connection>
+    </scm>
+    <developers>
+        <developer>
+            <id>karavelov</id>
+            <name>Luben Karavelov</name>
+            <email>karavelov@gmail.com</email>
+            <organization>com.github.luben</organization>
+            <organizationUrl>https://github.com/luben</organizationUrl>
+        </developer>
+    </developers>
+    <properties>
+        <info.versionScheme>strict</info.versionScheme>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_2.13</artifactId>
+            <version>3.2.17</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.scalatestplus</groupId>
+            <artifactId>scalacheck-1-17_2.13</artifactId>
+            <version>3.2.17.0</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.sonatype.forge</groupId>
+    <artifactId>forge-parent</artifactId>
+    <version>6</version>
+  </parent>
+
+  <packaging>pom</packaging>
+
+  <groupId>org.sonatype.sisu</groupId>
+  <artifactId>sisu-guice</artifactId>
+  <version>2.1.7</version>
+
+  <name>Sisu - Guice</name>
+
+  <description>Guice trunk with some patches applied for Sisu</description>
+
+  <scm>
+    <connection>scm:git:git@github.com:sonatype/sisu-guice.git</connection>
+    <developerConnection>scm:git:git@github.com:sonatype/sisu-guice.git</developerConnection>
+    <url>git@github.com:sonatype/sisu-guice.git</url>
+  </scm>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <symbolic.name>${project.groupId}.${project.artifactId}</symbolic.name>
+    <build.dir>${project.build.directory}</build.dir>
+    <noaop.dir>${project.build.directory}/no_aop</noaop.dir>
+    <forgeReleaseUrl>https://repository.sonatype.org/service/local/staging/deploy/maven2</forgeReleaseUrl>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>javax.inject</groupId>
+      <artifactId>javax.inject</artifactId>
+      <version>1</version>
+    </dependency>
+    <dependency>
+      <groupId>aopalliance</groupId>
+      <artifactId>aopalliance</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>asm</groupId>
+      <artifactId>asm</artifactId>
+      <version>3.2</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.6.1</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.felix</groupId>
+      <artifactId>org.apache.felix.framework</artifactId>
+      <version>3.0.2</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>2.3.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>1.4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>1.5</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>2.7</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>2.1.2</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <redirectTestOutputToFile>true</redirectTestOutputToFile>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>1.1</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>2.0</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>compile</id>
+            <phase>compile</phase>
+            <configuration>
+              <tasks>
+
+                <property name="external.compile.classpath" refid="maven.compile.classpath" />
+                <property name="asm.jar" value="${maven.dependency.asm.asm.jar.path}" />
+
+                <property name="build.dir" value="${build.dir}" />
+                <property name="build.compiler" value="extJavac" />
+                <property name="version" value="${project.version}" />
+
+                <property name="Bundle-SymbolicName" value="${symbolic.name}" />
+                <property name="Bundle-Name" value="${project.artifactId}" />
+                <property name="Bundle-Vendor" value="Sonatype Inc." />
+
+                <ant>
+                  <target name="jar" />
+                </ant>
+
+                <ant>
+                  <target name="no_aop" />
+                </ant>
+
+                <ant dir="${noaop.dir}">
+                  <property name="build.dir" value="${noaop.dir}" />
+                  <property name="Bundle-SymbolicName" value="${symbolic.name}-noaop" />
+                  <property name="Bundle-Name" value="${project.artifactId}-noaop" />
+                  <target name="jar" />
+                </ant>
+
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-jars</id>
+            <phase>package</phase>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>${build.dir}/dist/guice-${project.version}.jar</file>
+                </artifact>
+                <artifact>
+                  <file>${noaop.dir}/dist/guice-${project.version}.jar</file>
+                  <classifier>noaop</classifier>
+                </artifact>
+              </artifacts>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>test</id>
+      <activation>
+        <property>
+          <name>!maven.test.skip</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>test</id>
+                <phase>test</phase>
+                <configuration>
+                  <tasks>
+
+                    <property name="external.compile.classpath" refid="maven.test.classpath" />
+                    <property name="asm.jar" value="${maven.dependency.asm.asm.jar.path}" />
+
+                    <property name="aopalliance.jar" value="${maven.dependency.aopalliance.aopalliance.jar.path}" />
+                    <property name="javax.inject.jar" value="${maven.dependency.javax.inject.javax.inject.jar.path}" />
+                    <property name="felix.jar" value="${maven.dependency.org.apache.felix.org.apache.felix.framework.jar.path}" />
+                    <property name="junit.jar" value="${maven.dependency.junit.junit.jar.path}" />
+
+                    <property name="build.dir" value="${build.dir}" />
+                    <property name="build.compiler" value="extJavac" />
+                    <property name="version" value="${project.version}" />
+
+                    <property name="Bundle-SymbolicName" value="${symbolic.name}" />
+                    <property name="Bundle-Name" value="${project.artifactId}" />
+                    <property name="Bundle-Vendor" value="Sonatype Inc." />
+
+                    <ant>
+                      <target name="test.dist" />
+                    </ant>
+
+                    <ant dir="${noaop.dir}">
+                      <property name="build.dir" value="${noaop.dir}" />
+                      <property name="Bundle-SymbolicName" value="${symbolic.name}-noaop" />
+                      <property name="Bundle-Name" value="${project.artifactId}-noaop" />
+                      <target name="test.dist" />
+                    </ant>
+
+                  </tasks>
+                </configuration>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>sources</id>
+                <phase>package</phase>
+                <configuration>
+                  <tasks>
+
+                    <property name="external.compile.classpath" refid="maven.compile.classpath" />
+
+                    <property name="build.dir" value="${build.dir}" />
+                    <property name="build.compiler" value="extJavac" />
+                    <property name="version" value="${project.version}" />
+
+                    <ant>
+                      <target name="source.jar" />
+                      <target name="javadoc" />
+                    </ant>
+
+                    <zip destfile="${build.dir}/guice-${project.version}-doc.jar">
+                      <zipfileset dir="${build.dir}/javadoc" />
+                    </zip>
+
+                  </tasks>
+                </configuration>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>attach-artifact</goal>
+                </goals>
+                <configuration>
+                  <artifacts>
+                    <artifact>
+                      <file>${build.dir}/guice-${project.version}-src.jar</file>
+                      <classifier>sources</classifier>
+                    </artifact>
+                    <artifact>
+                      <file>${build.dir}/guice-${project.version}-doc.jar</file>
+                      <classifier>javadoc</classifier>
+                    </artifact>
+                  </artifacts>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+</project>

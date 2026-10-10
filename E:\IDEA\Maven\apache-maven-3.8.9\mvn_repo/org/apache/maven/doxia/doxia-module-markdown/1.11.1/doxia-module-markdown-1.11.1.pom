@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.apache.maven.doxia</groupId>
+    <artifactId>doxia-modules</artifactId>
+    <version>1.11.1</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>doxia-module-markdown</artifactId>
+
+  <name>Doxia :: Markdown Module</name>
+  <description>
+    A Doxia module for Markdown source documents.
+  </description>
+
+  <contributors>
+    <contributor>
+      <name>Vladimir Schneider</name>
+      <email>vladimir@vladsch.com</email>
+      <organization>vladsch.com</organization>
+      <organizationUrl>https://vladsch.com/</organizationUrl>
+    </contributor>
+    <contributor>
+      <name>Julien Nicoulaud</name>
+      <email>julien.nicoulaud@gmail.com</email>
+      <timezone>+1</timezone>
+      <url>http://www.twitter.com/nicoulaj</url>
+    </contributor>
+  </contributors>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.vladsch.flexmark</groupId>
+      <artifactId>flexmark-all</artifactId>
+      <version>0.42.14</version>
+      <exclusions>
+        <!-- exclude to PDF converter -->
+        <exclusion>
+          <groupId>com.vladsch.flexmark</groupId>
+          <artifactId>flexmark-pdf-converter</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.doxia</groupId>
+      <artifactId>doxia-module-xhtml</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+    </dependency>
+  </dependencies>
+  <build>
+
+    <plugins>
+
+      <!-- install -->
+      <plugin>
+        <artifactId>maven-install-plugin</artifactId>
+        <executions>
+
+          <!-- integration-test -->
+          <!-- Copy the Doxia XHTML module from our working directory to the local-repo -->
+          <!-- We do that manually because the invoker:install goal (below) doesn't do it, as -->
+          <!-- it's not the artifact we're working on, but the ones that are produced by our "siblings" -->
+          <execution>
+            <id>copy-doxia-module-xhtml-to-local-repo</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>install-file</goal>
+            </goals>
+            <configuration>
+              <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
+              <file>${project.basedir}/../doxia-module-xhtml/target/doxia-module-xhtml-${project.version}.jar</file>
+            </configuration>
+          </execution>
+          <execution>
+            <id>copy-doxia-to-local-repo</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>install-file</goal>
+            </goals>
+            <configuration>
+              <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
+              <file>${project.basedir}/../../doxia-core/target/doxia-core-${project.version}.jar</file>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!--  maven-invoker-plugin -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-invoker-plugin</artifactId>
+        <!-- <version>2.0.0</version> -->
+        <configuration>
+          <debug>false</debug>
+          <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
+          <pomIncludes>
+            <pomInclude>**/pom.xml</pomInclude>
+          </pomIncludes>
+          <postBuildHookScript>verify</postBuildHookScript>
+          <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
+          <extraArtifacts />
+          <settingsFile>src/it/settings.xml</settingsFile>
+          <goals>
+            <goal>clean</goal>
+            <goal>site</goal>
+          </goals>
+        </configuration>
+        <executions>
+          <execution>
+            <id>integration-test</id>
+            <goals>
+              <goal>install</goal>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+    </plugins>
+  </build>
+</project>
