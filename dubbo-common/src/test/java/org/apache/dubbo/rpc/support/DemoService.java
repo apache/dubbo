@@ -16,6 +16,13 @@
  */
 package org.apache.dubbo.rpc.support;
 
+import java.util.List;
+import java.util.Map;
+
 public interface DemoService {
     String sayHello(String name);
+
+    void processBytes(List<Byte> data);
+
+    void processMultiple(String name, List<Short> values, Map<String, Byte> mapping);
 }

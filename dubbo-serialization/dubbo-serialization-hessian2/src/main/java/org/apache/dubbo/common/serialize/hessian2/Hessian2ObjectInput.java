@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Objects;
 
@@ -119,6 +120,7 @@ public class Hessian2ObjectInput implements ObjectInput, Cleanable {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> cls, Type type) throws IOException, ClassNotFoundException {
         if (!Objects.equals(
                 mH2i.getSerializerFactory().getClassLoader(),
@@ -126,7 +128,33 @@ public class Hessian2ObjectInput implements ObjectInput, Cleanable {
             mH2i.setSerializerFactory(hessian2FactoryManager.getSerializerFactory(
                     Thread.currentThread().getContextClassLoader()));
         }
+        if (type instanceof ParameterizedType) {
+            Type[] typeArgs = ((ParameterizedType) type).getActualTypeArguments();
+            Class<?>[] expectedTypes = new Class<?>[typeArgs.length];
+            boolean hasExpectedType = false;
+            for (int i = 0; i < typeArgs.length; i++) {
+                if (typeArgs[i] instanceof Class && isPrimitive((Class<?>) typeArgs[i])) {
+                    expectedTypes[i] = (Class<?>) typeArgs[i];
+                    hasExpectedType = true;
+                }
+            }
+            if (hasExpectedType) {
+                return (T) mH2i.readObject(cls, expectedTypes);
+            }
+        }
         return readObject(cls);
+    }
+
+    private static boolean isPrimitive(Class<?> type) {
+        return type.isPrimitive()
+                || type == Boolean.class
+                || type == Character.class
+                || type == Byte.class
+                || type == Short.class
+                || type == Integer.class
+                || type == Long.class
+                || type == Float.class
+                || type == Double.class;
     }
 
     public InputStream readInputStream() throws IOException {
