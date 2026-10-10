@@ -14,18 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.protocol.tri.rest.support.spring;
 
-package org.apache.dubbo.rpc.protocol.tri.rest.support.spring
+import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import org.apache.dubbo.rpc.protocol.tri.rest.support.spring.service.SpringDemoService
-import org.apache.dubbo.rpc.protocol.tri.rest.support.spring.service.SpringDemoServiceImpl
-import org.apache.dubbo.rpc.protocol.tri.rest.test.RestProtocolTestContract
-import org.apache.dubbo.rpc.protocol.tri.test.TestRunnerBuilder
+import java.util.Properties;
 
-class RestProtocolTest extends RestProtocolTestContract {
+@SuppressWarnings("serial")
+public final class ConfigurationWrapper extends Properties {
+
+    private final Configuration configuration;
+
+    ConfigurationWrapper(ApplicationModel applicationModel) {
+        configuration = applicationModel.modelEnvironment().getConfiguration();
+    }
 
     @Override
-    void setupService(TestRunnerBuilder builder) {
-        builder.provider(SpringDemoService.class, new SpringDemoServiceImpl())
+    public String getProperty(String key) {
+        Object value = configuration.getProperty(key);
+        return value == null ? null : value.toString();
+    }
+
+    @Override
+    public Object get(Object key) {
+        return configuration.getProperty(key == null ? null : key.toString());
     }
 }

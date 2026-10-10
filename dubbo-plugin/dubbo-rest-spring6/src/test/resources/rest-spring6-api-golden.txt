@@ -1,0 +1,4 @@
+format=rest-spring6-public-api-v1
+classes=23
+entries=166
+sha256=1d3e786afb0af8a7f2df0cdbcd6efe6187ad33df903aa5318f71cab4ef9538f2

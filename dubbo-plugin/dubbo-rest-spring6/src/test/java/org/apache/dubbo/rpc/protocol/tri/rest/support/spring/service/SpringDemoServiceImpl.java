@@ -14,18 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.protocol.tri.rest.support.spring.service;
 
-package org.apache.dubbo.rpc.protocol.tri.rest.support.spring
+import org.apache.dubbo.rpc.protocol.tri.rest.service.DemoServiceImpl;
 
-import org.apache.dubbo.rpc.protocol.tri.rest.support.spring.service.SpringDemoService
-import org.apache.dubbo.rpc.protocol.tri.rest.support.spring.service.SpringDemoServiceImpl
-import org.apache.dubbo.rpc.protocol.tri.rest.test.RestProtocolTestContract
-import org.apache.dubbo.rpc.protocol.tri.test.TestRunnerBuilder
+import org.springframework.util.MultiValueMap;
 
-class RestProtocolTest extends RestProtocolTestContract {
+public class SpringDemoServiceImpl extends DemoServiceImpl implements SpringDemoService {
 
     @Override
-    void setupService(TestRunnerBuilder builder) {
-        builder.provider(SpringDemoService.class, new SpringDemoServiceImpl())
+    public MultiValueMap<String, Integer> multiValueMapTest(MultiValueMap<String, Integer> params) {
+        return params;
     }
 }
