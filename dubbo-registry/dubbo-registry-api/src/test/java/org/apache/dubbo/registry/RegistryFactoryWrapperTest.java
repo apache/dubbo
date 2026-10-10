@@ -19,6 +19,7 @@ package org.apache.dubbo.registry;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -52,5 +53,18 @@ class RegistryFactoryWrapperTest {
         registry.unsubscribe(url, Mockito.mock(NotifyListener.class));
         Mockito.verify(listener1, Mockito.times(1)).onUnsubscribe(url, SimpleRegistryFactory.registry);
         Mockito.verify(listener2, Mockito.times(1)).onUnsubscribe(url, SimpleRegistryFactory.registry);
+    }
+
+    @Test
+    void testNullRegistryUsesOriginalUrl() {
+        RegistryFactory nullRegistryFactory = Mockito.mock(RegistryFactory.class);
+        URL url = URL.valueOf("simple://localhost:8080/registry-service");
+        Mockito.when(nullRegistryFactory.getRegistry(url)).thenReturn(null);
+
+        Registry registry = new RegistryFactoryWrapper(nullRegistryFactory).getRegistry(url);
+
+        Assertions.assertTrue(registry instanceof ListenerRegistryWrapper);
+        Assertions.assertEquals(url, registry.getUrl());
+        Assertions.assertDoesNotThrow(() -> registry.subscribe(url, Mockito.mock(NotifyListener.class)));
     }
 }

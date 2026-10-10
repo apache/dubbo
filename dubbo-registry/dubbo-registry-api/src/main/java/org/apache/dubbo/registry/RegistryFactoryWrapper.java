@@ -31,6 +31,7 @@ public class RegistryFactoryWrapper implements RegistryFactory {
     public Registry getRegistry(URL url) {
         return new ListenerRegistryWrapper(
                 registryFactory.getRegistry(url),
+                url,
                 Collections.unmodifiableList(url.getOrDefaultApplicationModel()
                         .getExtensionLoader(RegistryServiceListener.class)
                         .getActivateExtension(url, "registry.listeners")));

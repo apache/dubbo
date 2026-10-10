@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.registry.integration.DemoService;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,6 +32,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -72,5 +74,90 @@ class ListenerRegistryWrapperTest {
 
         registryWrapper.subscribe(subscribeUrl, notifyListener);
         verify(listener, times(1)).onSubscribe(subscribeUrl, registry);
+    }
+
+    @Test
+    void testNullRegistryIsSafe() {
+        URL registryUrl = URL.valueOf("registry://127.0.0.1:2181/org.apache.dubbo.registry.RegistryService");
+        URL serviceUrl = URL.valueOf("dubbo://127.0.0.1:20881/" + DemoService.class.getName());
+        NotifyListener notifyListener = mock(NotifyListener.class);
+        RegistryServiceListener listener = mock(RegistryServiceListener.class);
+        ListenerRegistryWrapper wrapper =
+                new ListenerRegistryWrapper(null, registryUrl, Collections.singletonList(listener));
+
+        Assertions.assertEquals(registryUrl, wrapper.getUrl());
+        Assertions.assertFalse(wrapper.isAvailable());
+        Assertions.assertFalse(wrapper.isServiceDiscovery());
+        Assertions.assertTrue(wrapper.lookup(serviceUrl).isEmpty());
+        Assertions.assertDoesNotThrow(wrapper::destroy);
+        Assertions.assertDoesNotThrow(() -> wrapper.register(serviceUrl));
+        Assertions.assertDoesNotThrow(() -> wrapper.unregister(serviceUrl));
+        Assertions.assertDoesNotThrow(() -> wrapper.subscribe(serviceUrl, notifyListener));
+        Assertions.assertDoesNotThrow(() -> wrapper.unsubscribe(serviceUrl, notifyListener));
+
+        verify(listener, times(1)).onRegister(serviceUrl, null);
+        verify(listener, times(1)).onUnregister(serviceUrl, null);
+        verify(listener, times(1)).onSubscribe(serviceUrl, null);
+        verify(listener, times(1)).onUnsubscribe(serviceUrl, null);
+    }
+
+    @Test
+    void testDelegatesToRegistryWhenPresent() {
+        URL registryUrl = URL.valueOf("registry://127.0.0.1:2181/org.apache.dubbo.registry.RegistryService");
+        URL serviceUrl = URL.valueOf("dubbo://127.0.0.1:20881/" + DemoService.class.getName());
+        Registry registry = mock(Registry.class);
+        NotifyListener notifyListener = mock(NotifyListener.class);
+        RegistryServiceListener listener = mock(RegistryServiceListener.class);
+
+        when(registry.getUrl()).thenReturn(registryUrl);
+        when(registry.isAvailable()).thenReturn(true);
+        when(registry.isServiceDiscovery()).thenReturn(true);
+        when(registry.lookup(serviceUrl)).thenReturn(Collections.singletonList(serviceUrl));
+
+        ListenerRegistryWrapper wrapper = new ListenerRegistryWrapper(registry, Collections.singletonList(listener));
+
+        Assertions.assertEquals(registryUrl, wrapper.getUrl());
+        Assertions.assertTrue(wrapper.isAvailable());
+        Assertions.assertTrue(wrapper.isServiceDiscovery());
+        Assertions.assertEquals(Collections.singletonList(serviceUrl), wrapper.lookup(serviceUrl));
+
+        wrapper.unsubscribe(serviceUrl, notifyListener);
+        wrapper.destroy();
+
+        verify(registry, times(2)).getUrl();
+        verify(registry).isAvailable();
+        verify(registry).isServiceDiscovery();
+        verify(registry).lookup(serviceUrl);
+        verify(registry).unsubscribe(serviceUrl, notifyListener);
+        verify(registry).destroy();
+        verify(listener, times(1)).onUnsubscribe(serviceUrl, registry);
+        verify(listener, never()).onSubscribe(serviceUrl, registry);
+    }
+
+    @Test
+    void testLegacyConstructorWithNullRegistry() {
+        URL serviceUrl = URL.valueOf("dubbo://127.0.0.1:20881/" + DemoService.class.getName());
+        ListenerRegistryWrapper wrapper = new ListenerRegistryWrapper(null, Collections.emptyList());
+
+        Assertions.assertNull(wrapper.getUrl());
+        Assertions.assertFalse(wrapper.isAvailable());
+        Assertions.assertFalse(wrapper.isServiceDiscovery());
+        Assertions.assertTrue(wrapper.lookup(serviceUrl).isEmpty());
+        Assertions.assertDoesNotThrow(wrapper::destroy);
+    }
+
+    @Test
+    void testRegistryPresentButUnavailable() {
+        URL serviceUrl = URL.valueOf("dubbo://127.0.0.1:20881/" + DemoService.class.getName());
+        Registry registry = mock(Registry.class);
+        when(registry.isAvailable()).thenReturn(false);
+        when(registry.isServiceDiscovery()).thenReturn(false);
+
+        ListenerRegistryWrapper wrapper = new ListenerRegistryWrapper(registry, Collections.emptyList());
+
+        Assertions.assertFalse(wrapper.isAvailable());
+        Assertions.assertFalse(wrapper.isServiceDiscovery());
+        verify(registry).isAvailable();
+        verify(registry).isServiceDiscovery();
     }
 }

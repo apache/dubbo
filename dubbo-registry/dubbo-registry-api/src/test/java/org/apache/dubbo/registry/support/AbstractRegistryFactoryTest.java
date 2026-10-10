@@ -138,4 +138,20 @@ class AbstractRegistryFactoryTest {
         Assertions.assertFalse(registries.contains(registry1));
         Assertions.assertFalse(registries.contains(registry2));
     }
+
+    @Test
+    void testGetRegistryReturnsNullWhenCheckIsFalseAndCreateFails() {
+        AbstractRegistryFactory throwingRegistryFactory = new AbstractRegistryFactory() {
+            @Override
+            protected Registry createRegistry(URL url) {
+                throw new IllegalStateException("connect failed");
+            }
+        };
+        throwingRegistryFactory.setApplicationModel(ApplicationModel.defaultModel());
+
+        Registry registry = throwingRegistryFactory.getRegistry(
+                URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":2233?check=false"));
+
+        Assertions.assertNull(registry);
+    }
 }

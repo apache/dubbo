@@ -25,6 +25,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
+import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
@@ -38,6 +39,7 @@ import java.util.Map;
 
 import com.google.common.collect.Sets;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
@@ -48,29 +50,30 @@ public class MultipleServiceDiscoveryTest {
     private static String mockZkAddress = "zookeeper://mock-zk:2181?check=false";
 
     @Test
-    public void testOnEvent() {
-        try {
-            String metadata_111 = "{\"app\":\"app1\",\"revision\":\"111\",\"services\":{"
-                    + "\"org.apache.dubbo.demo.DemoService:dubbo\":{\"name\":\"org.apache.dubbo.demo.DemoService\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.demo.DemoService\",\"params\":{\"side\":\"provider\",\"release\":\"\",\"methods\":\"sayHello,sayHelloAsync\",\"deprecated\":\"false\",\"dubbo\":\"2.0.2\",\"pid\":\"72723\",\"interface\":\"org.apache.dubbo.demo.DemoService\",\"service-name-mapping\":\"true\",\"timeout\":\"3000\",\"generic\":\"false\",\"metadata-type\":\"remote\",\"delay\":\"5000\",\"application\":\"app1\",\"dynamic\":\"true\",\"REGISTRY_CLUSTER\":\"registry1\",\"anyhost\":\"true\",\"timestamp\":\"1625800233446\"}}"
-                    + "}}";
-            MetadataInfo metadataInfo = JsonUtils.toJavaObject(metadata_111, MetadataInfo.class);
-            ApplicationModel applicationModel = ApplicationModel.defaultModel();
-            applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("app2"));
-            String multipleUrl = String.format(
-                    "multiple://mock-registry:2181?reference-registry=%s&child.a1=%s&check=false",
-                    mockZkAddress, mockZkAddress);
-            URL url = URL.valueOf(multipleUrl);
-            url.setScopeModel(applicationModel);
-            MultipleServiceDiscovery multipleServiceDiscovery = new MultipleServiceDiscovery(url);
-            Class<MultipleServiceDiscovery> msdClass = MultipleServiceDiscovery.class;
-            Field serviceDiscoveriesField = msdClass.getDeclaredField("serviceDiscoveries");
-            serviceDiscoveriesField.setAccessible(true);
-            ServiceDiscovery mockServiceDiscovery = Mockito.mock(ServiceDiscovery.class);
+    public void testOnEvent() throws Exception {
+        String metadata_111 = "{\"app\":\"app1\",\"revision\":\"111\",\"services\":{"
+                + "\"org.apache.dubbo.demo.DemoService:dubbo\":{\"name\":\"org.apache.dubbo.demo.DemoService\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.demo.DemoService\",\"params\":{\"side\":\"provider\",\"release\":\"\",\"methods\":\"sayHello,sayHelloAsync\",\"deprecated\":\"false\",\"dubbo\":\"2.0.2\",\"pid\":\"72723\",\"interface\":\"org.apache.dubbo.demo.DemoService\",\"service-name-mapping\":\"true\",\"timeout\":\"3000\",\"generic\":\"false\",\"metadata-type\":\"remote\",\"delay\":\"5000\",\"application\":\"app1\",\"dynamic\":\"true\",\"REGISTRY_CLUSTER\":\"registry1\",\"anyhost\":\"true\",\"timestamp\":\"1625800233446\"}}"
+                + "}}";
+        MetadataInfo metadataInfo = JsonUtils.toJavaObject(metadata_111, MetadataInfo.class);
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("app2"));
+        String multipleUrl = String.format(
+                "multiple://mock-registry:2181?reference-registry=%s&child.a1=%s&check=false",
+                mockZkAddress, mockZkAddress);
+        URL url = URL.valueOf(multipleUrl);
+        url.setScopeModel(applicationModel);
+        ServiceDiscovery mockServiceDiscovery = Mockito.mock(ServiceDiscovery.class);
+        ServiceDiscoveryFactory mockFactory = Mockito.mock(ServiceDiscoveryFactory.class);
+        Mockito.when(mockFactory.getServiceDiscovery(Mockito.any(URL.class))).thenReturn(mockServiceDiscovery);
+
+        try (MockedStatic<ServiceDiscoveryFactory> serviceDiscoveryFactoryMockedStatic =
+                Mockito.mockStatic(ServiceDiscoveryFactory.class)) {
+            serviceDiscoveryFactoryMockedStatic
+                    .when(() -> ServiceDiscoveryFactory.getExtension(Mockito.any(URL.class)))
+                    .thenReturn(mockFactory);
             Mockito.when(mockServiceDiscovery.getRemoteMetadata(Mockito.anyString(), Mockito.anyList()))
                     .thenReturn(metadataInfo);
-            Map<String, ServiceDiscovery> mockServiceDiscoveries = new HashMap<>();
-            mockServiceDiscoveries.put("child.a1", mockServiceDiscovery);
-            serviceDiscoveriesField.set(multipleServiceDiscovery, mockServiceDiscoveries);
+            MultipleServiceDiscovery multipleServiceDiscovery = new MultipleServiceDiscovery(url);
             MultipleServiceDiscovery.MultiServiceInstancesChangedListener listener =
                     (MultipleServiceDiscovery.MultiServiceInstancesChangedListener)
                             multipleServiceDiscovery.createListener(Sets.newHashSet("app1"));
@@ -93,10 +96,6 @@ public class MultipleServiceDiscoveryTest {
                     (Map<String, List<ServiceInstancesChangedListener.ProtocolServiceKeyWithUrls>>)
                             serviceUrlsField.get(listener);
             Assert.assertTrue(!CollectionUtils.isEmptyMap(map), "url can not be empty");
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
         }
     }
 

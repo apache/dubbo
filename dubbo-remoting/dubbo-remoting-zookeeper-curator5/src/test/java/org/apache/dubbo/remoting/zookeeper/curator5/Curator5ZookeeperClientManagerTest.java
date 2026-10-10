@@ -91,7 +91,7 @@ class Curator5ZookeeperClientManagerTest {
 
         URL url = zookeeperUrl.addParameter(CHECK_KEY, false);
         ZookeeperClientManager zookeeperClientManager = new ZookeeperClientManager();
-        Assertions.assertDoesNotThrow(() -> {
+        Assertions.assertThrowsExactly(IllegalStateException.class, () -> {
             zookeeperClientManager.connect(url);
         });
     }
