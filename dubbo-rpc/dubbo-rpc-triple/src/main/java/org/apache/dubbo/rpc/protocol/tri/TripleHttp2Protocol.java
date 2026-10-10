@@ -176,7 +176,9 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                                 nettyHttp2SettingsHandler,
                                 new HttpWriteQueueHandler(),
                                 new FlushConsolidationHandler(64, true),
-                                new TripleServerConnectionHandler(),
+                                new TripleServerConnectionHandler(
+                                        tripleConfig.getMaxConnectionAgeOrDefault(),
+                                        tripleConfig.getMaxConnectionAgeGraceOrDefault()),
                                 buildHttp2MultiplexHandler(
                                         nettyHttp2SettingsHandler, url, tripleConfig, http2ServerConnection),
                                 new TripleTailHandler());
@@ -244,14 +246,18 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
         handlers.add(new ChannelHandlerPretender(codec));
         handlers.add(new ChannelHandlerPretender(nettyHttp2SettingsHandler));
         handlers.add(new ChannelHandlerPretender(new FlushConsolidationHandler(64, true)));
-        handlers.add(new ChannelHandlerPretender(new TripleServerConnectionHandler()));
+        handlers.add(new ChannelHandlerPretender(new TripleServerConnectionHandler(
+                tripleConfig.getMaxConnectionAgeOrDefault(), tripleConfig.getMaxConnectionAgeGraceOrDefault())));
         handlers.add(new ChannelHandlerPretender(handler));
         handlers.add(new ChannelHandlerPretender(new TripleTailHandler()));
     }
 
     private Http2FrameCodec buildHttp2FrameCodec(Http2Connection connection, TripleConfig tripleConfig) {
+        // Ensure Netty's built-in graceful shutdown backstop never fires before
+        // the max-connection-age grace period elapses.
+        long gracefulShutdownTimeout = Math.max(10000, tripleConfig.getMaxConnectionAgeGraceOrDefault());
         return TripleHttp2FrameCodecBuilder.fromConnection(connection)
-                .gracefulShutdownTimeoutMillis(10000)
+                .gracefulShutdownTimeoutMillis(gracefulShutdownTimeout)
                 .initialSettings(new Http2Settings()
                         .headerTableSize(tripleConfig.getHeaderTableSizeOrDefault())
                         .maxConcurrentStreams(tripleConfig.getMaxConcurrentStreamsOrDefault())
