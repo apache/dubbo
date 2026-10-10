@@ -26,6 +26,7 @@ import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.remoting.http12.HttpChannel;
 import org.apache.dubbo.remoting.http12.HttpInputMessage;
+import org.apache.dubbo.remoting.http12.HttpRequest;
 import org.apache.dubbo.remoting.http12.HttpStatus;
 import org.apache.dubbo.remoting.http12.HttpTransportListener;
 import org.apache.dubbo.remoting.http12.RequestMetadata;
@@ -206,6 +207,16 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
 
     protected void onError(Throwable throwable) {
         throw ExceptionUtils.wrap(throwable);
+    }
+
+    protected final void closeRequest() {
+        if (context == null) {
+            return;
+        }
+        HttpRequest request = (HttpRequest) context.getAttributes().get(TripleConstants.HTTP_REQUEST_KEY);
+        if (request != null) {
+            request.close();
+        }
     }
 
     private void logError(Throwable t) {

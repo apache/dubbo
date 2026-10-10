@@ -677,6 +677,16 @@ public class DefaultHttpRequest implements HttpRequest {
     }
 
     @Override
+    public void close() {
+        HttpPostRequestDecoder postDecoder = this.postDecoder;
+        this.postDecoder = null;
+        postParsed = true;
+        if (postDecoder != null) {
+            postDecoder.destroy();
+        }
+    }
+
+    @Override
     public String toString() {
         return "DefaultHttpRequest{" + fieldToString() + '}';
     }
