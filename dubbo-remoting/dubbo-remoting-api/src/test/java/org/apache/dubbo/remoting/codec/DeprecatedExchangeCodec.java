@@ -104,6 +104,12 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
 
         // get data length.
         int len = Bytes.bytes2int(header, 12);
+
+        // data length can not be negative, see https://github.com/apache/dubbo/issues/16447.
+        if (len < 0) {
+            throw new IOException("Data length can not be negative: " + len);
+        }
+
         checkPayload(channel, len);
 
         int tt = len + HEADER_LENGTH;
