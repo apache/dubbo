@@ -16,13 +16,20 @@
  */
 package org.apache.dubbo.common;
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
+
 public class BatchExecutorQueue<T> {
+
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(BatchExecutorQueue.class);
 
     static final int DEFAULT_QUEUE_SIZE = 128;
     private final Queue<T> queue;
@@ -46,7 +53,12 @@ public class BatchExecutorQueue<T> {
 
     protected void scheduleFlush(Executor executor) {
         if (scheduled.compareAndSet(false, true)) {
-            executor.execute(() -> this.run(executor));
+            try {
+                executor.execute(() -> this.run(executor));
+            } catch (Throwable t) {
+                scheduled.set(false);
+                throw t;
+            }
         }
     }
 
@@ -66,21 +78,37 @@ public class BatchExecutorQueue<T> {
                 }
                 if (i == chunkSize) {
                     i = 0;
-                    flush(item);
+                    safeFlush(item);
                     flushedOnce = true;
                 } else {
-                    prepare(item);
+                    safePrepare(item);
                     i++;
                 }
             }
             if (!flushedOnce && item != null) {
-                flush(item);
+                safeFlush(item);
             }
         } finally {
             scheduled.set(false);
             if (!queue.isEmpty()) {
                 scheduleFlush(executor);
             }
+        }
+    }
+
+    private void safePrepare(T item) {
+        try {
+            prepare(item);
+        } catch (Throwable t) {
+            LOGGER.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "Unexpected exception while preparing a queued item", t);
+        }
+    }
+
+    private void safeFlush(T item) {
+        try {
+            flush(item);
+        } catch (Throwable t) {
+            LOGGER.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "Unexpected exception while flushing a queued item", t);
         }
     }
 
