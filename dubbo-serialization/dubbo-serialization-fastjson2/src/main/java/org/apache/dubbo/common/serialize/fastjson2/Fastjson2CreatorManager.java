@@ -22,6 +22,8 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeClassLoaderListener;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.alibaba.fastjson2.JSONFactory;
 import com.alibaba.fastjson2.reader.ObjectReaderCreator;
@@ -38,6 +40,31 @@ public class Fastjson2CreatorManager implements ScopeClassLoaderListener<Framewo
 
     private final ConcurrentHashMap<ClassLoader, ObjectReaderCreator> readerMap = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<ClassLoader, ObjectWriterCreator> writerMap = new ConcurrentHashMap<>();
+    // Drain the initial burst of cold readers before switching that target type to the lock-free path.
+    private final Object readerWarmupLock = new Object();
+    private final ParseWarmupState nullReaderWarmup = new ParseWarmupState();
+    private final ConcurrentHashMap<Class<?>, ParseWarmupState> readerWarmups = new ConcurrentHashMap<>();
+
+    static final class ParseWarmupState {
+        private final AtomicBoolean warmed = new AtomicBoolean();
+        private final AtomicInteger pending = new AtomicInteger();
+
+        boolean isWarmed() {
+            return warmed.get();
+        }
+
+        void markWarmed() {
+            warmed.set(true);
+        }
+
+        void addPending() {
+            pending.incrementAndGet();
+        }
+
+        int removePending() {
+            return pending.decrementAndGet();
+        }
+    }
 
     public Fastjson2CreatorManager(FrameworkModel frameworkModel) {
         frameworkModel.addClassLoaderListener(this);
@@ -58,6 +85,14 @@ public class Fastjson2CreatorManager implements ScopeClassLoaderListener<Framewo
         }
     }
 
+    Object getReaderWarmupLock() {
+        return readerWarmupLock;
+    }
+
+    ParseWarmupState getReaderWarmup(Class<?> type) {
+        return type == null ? nullReaderWarmup : readerWarmups.computeIfAbsent(type, ignored -> new ParseWarmupState());
+    }
+
     @Override
     public void onAddClassLoader(FrameworkModel scopeModel, ClassLoader classLoader) {
         // nop
@@ -67,5 +102,6 @@ public class Fastjson2CreatorManager implements ScopeClassLoaderListener<Framewo
     public void onRemoveClassLoader(FrameworkModel scopeModel, ClassLoader classLoader) {
         readerMap.remove(classLoader);
         writerMap.remove(classLoader);
+        readerWarmups.keySet().removeIf(type -> type.getClassLoader() == classLoader);
     }
 }
