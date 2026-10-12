@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.ssl.AuthPolicy;
 import org.apache.dubbo.common.ssl.CertManager;
+import org.apache.dubbo.common.ssl.DubboX509Certificate;
 import org.apache.dubbo.common.ssl.ProviderCert;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
@@ -32,6 +33,8 @@ import org.apache.dubbo.remoting.transport.netty4.ssl.SslContexts;
 
 import javax.net.ssl.SSLSession;
 
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -94,6 +97,7 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
                 SSLSession session =
                         ctx.pipeline().get(SslHandler.class).engine().getSession();
                 LOGGER.info("TLS negotiation succeed with session: " + session);
+                tryExactCerts(session);
                 ctx.channel().attr(SSL_SESSION_KEY).set(session);
             } else {
                 LOGGER.error(
@@ -106,6 +110,18 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
             }
         }
         super.userEventTriggered(ctx, evt);
+    }
+
+    private static void tryExactCerts(SSLSession session) {
+        try {
+            Certificate[] originCerts = session.getPeerCertificates();
+            X509Certificate[] decodedCerts = new X509Certificate[originCerts.length];
+            for (int i = 0; i < originCerts.length; i++) {
+                decodedCerts[i] = new DubboX509Certificate(originCerts[i].getEncoded());
+            }
+            session.putValue("decodedCerts", decodedCerts);
+        } catch (Throwable ignore) {
+        }
     }
 
     @Override
