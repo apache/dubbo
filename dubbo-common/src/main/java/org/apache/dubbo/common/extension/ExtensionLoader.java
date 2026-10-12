@@ -353,10 +353,11 @@ public class ExtensionLoader<T> {
         Set<String> namesSet = new HashSet<>(names);
         if (!namesSet.contains(REMOVE_VALUE_PREFIX + DEFAULT_KEY)) {
             if (cachedActivateGroups.size() == 0) {
+                // load extension classes before entering the monitor, it may block and pin a virtual thread
+                getExtensionClasses();
                 synchronized (cachedActivateGroups) {
                     // cache all extensions
                     if (cachedActivateGroups.size() == 0) {
-                        getExtensionClasses();
                         for (Map.Entry<String, Object> entry : cachedActivates.entrySet()) {
                             String name = entry.getKey();
                             Object activate = entry.getValue();
@@ -393,8 +394,13 @@ public class ExtensionLoader<T> {
                 }
             }
 
-            // traverse all cached extensions
-            cachedActivateGroups.forEach((name, activateGroup) -> {
+            // traverse all cached extensions, iterate over a copy because SynchronizedMap#forEach holds the monitor
+            // while getExtension(name) may block
+            Map<String, Set<String>> activateGroups;
+            synchronized (cachedActivateGroups) {
+                activateGroups = new LinkedHashMap<>(cachedActivateGroups);
+            }
+            activateGroups.forEach((name, activateGroup) -> {
                 if (isMatchGroup(group, activateGroup)
                         && !namesSet.contains(name)
                         && !namesSet.contains(REMOVE_VALUE_PREFIX + name)
