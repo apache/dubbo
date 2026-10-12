@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.extension;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.convert.Converter;
 import org.apache.dubbo.common.convert.StringToBooleanConverter;
 import org.apache.dubbo.common.convert.StringToDoubleConverter;
@@ -666,10 +667,16 @@ class ExtensionLoaderTest {
 
     @Test
     void testInjectExtension() {
-        // register bean for test ScopeBeanExtensionInjector
-        DemoImpl demoBean = new DemoImpl();
-        ApplicationModel.defaultModel().getBeanFactory().registerBean(demoBean);
-        // test default
+        // Work with the shared factory, but make registration idempotent.
+        ScopeBeanFactory beanFactory = ApplicationModel.defaultModel().getBeanFactory();
+        if (beanFactory.getBeansOfType(Demo.class).isEmpty()) {
+            beanFactory.registerBean("demo-test-singleton", new DemoImpl());
+        }
+        // After the (potential) registration, fetch the canonical DemoImpl(s).
+        List<DemoImpl> impls = beanFactory.getBeansOfType(DemoImpl.class);
+        DemoImpl demoBean = impls.get(0);
+
+        // Exercise injection path
         InjectExt injectExt = getExtensionLoader(InjectExt.class).getExtension("injection");
         InjectExtImpl injectExtImpl = (InjectExtImpl) injectExt;
         Assertions.assertNotNull(injectExtImpl.getSimpleExt());
@@ -691,6 +698,13 @@ class ExtensionLoaderTest {
 
     @Test
     void testGetOrDefaultExtension() {
+        // Ensure there is exactly one DemoImpl available to satisfy injection paths.
+        ScopeBeanFactory beanFactory = ApplicationModel.defaultModel().getBeanFactory();
+        List<DemoImpl> demos = beanFactory.getBeansOfType(DemoImpl.class);
+        if (demos == null || demos.isEmpty()) {
+            beanFactory.registerBean("test-demo-bean", new DemoImpl());
+        }
+
         ExtensionLoader<InjectExt> loader = getExtensionLoader(InjectExt.class);
         InjectExt injectExt = loader.getOrDefaultExtension("non-exists");
         assertEquals(InjectExtImpl.class, injectExt.getClass());
