@@ -129,7 +129,9 @@ public class ExtensionLoader<T> {
     private final Map<String, Set<String>> cachedActivateGroups = Collections.synchronizedMap(new LinkedHashMap<>());
     private final Map<String, String[][]> cachedActivateValues = Collections.synchronizedMap(new LinkedHashMap<>());
     private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ReentrantLock> cachedInstanceLocks = new ConcurrentHashMap<>();
     private final Holder<Object> cachedAdaptiveInstance = new Holder<>();
+    private final ReentrantLock cachedAdaptiveInstanceLock = new ReentrantLock();
     private volatile Class<?> cachedAdaptiveClass = null;
     private String cachedDefaultName;
     private volatile Throwable createAdaptiveInstanceError;
@@ -522,6 +524,15 @@ public class ExtensionLoader<T> {
         return holder;
     }
 
+    private ReentrantLock getOrCreateInstanceLock(String name) {
+        ReentrantLock lock = cachedInstanceLocks.get(name);
+        if (lock == null) {
+            cachedInstanceLocks.putIfAbsent(name, new ReentrantLock());
+            lock = cachedInstanceLocks.get(name);
+        }
+        return lock;
+    }
+
     /**
      * Return the list of extensions which are already loaded.
      * <p>
@@ -570,12 +581,18 @@ public class ExtensionLoader<T> {
         final Holder<Object> holder = getOrCreateHolder(cacheKey);
         Object instance = holder.get();
         if (instance == null) {
-            synchronized (holder) {
+            // use ReentrantLock instead of synchronized, creating an extension may block (e.g. loading extension
+            // classes), which pins the carrier thread of a virtual thread when a monitor is held
+            ReentrantLock lock = getOrCreateInstanceLock(cacheKey);
+            lock.lock();
+            try {
                 instance = holder.get();
                 if (instance == null) {
                     instance = createExtension(name, wrap);
                     holder.set(instance);
                 }
+            } finally {
+                lock.unlock();
             }
         }
         return (T) instance;
@@ -728,7 +745,8 @@ public class ExtensionLoader<T> {
                         createAdaptiveInstanceError);
             }
 
-            synchronized (cachedAdaptiveInstance) {
+            cachedAdaptiveInstanceLock.lock();
+            try {
                 instance = cachedAdaptiveInstance.get();
                 if (instance == null) {
                     try {
@@ -739,6 +757,8 @@ public class ExtensionLoader<T> {
                         throw new IllegalStateException("Failed to create adaptive instance: " + t.toString(), t);
                     }
                 }
+            } finally {
+                cachedAdaptiveInstanceLock.unlock();
             }
         }
 
