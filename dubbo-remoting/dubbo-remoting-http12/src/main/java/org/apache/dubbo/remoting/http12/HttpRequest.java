@@ -18,13 +18,13 @@ package org.apache.dubbo.remoting.http12;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
-
-import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 
 public interface HttpRequest extends RequestMetadata {
 
