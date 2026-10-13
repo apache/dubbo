@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
@@ -31,6 +32,7 @@ import org.apache.dubbo.remoting.transport.netty4.ssl.SslClientTlsHandler;
 import org.apache.dubbo.remoting.transport.netty4.ssl.SslContexts;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -42,7 +44,6 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoop;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -72,6 +73,8 @@ public class NettyConnectionClient extends AbstractConnectionClient {
 
     private Bootstrap bootstrap;
 
+    private ScheduledExecutorService connectivityExecutor;
+
     public static final AttributeKey<AbstractConnectionClient> CONNECTION = AttributeKey.valueOf("connection");
 
     public NettyConnectionClient(URL url, ChannelHandler handler) throws RemotingException {
@@ -90,6 +93,11 @@ public class NettyConnectionClient extends AbstractConnectionClient {
         this.closePromise = new DefaultPromise<>(GlobalEventExecutor.INSTANCE);
         this.init = new AtomicBoolean(false);
         this.increase();
+        this.connectivityExecutor = getUrl()
+                .getOrDefaultFrameworkModel()
+                .getBeanFactory()
+                .getBean(FrameworkExecutorRepository.class)
+                .getConnectivityScheduledExecutor();
     }
 
     @Override
@@ -361,8 +369,12 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                         "%s is reconnecting, attempt=%d cause=%s",
                         connectionClient, 0, future.cause().getMessage()));
             }
-            final EventLoop loop = future.channel().eventLoop();
-            loop.schedule(
+            // Use an independent ScheduledExecutorService instead of the channel's EventLoop
+            // to avoid blocking EventLoop threads during reconnection attempts (issue #13853).
+            // The EventLoop thread should not be delayed by network reconnection work which may
+            // block for up to the connect timeout, causing all channels on the same EventLoop
+            // to experience communication delays.
+            connectionClient.connectivityExecutor.schedule(
                     () -> {
                         try {
                             connectionClient.doConnect();
@@ -371,7 +383,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                                     TRANSPORT_FAILED_RECONNECT,
                                     "",
                                     "",
-                                    "Failed to connect to server: " + getConnectAddress());
+                                    "Failed to connect to server: " + connectionClient.getConnectAddress());
                         }
                     },
                     1L,
