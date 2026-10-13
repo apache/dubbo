@@ -18,6 +18,8 @@ package org.apache.dubbo.remoting.http12;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
+
+import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -147,6 +149,16 @@ public interface HttpRequest extends RequestMetadata {
     InputStream inputStream();
 
     void setInputStream(InputStream is);
+
+    /**
+     * Destroys any cached {@link HttpPostRequestDecoder} to release resources
+     * held by the static {@code DefaultHttpDataFactory}.
+     *
+     * <p>Default implementation is a no-op. Subclasses that cache a decoder
+     * (e.g. for form data or multipart parsing) should override this to call
+     * {@link HttpPostRequestDecoder#destroy()} once the request is fully processed.
+     */
+    default void destroyPostDecoder() {}
 
     interface FileUpload {
 
