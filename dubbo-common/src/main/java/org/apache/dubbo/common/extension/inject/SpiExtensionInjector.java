@@ -42,7 +42,7 @@ public class SpiExtensionInjector implements ExtensionInjector {
         if (loader == null) {
             return null;
         }
-        if (!loader.getSupportedExtensions().isEmpty()) {
+        if (!loader.getSupportedExtensions().isEmpty() || loader.getCachedAdaptiveClass() != null) {
             return loader.getAdaptiveExtension();
         }
         return null;
