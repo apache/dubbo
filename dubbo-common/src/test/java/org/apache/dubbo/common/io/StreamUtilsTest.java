@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StreamUtilsTest {
 
@@ -152,6 +154,52 @@ class StreamUtilsTest {
             }
         };
         StreamUtils.skipUnusedStream(source);
+    }
+
+    @Test
+    void testLimitedInputStreamPreservesSourceBytesAfterLimit() throws Exception {
+        InputStream source = new ByteArrayInputStream(new byte[] {1, 2, 3});
+        InputStream limited = StreamUtils.limitedInputStream(source, 1);
+        assertEquals(0, limited.skip(0));
+        assertEquals(1, limited.read());
+        assertEquals(-1, limited.read(new byte[1]));
+        assertEquals(0, limited.skip(Long.MAX_VALUE));
+        assertEquals(0, limited.available());
+        assertEquals(2, source.read());
+    }
+
+    @Test
+    void testLimitedInputStreamValidatesBulkReadBoundsAtLimit() throws Exception {
+        InputStream limited = StreamUtils.limitedInputStream(new ByteArrayInputStream(new byte[] {1}), 0);
+        byte[] bytes = new byte[1];
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> limited.read(bytes, 0, -1));
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> limited.read(bytes, 0, 2));
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> limited.read(bytes, 2, 0));
+        assertEquals(0, limited.read(bytes, 1, 0));
+    }
+
+    @Test
+    void testSkipUnusedStreamStopsAtEofBeforeAvailableEstimate() throws Exception {
+        AtomicInteger reads = new AtomicInteger();
+        InputStream source = new ByteArrayInputStream(new byte[] {1}) {
+            @Override
+            public synchronized int available() {
+                return 3;
+            }
+
+            @Override
+            public synchronized long skip(long length) {
+                return 0;
+            }
+
+            @Override
+            public synchronized int read() {
+                assertTrue(reads.incrementAndGet() <= 2, "Must stop reading after EOF");
+                return super.read();
+            }
+        };
+        StreamUtils.skipUnusedStream(source);
+        assertEquals(2, reads.get());
     }
 
     @Test
