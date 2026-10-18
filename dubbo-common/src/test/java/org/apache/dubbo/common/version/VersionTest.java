@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -96,6 +98,42 @@ class VersionTest {
         Assertions.assertFalse(Version.isRelease263OrHigher("2.6.1.1"));
         Assertions.assertTrue(Version.isRelease263OrHigher("2.6.3"));
         Assertions.assertTrue(Version.isRelease263OrHigher("2.6.3.0"));
+    }
+
+    @Test
+    void testGetIntVersionConcurrency() throws InterruptedException {
+        int threadCount = 10;
+        int iterations = 1000;
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch doneLatch = new CountDownLatch(threadCount);
+        AtomicInteger errors = new AtomicInteger(0);
+
+        String[] versions = {"2.6.1", "2.7.0", "3.0.0", "2.0.2", "2.0.99", "3.1.0", "2.6.3.1", "2.7.0.RC1"};
+        int[] expected = {2060100, 2070000, 3000000, 2000200, 2009900, 3010000, 2060301, 2070000};
+
+        for (int t = 0; t < threadCount; t++) {
+            new Thread(() -> {
+                        try {
+                            startLatch.await();
+                            for (int i = 0; i < iterations; i++) {
+                                int idx = i % versions.length;
+                                int result = Version.getIntVersion(versions[idx]);
+                                if (result != expected[idx]) {
+                                    errors.incrementAndGet();
+                                }
+                            }
+                        } catch (Exception e) {
+                            errors.incrementAndGet();
+                        } finally {
+                            doneLatch.countDown();
+                        }
+                    })
+                    .start();
+        }
+
+        startLatch.countDown();
+        doneLatch.await();
+        Assertions.assertEquals(0, errors.get(), "Concurrent getIntVersion should return consistent results");
     }
 
     @Test
