@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.config.context.ConfigMode;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
+import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -26,10 +27,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Verifies nested metrics properties follow the configuration refresh mode.
@@ -122,6 +125,21 @@ class MetricsConfigRefreshTest {
         assertEquals(true, metrics.getPrometheus().getExporter().getEnabled());
     }
 
+    @Test
+    void refreshInitializesSetterOnlyNestedConfig() {
+        frameworkModel = new FrameworkModel();
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        SetterOnlyConfig config = new SetterOnlyConfig(applicationModel);
+        Map<String, String> external = new HashMap<>();
+        external.put(AbstractConfig.getTypePrefix(SetterOnlyConfig.class) + ".aggregation.bucket-num", "10");
+        applicationModel.modelEnvironment().setExternalConfigMap(external);
+
+        config.refresh();
+
+        assertNotNull(config.aggregation);
+        assertEquals(10, config.aggregation.getBucketNum());
+    }
+
     private MetricsConfig newMetricsConfig(ConfigMode mode, Map<String, String> external) {
         System.setProperty(ConfigKeys.DUBBO_CONFIG_MODE, mode.name());
         frameworkModel = new FrameworkModel();
@@ -130,5 +148,19 @@ class MetricsConfigRefreshTest {
         MetricsConfig metrics = new MetricsConfig(applicationModel);
         assertEquals(mode, metrics.getConfigMode());
         return metrics;
+    }
+
+    public static class SetterOnlyConfig extends AbstractConfig {
+
+        @Nested
+        private AggregationConfig aggregation;
+
+        public SetterOnlyConfig(ApplicationModel applicationModel) {
+            super(applicationModel);
+        }
+
+        public void setAggregation(AggregationConfig aggregation) {
+            this.aggregation = aggregation;
+        }
     }
 }
