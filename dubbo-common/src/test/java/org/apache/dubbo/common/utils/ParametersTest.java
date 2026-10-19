@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.utils;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
@@ -27,18 +26,6 @@ class ParametersTest {
     final String ServiceName = "org.apache.dubbo.rpc.service.GenericService";
     final String ServiceVersion = "1.0.15";
     final String LoadBalance = "lcr";
-
-    @Test
-    void testMap2Parameters() {
-        Map<String, String> map = new HashMap<String, String>();
-        map.put("name", "org.apache.dubbo.rpc.service.GenericService");
-        map.put("version", "1.0.15");
-        map.put("lb", "lcr");
-        map.put("max.active", "500");
-        assertEquals(map.get("name"), ServiceName);
-        assertEquals(map.get("version"), ServiceVersion);
-        assertEquals(map.get("lb"), LoadBalance);
-    }
 
     @Test
     void testString2Parameters() throws Exception {
