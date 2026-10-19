@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
@@ -97,7 +98,7 @@ class MetadataServiceProtocolTest {
             service.setRef(new DemoServiceImpl());
             List<ProtocolConfig> protocolConfigs = new ArrayList<>();
             for (String protocol : protocols) {
-                ProtocolConfig protocolConfig = new ProtocolConfig(protocol, -1);
+                ProtocolConfig protocolConfig = new ProtocolConfig(protocol, NetUtils.getAvailablePort());
                 protocolConfig.setId(protocol);
                 protocolConfigs.add(protocolConfig);
             }
