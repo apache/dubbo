@@ -141,6 +141,10 @@ public class ServiceInstancesChangedListener {
                 ServiceInstancesChangedEvent currentEvent;
                 Map<String, List<ServiceInstance>> instances;
                 synchronized (this) {
+                    if (destroyed.get()) {
+                        refreshing = false;
+                        break;
+                    }
                     currentEvent = pendingEvent;
                     pendingEvent = null;
                     instances = new HashMap<>(allInstances);
@@ -566,6 +570,7 @@ public class ServiceInstancesChangedListener {
             logger.info("Destroying instance listener of  " + this.getServiceNames());
             serviceDiscovery.removeServiceInstancesChangedListener(this);
             synchronized (this) {
+                pendingEvent = null;
                 allInstances.clear();
                 serviceUrls.clear();
                 listeners.clear();

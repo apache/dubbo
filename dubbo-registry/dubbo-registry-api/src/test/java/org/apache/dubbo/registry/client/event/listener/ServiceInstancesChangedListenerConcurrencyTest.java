@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client.event.listener;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
@@ -25,6 +26,7 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.RetryServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,18 +37,25 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -180,12 +189,16 @@ class ServiceInstancesChangedListenerConcurrencyTest {
         try {
             Future<?> refresh = executor.submit(() -> listener.onEvent(event("127.0.0.1")));
             assertTrue(fetchStarted.await(5, TimeUnit.SECONDS));
+            executor.submit(() -> listener.onEvent(event("app", "127.0.0.2", "queued-revision")))
+                    .get(2, TimeUnit.SECONDS);
             executor.submit(listener::destroy).get(2, TimeUnit.SECONDS);
             releaseFetch.countDown();
             refresh.get(5, TimeUnit.SECONDS);
             assertTrue(listener.isDestroyed());
             assertTrue(listener.getAllInstances().isEmpty());
             assertTrue(listener.serviceUrls.isEmpty());
+            listener.onEvent(event("app", "127.0.0.3", "queued-revision"));
+            verify(discovery).getRemoteMetadata(anyString(), anyList());
             verify(notifyListener, never()).notify(anyList());
         } finally {
             releaseFetch.countDown();
@@ -219,6 +232,159 @@ class ServiceInstancesChangedListenerConcurrencyTest {
             assertEquals("127.0.0.2", addresses.getAllValues().get(1).get(0).getHost());
         } finally {
             listener.destroy();
+        }
+    }
+
+    @Test
+    void testObsoleteSnapshotStopsFetchingRemainingRevisions() throws Exception {
+        ServiceDiscovery discovery = discovery();
+        CountDownLatch fetchStarted = new CountDownLatch(1);
+        CountDownLatch releaseFetch = new CountDownLatch(1);
+        AtomicInteger attempts = new AtomicInteger();
+        when(discovery.getRemoteMetadata(anyString(), anyList())).thenAnswer(invocation -> {
+            if (attempts.incrementAndGet() == 1) {
+                fetchStarted.countDown();
+                assertTrue(releaseFetch.await(10, TimeUnit.SECONDS));
+            }
+            return metadata("app", invocation.getArgument(0));
+        });
+        ServiceInstancesChangedListener listener =
+                new ServiceInstancesChangedListener(Collections.singleton("app"), discovery);
+        NotifyListener notifyListener = subscribe(listener);
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
+            ServiceInstancesChangedEvent old = new ServiceInstancesChangedEvent(
+                    "app",
+                    Arrays.asList(
+                            event("app", "127.0.0.1", "old-revision-1")
+                                    .getServiceInstances()
+                                    .get(0),
+                            event("app", "127.0.0.2", "old-revision-2")
+                                    .getServiceInstances()
+                                    .get(0)));
+            Future<?> refresh = executor.submit(() -> listener.onEvent(old));
+            assertTrue(fetchStarted.await(5, TimeUnit.SECONDS));
+            executor.submit(() -> listener.onEvent(event("127.0.0.3"))).get(2, TimeUnit.SECONDS);
+            releaseFetch.countDown();
+            refresh.get(5, TimeUnit.SECONDS);
+
+            ArgumentCaptor<String> revisions = ArgumentCaptor.forClass(String.class);
+            verify(discovery, times(2)).getRemoteMetadata(revisions.capture(), anyList());
+            assertEquals("revision", revisions.getAllValues().get(1));
+            ArgumentCaptor<List<URL>> addresses = ArgumentCaptor.forClass(List.class);
+            verify(notifyListener).notify(addresses.capture());
+            assertEquals("127.0.0.3", addresses.getValue().get(0).getHost());
+        } finally {
+            releaseFetch.countDown();
+            executor.shutdownNow();
+            assertTrue(executor.awaitTermination(5, TimeUnit.SECONDS));
+            listener.destroy();
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testPendingChangesSurviveRepeatedNotificationFailures(boolean reuseFailure) {
+        ServiceDiscovery discovery = discovery();
+        when(discovery.getRemoteMetadata(eq("revision"), anyList())).thenReturn(metadata());
+        ServiceInstancesChangedListener listener =
+                new ServiceInstancesChangedListener(Collections.singleton("app"), discovery);
+        NotifyListener notifyListener = subscribe(listener);
+        AssertionError firstFailure = new AssertionError("First notification failed");
+        Throwable secondFailure = reuseFailure ? firstFailure : new IllegalStateException("Second notification failed");
+        AtomicInteger notifications = new AtomicInteger();
+        doAnswer(invocation -> {
+                    int notification = notifications.incrementAndGet();
+                    if (notification == 1) {
+                        listener.onEvent(event("127.0.0.2"));
+                        throw firstFailure;
+                    }
+                    if (notification == 2) {
+                        listener.onEvent(event("127.0.0.3"));
+                        throw secondFailure;
+                    }
+                    return null;
+                })
+                .when(notifyListener)
+                .notify(anyList());
+        try {
+            assertSame(firstFailure, assertThrows(AssertionError.class, () -> listener.onEvent(event("127.0.0.1"))));
+            assertArrayEquals(
+                    reuseFailure ? new Throwable[0] : new Throwable[] {secondFailure}, firstFailure.getSuppressed());
+            ArgumentCaptor<List<URL>> addresses = ArgumentCaptor.forClass(List.class);
+            verify(notifyListener, times(3)).notify(addresses.capture());
+            assertEquals("127.0.0.3", addresses.getValue().get(0).getHost());
+            listener.onEvent(event("127.0.0.4"));
+            verify(notifyListener, times(4)).notify(addresses.capture());
+            assertEquals("127.0.0.4", addresses.getValue().get(0).getHost());
+        } finally {
+            listener.destroy();
+        }
+    }
+
+    @Test
+    void testUnrelatedAndExpiredEventsAreIgnored() {
+        ServiceDiscovery discovery = discovery();
+        when(discovery.getRemoteMetadata(eq("revision"), anyList())).thenReturn(metadata());
+        ServiceInstancesChangedListener listener =
+                new ServiceInstancesChangedListener(Collections.singleton("app"), discovery);
+        NotifyListener notifyListener = subscribe(listener);
+        RetryServiceInstancesChangedEvent expiredRetry = mock(RetryServiceInstancesChangedEvent.class);
+        when(expiredRetry.getServiceName()).thenReturn("app");
+        when(expiredRetry.getFailureRecordTime()).thenReturn(0L);
+        try {
+            listener.onEvent(event("127.0.0.1"));
+            listener.onEvent(event("other-app", "127.0.0.2", "other-revision"));
+            listener.onEvent(expiredRetry);
+            assertEquals(
+                    Collections.singleton("app"), listener.getAllInstances().keySet());
+            assertEquals(
+                    "127.0.0.1", listener.getAllInstances().get("app").get(0).getHost());
+            verify(discovery).getRemoteMetadata(anyString(), anyList());
+            verify(notifyListener).notify(anyList());
+        } finally {
+            listener.destroy();
+        }
+    }
+
+    @Test
+    void testDestroyFromNotificationDoesNotScheduleRetry() {
+        ApplicationModel applicationModel = FrameworkModel.defaultModel().newApplication();
+        ScheduledExecutorService scheduler = mock(ScheduledExecutorService.class);
+        FrameworkExecutorRepository executors = mock(FrameworkExecutorRepository.class);
+        when(executors.getMetadataRetryExecutor()).thenReturn(scheduler);
+        applicationModel.getBeanFactory().registerBean(executors);
+        ServiceDiscovery discovery = discovery();
+        when(discovery.getUrl())
+                .thenReturn(URL.valueOf("dubbo://127.0.0.1:2181").setScopeModel(applicationModel));
+        when(discovery.getRemoteMetadata(eq("revision"), anyList())).thenReturn(metadata());
+        when(discovery.getRemoteMetadata(eq("missing-revision"), anyList())).thenReturn(MetadataInfo.EMPTY);
+        ServiceInstancesChangedListener listener =
+                new ServiceInstancesChangedListener(Collections.singleton("app"), discovery);
+        NotifyListener notifyListener = subscribe(listener);
+        doAnswer(invocation -> {
+                    listener.onEvent(event("127.0.0.3"));
+                    listener.destroy();
+                    return null;
+                })
+                .when(notifyListener)
+                .notify(anyList());
+        try {
+            listener.onEvent(new ServiceInstancesChangedEvent(
+                    "app",
+                    Arrays.asList(
+                            event("127.0.0.1").getServiceInstances().get(0),
+                            event("app", "127.0.0.2", "missing-revision")
+                                    .getServiceInstances()
+                                    .get(0))));
+            assertTrue(listener.isDestroyed());
+            assertTrue(listener.getAllInstances().isEmpty());
+            assertTrue(listener.serviceUrls.isEmpty());
+            verify(notifyListener).notify(anyList());
+            verify(scheduler, never()).schedule(any(Runnable.class), anyLong(), any(TimeUnit.class));
+        } finally {
+            listener.destroy();
+            applicationModel.destroy();
         }
     }
 
