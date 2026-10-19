@@ -78,16 +78,15 @@ public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstan
 
         String key;
 
-        if (MetadataServiceVersionUtils.needExportV2(applicationModel)) {
+        if (MetadataServiceVersionUtils.needExportV1(applicationModel)) {
+            // Advertise the V1 endpoint for legacy consumers when both versions are exported.
+            key = BaseServiceMetadata.buildServiceKey(
+                    MetadataService.class.getName(), applicationModel.getApplicationName(), MetadataService.VERSION);
+        } else {
             key = BaseServiceMetadata.buildServiceKey(
                     MetadataServiceV2.class.getName(),
                     applicationModel.getApplicationName(),
                     MetadataServiceDelegationV2.VERSION);
-        } else {
-            // If MetadataService and MetadataServiceV2 are both exported, use v1 path for capacity.
-            // Client will use version and protocol to judge if it needs to refer v2 path.
-            key = BaseServiceMetadata.buildServiceKey(
-                    MetadataService.class.getName(), applicationModel.getApplicationName(), MetadataService.VERSION);
         }
         ProviderModel providerModel = serviceRepository.lookupExportedService(key);
         String metadataValue = "";

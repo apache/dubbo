@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata.util;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -32,6 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TRIPLE;
 
 public class MetadataServiceVersionUtils {
@@ -127,8 +129,15 @@ public class MetadataServiceVersionUtils {
         Optional<ApplicationConfig> appConfig = getApplicationConfig(applicationModel);
 
         // if user configured MetadataService protocol
-        if (appConfig.isPresent() && appConfig.get().getMetadataServiceProtocol() != null) {
-            return TRIPLE.equals(appConfig.get().getMetadataServiceProtocol());
+        if (appConfig.isPresent()) {
+            String metadataServiceProtocol = appConfig.get().getMetadataServiceProtocol();
+            Map<String, String> parameters = appConfig.get().getParameters();
+            if (StringUtils.isEmpty(metadataServiceProtocol) && CollectionUtils.isNotEmptyMap(parameters)) {
+                metadataServiceProtocol = parameters.get(METADATA_SERVICE_PROTOCOL_KEY);
+            }
+            if (StringUtils.isNotEmpty(metadataServiceProtocol)) {
+                return TRIPLE.equals(metadataServiceProtocol);
+            }
         }
         // if not specified, check all protocol configs
         if (configManager.isPresent()
