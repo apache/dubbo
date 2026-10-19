@@ -16,12 +16,17 @@
  */
 package org.apache.dubbo.remoting.http12.message;
 
+import org.apache.dubbo.rpc.Constants;
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import com.google.protobuf.StringValue;
 import org.junit.jupiter.api.Test;
@@ -29,6 +34,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -112,6 +118,38 @@ class LengthFieldStreamingDecoderTest {
         assertEquals(Arrays.asList("", "a"), listener.values);
         assertEquals(Arrays.asList(0, 3), listener.lengths);
         assertEquals(Arrays.asList(5, 8), listener.bytesRead);
+    }
+
+    @Test
+    void honorsMaxMessageSizeFromSystemProperty() {
+        System.setProperty(Constants.H2_SETTINGS_MAX_MESSAGE_SIZE, "16");
+        try {
+            assertRejectsMessageLargerThan16Bytes();
+        } finally {
+            System.clearProperty(Constants.H2_SETTINGS_MAX_MESSAGE_SIZE);
+        }
+    }
+
+    @Test
+    void honorsMaxMessageSizeFromApplicationProperties() {
+        // Spring Boot properties are copied into the application configuration by DubboContextPostProcessor
+        Map<String, String> appConfig =
+                ApplicationModel.defaultModel().modelEnvironment().getAppConfigMap();
+        appConfig.put(Constants.H2_SETTINGS_MAX_MESSAGE_SIZE, "16");
+        try {
+            assertRejectsMessageLargerThan16Bytes();
+        } finally {
+            appConfig.remove(Constants.H2_SETTINGS_MAX_MESSAGE_SIZE);
+        }
+    }
+
+    private static void assertRejectsMessageLargerThan16Bytes() {
+        LengthFieldStreamingDecoder decoder = new LengthFieldStreamingDecoder();
+        decoder.request(1);
+
+        RpcException exception = assertThrows(
+                RpcException.class, () -> decoder.decode(new ByteArrayInputStream(new byte[] {0, 0, 0, 32})));
+        assertEquals("Message size 32 exceeds limit 16", exception.getMessage());
     }
 
     private static final class ProtobufFragmentListener implements StreamingDecoder.FragmentListener {
