@@ -194,7 +194,7 @@ jobs:
       ZOOKEEPER_VERSION: 3.7.2
     steps:
       - name: "Cache zookeeper binary archive"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: "cache-zookeeper"
         with:
           path: ${{ github.workspace }}/.tmp/zookeeper
@@ -253,7 +253,7 @@ jobs:
             ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
             ${{ runner.os }}-maven-
       - name: "Cache zookeeper binary archive"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: "cache-zookeeper"
         with:
           path: ${{ github.workspace }}/.tmp/zookeeper
