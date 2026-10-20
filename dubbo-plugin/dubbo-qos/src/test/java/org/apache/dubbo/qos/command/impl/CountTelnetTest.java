@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +40,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -116,6 +119,34 @@ class CountTelnetTest {
         }
 
         assertThat(sb.toString(), containsString(buildTable(methodName, 10, 10, "1", "0", "0")));
+    }
+
+    @Test
+    void testCountTimesWithDefaultService() throws Exception {
+        String methodName = "sayHello";
+        RpcStatus.removeStatus(url, methodName);
+        // "count sayHello 2" after "cd org.apache.dubbo.qos.legacy.service.DemoService"
+        String[] args = new String[] {"sayHello", "2"};
+        // Two results followed by the prompt
+        latch = new CountDownLatch(3);
+        mockChannel = new MockNettyChannel(url, latch);
+        mockChannel.attr(ChangeTelnet.SERVICE_KEY).set(DemoService.class.getName());
+        given(mockCommandContext.getRemote()).willReturn(mockChannel);
+
+        ExtensionLoader.getExtensionLoader(Protocol.class)
+                .getExtension(DubboProtocol.NAME)
+                .export(mockInvoker);
+        RpcStatus.beginCount(url, methodName);
+        RpcStatus.endCount(url, methodName, 10L, true);
+        count.execute(mockCommandContext, args);
+
+        assertTrue(latch.await(5, TimeUnit.SECONDS));
+        String table = buildTable(methodName, 10, 10, "1", "0", "0");
+        assertEquals(
+                2,
+                mockChannel.getReceivedObjects().stream()
+                        .filter(o -> o.toString().contains(table))
+                        .count());
     }
 
     public static String buildTable(
