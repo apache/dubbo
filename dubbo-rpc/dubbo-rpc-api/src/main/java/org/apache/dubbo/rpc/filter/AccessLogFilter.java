@@ -185,17 +185,17 @@ public class AccessLogFilter implements Filter {
                             VULNERABILITY_WARNING,
                             "Change of accesslog file path not allowed. ",
                             "",
-                            "Will write to the default location, \" +\n"
-                                    + "                        \"please enable this feature by setting 'accesslog.fixed.path=true' and restart the process. \" +\n"
-                                    + "                        \"We highly recommend to not enable this feature in production for security concerns, \" +\n"
-                                    + "                        \"please be fully aware of the potential risks before doing so!");
+                            "Will write to the default location, please enable this feature by setting "
+                                    + "'accesslog.fixed.path=false' and restart the process. We highly recommend to not "
+                                    + "enable this feature in production for security concerns, please be fully aware "
+                                    + "of the potential risks before doing so!");
                     processWithServiceLogger(logSet);
                 } else {
                     logger.warn(
                             VULNERABILITY_WARNING,
-                            "Accesslog file path changed to " + accessLog + ", be aware of possible vulnerabilities!",
                             "",
-                            "");
+                            "",
+                            "Accesslog file path changed to " + accessLog + ", be aware of possible vulnerabilities!");
                     File file = new File(accessLog);
                     createIfLogDirAbsent(file);
                     if (logger.isDebugEnabled()) {
