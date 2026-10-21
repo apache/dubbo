@@ -65,7 +65,7 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
         this.lengthFieldOffset = lengthFieldOffset;
         this.lengthFieldLength = lengthFieldLength;
         this.requiredLength = lengthFieldOffset + lengthFieldLength;
-        Configuration conf = ConfigurationUtils.getEnvConfiguration(ApplicationModel.defaultModel());
+        Configuration conf = ConfigurationUtils.getGlobalConfiguration(ApplicationModel.defaultModel());
         this.maxMessageSize = conf.getInt(Constants.H2_SETTINGS_MAX_MESSAGE_SIZE, 50 * 1024 * 1024);
     }
 
