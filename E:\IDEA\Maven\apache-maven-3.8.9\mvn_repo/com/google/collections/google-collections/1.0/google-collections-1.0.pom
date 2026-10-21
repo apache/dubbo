@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.google</groupId>
+    <artifactId>google</artifactId>
+    <version>1</version>
+  </parent>
+  <groupId>com.google.collections</groupId>
+  <artifactId>google-collections</artifactId>
+  <version>1.0</version>
+  <packaging>jar</packaging>
+  <name>Google Collections Library</name>
+  <description>Google Collections Library is a suite of new collections and collection-related goodness for Java 5.0</description>
+  <inceptionYear>2007</inceptionYear>
+  <url>http://code.google.com/p/google-collections/</url>
+  <organization>
+    <name>Google</name>
+    <url>http://www.google.com</url>
+  </organization>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <scm>
+    <url>http://code.google.com/p/google-collections/source/browse/</url>
+    <connection>scm:svn:http://google-collections.googlecode.com/svn/trunk/</connection>
+  </scm>
+  <!-- this is temporarily copied from the parent pom.  remove this section when that is used -->
+  <distributionManagement>
+    <repository>
+      <id>google-maven-repository</id>
+      <name>Google Maven Repository</name>
+      <url>dav:https://google-maven-repository.googlecode.com/svn/repository/</url>
+    </repository>
+    <snapshotRepository>
+      <id>google-maven-snapshot-repository</id>
+      <name>Google Maven Snapshot Repository</name>
+      <url>dav:https://google-maven-repository.googlecode.com/svn/snapshot-repository/</url>
+      <uniqueVersion>true</uniqueVersion>
+    </snapshotRepository>
+  </distributionManagement>
+  <dependencies>
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+      <version>1.3.7</version>
+      <optional>true</optional>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

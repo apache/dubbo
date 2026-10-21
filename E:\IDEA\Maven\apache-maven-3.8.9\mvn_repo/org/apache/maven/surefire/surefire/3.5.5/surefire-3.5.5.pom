@@ -1,0 +1,500 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one
+  ~ or more contributor license agreements.  See the NOTICE file
+  ~ distributed with this work for additional information
+  ~ regarding copyright ownership.  The ASF licenses this file
+  ~ to you under the Apache License, Version 2.0 (the
+  ~ "License"); you may not use this file except in compliance
+  ~ with the License.  You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing,
+  ~ software distributed under the License is distributed on an
+  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~ KIND, either express or implied.  See the License for the
+  ~ specific language governing permissions and limitations
+  ~ under the License.
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.apache.maven</groupId>
+    <artifactId>maven-parent</artifactId>
+    <version>47</version>
+  </parent>
+
+  <groupId>org.apache.maven.surefire</groupId>
+  <artifactId>surefire</artifactId>
+  <version>3.5.5</version>
+  <packaging>pom</packaging>
+
+  <name>Apache Maven Surefire</name>
+  <description>Surefire is a test framework project.
+    This is the aggregator POM in Apache Maven Surefire project.</description>
+  <url>https://maven.apache.org/surefire/</url>
+  <inceptionYear>2004</inceptionYear>
+
+  <contributors>
+    <contributor>
+      <name>Jesse Kuhnert</name>
+    </contributor>
+    <contributor>
+      <name>Marvin Froeder</name>
+      <email>marvin@marvinformatics.com</email>
+    </contributor>
+  </contributors>
+
+  <modules>
+    <module>surefire-shared-utils</module>
+    <module>surefire-logger-api</module>
+    <module>surefire-api</module>
+    <module>surefire-extensions-api</module>
+    <module>surefire-extensions-spi</module>
+    <module>surefire-booter</module>
+    <module>surefire-grouper</module>
+    <module>surefire-providers</module>
+    <module>surefire-shadefire</module>
+    <module>maven-surefire-common</module>
+    <module>surefire-report-parser</module>
+    <module>maven-surefire-plugin</module>
+    <module>maven-failsafe-plugin</module>
+    <module>maven-surefire-report-plugin</module>
+    <module>surefire-its</module>
+  </modules>
+
+  <scm>
+    <connection>${maven.surefire.scm.devConnection}</connection>
+    <developerConnection>${maven.surefire.scm.devConnection}</developerConnection>
+    <tag>surefire-3.5.5</tag>
+    <url>https://github.com/apache/maven-surefire/tree/${project.scm.tag}</url>
+  </scm>
+  <issueManagement>
+    <system>GitHub issues</system>
+    <url>https://github.com/apache/maven-surefire/issues</url>
+  </issueManagement>
+  <ciManagement>
+    <system>Jenkins</system>
+    <url>https://ci-maven.apache.org/job/Maven/job/maven-box/job/maven-surefire/</url>
+  </ciManagement>
+  <distributionManagement>
+    <site>
+      <id>apache.website</id>
+      <url>scm:svn:https://svn.apache.org/repos/asf/maven/website/components/${maven.site.path}</url>
+    </site>
+  </distributionManagement>
+
+  <properties>
+    <javaVersion>8</javaVersion>
+    <mavenVersion>3.6.3</mavenVersion>
+    <resolverVersion>1.4.1</resolverVersion>
+    <commonsLang3Version>3.20.0</commonsLang3Version>
+    <commonsCompress>1.28.0</commonsCompress>
+    <commonsIoVersion>2.21.0</commonsIoVersion>
+    <plexus-java-version>1.5.2</plexus-java-version>
+    <!-- Do not upgrade, leads to test failures, MSHARED-1014 -->
+    <mavenSharedUtilsVersion>3.3.4</mavenSharedUtilsVersion>
+    <powermockVersion>2.0.9</powermockVersion>
+    <jacocoVersion>0.8.14</jacocoVersion>
+    <testngVersion>5.11</testngVersion>
+    <maven.surefire.scm.devConnection>scm:git:https://github.com/apache/maven-surefire.git</maven.surefire.scm.devConnection>
+    <maven.site.path>surefire-archives/surefire-LATEST</maven.site.path>
+    <maven.compiler.testSource>${javaVersion}</maven.compiler.testSource>
+    <maven.compiler.testTarget>${javaVersion}</maven.compiler.testTarget>
+    <jvm9ArgsTests />
+    <jvm.args.tests>${jvm9ArgsTests} -Xms32m -Xmx144m -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</jvm.args.tests>
+    <project.build.outputTimestamp>2026-02-18T05:14:06Z</project.build.outputTimestamp>
+    <slf4jVersion>1.7.36</slf4jVersion>
+
+    <versions.junit5>5.12.2</versions.junit5>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${slf4jVersion}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4jVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>${commonsCompress}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>${commonsLang3Version}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>${commonsIoVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-core</artifactId>
+        <version>${mavenVersion}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-plugin-api</artifactId>
+        <version>${mavenVersion}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-artifact</artifactId>
+        <version>${mavenVersion}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-model</artifactId>
+        <version>${mavenVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-compat</artifactId>
+        <version>${mavenVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-settings</artifactId>
+        <version>${mavenVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.plugin-tools</groupId>
+        <artifactId>maven-plugin-annotations</artifactId>
+        <version>${version.maven-plugin-tools}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.shared</groupId>
+        <artifactId>maven-shared-utils</artifactId>
+        <version>${mavenSharedUtilsVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.shared</groupId>
+        <artifactId>maven-common-artifact-filters</artifactId>
+        <version>3.4.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.plugin-testing</groupId>
+        <artifactId>maven-plugin-testing-harness</artifactId>
+        <version>3.5.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.xmlunit</groupId>
+        <artifactId>xmlunit-core</artifactId>
+        <version>2.11.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.htmlunit</groupId>
+        <artifactId>htmlunit</artifactId>
+        <version>4.21.0</version>
+      </dependency>
+      <dependency>
+        <!-- used in the unit tests and maven-shared-utils:3.3.4 -->
+        <groupId>org.fusesource.jansi</groupId>
+        <artifactId>jansi</artifactId>
+        <version>2.4.2</version>
+      </dependency>
+      <dependency>
+        <!-- Do not upgrade, needs code changes -->
+        <groupId>org.apache.maven.shared</groupId>
+        <artifactId>maven-verifier</artifactId>
+        <version>2.0.0-M1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-java</artifactId>
+        <version>${plexus-java-version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>3.12.4</version>
+      </dependency>
+      <!-- PowerMock@Java9 and Java11
+      org.powermock for java9, see https://github.com/powermock/powermock/issues/783
+      These dependencies substitute org.powermock:powermock-mockito-release-full:jar:full:1.6.4 in java9.
+      -->
+      <dependency>
+        <groupId>org.powermock</groupId>
+        <artifactId>powermock-core</artifactId>
+        <version>${powermockVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.powermock</groupId>
+        <artifactId>powermock-module-junit4</artifactId>
+        <version>${powermockVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.powermock</groupId>
+        <artifactId>powermock-api-mockito2</artifactId>
+        <version>${powermockVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.powermock</groupId>
+        <artifactId>powermock-reflect</artifactId>
+        <version>${powermockVersion}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.objenesis</groupId>
+            <artifactId>objenesis</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.javassist</groupId>
+        <artifactId>javassist</artifactId>
+        <version>3.30.2-GA</version>
+      </dependency>
+      <!-- END: PowerMock@Java9 -->
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.13.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.hamcrest</groupId>
+        <artifactId>hamcrest</artifactId>
+        <version>3.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.hamcrest</groupId>
+        <artifactId>hamcrest-core</artifactId>
+        <version>3.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>3.27.7</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.code.findbugs</groupId>
+        <artifactId>jsr305</artifactId>
+        <version>3.0.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jacoco</groupId>
+        <artifactId>org.jacoco.agent</artifactId>
+        <version>${jacocoVersion}</version>
+        <classifier>runtime</classifier>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.surefire</groupId>
+        <artifactId>surefire-shared-utils</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+            <fork>true</fork>
+            <compilerArgs>
+              <arg>-Xdoclint:all</arg>
+            </compilerArgs>
+            <encoding>UTF-8</encoding>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>animal-sniffer-maven-plugin</artifactId>
+          <version>1.27</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.5.2</version>
+          <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
+          <configuration>
+            <!-- NOTE: Be sure to isolate the Surefire version under test from the version running the tests! -->
+            <useSystemClassLoader>false</useSystemClassLoader>
+            <argLine>${jvm.args.tests}</argLine>
+            <!-- -Dnet.bytebuddy.experimental=true ${jacoco.agent}-->
+            <useFile>false</useFile>
+            <redirectTestOutputToFile>false</redirectTestOutputToFile>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-release-plugin</artifactId>
+          <configuration>
+            <preparationGoals>clean install</preparationGoals>
+            <commitByProject>false</commitByProject>
+            <tagNameFormat>surefire-@{project.version}</tagNameFormat>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-plugin-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>help-mojo</id>
+              <goals>
+                <goal>helpmojo</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>${jacocoVersion}</version>
+          <configuration>
+            <skip>${skipTests}</skip>
+            <!--<append>true</append>
+            <inclNoLocationClasses>true</inclNoLocationClasses>
+            <haltOnFailure>false</haltOnFailure>
+            <jmx>false</jmx>-->
+            <formats>
+              <format>HTML</format>
+            </formats>
+            <includes>
+              <include>**/failsafe/*</include>
+              <include>**/failsafe/**/*</include>
+              <include>**/surefire/*</include>
+              <include>**/surefire/**/*</include>
+            </includes>
+            <excludes>
+              <exclude>**/HelpMojo.class</exclude>
+              <exclude>**/shadefire/**/*</exclude>
+              <exclude>org/jacoco/**/*</exclude>
+              <exclude>com/vladium/emma/rt/*</exclude>
+            </excludes>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>rat-check</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <configuration>
+              <excludes combine.children="append">
+                <exclude>Jenkinsfile</exclude>
+                <exclude>README.md</exclude>
+                <exclude>.editorconfig</exclude>
+                <exclude>.gitignore</exclude>
+                <exclude>.git/**/*</exclude>
+                <exclude>**/.github/**</exclude>
+                <exclude>**/.idea</exclude>
+                <exclude>**/.svn/**/*</exclude>
+                <exclude>**/*.iml</exclude>
+                <exclude>**/*.ipr</exclude>
+                <exclude>**/*.iws</exclude>
+                <exclude>**/*.versionsBackup</exclude>
+                <exclude>**/dependency-reduced-pom.xml</exclude>
+                <exclude>.repository/**</exclude>
+                <!-- jenkins with local maven repository -->
+                <exclude>src/test/resources/**/*</exclude>
+                <exclude>src/test/resources/**/*.css</exclude>
+                <exclude>**/*.jj</exclude>
+                <exclude>src/main/resources/META-INF/services/org.apache.maven.surefire.api.provider.SurefireProvider</exclude>
+                <exclude>DEPENDENCIES</exclude>
+                <exclude>.m2/**</exclude>
+                <exclude>.m2</exclude>
+                <exclude>.travis.yml</exclude>
+                <exclude>.mvn/wrapper/maven-wrapper.properties</exclude>
+                <exclude>**/.gitattributes</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>animal-sniffer-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>signature-check</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <!-- we use offline jacoco instrumentation so check must be done after restoring original classes -->
+            <phase>verify</phase>
+            <configuration>
+              <checkTestClasses>true</checkTestClasses>
+              <signature>
+                <groupId>org.codehaus.mojo.signature</groupId>
+                <artifactId>java18</artifactId>
+                <version>1.0</version>
+              </signature>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <configuration>
+          <suppressionsLocation>src/config/checkstyle-suppressions.xml</suppressionsLocation>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+          <deployAtEnd>true</deployAtEnd>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+        <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
+        <version>3.5.2</version>
+      </plugin>
+    </plugins>
+  </reporting>
+
+  <profiles>
+    <profile>
+      <!-- First, install the project without tests -> mvn install -DskipTests
+        This is a workaround for IntelliJ IDEA, see https://youtrack.jetbrains.com/issue/IDEA-148573
+        IDEA is able to recognize external artifacts with classifiers. But IDEA expects modules and their artifacts
+        without classifier. If the version differs from project, the idea would understand it as external artifact.
+        -->
+      <id>ide-development</id>
+      <properties>
+        <surefire-shared-utils.version>3-SNAPSHOT</surefire-shared-utils.version>
+      </properties>
+    </profile>
+    <profile>
+      <id>jdk9+</id>
+      <activation>
+        <jdk>[9,)</jdk>
+      </activation>
+      <properties>
+        <jvm9ArgsTests>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.util.stream=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.base/java.util.regex=ALL-UNNAMED --add-opens java.base/java.nio.channels.spi=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/sun.nio.fs=ALL-UNNAMED --add-opens java.base/sun.nio.cs=ALL-UNNAMED --add-opens java.base/java.nio.file=ALL-UNNAMED --add-opens java.base/java.nio.charset=ALL-UNNAMED</jvm9ArgsTests>
+      </properties>
+    </profile>
+  </profiles>
+</project>

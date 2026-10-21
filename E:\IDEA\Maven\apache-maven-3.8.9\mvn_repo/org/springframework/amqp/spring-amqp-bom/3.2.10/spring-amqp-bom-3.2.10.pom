@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <!-- This module was also published with a richer model, Gradle metadata,  -->
+  <!-- which should be used instead. Do not delete the following line which  -->
+  <!-- is to indicate to Gradle or any Gradle module metadata file consumer  -->
+  <!-- that they should prefer consuming it instead. -->
+  <!-- do_not_remove: published-with-gradle-metadata -->
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.springframework.amqp</groupId>
+  <artifactId>spring-amqp-bom</artifactId>
+  <version>3.2.10</version>
+  <packaging>pom</packaging>
+  <name>Spring for RabbitMQ (Bill of Materials)</name>
+  <description>Spring for RabbitMQ (Bill of Materials)</description>
+  <url>https://github.com/spring-projects/spring-amqp</url>
+  <organization>
+    <name>Spring IO</name>
+    <url>https://spring.io/projects/spring-amqp</url>
+  </organization>
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>artembilan</id>
+      <name>Artem Bilan</name>
+      <email>artem.bilan@broadcom.com</email>
+      <roles>
+        <role>project lead</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>garyrussell</id>
+      <name>Gary Russell</name>
+      <email>github@gprussell.net</email>
+      <roles>
+        <role>project lead emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>sobychacko</id>
+      <name>Soby Chacko</name>
+      <email>soby.chacko@broadcom.com</email>
+      <roles>
+        <role>contributor</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>dsyer</id>
+      <name>Dave Syer</name>
+      <email>david.syer@broadcom.com</email>
+      <roles>
+        <role>project founder</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>markfisher</id>
+      <name>Mark Fisher</name>
+      <email>mark.fisher@broadcom.com</email>
+      <roles>
+        <role>project founder</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>markpollack</id>
+      <name>Mark Pollack</name>
+      <email>mark.pollack@broadcom.com</email>
+      <roles>
+        <role>project founder</role>
+      </roles>
+    </developer>
+  </developers>
+  <scm>
+    <connection>git://github.com/spring-projects/spring-amqp.git</connection>
+    <developerConnection>git@github.com:spring-projects/spring-amqp.git</developerConnection>
+    <url>https://github.com/spring-projects/spring-amqp</url>
+  </scm>
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/spring-projects/spring-amqp/issues</url>
+  </issueManagement>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.amqp</groupId>
+        <artifactId>spring-amqp</artifactId>
+        <version>3.2.10</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.amqp</groupId>
+        <artifactId>spring-rabbit</artifactId>
+        <version>3.2.10</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.amqp</groupId>
+        <artifactId>spring-rabbit-junit</artifactId>
+        <version>3.2.10</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.amqp</groupId>
+        <artifactId>spring-rabbit-stream</artifactId>
+        <version>3.2.10</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.amqp</groupId>
+        <artifactId>spring-rabbit-test</artifactId>
+        <version>3.2.10</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+</project>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.assertj</groupId>
+  <artifactId>assertj-bom</artifactId>
+  <version>3.27.7</version>
+  <packaging>pom</packaging>
+  <name>AssertJ (Bill of Materials)</name>
+  <description>This Bill of Materials POM can be used to ease dependency management when referencing multiple AssertJ artifacts using Gradle or Maven.</description>
+  <url>https://assertj.github.io/doc/</url>
+  <inceptionYear>2012</inceptionYear>
+  <organization>
+    <name>AssertJ</name>
+    <url>https://assertj.github.io/doc/</url>
+  </organization>
+  <licenses>
+    <license>
+      <name>Apache-2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>joel-costigliola</id>
+      <name>Joel Costigliola</name>
+      <email>joel.costigliola at gmail.com</email>
+      <roles>
+        <role>Owner</role>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>scordio</id>
+      <name>Stefano Cordio</name>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>PascalSchumacher</id>
+      <name>Pascal Schumacher</name>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>epeee</id>
+      <name>Erhard Pointl</name>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>croesch</id>
+      <name>Christian Rösch</name>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>VanRoy</id>
+      <name>Julien Roy</name>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>regis1512</id>
+      <name>Régis Pouiller</name>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>fbiville</id>
+      <name>Florent Biville</name>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>Patouche</id>
+      <name>Patrick Allain</name>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:https://github.com/assertj/assertj.git/assertj-bom</connection>
+    <developerConnection>scm:git:https://github.com/assertj/assertj.git/assertj-bom</developerConnection>
+    <tag>assertj-build-3.27.7</tag>
+    <url>https://github.com/assertj/assertj/assertj-bom</url>
+  </scm>
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/assertj/assertj/issues</url>
+  </issueManagement>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>3.27.7</version>
+      </dependency>
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-guava</artifactId>
+        <version>3.27.7</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+</project>

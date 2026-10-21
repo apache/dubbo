@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+
+   <parent>
+      <groupId>org.jboss</groupId>
+      <artifactId>jboss-parent</artifactId>
+      <version>36</version>
+      <!-- prevent the default ../pom.xml: the parent pom lives elsewhere -->
+      <relativePath/>
+   </parent>
+
+   <groupId>org.infinispan</groupId>
+   <artifactId>infinispan-build-configuration-parent</artifactId>
+   <version>13.0.20.Final</version>
+   <packaging>pom</packaging>
+
+   <name>Infinispan Common Parent</name>
+   <description>Infinispan common parent POM module</description>
+   <url>http://www.infinispan.org</url>
+   <organization>
+      <name>JBoss, a division of Red Hat</name>
+      <url>http://www.jboss.org</url>
+   </organization>
+   <licenses>
+      <license>
+         <name>Apache License 2.0</name>
+         <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+         <distribution>repo</distribution>
+      </license>
+   </licenses>
+   <developers>
+      <developer>
+         <id>placeholder</id>
+         <name>See http://www.infinispan.org for a complete list of contributors</name>
+      </developer>
+   </developers>
+   <mailingLists>
+      <mailingList>
+         <name>Infinispan Issues</name>
+         <subscribe>https://lists.jboss.org/mailman/listinfo/infinispan-issues</subscribe>
+         <unsubscribe>https://lists.jboss.org/mailman/listinfo/infinispan-issues</unsubscribe>
+         <post>infinispan-issues@lists.jboss.org</post>
+         <archive>http://lists.jboss.org/pipermail/infinispan-issues/</archive>
+      </mailingList>
+      <mailingList>
+         <name>Infinispan Developers</name>
+         <subscribe>https://lists.jboss.org/mailman/listinfo/infinispan-dev</subscribe>
+         <unsubscribe>https://lists.jboss.org/mailman/listinfo/infinispan-dev</unsubscribe>
+         <post>infinispan-dev@lists.jboss.org</post>
+         <archive>http://lists.jboss.org/pipermail/infinispan-dev/</archive>
+      </mailingList>
+   </mailingLists>
+   <scm>
+      <connection>scm:git:git@github.com:infinispan/infinispan.git</connection>
+      <developerConnection>scm:git:git@github.com:infinispan/infinispan.git</developerConnection>
+      <url>https://github.com/infinispan/infinispan</url>
+   </scm>
+   <issueManagement>
+      <system>jira</system>
+      <url>https://issues.jboss.org/browse/ISPN</url>
+   </issueManagement>
+   <ciManagement>
+      <system>Jenkins</system>
+      <url>https://ci.infinispan.org</url>
+      <notifiers>
+         <notifier>
+            <type>mail</type>
+            <address>infinispan-commits@lists.jboss.org</address>
+         </notifier>
+      </notifiers>
+   </ciManagement>
+   <distributionManagement>
+      <snapshotRepository>
+         <id>${maven.snapshots.repo.id}</id>
+         <url>${maven.snapshots.repo.url}</url>
+      </snapshotRepository>
+      <repository>
+         <id>${maven.releases.repo.id}</id>
+         <url>${maven.releases.repo.url}</url>
+      </repository>
+   </distributionManagement>
+   <modules>
+      <module>bom</module>
+   </modules>
+
+   <properties>
+      <maven.compiler.source>1.8</maven.compiler.source>
+      <maven.compiler.target>1.8</maven.compiler.target>
+
+      <!-- === Branding Configuration === -->
+      <infinispan.brand.name>Infinispan</infinispan.brand.name>
+      <infinispan.brand.prefix>infinispan</infinispan.brand.prefix>
+      <infinispan.brand.short-name>infinispan</infinispan.brand.short-name>
+      <infinispan.brand.version>${project.version}</infinispan.brand.version>
+      <infinispan.codename>Triskaidekaphobia</infinispan.codename>
+      <infinispan.module.slot.prefix>ispn</infinispan.module.slot.prefix>
+      <infinispan.base.version>13.0</infinispan.base.version>
+      <infinispan.module.slot>${infinispan.module.slot.prefix}-${infinispan.base.version}</infinispan.module.slot>
+      <infinispan.core.schema.version>${infinispan.base.version}</infinispan.core.schema.version>
+      <infinispan.olm.openshift.source>community-operators</infinispan.olm.openshift.source>
+      <infinispan.olm.k8s.source>operatorhubio-catalog</infinispan.olm.k8s.source>
+      <infinispan.olm.name>infinispan</infinispan.olm.name>
+      <infinispan.gpg.key>9E31AB27445478DB</infinispan.gpg.key>
+      <wildfly.brand.name>WildFly</wildfly.brand.name>
+      <wildfly.brand.prefix>wildfly</wildfly.brand.prefix>
+
+      <!-- maven repository urls -->
+      <maven.releases.nexus.url>https://s01.oss.sonatype.org/</maven.releases.nexus.url>
+      <maven.releases.repo.id>ossrh</maven.releases.repo.id>
+      <maven.releases.repo.url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</maven.releases.repo.url>
+      <maven.snapshots.repo.id>ossrh</maven.snapshots.repo.id>
+      <maven.snapshots.repo.url>https://s01.oss.sonatype.org/content/repositories/snapshots</maven.snapshots.repo.url>
+
+      <!-- === Application Server Configuration === -->
+
+      <!-- org.wildfly / org.jboss.eap -->
+      <appserver.groupId>org.wildfly</appserver.groupId>
+      <appserver.version>24.0.1.Final</appserver.version>
+
+      <!-- Java source/target version -->
+      <version.java>11</version.java>
+
+      <!-- Dependency versions -->
+      <version.ant>1.10.7</version.ant>
+      <version.ant-nodeps>1.8.1</version.ant-nodeps>
+      <version.ant-contrib>1.0b3</version.ant-contrib>
+      <version.antlr3>3.5.2</version.antlr3>
+      <version.arquillian>1.6.0.Final</version.arquillian>
+      <version.blockhound>1.0.6.RELEASE</version.blockhound>
+      <version.bouncycastle>1.70</version.bouncycastle>
+      <version.byteman>4.0.9</version.byteman>
+      <version.caffeine>2.8.4</version.caffeine>
+      <version.commons.compress>1.21</version.commons.compress>
+      <version.console>0.15.5.Final</version.console>
+      <version.fabric8.kubernetes-client>5.7.4</version.fabric8.kubernetes-client>
+      <version.glassfish.jaxb>2.3.1</version.glassfish.jaxb>
+      <version.glassfish.json>1.1.4</version.glassfish.json>
+      <version.groovy>2.4.8</version.groovy>
+      <version.hamcrest>1.3</version.hamcrest>
+      <version.hibernate.core>5.3.22.Final</version.hibernate.core>
+      <version.hibernate.search>6.0.8.Final</version.hibernate.search>
+      <version.infinispan>13.0.20.Final</version.infinispan>
+      <version.infinispan.arquillian>1.2.0.Beta3</version.infinispan.arquillian>
+      <version.infinispan.doclets>1.4.0.Final</version.infinispan.doclets>
+      <version.infinispan.maven-plugins>1.0.2.Final</version.infinispan.maven-plugins>
+      <version.io.agroal>1.12</version.io.agroal>
+      <version.io.mashona>1.0.0</version.io.mashona>
+      <version.jackson>2.14.1</version.jackson>
+      <version.jackson.databind>2.14.1</version.jackson.databind>
+      <version.jacoco>0.8.7</version.jacoco>
+      <version.jakarta.transaction>1.3.3</version.jakarta.transaction>
+      <version.jakarta.enterprise.cdi>2.0.2</version.jakarta.enterprise.cdi>
+      <version.jakarta.persistence>2.2.3</version.jakarta.persistence>
+      <version.javax.cache>1.1.0</version.javax.cache>
+      <version.jboss.logging>3.4.1.Final</version.jboss.logging>
+      <version.jboss.marshalling>2.0.12.Final</version.jboss.marshalling>
+      <version.jboss.naming>5.0.6.CR1</version.jboss.naming>
+      <version.jboss.narayana>5.12.0.Final</version.jboss.narayana>
+      <version.jboss.security>3.0.6.Final</version.jboss.security>
+      <version.jboss.shrinkwrap>1.2.6</version.jboss.shrinkwrap>
+      <version.jboss.shrinkwrap.descriptors>2.0.0</version.jboss.shrinkwrap.descriptors>
+      <version.jboss.shrinkwrap.resolver>3.1.3</version.jboss.shrinkwrap.resolver>
+      <version.jcip-annotations>1.0</version.jcip-annotations>
+      <version.jgroups>4.2.18.Final</version.jgroups>
+      <version.jsr107>1.1.0</version.jsr107>
+      <version.junit>4.13.1</version.junit>
+      <version.junit5>5.6.2</version.junit5>
+      <version.log4j>2.17.1</version.log4j>
+      <version.lucene>8.7.0</version.lucene>
+      <version.metainf-services>1.7</version.metainf-services>
+      <version.mockito>2.27.0</version.mockito>
+      <version.mockito_dep.bytebuddy>1.9.7</version.mockito_dep.bytebuddy>
+      <version.mockito_dep.objenesis>2.6</version.mockito_dep.objenesis>
+      <version.nashorn>15.3</version.nashorn>
+      <version.netty>4.1.100.Final</version.netty>
+      <version.okhttp>3.14.9</version.okhttp>
+      <version.openjdk.jmh>1.23</version.openjdk.jmh>
+      <version.org.wildfly.arquillian>3.0.1.Final</version.org.wildfly.arquillian>
+      <version.org.wildfly.core>16.0.1.Final</version.org.wildfly.core>
+      <version.org.wildfly.elytron>1.17.2.Final</version.org.wildfly.elytron>
+      <version.org.wildfly.openssl>2.2.5.Final</version.org.wildfly.openssl>
+      <version.org.wildfly.openssl.natives>2.2.2.SP01</version.org.wildfly.openssl.natives>
+      <version.org.wildfly.openssl.natives.linux_x86_64>2.2.2.SP01</version.org.wildfly.openssl.natives.linux_x86_64>
+      <version.org.wildfly.openssl.natives.macos_x86_64>2.2.2.Final</version.org.wildfly.openssl.natives.macos_x86_64>
+      <version.org.wildfly.openssl.natives.windows_x86_64>2.2.2.Final</version.org.wildfly.openssl.natives.windows_x86_64>
+      <version.picketbox>5.0.3.Final</version.picketbox>
+      <version.picketlink>2.5.5.SP12</version.picketlink>
+      <version.protostream>4.4.4.Final</version.protostream>
+      <version.protostuff>1.6.2</version.protostuff>
+      <version.reactivestreams>1.0.3</version.reactivestreams>
+      <version.rocksdb>6.22.1.1</version.rocksdb>
+      <version.rxjava>3.0.4</version.rxjava>
+      <version.sshd>2.10.0</version.sshd>
+      <version.smallrye-config>2.0.2</version.smallrye-config>
+      <version.smallrye-metrics>3.0.1</version.smallrye-metrics>
+      <version.microprofile-config-api>2.0</version.microprofile-config-api>
+      <version.microprofile-metrics-api>3.0</version.microprofile-metrics-api>
+      <version.snappy>1.1.10.5</version.snappy>
+      <version.spring.boot>2.6.6</version.spring.boot>
+      <version.spring5>5.3.18</version.spring5>
+      <version.spring.session>2.6.2</version.spring.session>
+      <version.micrometer>1.7.1</version.micrometer>
+      <version.kafka.client>2.7.2</version.kafka.client>
+      <version.xom>1.3.7</version.xom>
+      <version.xstream>1.4.20</version.xstream>
+
+      <!-- Plugin dependencies -->
+      <version.checkstyle.maven-plugin>3.1.1</version.checkstyle.maven-plugin>
+      <version.maven>3.8.2</version.maven>
+      <version.maven.antlr3>${version.antlr3}</version.maven.antlr3>
+      <version.maven.antrun>3.0.0</version.maven.antrun>
+      <version.maven.buildhelper>3.1.0</version.maven.buildhelper>
+      <version.maven.bundle>4.2.1</version.maven.bundle>
+      <version.maven.gpg>3.0.1</version.maven.gpg>
+      <version.maven-compiler-plugin>3.10.1</version.maven-compiler-plugin>
+      <version.maven.invoker>3.2.1</version.maven.invoker>
+      <version.maven.jar>3.2.0</version.maven.jar>
+      <version.maven.javadoc>3.4.0</version.maven.javadoc>
+      <version.maven-plugin-plugin>3.6.0</version.maven-plugin-plugin>
+      <version.maven.release>3.0.0-M1</version.maven.release>
+      <version.maven.remote.resource>1.5</version.maven.remote.resource>
+      <version.maven.resources>3.1.0</version.maven.resources>
+      <version.maven.shade>3.2.4</version.maven.shade>
+      <version.maven.source>3.2.0</version.maven.source>
+      <version.maven.surefire>3.0.0-M5</version.maven.surefire>
+      <version.org.jboss.galleon>4.2.8.Final</version.org.jboss.galleon>
+      <version.org.wildfly.galleon-plugins>5.2.1.Final</version.org.wildfly.galleon-plugins>
+      <version.owasp-dependency-check-plugin>6.1.0</version.owasp-dependency-check-plugin>
+      <version.weld-servlet>2.4.8.Final</version.weld-servlet>
+      <version.sonatype.nexus-staging-plugin>1.6.13</version.sonatype.nexus-staging-plugin>
+
+      <!-- versionx -->
+      <versionx.com.puppycrawl.tools.checkstyle>8.32</versionx.com.puppycrawl.tools.checkstyle>
+      <versionx.net.sourceforge.pmd>6.29.0</versionx.net.sourceforge.pmd>
+
+      <!-- configuration properties -->
+      <org.infinispan.attachServerZip>false</org.infinispan.attachServerZip>
+   </properties>
+
+   <build>
+      <pluginManagement>
+         <plugins>
+            <plugin>
+               <groupId>com.github.spotbugs</groupId>
+               <artifactId>spotbugs-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+               <groupId>org.owasp</groupId>
+               <artifactId>dependency-check-maven</artifactId>
+            </plugin>
+            <plugin>
+               <groupId>org.sonatype.plugins</groupId>
+               <artifactId>nexus-staging-maven-plugin</artifactId>
+               <version>${version.sonatype.nexus-staging-plugin}</version>
+               <configuration>
+                  <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                  <stagingDescription>${infinispan.brand.name} ${project.version} release</stagingDescription>
+                  <nexusUrl>${maven.releases.nexus.url}</nexusUrl>
+                  <serverId>${maven.releases.repo.id}</serverId>
+               </configuration>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-javadoc-plugin</artifactId>
+               <version>${version.maven.javadoc}</version>
+               <executions>
+                  <execution>
+                     <id>javadoc</id>
+                     <phase>package</phase>
+                     <goals>
+                        <goal>jar</goal>
+                     </goals>
+                  </execution>
+               </executions>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-gpg-plugin</artifactId>
+               <version>${version.maven.gpg}</version>
+               <executions>
+                  <execution>
+                     <id>sign-artifacts</id>
+                     <phase>verify</phase>
+                     <goals>
+                        <goal>sign</goal>
+                     </goals>
+                     <configuration>
+                        <keyname>${infinispan.gpg.key}</keyname>
+                        <passphraseServerId>${infinispan.gpg.key}</passphraseServerId>
+                     </configuration>
+                  </execution>
+               </executions>
+            </plugin>
+         </plugins>
+      </pluginManagement>
+   </build>
+
+   <profiles>
+      <profile>
+         <id>community-release</id>
+         <activation>
+            <activeByDefault>false</activeByDefault>
+         </activation>
+         <build>
+            <plugins>
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-gpg-plugin</artifactId>
+               </plugin>
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-javadoc-plugin</artifactId>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+
+      <profile>
+         <!-- nexus-staging-maven-plugin blocks maven-deploy-plugin -->
+         <id>nexus-staging</id>
+         <activation>
+            <property><name>!skipNexusStaging</name></property>
+         </activation>
+         <build>
+            <plugins>
+               <plugin>
+                  <groupId>org.sonatype.plugins</groupId>
+                  <artifactId>nexus-staging-maven-plugin</artifactId>
+                  <extensions>false</extensions>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+
+   </profiles>
+
+</project>

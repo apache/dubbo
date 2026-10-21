@@ -1,0 +1,6 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>avalon-framework</groupId>
+  <artifactId>avalon-framework</artifactId>
+  <version>4.1.3</version>
+</project>

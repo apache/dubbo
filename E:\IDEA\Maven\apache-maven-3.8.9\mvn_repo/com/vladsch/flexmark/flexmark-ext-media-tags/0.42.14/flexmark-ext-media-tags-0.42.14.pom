@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.vladsch.flexmark</groupId>
+        <artifactId>flexmark-java</artifactId>
+        <version>0.42.14</version>
+    </parent>
+
+    <artifactId>flexmark-ext-media-tags</artifactId>
+    <name>flexmark-java extension for HTML5 media tags</name>
+    <description>flexmark-java extension parsing and rendering HTML5 media tags</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.vladsch.flexmark</groupId>
+            <artifactId>flexmark</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.vladsch.flexmark</groupId>
+            <artifactId>flexmark-test-util</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

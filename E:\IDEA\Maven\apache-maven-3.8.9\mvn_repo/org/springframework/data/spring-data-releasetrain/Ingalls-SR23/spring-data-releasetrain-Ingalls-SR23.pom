@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.springframework.data</groupId>
+	<artifactId>spring-data-releasetrain</artifactId>
+	<version>Ingalls-SR23</version>
+	<packaging>pom</packaging>
+
+	<parent>
+		<groupId>org.springframework.data.build</groupId>
+		<artifactId>spring-data-build</artifactId>
+		<version>1.9.23.RELEASE</version>
+	</parent>
+
+	<name>Spring Data Release Train - BOM</name>
+	<description>Bill of materials to make sure a consistent set of versions is used for Spring Data modules.</description>
+	<url>https://github.com/spring-projects/spring-data-build</url>
+
+	<dependencyManagement>
+		<dependencies>
+
+			<!-- Spring Data Cassandra -->
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-cql</artifactId>
+				<version>1.5.23.RELEASE</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-cassandra</artifactId>
+				<version>1.5.23.RELEASE</version>
+			</dependency>
+
+			<!-- Spring Data Commons -->
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-commons</artifactId>
+				<version>1.13.23.RELEASE</version>
+			</dependency>
+
+			<!-- Spring Data Couchbase -->
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-couchbase</artifactId>
+				<version>2.2.23.RELEASE</version>
+			</dependency>
+
+			<!-- Spring Data Elasticsearch -->
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-elasticsearch</artifactId>
+				<version>2.1.23.RELEASE</version>
+			</dependency>
+
+			<!-- Spring Data Gemfire -->
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-gemfire</artifactId>
+				<version>1.9.23.RELEASE</version>
+			</dependency>
+
+			<!-- Spring Data JPA -->
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-jpa</artifactId>
+				<version>1.11.23.RELEASE</version>
+			</dependency>
+
+			<!-- Spring Data MongoDB -->
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-mongodb</artifactId>
+				<version>1.10.23.RELEASE</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-mongodb-cross-store</artifactId>
+				<version>1.10.23.RELEASE</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-mongodb-log4j</artifactId>
+				<version>1.10.23.RELEASE</version>
+			</dependency>
+
+			<!-- Spring Data Neo4j -->
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-neo4j</artifactId>
+				<version>4.2.23.RELEASE</version>
+			</dependency>
+
+			<!-- Spring Data Redis -->
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-redis</artifactId>
+				<version>1.8.23.RELEASE</version>
+			</dependency>
+
+			<!-- Spring Data REST -->
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-rest-webmvc</artifactId>
+				<version>2.6.23.RELEASE</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-rest-core</artifactId>
+				<version>2.6.23.RELEASE</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-rest-hal-browser</artifactId>
+				<version>2.6.23.RELEASE</version>
+			</dependency>
+
+			<!-- Spring Data Solr -->
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-solr</artifactId>
+				<version>2.1.23.RELEASE</version>
+			</dependency>
+
+			<!-- Spring Data KeyValue -->
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-keyvalue</artifactId>
+				<version>1.2.23.RELEASE</version>
+			</dependency>
+
+			<!-- Spring Data Envers -->
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-envers</artifactId>
+				<version>1.1.23.RELEASE</version>
+			</dependency>
+
+			<!-- Spring Data LDAP -->
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-ldap</artifactId>
+				<version>1.0.23.RELEASE</version>
+			</dependency>
+
+		</dependencies>
+	</dependencyManagement>
+
+</project>

@@ -1,0 +1,77 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.codehaus.plexus</groupId>
+    <artifactId>plexus</artifactId>
+    <version>5.1</version>
+  </parent>
+
+  <artifactId>plexus-interpolation</artifactId>
+  <version>1.26</version>
+  <packaging>bundle</packaging>
+
+  <name>Plexus Interpolation API</name>
+
+  <scm>
+    <connection>scm:git:https://github.com/codehaus-plexus/plexus-interpolation.git</connection>
+    <developerConnection>scm:git:https://github.com/codehaus-plexus/plexus-interpolation.git</developerConnection>
+    <url>http://github.com/codehaus-plexus/plexus-interpolation/tree/${project.scm.tag}/</url>
+    <tag>plexus-interpolation-1.26</tag>
+  </scm>
+
+  <issueManagement>
+    <system>JIRA</system>
+    <url>https://github.com/codehaus-plexus/plexus-interpolation/issues</url>
+  </issueManagement>
+  <distributionManagement>
+    <site>
+      <id>github:gh-pages</id>
+      <url>${project.scm.developerConnection}</url>
+    </site>
+  </distributionManagement>
+
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <version>3.0.1</version>
+        <extensions>true</extensions>
+        <configuration>
+          <instructions>
+            <Export-Package>org.codehaus.plexus.*</Export-Package>
+          </instructions>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-scm-publish-plugin</artifactId>
+        <configuration>
+          <content>${project.reporting.outputDirectory}</content><!-- mono-module doesn't require site:stage -->
+        </configuration>
+        <executions>
+          <execution>
+            <id>scm-publish</id>
+            <phase>site-deploy</phase><!-- deploy site with maven-scm-publish-plugin -->
+            <goals>
+              <goal>publish-scm</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <configuration>
+          <!-- olamy: exclude files with strange names as failed here on osx -->
+          <checkModificationExcludes>
+            <checkModificationExclude>**/src/test/resources/utf8/**</checkModificationExclude>
+          </checkModificationExcludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

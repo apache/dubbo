@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+
+   <groupId>org.infinispan</groupId>
+   <artifactId>infinispan-build-configuration-parent</artifactId>
+   <version>15.2.6.Final</version>
+   <packaging>pom</packaging>
+
+   <name>Infinispan Common Parent</name>
+   <description>Infinispan common parent POM module</description>
+   <url>https://infinispan.org</url>
+   <licenses>
+      <license>
+         <name>Apache License 2.0</name>
+         <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+         <distribution>repo</distribution>
+      </license>
+   </licenses>
+   <developers>
+      <developer>
+         <id>placeholder</id>
+         <name>See https://github.com/infinispan/infinispan/graphs/contributors</name>
+      </developer>
+   </developers>
+   <scm>
+      <connection>scm:git:git@github.com:infinispan/infinispan.git</connection>
+      <developerConnection>scm:git:git@github.com:infinispan/infinispan.git</developerConnection>
+      <url>https://github.com/infinispan/infinispan</url>
+   </scm>
+   <issueManagement>
+      <system>github</system>
+      <url>https://github.com/infinispan/infinispan/issues</url>
+   </issueManagement>
+   <distributionManagement>
+      <snapshotRepository>
+         <id>${maven.snapshots.repo.id}</id>
+         <url>${maven.snapshots.repo.url}</url>
+      </snapshotRepository>
+      <repository>
+         <id>${maven.releases.repo.id}</id>
+         <url>${maven.releases.repo.url}</url>
+      </repository>
+   </distributionManagement>
+   <inceptionYear>2009</inceptionYear>
+
+   <properties>
+      <maven.compiler.source>17</maven.compiler.source>
+      <maven.compiler.target>17</maven.compiler.target>
+      <maven.compiler.release>17</maven.compiler.release>
+
+      <project.build.outputTimestamp>2025-09-03T09:43:27Z</project.build.outputTimestamp>
+
+      <!-- === Branding Configuration === -->
+      <infinispan.brand.name>Infinispan</infinispan.brand.name>
+      <infinispan.brand.prefix>infinispan</infinispan.brand.prefix>
+      <infinispan.brand.short-name>infinispan</infinispan.brand.short-name>
+      <infinispan.brand.version>${project.version}</infinispan.brand.version>
+      <infinispan.unbranded.version>${project.version}</infinispan.unbranded.version>
+      <infinispan.codename>Feelin Blue</infinispan.codename>
+      <infinispan.module.slot.prefix>ispn</infinispan.module.slot.prefix>
+      <infinispan.base.version>15.2</infinispan.base.version>
+      <infinispan.module.slot>${infinispan.module.slot.prefix}-${infinispan.base.version}</infinispan.module.slot>
+      <infinispan.core.schema.version>${infinispan.base.version}</infinispan.core.schema.version>
+      <infinispan.olm.openshift.source>community-operators</infinispan.olm.openshift.source>
+      <infinispan.olm.k8s.source>operatorhubio-catalog</infinispan.olm.k8s.source>
+      <infinispan.olm.name>infinispan</infinispan.olm.name>
+      <infinispan.gpg.key>9E31AB27445478DB</infinispan.gpg.key>
+      <wildfly.brand.name>WildFly</wildfly.brand.name>
+      <wildfly.brand.prefix>wildfly</wildfly.brand.prefix>
+
+      <!-- org.wildfly / org.jboss.eap -->
+      <appserver.groupId>org.wildfly</appserver.groupId>
+      <appserver.version>32.0.0.Final</appserver.version>
+
+      <!-- Java source/target version -->
+      <maven.min.version>3.9.0</maven.min.version>
+      <jdk.min.version>17</jdk.min.version>
+
+      <!-- Dependency versions -->
+      <version.aesh>2.8.4</version.aesh>
+      <version.aesh-readline>2.6</version.aesh-readline>
+      <version.ant>1.10.15</version.ant>
+      <version.ant-nodeps>1.8.1</version.ant-nodeps>
+      <version.ant-contrib>1.0b3</version.ant-contrib>
+      <version.antlr3>3.5.3</version.antlr3>
+      <version.arquillian>1.8.1.Final</version.arquillian>
+      <version.blockhound>1.0.11.RELEASE</version.blockhound>
+      <version.bouncycastle>1.70</version.bouncycastle>
+      <version.byteman>4.0.24</version.byteman>
+      <version.caffeine>3.2.0</version.caffeine>
+      <version.commons.compress>1.27.1</version.commons.compress>
+      <version.console>15.2.1.Final</version.console>
+      <version.ehcache.sizeof>0.3.0</version.ehcache.sizeof>
+      <version.fabric8.kubernetes-client>6.13.5</version.fabric8.kubernetes-client>
+      <version.gdx-jnigen-loader>2.5.2</version.gdx-jnigen-loader>
+      <version.glassfish.jaxb>4.0.5</version.glassfish.jaxb>
+      <version.graalvm>24.0.0</version.graalvm>
+      <version.groovy>2.4.21</version.groovy>
+      <version.hamcrest>2.2</version.hamcrest>
+      <version.hibernate.core>6.4.10.Final</version.hibernate.core>
+      <version.hibernate.search>7.2.3.Final</version.hibernate.search>
+      <version.infinispan>15.2.6.Final</version.infinispan>
+      <version.infinispan.arquillian>1.2.0.Beta3</version.infinispan.arquillian>
+      <version.infinispan.doclets>1.4.0.Final</version.infinispan.doclets>
+      <version.infinispan.maven-plugins>1.0.9.Final</version.infinispan.maven-plugins>
+      <version.insights>2.0.4</version.insights>
+      <version.io.agroal>2.5</version.io.agroal>
+      <version.io.lettuce>6.5.4.RELEASE</version.io.lettuce>
+      <version.vertx>4.5.20</version.vertx>
+      <version.io.mashona>1.1.0</version.io.mashona>
+      <version.jackson>2.18.3</version.jackson>
+      <version.jackson.databind>2.16.0</version.jackson.databind>
+      <version.jacoco>0.8.13</version.jacoco>
+      <version.jakarta.annotation-api>2.1.1</version.jakarta.annotation-api>
+      <version.jakarta.json>2.0.1</version.jakarta.json>
+      <version.jakarta.transaction>2.0.1</version.jakarta.transaction>
+      <version.jakarta.enterprise.cdi>4.1.0</version.jakarta.enterprise.cdi>
+      <version.jakarta.persistence>3.1.0</version.jakarta.persistence>
+      <version.javax.cache>1.1.1</version.javax.cache>
+      <version.jboss.logging>3.6.1.Final</version.jboss.logging>
+      <version.jboss.logging.processor>3.0.4.Final</version.jboss.logging.processor>
+      <version.jboss.marshalling>2.2.2.Final</version.jboss.marshalling>
+      <version.jboss.naming>5.0.6.CR1</version.jboss.naming>
+      <version.jboss.narayana>7.2.1.Final</version.jboss.narayana>
+      <version.jboss.security>3.0.6.Final</version.jboss.security>
+      <version.jboss.shrinkwrap>1.2.6</version.jboss.shrinkwrap>
+      <version.jboss.shrinkwrap.descriptors>2.0.0</version.jboss.shrinkwrap.descriptors>
+      <version.jboss.shrinkwrap.resolver>3.3.4</version.jboss.shrinkwrap.resolver>
+      <version.jcip-annotations>1.0</version.jcip-annotations>
+      <version.jgroups>5.4.5.Final</version.jgroups>
+      <version.jgroups.raft>1.0.14.Final</version.jgroups.raft>
+      <version.json-path>2.9.0</version.json-path>
+      <version.jsr107>1.1.0</version.jsr107>
+      <version.junit>4.13.2</version.junit>
+      <version.junit5>5.11.4</version.junit5>
+      <version.log4j>2.23.1</version.log4j>
+      <version.lucene>9.11.1</version.lucene>
+      <version.metainf-services>1.11</version.metainf-services>
+      <version.micrometer>1.14.5</version.micrometer>
+      <version.mockito>5.16.1</version.mockito>
+      <version.mockito_dep.bytebuddy>1.15.3</version.mockito_dep.bytebuddy>
+      <version.mockito_dep.objenesis>3.3</version.mockito_dep.objenesis>
+      <version.nashorn>15.6</version.nashorn>
+      <version.netty>4.1.124.Final</version.netty>
+      <version.netty.incubator.iouring>0.0.26.Final</version.netty.incubator.iouring>
+      <version.openjdk.jmh>1.37</version.openjdk.jmh>
+      <version.org.wildfly.arquillian>5.0.1.Final</version.org.wildfly.arquillian>
+      <version.org.wildfly.elytron>2.6.2.Final</version.org.wildfly.elytron>
+      <version.ow2.asm>9.7.1</version.ow2.asm>
+      <version.party.iroiro.luajava>4.0.2</version.party.iroiro.luajava>
+      <version.picketbox>5.0.3.Final</version.picketbox>
+      <version.picketlink>2.5.5.SP12</version.picketlink>
+      <version.protostream>5.0.13.Final</version.protostream>
+      <version.reactivestreams>1.0.4</version.reactivestreams>
+      <version.rocksdb>9.10.0</version.rocksdb>
+      <version.rxjava>3.1.10</version.rxjava>
+      <version.sshd>2.15.0</version.sshd>
+      <version.testng.engine>1.0.5</version.testng.engine>
+
+      <!-- these versions must be kept in sync with ${version.micrometer}: -->
+      <version.io.prometheus.server>1.3.6</version.io.prometheus.server>
+      <version.io.prometheus.client>0.16.0</version.io.prometheus.client>
+      <version.hdrhistogram>2.2.2</version.hdrhistogram>
+      <version.latencyutils>2.0.3</version.latencyutils>
+
+      <version.quarkus>3.15.6.1</version.quarkus>
+      <version.graalvm>23.1.6</version.graalvm>
+      <version.jandex>3.2.7</version.jandex>
+
+      <version.opentelemetry>1.39.0</version.opentelemetry>
+      <!-- used by the opentelemetry autoconfigure module as incubator runtime dependency -->
+      <version.opentelemetry.alpha>1.39.0-alpha</version.opentelemetry.alpha>
+
+      <version.smallrye-mutiny>2.8.0</version.smallrye-mutiny>
+      <!-- Spring 6, Spring Boot 3 versions -->
+      <version.spring>6.2.5</version.spring>
+      <version.spring.boot>3.4.4</version.spring.boot>
+      <version.spring.session>3.4.2</version.spring.session>
+
+      <version.kafka.client>3.6.1</version.kafka.client>
+      <version.xom>1.3.9</version.xom>
+      <version.xstream>1.4.21</version.xstream>
+
+      <!-- Plugin dependencies -->
+      <version.checkstyle.maven-plugin>3.6.0</version.checkstyle.maven-plugin>
+      <version.native.maven.plugin>0.10.6</version.native.maven.plugin>
+      <version.maven>3.9.9</version.maven>
+      <version.maven.antlr3>3.5.2</version.maven.antlr3>
+      <version.maven.antrun>3.1.0</version.maven.antrun>
+      <version.maven.archetype>3.3.1</version.maven.archetype>
+      <version.maven.assembly>3.7.1</version.maven.assembly>
+      <version.maven.buildhelper>3.6.0</version.maven.buildhelper>
+      <version.maven.bundle>4.2.1</version.maven.bundle>
+      <version.maven.clean>3.4.1</version.maven.clean>
+      <version.maven.compiler>3.14.0</version.maven.compiler>
+      <version.maven.dependency>3.8.1</version.maven.dependency>
+      <version.maven.deploy>3.1.4</version.maven.deploy>
+      <version.maven.enforcer>3.5.0</version.maven.enforcer>
+      <version.maven.exec>3.5.0</version.maven.exec>
+      <version.maven.git-commit-id>9.0.1</version.maven.git-commit-id>
+      <version.maven.gpg>3.2.7</version.maven.gpg>
+      <version.maven.help>3.5.1</version.maven.help>
+      <version.maven.install>3.1.4</version.maven.install>
+      <version.maven.invoker>3.9.0</version.maven.invoker>
+      <version.maven.jar>3.4.2</version.maven.jar>
+      <version.maven.javadoc>3.11.2</version.maven.javadoc>
+      <version.maven-plugin-plugin>3.15.1</version.maven-plugin-plugin>
+      <version.maven.project-info-reports>3.9.0</version.maven.project-info-reports>
+      <version.maven.os>1.7.1</version.maven.os>
+      <version.maven.release>3.1.1</version.maven.release>
+      <version.maven.remote.resource>3.1.0</version.maven.remote.resource>
+      <version.maven.resources>3.3.1</version.maven.resources>
+      <version.maven.scm>2.1.0</version.maven.scm>
+      <version.maven.shade>3.6.0</version.maven.shade>
+      <version.maven.sonatype.central>0.7.0</version.maven.sonatype.central>
+      <version.maven.source>3.3.1</version.maven.source>
+      <version.maven.surefire>3.5.2</version.maven.surefire>
+      <version.maven.war>3.4.0</version.maven.war>
+      <version.org.jboss.galleon>6.0.5.Final</version.org.jboss.galleon>
+      <version.org.wildfly.galleon-plugins>7.3.1.Final</version.org.wildfly.galleon-plugins>
+      <version.pmd.plugin>3.26.0</version.pmd.plugin>
+      <version.owasp-dependency-check-plugin>9.2.0</version.owasp-dependency-check-plugin>
+      <version.spotbugs.plugin>4.9.3.0</version.spotbugs.plugin>
+      <version.weld-servlet>5.1.3.Final</version.weld-servlet>
+
+      <!-- versionx -->
+      <versionx.com.puppycrawl.tools.checkstyle>10.22.0</versionx.com.puppycrawl.tools.checkstyle>
+      <versionx.net.sourceforge.pmd>7.0.0-rc3</versionx.net.sourceforge.pmd>
+
+      <!-- configuration properties -->
+      <org.infinispan.attachServerZip>true</org.infinispan.attachServerZip>
+      <!-- empty by default, means no profiles for upstream or downstream release are enabled. -->
+      <!-- upstream: enables profiles for community release -->
+      <!-- downstream: enables profiles for downstream/product release -->
+      <release-mode/>
+   </properties>
+
+   <build>
+      <pluginManagement>
+         <plugins>
+            <plugin>
+               <groupId>com.github.spotbugs</groupId>
+               <artifactId>spotbugs-maven-plugin</artifactId>
+               <version>${version.spotbugs.plugin}</version>
+            </plugin>
+            <plugin>
+               <groupId>org.owasp</groupId>
+               <artifactId>dependency-check-maven</artifactId>
+               <version>${version.owasp-dependency-check-plugin}</version>
+            </plugin>
+            <plugin>
+               <groupId>org.sonatype.central</groupId>
+               <artifactId>central-publishing-maven-plugin</artifactId>
+               <version>${version.maven.sonatype.central}</version>
+               <extensions>true</extensions>
+               <configuration>
+                  <autoPublish>true</autoPublish>
+                  <deploymentName>Infinispan ${project.version}</deploymentName>
+                  <publishingServerId>central</publishingServerId>
+                  <waitForPublishCompletion>true</waitForPublishCompletion>
+               </configuration>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-javadoc-plugin</artifactId>
+               <version>${version.maven.javadoc}</version>
+               <executions>
+                  <execution>
+                     <id>javadoc</id>
+                     <phase>package</phase>
+                     <goals>
+                        <goal>jar</goal>
+                     </goals>
+                  </execution>
+               </executions>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-gpg-plugin</artifactId>
+               <version>${version.maven.gpg}</version>
+               <executions>
+                  <execution>
+                     <id>sign-artifacts</id>
+                     <phase>verify</phase>
+                     <goals>
+                        <goal>sign</goal>
+                     </goals>
+                     <configuration>
+                        <keyname>${infinispan.gpg.key}</keyname>
+                        <passphraseServerId>${infinispan.gpg.key}</passphraseServerId>
+                     </configuration>
+                  </execution>
+               </executions>
+            </plugin>
+            <plugin>
+               <groupId>io.github.git-commit-id</groupId>
+               <artifactId>git-commit-id-maven-plugin</artifactId>
+               <version>${version.maven.git-commit-id}</version>
+               <executions>
+                  <execution>
+                     <id>git</id>
+                     <goals>
+                        <goal>revision</goal>
+                     </goals>
+                     <phase>initialize</phase>
+                  </execution>
+               </executions>
+               <configuration>
+                  <dateFormatTimeZone>UTC</dateFormatTimeZone>
+                  <runOnlyOnce>true</runOnlyOnce>
+                  <skipPoms>false</skipPoms>
+                  <useNativeGit>true</useNativeGit>
+               </configuration>
+            </plugin>
+         </plugins>
+      </pluginManagement>
+      <plugins>
+         <plugin>
+            <groupId>io.github.git-commit-id</groupId>
+            <artifactId>git-commit-id-maven-plugin</artifactId>
+         </plugin>
+      </plugins>
+   </build>
+
+   <profiles>
+      <profile>
+         <id>community-release</id>
+         <activation>
+            <property>
+               <name>release-mode</name>
+               <value>upstream</value>
+            </property>
+         </activation>
+         <build>
+            <plugins>
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-javadoc-plugin</artifactId>
+                  <configuration>
+                     <detectOfflineLinks>false</detectOfflineLinks>
+                  </configuration>
+               </plugin>
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-gpg-plugin</artifactId>
+               </plugin>
+               <plugin>
+                  <groupId>org.sonatype.central</groupId>
+                  <artifactId>central-publishing-maven-plugin</artifactId>
+                  <extensions>true</extensions>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+   </profiles>
+</project>

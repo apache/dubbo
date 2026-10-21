@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>org.apache.dubbo</groupId>
+  <artifactId>dubbo-parent</artifactId>
+  <versioning>
+    <versions>
+      <version>3.3.7-SNAPSHOT</version>
+    </versions>
+    <lastUpdated>20260517023140</lastUpdated>
+  </versioning>
+</metadata>

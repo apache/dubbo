@@ -1,0 +1,95 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>classworlds</groupId>
+  <artifactId>classworlds</artifactId>
+  <name>classworlds</name>
+  <version>1.1-alpha-2</version>
+  <description></description>
+  <url>http://classworlds.codehaus.org/</url>
+  <ciManagement>
+    <notifiers>
+      <notifier>
+        <address>classworlds-scm@lists.codehaus.org</address>
+      </notifier>
+    </notifiers>
+  </ciManagement>
+  <inceptionYear>2002</inceptionYear>
+  <mailingLists>
+    <mailingList>
+      <name>classworlds users</name>
+      <subscribe>http://lists.codehaus.org/mailman/listinfo/classworlds-user</subscribe>
+      <unsubscribe>http://lists.codehaus.org/mailman/listinfo/classworlds-user</unsubscribe>
+      <archive>http://lists.codehaus.org/pipermail/classworlds-user/</archive>
+    </mailingList>
+    <mailingList>
+      <name>classworlds developers</name>
+      <subscribe>http://lists.codehaus.org/mailman/listinfo/classworlds-dev</subscribe>
+      <unsubscribe>http://lists.codehaus.org/mailman/listinfo/classworlds-dev</unsubscribe>
+      <archive>http://lists.codehaus.org/pipermail/classworlds-dev/</archive>
+    </mailingList>
+    <mailingList>
+      <name>classworlds commit messages</name>
+      <subscribe>http://lists.codehaus.org/mailman/listinfo/classworlds-scm</subscribe>
+      <unsubscribe>http://lists.codehaus.org/mailman/listinfo/classworlds-scm</unsubscribe>
+      <archive>http://lists.codehaus.org/pipermail/classworlds-scm/</archive>
+    </mailingList>
+  </mailingLists>
+  <developers>
+    <developer>
+      <id>bob</id>
+      <name>bob mcwhirter</name>
+      <email>bob@werken.com</email>
+      <organization>The Werken Company</organization>
+      <roles>
+        <role>Founder</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>jvanzyl</id>
+      <name>Jason van Zyl</name>
+      <email>jason@zenplex.com</email>
+      <organization>Zenplex</organization>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>bwalding</id>
+      <name>Ben Walding</name>
+      <email>ben@walding.com</email>
+      <organization>Walding Consulting Services</organization>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:cvs:pserver:anonymous@cvs.codehaus.org:/scm/cvspublic/:classworlds</connection>
+    <url>http://cvs.classworlds.codehaus.org/</url>
+  </scm>
+  <organization>
+    <name>The Codehaus</name>
+    <url>http://codehaus.org/</url>
+  </organization>
+  <build>
+    <sourceDirectory>src/java/main</sourceDirectory>
+    <testSourceDirectory>src/java/test</testSourceDirectory>
+    <plugins>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <includes>
+            <include>**/*Test.java</include>
+          </includes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  <distributionManagement>
+    <site>
+      <id>default</id>
+      <name>Default Site</name>
+      <url>scp://classworlds.codehaus.org//www/classworlds.codehaus.org</url>
+    </site>
+  </distributionManagement>
+</project>

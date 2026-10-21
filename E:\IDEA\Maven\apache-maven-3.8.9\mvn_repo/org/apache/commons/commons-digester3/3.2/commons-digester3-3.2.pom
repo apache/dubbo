@@ -1,0 +1,517 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-parent</artifactId>
+    <version>22</version>
+  </parent>
+
+  <groupId>org.apache.commons</groupId>
+  <artifactId>commons-digester3</artifactId>
+  <version>3.2</version>
+  <packaging>jar</packaging>
+
+  <name>Apache Commons Digester</name>
+  <description>
+    The Apache Commons Digester package lets you configure an XML to Java
+    object mapping module which triggers certain actions called rules whenever
+    a particular pattern of nested XML elements is recognized.
+  </description>
+  <url>http://commons.apache.org/digester/</url>
+  <inceptionYear>2001</inceptionYear>
+
+  <developers>
+    <developer>
+      <name>Craig McClanahan</name>
+      <id>craigmcc</id>
+      <email>craigmcc@apache.org</email>
+    </developer>
+    <developer>
+      <name>Robert Burrell Donkin</name>
+      <id>rdonkin</id>
+      <email>rdonkin@apache.org</email>
+    </developer>
+    <developer>
+      <name>Scott Sanders</name>
+      <id>sanders</id>
+      <email>sanders@totalsync.com</email>
+    </developer>
+    <developer>
+      <name>James Strachan</name>
+      <id>jstrachan</id>
+      <email>jstrachan@apache.org</email>
+    </developer>
+    <developer>
+      <name>Jason van Zyl</name>
+      <id>jvanzyl</id>
+      <email>jvanzyl@apache.org</email>
+    </developer>
+    <developer>
+      <name>Tim OBrien</name>
+      <id>tobrien</id>
+      <email>tobrien@apache.org</email>
+    </developer>
+    <developer>
+      <name>Jean-Francois Arcand</name>
+      <id>jfarcand</id>
+      <email>jfarcand@apache.org</email>
+    </developer>
+    <developer>
+      <name>Simon Kitching</name>
+      <id>skitching</id>
+      <email>skitching@apache.org</email>
+    </developer>
+    <developer>
+      <name>Rahul Akolkar</name>
+      <id>rahul</id>
+      <email>rahul AT apache DOT org</email>
+    </developer>
+    <developer>
+      <name>Simone Tripodi</name>
+      <id>simonetripodi</id>
+      <email>simonetripodi AT apache DOT org</email>
+    </developer>
+    <developer>
+      <name>Matt Benson</name>
+      <id>mbenson</id>
+      <email>mbenson AT apache DOT org</email>
+    </developer>
+  </developers>
+  <contributors>
+    <contributor>
+      <name>Bradley M. Handy</name>
+      <email>bhandy@users.sf.net</email>
+    </contributor>
+    <contributor>
+      <name>Christopher Lenz</name>
+    </contributor>
+    <contributor>
+      <name>Ted Husted</name>
+    </contributor>
+    <contributor>
+      <name>David H. Martin</name>
+    </contributor>
+    <contributor>
+      <name>Henri Chen</name>
+    </contributor>
+    <contributor>
+      <name>Janek Bogucki</name>
+    </contributor>
+    <contributor>
+      <name>Mark Huisman</name>
+    </contributor>
+    <contributor>
+      <name>Paul Jack</name>
+    </contributor>
+    <contributor>
+      <name>Anton Maslovsky</name>
+    </contributor>
+    <contributor>
+      <name>Matt Cleveland</name>
+    </contributor>
+    <contributor>
+      <name>Gabriele Carcassi</name>
+    </contributor>
+    <contributor>
+      <name>Wendy Smoak</name>
+      <email>java@wendysmoak.com</email>
+    </contributor>
+    <contributor>
+      <name>Kevin Ross</name>
+      <email>kevin.ross@iverticalleap.com</email>
+    </contributor>
+    <contributor>
+      <name>Daniele Testa</name>
+      <email>mrwolfgraphics AT gmail DOT com</email>
+      <roles>
+        <role>graphic designer</role>
+      </roles>
+    </contributor>
+  </contributors>
+
+  <scm>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/commons/proper/digester/tags/DIGESTER3_3_2_RC2</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/commons/proper/digester/tags/DIGESTER3_3_2_RC2</developerConnection>
+    <url>http://svn.apache.org/viewvc/commons/proper/digester/tags/DIGESTER3_3_2_RC2</url>
+  </scm>
+  <issueManagement>
+    <system>jira</system>
+    <url>http://issues.apache.org/jira/browse/DIGESTER</url>
+  </issueManagement>
+
+  <properties>
+    <maven.compile.source>1.5</maven.compile.source>
+    <maven.compile.target>1.5</maven.compile.target>
+    <commons.componentid>digester</commons.componentid>
+    <commons.release.version>3.2</commons.release.version>
+    <commons.release.desc>(minimum JDK 1.5)</commons.release.desc>
+    <commons.release.2.version>2.1</commons.release.2.version>
+    <commons.release.2.desc>(minimum JDK 1.5)</commons.release.2.desc>
+    <commons.rc.version>RC2</commons.rc.version>
+    <commons.jira.id>DIGESTER</commons.jira.id>
+    <commons.jira.pid>12310471</commons.jira.pid>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>cglib</groupId>
+      <artifactId>cglib</artifactId>
+      <version>2.2.2</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-beanutils</groupId>
+      <artifactId>commons-beanutils</artifactId>
+      <version>1.8.3</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+      <version>1.1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.10</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>.</directory>
+        <targetPath>META-INF</targetPath>
+        <includes>
+          <include>NOTICE.txt</include>
+          <include>LICENSE.txt</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>false</filtering>
+        <includes>
+          <include>**/*.dtd</include>
+        </includes>
+      </resource>
+    </resources>
+
+    <plugins>
+      <plugin>
+        <!--
+          - A number of the pre-maven test case "suport" classes have names starting with Test.
+          - This confuses the maven surefire "auto-detect test case" functionality, so we
+          - need to manually exclude them.
+          -->
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>**/TestBean.java</exclude>
+            <exclude>**/TestRule.java</exclude>
+            <exclude>**/TestRuleSet.java</exclude>
+            <exclude>**/Test*$*.java</exclude>
+          </excludes>
+          <systemPropertyVariables>
+            <!-- Suppress most logging output -->
+            <org.apache.commons.logging.Log>org.apache.commons.logging.impl.SimpleLog</org.apache.commons.logging.Log>
+            <org.apache.commons.logging.simplelog.defaultlog>fatal</org.apache.commons.logging.simplelog.defaultlog>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>shaded-manifest</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>manifest</goal>
+            </goals>
+            <configuration>
+              <manifestLocation>${project.build.directory}/osgi-shaded</manifestLocation>
+              <instructions>
+                <Import-Package>javax.xml.parsers,javax.xml.validation,org.w3c.dom,org.xml.sax,org.xml.sax.helpers</Import-Package>
+              </instructions>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>jarjar-maven-plugin</artifactId>
+        <version>1.5</version>
+        <configuration>
+          <input>{classes}</input>
+          <output>${project.build.directory}/classes-shaded</output>
+          <overwrite>true</overwrite>
+          <skipManifest>true</skipManifest>
+          <includes>
+            <include>*:asm</include>
+            <include>*:cglib</include>
+            <include>*:commons-beanutils</include>
+            <include>*:commons-logging</include>
+          </includes>
+          <rules>
+            <rule>
+              <pattern>net.sf.cglib.*</pattern>
+              <result>org.apache.commons.digester3.internal.cglib.$@1</result>
+            </rule>
+            <rule>
+              <pattern>net.sf.cglib.**.*</pattern>
+              <result>org.apache.commons.digester3.internal.cglib.@1.$@2</result>
+            </rule>
+            <rule>
+              <pattern>org.objectweb.asm.*</pattern>
+              <result>org.apache.commons.digester3.internal.asm.$@1</result>
+            </rule>
+            <rule>
+              <pattern>org.objectweb.asm.**.*</pattern>
+              <result>org.apache.commons.digester3.internal.asm.@1.$@2</result>
+            </rule>
+            <keep>
+              <pattern>org.apache.commons.**</pattern>
+            </keep>
+          </rules>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>jarjar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <!--
+          - Copy the specific LICENSE.txt and NOTICE.txt files so that they are included
+          - in the uberjar jar file.
+          -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>uberjar.resources</id>
+            <!-- has to run after default N&L files are copied -->
+            <phase>package</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <copy todir="${project.build.directory}/classes-shaded/META-INF/" overwrite="true">
+                  <fileset dir="${basedir}/src/main/assembly/">
+                    <include name="*.txt" />
+                  </fileset>
+                  <mapper type="regexp" from="^(.*)-with-deps\.txt" to="\1.txt" />
+                </copy>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>jar</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <configuration>
+              <classesDirectory>${project.build.outputDirectory}</classesDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>jarjar</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <configuration>
+              <archive>
+                <manifestFile>${project.build.directory}/osgi-shaded/MANIFEST.MF</manifestFile>
+              </archive>
+              <classesDirectory>${project.build.directory}/classes-shaded</classesDirectory>
+              <classifier>with-deps</classifier>
+              <excludes>
+                <exclude>**/LICENSE</exclude>
+                <exclude>**/NOTICE</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptors>
+            <descriptor>${basedir}/src/main/assembly/bin.xml</descriptor>
+            <descriptor>${basedir}/src/main/assembly/src.xml</descriptor>
+          </descriptors>
+          <tarLongFileMode>gnu</tarLongFileMode>
+          <attach>false</attach>
+        </configuration>
+      </plugin>
+    </plugins>
+
+    <!--
+     | Maven3 doesn't handle ssh/scp by default
+     | let's take in consideration to add it in the parent pom
+    -->
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-ssh</artifactId>
+        <version>1.0</version>
+      </extension>
+    </extensions>
+
+    <pluginManagement>
+      <plugins>
+        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId> org.apache.maven.plugins </groupId>
+                    <artifactId> maven-antrun-plugin </artifactId>
+                    <versionRange>[1.6,)</versionRange>
+                    <goals>
+                      <goal>run</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore />
+                  </action>
+                </pluginExecution>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>maven-bundle-plugin</artifactId>
+                    <versionRange>[2.3.5,)</versionRange>
+                    <goals>
+                      <goal>manifest</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore />
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.8</version>
+        <configuration>
+          <linksource>true</linksource>
+          <links>
+            <link>http://download.oracle.com/javase/1.5.0/docs/api/</link>
+            <link>http://commons.apache.org/beanutils/v1.8.3/apidocs/</link>
+          </links>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <version>2.3.2</version>
+        <configuration>
+          <threshold>Normal</threshold>
+          <effort>Default</effort>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-changes-plugin</artifactId>
+        <version>2.3</version>
+        <configuration>
+          <issueLinkTemplate>%URL%/%ISSUE%</issueLinkTemplate>
+        </configuration>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>changes-report</report>
+              <report>jira-report</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>2.7</version>
+        <configuration>
+          <configLocation>config/maven_checks.xml</configLocation>
+          <headerLocation>config/maven-header.txt</headerLocation>
+          <suppressionsLocation>${basedir}/checkstyle-suppressions.xml</suppressionsLocation>
+          <suppressionsFileExpression>${basedir}/checkstyle-suppressions.xml</suppressionsFileExpression>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <version>2.3</version>
+        <configuration>
+          <targetJdk>1.5</targetJdk>
+        </configuration>
+        <!--Use default rules-->
+      </plugin>
+    </plugins>
+  </reporting>
+
+  <profiles>
+    <profile>
+      <id>rc</id>
+      <distributionManagement>
+        <!-- Cannot define in parent ATM, see COMMONSSITE-26 -->
+        <site>
+          <id>apache.website</id>
+          <name>Apache Commons Release Candidate Staging Site</name>
+          <url>${commons.deployment.protocol}://people.apache.org/www/people.apache.org/builds/commons/${commons.componentid}/${commons.release.version}/${commons.rc.version}/site</url>
+        </site>
+      </distributionManagement>
+    </profile>
+    <profile>
+      <id>release</id>
+      <distributionManagement>
+        <!-- Cannot define in parent ATM, see COMMONSSITE-26 -->
+        <site>
+          <id>people.apache.org</id>
+          <name>Apache Commons Site</name>
+          <url>${commons.deployment.protocol}://people.apache.org/www/commons.apache.org/digester</url>
+        </site>
+      </distributionManagement>
+    </profile>
+  </profiles>
+</project>

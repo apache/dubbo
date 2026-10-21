@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>info.picocli</groupId>
+  <artifactId>picocli</artifactId>
+  <version>4.6.1</version>
+  <packaging>jar</packaging>
+  <name>picocli - a mighty tiny Command Line Interface</name>
+  <description>Java command line parser with both an annotations API and a programmatic API. Usage help with ANSI styles and colors. Autocomplete. Nested subcommands. Easily included as source to avoid adding a dependency.</description>
+  <url>http://picocli.info</url>
+  <inceptionYear>2017</inceptionYear>
+  <licenses>
+    <license>
+      <name>The Apache Software License, version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>rpopma</id>
+      <name>Remko Popma</name>
+      <email>rpopma@apache.org</email>
+    </developer>
+  </developers>
+  <scm>
+    <url>https://github.com/remkop/picocli/tree/master</url>
+    <connection>scm:git:https://github.com/remkop/picocli.git</connection>
+    <developerConnection>scm:git:ssh://github.com:remkop/picocli.git</developerConnection>
+  </scm>
+</project>

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <!-- This module was also published with a richer model, Gradle metadata,  -->
+  <!-- which should be used instead. Do not delete the following line which  -->
+  <!-- is to indicate to Gradle or any Gradle module metadata file consumer  -->
+  <!-- that they should prefer consuming it instead. -->
+  <!-- do_not_remove: published-with-gradle-metadata -->
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>io.projectreactor</groupId>
+  <artifactId>reactor-bom</artifactId>
+  <version>2020.0.38</version>
+  <packaging>pom</packaging>
+  <name>Project Reactor 3 Release Train - BOM</name>
+  <description>Bill of materials to make sure a consistent set of versions is used for Reactor 3.</description>
+  <url>https://projectreactor.io</url>
+  <organization>
+    <name>reactor</name>
+    <url>https://github.com/reactor</url>
+  </organization>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>simonbasle</id>
+      <name>Simon Baslé</name>
+      <email>sbasle at vmware.com</email>
+    </developer>
+    <developer>
+      <id>violetagg</id>
+      <name>Violeta Georgieva</name>
+      <email>violetag at vmware.com</email>
+    </developer>
+    <developer>
+      <id>odokuka</id>
+      <name>Oleh Dokuka</name>
+      <email>odokuka at vmware.com</email>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:git://github.com/reactor/reactor</connection>
+    <developerConnection>scm:git:git://github.com/reactor/reactor</developerConnection>
+    <url>https://github.com/reactor/reactor</url>
+  </scm>
+  <issueManagement>
+    <system>GitHub Issues</system>
+    <url>https://github.com/reactor</url>
+  </issueManagement>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.reactivestreams</groupId>
+        <artifactId>reactive-streams</artifactId>
+        <version>1.0.4</version>
+      </dependency>
+      <dependency>
+        <groupId>io.projectreactor</groupId>
+        <artifactId>reactor-core</artifactId>
+        <version>3.4.34</version>
+      </dependency>
+      <dependency>
+        <groupId>io.projectreactor</groupId>
+        <artifactId>reactor-test</artifactId>
+        <version>3.4.34</version>
+      </dependency>
+      <dependency>
+        <groupId>io.projectreactor</groupId>
+        <artifactId>reactor-tools</artifactId>
+        <version>3.4.34</version>
+      </dependency>
+      <dependency>
+        <groupId>io.projectreactor.addons</groupId>
+        <artifactId>reactor-extra</artifactId>
+        <version>3.4.10</version>
+      </dependency>
+      <dependency>
+        <groupId>io.projectreactor.addons</groupId>
+        <artifactId>reactor-adapter</artifactId>
+        <version>3.4.10</version>
+      </dependency>
+      <dependency>
+        <groupId>io.projectreactor.netty</groupId>
+        <artifactId>reactor-netty</artifactId>
+        <version>1.0.39</version>
+      </dependency>
+      <dependency>
+        <groupId>io.projectreactor.netty</groupId>
+        <artifactId>reactor-netty-core</artifactId>
+        <version>1.0.39</version>
+      </dependency>
+      <dependency>
+        <groupId>io.projectreactor.netty</groupId>
+        <artifactId>reactor-netty-http</artifactId>
+        <version>1.0.39</version>
+      </dependency>
+      <dependency>
+        <groupId>io.projectreactor.netty</groupId>
+        <artifactId>reactor-netty-http-brave</artifactId>
+        <version>1.0.39</version>
+      </dependency>
+      <dependency>
+        <groupId>io.projectreactor.addons</groupId>
+        <artifactId>reactor-pool</artifactId>
+        <version>0.2.12</version>
+      </dependency>
+      <dependency>
+        <groupId>io.projectreactor.kafka</groupId>
+        <artifactId>reactor-kafka</artifactId>
+        <version>1.3.22</version>
+      </dependency>
+      <dependency>
+        <groupId>io.projectreactor.rabbitmq</groupId>
+        <artifactId>reactor-rabbitmq</artifactId>
+        <version>1.5.6</version>
+      </dependency>
+      <dependency>
+        <groupId>io.projectreactor.kotlin</groupId>
+        <artifactId>reactor-kotlin-extensions</artifactId>
+        <version>1.1.10</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+</project>
