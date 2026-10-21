@@ -23,6 +23,7 @@ import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationHandler;
 import io.micrometer.tracing.TraceContext;
 import io.micrometer.tracing.Tracer;
+import org.slf4j.MDC;
 
 public class DubboServerTracingObservationHandler<T extends DubboServerContext> implements ObservationHandler<T> {
 
@@ -41,6 +42,20 @@ public class DubboServerTracingObservationHandler<T extends DubboServerContext> 
             return;
         }
         RpcContext.getServerContext().setAttachment(DEFAULT_TRACE_ID_KEY, traceContext.traceId());
+        try {
+            MDC.put(DEFAULT_TRACE_ID_KEY, traceContext.traceId());
+            MDC.put("spanId", traceContext.spanId());
+        } catch (Throwable ignored) {
+        }
+    }
+
+    @Override
+    public void onScopeClosed(T context) {
+        try {
+            MDC.remove(DEFAULT_TRACE_ID_KEY);
+            MDC.remove("spanId");
+        } catch (Throwable ignored) {
+        }
     }
 
     @Override
