@@ -498,6 +498,7 @@
       </activation>
       <modules>
         <module>dubbo-spring-boot-project/dubbo-spring-boot-3-autoconfigure</module>
+        <module>dubbo-plugin/dubbo-rest-spring6</module>
         <module>dubbo-plugin/dubbo-spring6-security</module>
         <module>dubbo-plugin/dubbo-mutiny</module>
       </modules>
@@ -649,6 +650,7 @@
       <id>release</id>
       <modules>
         <module>dubbo-spring-boot-project/dubbo-spring-boot-3-autoconfigure</module>
+        <module>dubbo-plugin/dubbo-rest-spring6</module>
         <module>dubbo-plugin/dubbo-spring6-security</module>
         <module>dubbo-plugin/dubbo-plugin-loom</module>
         <module>dubbo-plugin/dubbo-mutiny</module>

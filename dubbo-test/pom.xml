@@ -41,4 +41,16 @@
     <skip_maven_deploy>true</skip_maven_deploy>
   </properties>
 
+  <profiles>
+    <profile>
+      <id>jdk-version-ge-17</id>
+      <activation>
+        <jdk>[17,)</jdk>
+      </activation>
+      <modules>
+        <module>dubbo-test-rest-spring6.1</module>
+      </modules>
+    </profile>
+  </profiles>
+
 </project>
