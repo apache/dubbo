@@ -65,7 +65,7 @@ public class SingleProtocolConnectionManagerTest {
         url = url.setScopeModel(applicationModel);
         ModuleModel moduleModel = applicationModel.getDefaultModule();
         url = url.putAttribute(CommonConstants.SCOPE_MODEL, moduleModel);
-        server = new NettyPortUnificationServer(url, new DefaultPuHandler());
+        server = NettyPortUnificationServer.create(url, new DefaultPuHandler());
         server.bind();
         connectionManager = url.getOrDefaultFrameworkModel()
                 .getExtensionLoader(ConnectionManager.class)

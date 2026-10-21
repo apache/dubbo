@@ -31,7 +31,7 @@ public class NettyPortUnificationTransporter implements PortUnificationTransport
 
     @Override
     public AbstractPortUnificationServer bind(URL url, ChannelHandler handler) throws RemotingException {
-        return new NettyPortUnificationServer(url, handler);
+        return NettyPortUnificationServer.create(url, handler);
     }
 
     @Override

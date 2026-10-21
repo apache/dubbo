@@ -68,31 +68,41 @@ public class AffinityStateRouter<T> extends AbstractStateRouter<T> {
 
     private final boolean enabled;
 
-    public AffinityStateRouter(URL url) {
+    public static <T> AffinityStateRouter<T> create(URL url) {
+        AffinityStateRouter<T> router = new AffinityStateRouter<>(url);
+        if (router.enabled) {
+            router.init(router.affinityKey);
+        }
+        return router;
+    }
+
+    public static <T> AffinityStateRouter<T> create(URL url, String affinityKey, Double ratio, boolean enabled) {
+        AffinityStateRouter<T> router = new AffinityStateRouter<>(url, affinityKey, ratio, enabled);
+        if (router.enabled) {
+            router.init(affinityKey);
+        }
+        return router;
+    }
+
+    private AffinityStateRouter(URL url) {
         super(url);
         this.enabled = url.getParameter(ENABLED_KEY, true);
         this.affinityKey = url.getParameter(AFFINITY_KEY, "");
         this.ratio = url.getParameter(RATIO_KEY, DefaultAffinityRatio);
         this.matcherFactories =
                 moduleModel.getExtensionLoader(ConditionMatcherFactory.class).getActivateExtensions();
-        if (this.enabled) {
-            this.init(affinityKey);
-        }
     }
 
-    public AffinityStateRouter(URL url, String affinityKey, Double ratio, boolean enabled) {
+    private AffinityStateRouter(URL url, String affinityKey, Double ratio, boolean enabled) {
         super(url);
         this.enabled = enabled;
         this.affinityKey = affinityKey;
         this.ratio = ratio;
         matcherFactories =
                 moduleModel.getExtensionLoader(ConditionMatcherFactory.class).getActivateExtensions();
-        if (this.enabled) {
-            this.init(affinityKey);
-        }
     }
 
-    public void init(String rule) {
+    private final void init(String rule) {
         try {
             if (rule == null || rule.trim().isEmpty()) {
                 throw new IllegalArgumentException("Illegal affinity rule!");

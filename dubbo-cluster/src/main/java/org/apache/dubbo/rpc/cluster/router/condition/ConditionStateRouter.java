@@ -80,30 +80,41 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
 
     private final boolean enabled;
 
-    public ConditionStateRouter(URL url, String rule, boolean force, boolean enabled) {
+    public static <T> ConditionStateRouter<T> create(URL url) {
+        ConditionStateRouter<T> router = new ConditionStateRouter<>(url);
+        if (router.enabled) {
+            router.init(url.getParameterAndDecoded(RULE_KEY));
+        }
+        return router;
+    }
+
+    public static <T> ConditionStateRouter<T> create(URL url, String rule, boolean force, boolean enabled) {
+        ConditionStateRouter<T> router = new ConditionStateRouter<>(url, rule, force, enabled);
+        if (router.enabled) {
+            router.init(rule);
+        }
+
+        return router;
+    }
+
+    private ConditionStateRouter(URL url, String rule, boolean force, boolean enabled) {
         super(url);
         this.setForce(force);
         this.enabled = enabled;
         matcherFactories =
                 moduleModel.getExtensionLoader(ConditionMatcherFactory.class).getActivateExtensions();
-        if (enabled) {
-            this.init(rule);
-        }
     }
 
-    public ConditionStateRouter(URL url) {
+    private ConditionStateRouter(URL url) {
         super(url);
         this.setUrl(url);
         this.setForce(url.getParameter(FORCE_KEY, false));
         matcherFactories =
                 moduleModel.getExtensionLoader(ConditionMatcherFactory.class).getActivateExtensions();
         this.enabled = url.getParameter(ENABLED_KEY, true);
-        if (enabled) {
-            init(url.getParameterAndDecoded(RULE_KEY));
-        }
     }
 
-    public void init(String rule) {
+    private final void init(String rule) {
         try {
             if (rule == null || rule.trim().length() == 0) {
                 throw new IllegalArgumentException("Illegal route rule!");

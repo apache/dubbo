@@ -942,16 +942,17 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         private final ModuleModel moduleModel;
 
         public ServiceConfigurationListener(ModuleModel moduleModel, URL providerUrl, OverrideListener notifyListener) {
-            super(moduleModel);
+            super(
+                    moduleModel,
+                    moduleModel
+                                    .modelEnvironment()
+                                    .getConfiguration()
+                                    .convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)
+                            ? DynamicConfiguration.getRuleKey(providerUrl) + CONFIGURATORS_SUFFIX
+                            : null);
             this.providerUrl = providerUrl;
             this.notifyListener = notifyListener;
             this.moduleModel = moduleModel;
-            if (moduleModel
-                    .modelEnvironment()
-                    .getConfiguration()
-                    .convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
-                this.initWith(DynamicConfiguration.getRuleKey(providerUrl) + CONFIGURATORS_SUFFIX);
-            }
         }
 
         private <T> URL overrideUrl(URL providerUrl) {
@@ -978,11 +979,12 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         private final ModuleModel moduleModel;
 
         public ProviderConfigurationListener(ModuleModel moduleModel) {
-            super(moduleModel);
+            super(
+                    moduleModel,
+                    moduleModel.modelEnvironment().getConfiguration().getBoolean(ENABLE_CONFIGURATION_LISTEN, true)
+                            ? moduleModel.getApplicationModel().getApplicationName() + CONFIGURATORS_SUFFIX
+                            : null);
             this.moduleModel = moduleModel;
-            if (moduleModel.modelEnvironment().getConfiguration().getBoolean(ENABLE_CONFIGURATION_LISTEN, true)) {
-                this.initWith(moduleModel.getApplicationModel().getApplicationName() + CONFIGURATORS_SUFFIX);
-            }
         }
 
         /**

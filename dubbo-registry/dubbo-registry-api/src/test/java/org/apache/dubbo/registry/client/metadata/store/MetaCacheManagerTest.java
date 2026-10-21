@@ -63,7 +63,7 @@ class MetaCacheManagerTest {
         //        ExtensionAccessor extensionAccessor = Mockito.mock(ExtensionAccessor.class);
         //        when(extensionAccessor.getDefaultExtension(ExecutorRepository.class)).thenReturn(executorRepository);
 
-        MetaCacheManager cacheManager = new MetaCacheManager();
+        MetaCacheManager cacheManager = MetaCacheManager.create();
         try {
             //        cacheManager.setExtensionAccessor(extensionAccessor);
 
@@ -117,7 +117,7 @@ class MetaCacheManagerTest {
         MetadataInfo metadataInfo3 = JsonUtils.toJavaObject(
                 "{\"app\":\"demo3\",\"services\":{\"greeting/org.apache.dubbo.registry.service.DemoService2:1.0.0:dubbo\":{\"name\":\"org.apache.dubbo.registry.service.DemoService2\",\"group\":\"greeting\",\"version\":\"1.0.0\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.registry.service.DemoService2\",\"params\":{\"application\":\"demo-provider2\",\"sayHello.timeout\":\"7000\",\"version\":\"1.0.0\",\"timeout\":\"5000\",\"group\":\"greeting\"}},\"greeting/org.apache.dubbo.registry.service.DemoService:1.0.0:dubbo\":{\"name\":\"org.apache.dubbo.registry.service.DemoService\",\"group\":\"greeting\",\"version\":\"1.0.0\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.registry.service.DemoService\",\"params\":{\"application\":\"demo-provider2\",\"version\":\"1.0.0\",\"timeout\":\"5000\",\"group\":\"greeting\"}}}}\n",
                 MetadataInfo.class);
-        MetaCacheManager cacheManager = new MetaCacheManager();
+        MetaCacheManager cacheManager = MetaCacheManager.create();
         try {
             assertEquals("97370ff779b6b6ebb7012bae61710de2", metadataInfo3.calRevision());
             cacheManager.put("97370ff779b6b6ebb7012bae61710de2", metadataInfo3);
@@ -134,7 +134,7 @@ class MetaCacheManagerTest {
 
             MetaCacheManager newCacheManager = null;
             try {
-                newCacheManager = new MetaCacheManager();
+                newCacheManager = MetaCacheManager.create();
                 MetadataInfo metadataInfo = newCacheManager.get("97370ff779b6b6ebb7012bae61710de2");
                 assertNotNull(metadataInfo);
                 assertEquals("demo3", metadataInfo.getApp());

@@ -56,14 +56,19 @@ public class TriBuiltinService {
 
     private final AtomicBoolean init = new AtomicBoolean();
 
-    public TriBuiltinService(FrameworkModel frameworkModel) {
-        this.frameworkModel = frameworkModel;
-        if (enable()) {
-            init();
+    public static TriBuiltinService create(FrameworkModel frameworkModel) {
+        TriBuiltinService service = new TriBuiltinService(frameworkModel);
+        if (service.enable()) {
+            service.init();
         }
+        return service;
     }
 
-    public void init() {
+    private TriBuiltinService(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
+    }
+
+    public final void init() {
         if (init.compareAndSet(false, true)) {
             healthStatusManager = new HealthStatusManager(new TriHealthImpl());
             healthService = healthStatusManager.getHealthService();
