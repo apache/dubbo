@@ -73,6 +73,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstructionWithAnswer;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class Curator5ZookeeperClientTest {
@@ -211,20 +212,18 @@ class Curator5ZookeeperClientTest {
     @Test
     void testWithInvalidServer() throws InterruptedException {
         when(mockCuratorFramework.blockUntilConnected(anyInt(), any())).thenReturn(false);
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            curatorClient = new Curator5ZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:1/service?timeout=1000"));
-            curatorClient.create("/testPath", true, true);
-        });
+        Assertions.assertThrows(
+                IllegalStateException.class,
+                () -> new Curator5ZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:1/service?timeout=1000")));
+        verify(mockCuratorFramework).close();
     }
 
     @Test
     void testWithInvalidServerWithoutCheck() throws InterruptedException {
         when(mockCuratorFramework.blockUntilConnected(anyInt(), any())).thenReturn(false);
         URL url = URL.valueOf("zookeeper://127.0.0.1:1/service").addParameter(CHECK_KEY, false);
-        Assertions.assertDoesNotThrow(() -> {
-            curatorClient = new Curator5ZookeeperClient(url);
-            curatorClient.create("/testPath", true, true);
-        });
+        Assertions.assertThrows(IllegalStateException.class, () -> new Curator5ZookeeperClient(url));
+        verify(mockCuratorFramework).close();
     }
 
     @Test
