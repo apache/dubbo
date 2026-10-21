@@ -46,7 +46,6 @@ public class FastJson2ObjectInput implements ObjectInput {
         this.fastjson2SecurityManager = fastjson2SecurityManager;
         this.classLoader = Thread.currentThread().getContextClassLoader();
         this.is = in;
-        fastjson2CreatorManager.setCreator(classLoader);
     }
 
     @Override
@@ -117,27 +116,7 @@ public class FastJson2ObjectInput implements ObjectInput {
                     "deserialize failed. expected read length: " + length + " but actual read: " + read);
         }
         Fastjson2SecurityManager.Handler securityFilter = fastjson2SecurityManager.getSecurityFilter();
-        T result;
-        if (securityFilter.isCheckSerializable()) {
-            result = JSONB.parseObject(
-                    bytes,
-                    cls,
-                    securityFilter,
-                    JSONReader.Feature.UseDefaultConstructorAsPossible,
-                    JSONReader.Feature.ErrorOnNoneSerializable,
-                    JSONReader.Feature.IgnoreAutoTypeNotMatch,
-                    JSONReader.Feature.UseNativeObject,
-                    JSONReader.Feature.FieldBased);
-        } else {
-            result = JSONB.parseObject(
-                    bytes,
-                    cls,
-                    securityFilter,
-                    JSONReader.Feature.UseDefaultConstructorAsPossible,
-                    JSONReader.Feature.UseNativeObject,
-                    JSONReader.Feature.IgnoreAutoTypeNotMatch,
-                    JSONReader.Feature.FieldBased);
-        }
+        T result = parseObject(bytes, cls, securityFilter);
         if (result != null && cls != null && !ClassUtils.isMatch(result.getClass(), cls)) {
             throw new IllegalArgumentException(
                     "deserialize failed. expected class: " + cls + " but actual class: " + result.getClass());
@@ -156,27 +135,7 @@ public class FastJson2ObjectInput implements ObjectInput {
                     "deserialize failed. expected read length: " + length + " but actual read: " + read);
         }
         Fastjson2SecurityManager.Handler securityFilter = fastjson2SecurityManager.getSecurityFilter();
-        T result;
-        if (securityFilter.isCheckSerializable()) {
-            result = JSONB.parseObject(
-                    bytes,
-                    cls,
-                    securityFilter,
-                    JSONReader.Feature.UseDefaultConstructorAsPossible,
-                    JSONReader.Feature.ErrorOnNoneSerializable,
-                    JSONReader.Feature.IgnoreAutoTypeNotMatch,
-                    JSONReader.Feature.UseNativeObject,
-                    JSONReader.Feature.FieldBased);
-        } else {
-            result = JSONB.parseObject(
-                    bytes,
-                    cls,
-                    securityFilter,
-                    JSONReader.Feature.UseDefaultConstructorAsPossible,
-                    JSONReader.Feature.UseNativeObject,
-                    JSONReader.Feature.IgnoreAutoTypeNotMatch,
-                    JSONReader.Feature.FieldBased);
-        }
+        T result = parseObject(bytes, cls, securityFilter);
         if (result != null && cls != null && !ClassUtils.isMatch(result.getClass(), cls)) {
             throw new IllegalArgumentException(
                     "deserialize failed. expected class: " + cls + " but actual class: " + result.getClass());
@@ -187,7 +146,6 @@ public class FastJson2ObjectInput implements ObjectInput {
     private void updateClassLoaderIfNeed() {
         ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
         if (currentClassLoader != classLoader) {
-            fastjson2CreatorManager.setCreator(currentClassLoader);
             classLoader = currentClassLoader;
         }
     }
@@ -204,5 +162,55 @@ public class FastJson2ObjectInput implements ObjectInput {
             value = (value << 8) + (b & 0xFF);
         }
         return value;
+    }
+
+    private <T> T parseObject(byte[] bytes, Class<T> cls, Fastjson2SecurityManager.Handler securityFilter) {
+        Fastjson2CreatorManager.ParseWarmupState warmup = fastjson2CreatorManager.getReaderWarmup(cls);
+        if (!warmup.isWarmed()) {
+            warmup.addPending();
+            if (!warmup.isWarmed()) {
+                synchronized (fastjson2CreatorManager.getReaderWarmupLock()) {
+                    if (!warmup.isWarmed()) {
+                        try {
+                            fastjson2CreatorManager.setCreator(classLoader);
+                            T result = parseObjectWithoutWarmupLock(bytes, cls, securityFilter);
+                            if (warmup.removePending() == 0) {
+                                warmup.markWarmed();
+                            }
+                            return result;
+                        } catch (RuntimeException | Error exception) {
+                            warmup.removePending();
+                            throw exception;
+                        }
+                    }
+                }
+            }
+            warmup.removePending();
+        }
+        fastjson2CreatorManager.setCreator(classLoader);
+        return parseObjectWithoutWarmupLock(bytes, cls, securityFilter);
+    }
+
+    private <T> T parseObjectWithoutWarmupLock(
+            byte[] bytes, Class<T> cls, Fastjson2SecurityManager.Handler securityFilter) {
+        if (securityFilter.isCheckSerializable()) {
+            return JSONB.parseObject(
+                    bytes,
+                    cls,
+                    securityFilter,
+                    JSONReader.Feature.UseDefaultConstructorAsPossible,
+                    JSONReader.Feature.ErrorOnNoneSerializable,
+                    JSONReader.Feature.IgnoreAutoTypeNotMatch,
+                    JSONReader.Feature.UseNativeObject,
+                    JSONReader.Feature.FieldBased);
+        }
+        return JSONB.parseObject(
+                bytes,
+                cls,
+                securityFilter,
+                JSONReader.Feature.UseDefaultConstructorAsPossible,
+                JSONReader.Feature.UseNativeObject,
+                JSONReader.Feature.IgnoreAutoTypeNotMatch,
+                JSONReader.Feature.FieldBased);
     }
 }

@@ -26,19 +26,35 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.example.test.TestPojo;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class FastJson2SerializationTest {
+
+    public static void main(String[] args) throws Exception {
+        new FastJson2SerializationTest().runConcurrentReadObjectWithReferences();
+    }
 
     @Test
     void testReadString() throws IOException {
@@ -374,6 +390,55 @@ public class FastJson2SerializationTest {
     }
 
     @Test
+    void testConcurrentReadObjectWithReferences() throws Exception {
+        String javaExecutable = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+        String classPath = System.getProperty("surefire.test.class.path", System.getProperty("java.class.path"));
+        // Use a fresh JVM for each round instead of depending on fastjson2's internal cache fields.
+        for (int round = 0; round < 10; round++) {
+            Path output = Files.createTempFile("dubbo-fastjson2-concurrent-ref-", ".log");
+            Process process = new ProcessBuilder(
+                            javaExecutable, "-cp", classPath, getClass().getName())
+                    .redirectErrorStream(true)
+                    .redirectOutput(output.toFile())
+                    .start();
+            try {
+                if (!process.waitFor(30, TimeUnit.SECONDS)) {
+                    process.destroyForcibly();
+                    throw new AssertionError("Concurrent deserialization process timed out");
+                }
+                if (process.exitValue() != 0) {
+                    String childOutput = new String(Files.readAllBytes(output), StandardCharsets.UTF_8);
+                    throw new AssertionError("Concurrent deserialization process failed:\n" + childOutput);
+                }
+            } finally {
+                if (process.isAlive()) {
+                    process.destroyForcibly();
+                    process.waitFor(5, TimeUnit.SECONDS);
+                }
+                Files.deleteIfExists(output);
+            }
+        }
+    }
+
+    private void runConcurrentReadObjectWithReferences() throws Exception {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        ExecutorService executor = Executors.newFixedThreadPool(200);
+        try {
+            Serialization serialization =
+                    frameworkModel.getExtensionLoader(Serialization.class).getExtension("fastjson2");
+            URL url = URL.valueOf("").setScopeModel(frameworkModel);
+            byte[] bytes = serializeRefOuter(serialization, url);
+
+            Assertions.assertEquals(0, countConcurrentNullIds(serialization, url, bytes, executor));
+            Assertions.assertEquals(0, countNullIds(serialization, url, bytes));
+        } finally {
+            executor.shutdownNow();
+            Assertions.assertTrue(executor.awaitTermination(5, TimeUnit.SECONDS));
+            frameworkModel.destroy();
+        }
+    }
+
+    @Test
     void testReadObjectNotMatched() throws IOException, ClassNotFoundException {
         FrameworkModel frameworkModel = new FrameworkModel();
         Serialization serialization =
@@ -619,5 +684,74 @@ public class FastJson2SerializationTest {
             Assertions.assertThrows(IOException.class, objectInput::readObject);
             frameworkModel.destroy();
         }
+    }
+
+    private byte[] serializeRefOuter(Serialization serialization, URL url) throws IOException {
+        ConcurrentRefOuter outer = new ConcurrentRefOuter();
+        List<ConcurrentRefInner> items = new ArrayList<>();
+        List<Long> sharedIds = new ArrayList<>();
+        sharedIds.add(1L);
+        sharedIds.add(2L);
+        for (int i = 0; i < 20; i++) {
+            ConcurrentRefInner inner = new ConcurrentRefInner();
+            inner.setName("item-" + i);
+            inner.setIds(sharedIds);
+            items.add(inner);
+        }
+        outer.setItems(items);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ObjectOutput objectOutput = serialization.serialize(url, outputStream);
+        objectOutput.writeObject(outer);
+        objectOutput.flushBuffer();
+        return outputStream.toByteArray();
+    }
+
+    private int countConcurrentNullIds(Serialization serialization, URL url, byte[] bytes, ExecutorService executor)
+            throws Exception {
+        int threadCount = 200;
+        CyclicBarrier barrier = new CyclicBarrier(threadCount);
+        CountDownLatch endLatch = new CountDownLatch(threadCount);
+        AtomicInteger nullTasks = new AtomicInteger();
+        AtomicReference<Throwable> failure = new AtomicReference<>();
+
+        for (int i = 0; i < threadCount; i++) {
+            executor.execute(() -> {
+                try {
+                    barrier.await(30, TimeUnit.SECONDS);
+                    if (countNullIds(serialization, url, bytes) > 0) {
+                        nullTasks.incrementAndGet();
+                    }
+                } catch (Throwable throwable) {
+                    failure.compareAndSet(null, throwable);
+                } finally {
+                    endLatch.countDown();
+                }
+            });
+        }
+        if (!endLatch.await(30, TimeUnit.SECONDS)) {
+            throw new AssertionError("Concurrent deserialization timed out");
+        }
+        if (failure.get() != null) {
+            throw new AssertionError("Concurrent deserialization failed", failure.get());
+        }
+        return nullTasks.get();
+    }
+
+    private int countNullIds(Serialization serialization, URL url, byte[] bytes) throws Exception {
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+        ObjectInput objectInput = serialization.deserialize(url, inputStream);
+        ConcurrentRefOuter outer = objectInput.readObject(ConcurrentRefOuter.class);
+        if (outer == null || outer.getItems() == null) {
+            return 1;
+        }
+
+        int nullCount = 0;
+        for (ConcurrentRefInner inner : outer.getItems()) {
+            if (inner == null || inner.getIds() == null) {
+                nullCount++;
+            }
+        }
+        return nullCount;
     }
 }
