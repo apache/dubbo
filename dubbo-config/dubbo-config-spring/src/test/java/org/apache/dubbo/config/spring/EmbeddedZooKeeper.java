@@ -42,6 +42,17 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.TESTING_REGI
  * <p>
  * NOTE: at least an external standalone server (if not an ensemble) are recommended, even for
  * {@link org.springframework.xd.dirt.server.singlenode.SingleNodeApplication}
+ * <p>
+ * IMPORTANT: For production/business usage, it is recommended to use a regular ZooKeeper installation
+ * instead of this embedded version. To install and run regular ZooKeeper:
+ * <ol>
+ *   <li>Download ZooKeeper from https://zookeeper.apache.org/releases.html</li>
+ *   <li>Extract the downloaded archive</li>
+ *   <li>Configure zoo.cfg in the conf directory</li>
+ *   <li>Start ZooKeeper using: bin/zkServer.sh start (Linux/Mac) or bin/zkServer.cmd start (Windows)</li>
+ *   <li>Stop ZooKeeper using: bin/zkServer.sh stop (Linux/Mac) or bin/zkServer.cmd stop (Windows)</li>
+ * </ol>
+ * This embedded version is primarily intended for testing and development purposes only.
  */
 public class EmbeddedZooKeeper implements SmartLifecycle {
 
