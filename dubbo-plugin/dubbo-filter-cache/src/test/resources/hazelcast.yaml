@@ -1,0 +1,863 @@
+#
+#
+#   Licensed to the Apache Software Foundation (ASF) under one or more
+#   contributor license agreements.  See the NOTICE file distributed with
+#   this work for additional information regarding copyright ownership.
+#   The ASF licenses this file to You under the Apache License, Version 2.0
+#   (the "License"); you may not use this file except in compliance with
+#   the License.  You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+#
+
+hazelcast:
+  # The name of the cluster. All members of a single cluster must have the
+  # same cluster name configured and a client connecting to this cluster
+  # must use it as well.
+  cluster-name: dev
+  network:
+    # The preferred port number where the Hazelcast instance will listen. The
+    # convention is to use 5701 and it is the default both here and in
+    # various tools connecting to Hazelcast.
+    port:
+      # Determines whether if the member automatically tries higher port
+      # numbers when the preferred one is occupied by another process.
+      auto-increment: true
+      # The number of port that Hazelcast will try to bind. The default trial
+      # count is 100. With this default, if you set the value of port as 5701,
+      # as members join the cluster, Hazelcast tries to find ports between 5701
+      # and 5801. You can change the port count in cases like having large
+      # instances on a single machine or you are willing to have only a few
+      # ports assigned.
+      port-count: 100
+      port: 5701
+    outbound-ports:
+      # Allowed port range when connecting to other nodes.
+      # 0 or * means use system provided port.
+      - 0
+    # Hazelcast has several techniques that simplify the formation of the
+    # cluster by automatically discovering the other nodes. This config section
+    # lists some. Hazelcast will form a cluster only with nodes using the same discovery
+    # mechanism, so make sure to enable only one.
+    join:
+      auto-detection:
+        enabled: false
+      # Enables discovering nodes by using IP multicast. This is the
+      # simplest technique, but in a cloud setting the network usually doesn't
+      # allow multicast.
+      multicast:
+        enabled: false
+        multicast-group: 224.2.2.3
+        multicast-port: 54327
+      # This technique doesn't attempt any auto-discovery, you directly list all
+      # the candidate IPs to check.
+      tcp-ip:
+        enabled: true
+        interface: 127.0.0.1
+        member-list:
+          - 127.0.0.1
+      # Specifies whether the member use the AWS API to get a list of candidate
+      # IPs to check. AWS "access-key" and "secret-key" are needed to access
+      # the API and the rest of the parameters work as filtering criteria that
+      # narrow down the list of IPs to check.
+      aws:
+        enabled: false
+      # Specifies whether the member use the GCP APIs to get a list of candidate IPs to
+      # check.
+      gcp:
+        enabled: false
+      # Specifies whether the member use the Azure REST API to get a list of candidate IPs to
+      # check.
+      azure:
+        enabled: false
+      # Specifies whether the member use the Kubernetes APIs to get a list of candidate IPs to
+      # check.
+      kubernetes:
+        enabled: false
+      eureka:
+        enabled: false
+        # Specifies if the Eureka Discovery SPI plugin will register itself
+        # with the Eureka 1 service discovery. It is optional. Default value
+        # is true.
+        self-registration: true
+        # Defines an eureka namespace to not collide with other service registry
+        # clients in eureka-client.properties file. It is optional. Default
+        # value is hazelcast.
+        namespace: hazelcast
+    # Which network interface to listen on. With "enabled" set to false
+    # Hazelcast will listen on all available interfaces.
+    interfaces:
+      enabled: false
+      interfaces:
+        - 10.10.1.*
+    # Lets you configure SSL using the SSL context factory. This feature is
+    # available only in Hazelcast Enterprise. To be able to use it, encryption
+    # should NOT be enabled and you should first implement your
+    # SSLContextFactory class. Its configuration contains the factory class and
+    # SSL properties. By default, it is disabled.
+    ssl:
+      enabled: false
+    # Lets you add custom hooks to join and perform connection procedures (like
+    # a custom authentication negotiation protocol, etc.). This feature is
+    # available only in Hazelcast Enterprise. To be able to use it, you should
+    # first implement the MemberSocketInterceptor (for members joining to a
+    # cluster) or SocketInterceptor (for clients connecting to a member) class.
+    # Its configuration contains the class you implemented and socket
+    # interceptor properties. By default, it is disabled. The following is an
+    # example:
+    # <socket-interceptor enabled="true">
+    #     <class-name>
+    #         com.hazelcast.examples.MySocketInterceptor
+    #     </class-name>
+    #     <properties>
+    #         <property name="property1">value1</property>
+    #         <property name="property2">value2</property>
+    #     </properties>
+    # </socket-interceptor>
+    socket-interceptor:
+      enabled: false
+    # Lets you encrypt the entire socket level communication among all
+    # Hazelcast members. This feature is available only in Hazelcast
+    # Enterprise. Its configuration contains the encryption properties and the
+    # same configuration must be placed to all members. By default, it is
+    # disabled.
+    symmetric-encryption:
+      enabled: false
+      #   encryption algorithm such as
+      #   DES/ECB/PKCS5Padding,
+      #   PBEWithMD5AndDES,
+      #   AES/CBC/PKCS5Padding,
+      #   Blowfish,
+      #   DESede
+      algorithm: PBEWithMD5AndDES
+      # salt value to use when generating the secret key
+      salt: thesalt
+      # pass phrase to use when generating the secret key
+      password: thepass
+      # iteration count to use when generating the secret key
+      iteration-count: 19
+    failure-detector:
+      icmp:
+        enabled: false
+  # When you enable partition grouping, Hazelcast presents three choices
+  # for you to configure partition groups. These are:
+  #
+  # 1. HOST_AWARE: You can group nodes automatically using the IP addresses of
+  # nodes, so nodes sharing the same network interface will be grouped together.
+  # All members on the same host (IP address or domain name) will be a single
+  # partition group.
+  # 2. CUSTOM: You can do custom grouping using Hazelcast's interface matching
+  # configuration. This way, you can add different and multiple interfaces to
+  # a group.
+  # 3. PER_MEMBER: You can give every member its own group. Each member is a
+  # group of its own and primary and backup partitions are distributed randomly
+  # (not on the same physical member).
+  partition-group:
+    enabled: false
+
+  executor-service:
+    default:
+      # The number of executor threads per member for the executor service.
+      pool-size: 16
+      # Queue capacity. 0 means Integer.MAX_VALUE.
+      queue-capacity: 0
+      # Specifies whether statistical information of this executor service
+      # is gathered and stored in this local member.
+      statistics-enabled: true
+
+  durable-executor-service:
+    default:
+      capacity: 100
+      # Specifies the durability of this executor. The durability represents
+      # the number of replicas that exist in a cluster for any given
+      # partition-owned task. If this is set to 0 then there is only 1 copy of
+      # the task in the cluster, meaning that if the partition owning it, goes
+      # down then the task is lost. Default value is 1 which means that one primary
+      # and one backup task created for each task.
+      durability: 1
+      # The number of executor threads per member for the durable executor
+      # service.
+      pool-size: 16
+      # Specifies whether statistical information of this executor service
+      # is gathered and stored in this local member.
+      statistics-enabled: true
+
+  scheduled-executor-service:
+    default:
+      # The maximum number of tasks that a scheduler can have at any given
+      # point in time as per capacity-policy. Once the capacity is reached,
+      # new tasks will be rejected. Capacity is ignored upon migrations to
+      # prevent any undesirable data-loss.
+      capacity: 100
+      # Specifies the durability of this executor. The durability represents
+      # the number of replicas that exist in a cluster for any given
+      # partition-owned task. If this is set to 0 then there is only 1 copy of
+      # the task in the cluster, meaning that if the partition owning it, goes
+      # down then the task is lost. Default value is 1 which means that one primary
+      # and one backup task created for each task.
+      durability: 1
+      # The number of executor threads per member for the executor service.
+      pool-size: 16
+      # Specifies whether statistical information of this executor service
+      # is gathered and stored in this member.
+      statistics-enabled: true
+
+  security:
+    # Block or allow actions, submitted as tasks in an Executor from clients
+    # and have no permission mappings.
+    # - true: Blocks all actions that have no permission mapping
+    # - false: Allows all actions that have no permission mapping
+    client-block-unmapped-actions: true
+
+  local-device:
+    # Configuration for a device, which a tiered-store can reference and use for its disk-tier.
+    default-tiered-store-device:
+      base-dir: "tiered-store"
+      capacity:
+        unit: GIGABYTES
+        value: 256
+      block-size: 4096
+      read-io-thread-count: 4
+      write-io-thread-count: 4
+
+  map:
+    default:
+      # Data type that will be used for storing recordMap.
+      # Possible values:
+      # BINARY (default): keys and values will be stored as binary data
+      # OBJECT : values will be stored in their object forms
+      # NATIVE : values will be stored in non-heap region of JVM
+      in-memory-format: BINARY
+
+      # Metadata creation policy for this map. Hazelcast may process
+      # objects of supported types ahead of time to create additional
+      # metadata about them. This metadata then is used to make querying
+      # and indexing faster. Metadata creation may decrease put
+      # throughput. Valid values are:
+      # CREATE_ON_UPDATE (default): Objects of supported types are
+      # pre-processed when they are created and updated.
+      # OFF: No metadata is created.
+      metadata-policy: CREATE_ON_UPDATE
+
+      # Number of backups. If 1 is set as the backup-count for example,
+      # then all entries of the map will be copied to another JVM for
+      # fail-safety. 0 means no backup.
+      backup-count: 1
+
+      # Number of async backups. 0 means no backup.
+      async-backup-count: 0
+
+      # Maximum number of seconds for each entry to stay in the map. Entries that are
+      # older than <time-to-live-seconds> and not updated for <time-to-live-seconds>
+      # will get automatically evicted from the map.
+      # Any integer between 0 and Integer.MAX_VALUE. 0 means infinite. Default is 0
+      time-to-live-seconds: 0
+
+      # Maximum number of seconds for each entry to stay idle in the map. Entries that are
+      # idle(not touched) for more than <max-idle-seconds> will get
+      # automatically evicted from the map. Entry is touched if get, put or containsKey is called.
+      # Any integer between 0 and Integer.MAX_VALUE. 0 means infinite. Default is 0.
+      max-idle-seconds: 0
+
+      eviction:
+        # Valid values are:
+        # NONE (no eviction),
+        # LRU (Least Recently Used),
+        # LFU (Least Frequently Used).
+        # NONE is the default.
+        eviction-policy: NONE
+        max-size-policy: PER_NODE
+        # Maximum size of the map. When max size is reached,
+        # map is evicted based on the policy defined.
+        # Any integer between 0 and Integer.MAX_VALUE. 0 means
+        # Integer.MAX_VALUE. Default is 0.
+        size: 0
+
+      # While recovering from split-brain (network partitioning),
+      # map entries in the small cluster will merge into the bigger cluster
+      # based on the policy set here. When an entry merge into the
+      # cluster, there might an existing entry with the same key already.
+      # Values of these entries might be different for that same key.
+      # Which value should be set for the key? Conflict is resolved by
+      # the policy set here. Default policy is PutIfAbsentMapMergePolicy
+      #
+      # There are built-in merge policies such as
+      # com.hazelcast.spi.merge.PassThroughMergePolicy; entry will be overwritten if merging entry exists for the key.
+      # com.hazelcast.spi.merge.PutIfAbsentMergePolicy ; entry will be added if the merging entry doesn't exist in the cluster.
+      # com.hazelcast.spi.merge.HigherHitsMergePolicy ; entry with the higher hits wins.
+      # com.hazelcast.spi.merge.LatestUpdateMergePolicy ; entry with the latest update wins.
+      merge-policy:
+        batch-size: 100
+        class-name: com.hazelcast.spi.merge.PutIfAbsentMergePolicy
+
+      # Control caching of de-serialized values. Caching makes query evaluation faster, but it cost memory.
+      # Possible Values:
+      #              NEVER: Never cache deserialized object
+      #              INDEX-ONLY: Caches values only when they are inserted into an index.
+      #              ALWAYS: Always cache deserialized values.
+      cache-deserialized-values: INDEX-ONLY
+
+      # Whether map level statistical information (total
+      # hits, memory-cost etc.) should be gathered and stored.
+      statistics-enabled: true
+
+      # Whether statistical information (hits, creation
+      # time, last access time etc.) should be gathered
+      # and stored. You have to enable this if you plan to
+      # implement a custom eviction policy, out-of-the-box
+      # eviction policies work regardless of this setting.
+      per-entry-stats-enabled: false
+
+      # Tiered Store configuration. By default, it is disabled.
+      tiered-store:
+        enabled: false
+        memory-tier:
+          # The amount of memory to be reserved for the memory-tier of the tiered-store instance of this map.
+          capacity:
+            unit: MEGABYTES
+            value: 256
+        # Whether disk-tier is enabled, and the name of the device to be used for the disk-tier
+        # of the tiered-store instance of this map.
+        disk-tier:
+          enabled: false
+          device-name: "default-tiered-store-device"
+
+
+  queue:
+    default:
+      # Maximum size of the queue. When a JVM's local queue size reaches the maximum,
+      # all put/offer operations will get blocked until the queue size
+      # of the JVM goes down below the maximum.
+      # Any integer between 0 and Integer.MAX_VALUE. 0 means
+      # Integer.MAX_VALUE. Default is 0.
+      max-size: 0
+      # Number of backups. If 1 is set as the backup-count for example,
+      # then all entries of the map will be copied to another JVM for
+      # fail-safety. 0 means no backup.
+      backup-count: 1
+      # Number of async backups. 0 means no backup.
+      async-backup-count: 0
+      # Used to purge unused or empty queues. If you define a value (time in
+      # seconds) for this element, then your queue will be destroyed if it
+      # stays empty or unused for that time.
+      empty-queue-ttl: -1
+      # While recovering from split-brain (network partitioning), data structure
+      # entries in the small cluster merge into the bigger cluster based on the
+      # policy set here. When an entry merges into the cluster, an entry with
+      # the same key (or value) might already exist in the cluster. The merge
+      # policy resolves these conflicts with different out-of-the-box or custom
+      # strategies. The out-of-the-box merge polices can be references by their
+      # simple class name. For custom merge policies you have to provide a
+      # fully qualified class name.
+      # The out-of-the-box policies are:
+      #    DiscardMergePolicy: the entry from the smaller cluster will be
+      #      discarded.
+      #    HigherHitsMergePolicy: the entry with the higher number of hits wins.
+      #    LatestAccessMergePolicy: the entry with the latest access wins.
+      #    LatestUpdateMergePolicy: the entry with the latest update wins.
+      #    PassThroughMergePolicy: the entry from the smaller cluster wins.
+      #    PutIfAbsentMergePolicy: the entry from the smaller cluster wins if
+      #      it doesn't exist in the cluster.
+      # The default policy is: PutIfAbsentMergePolicy
+      merge-policy:
+        batch-size: 100
+        class-name: com.hazelcast.spi.merge.PutIfAbsentMergePolicy
+
+  multimap:
+    default:
+      # Number of synchronous backups. For example, if 1 is set as the
+      # backup-count, then all entries of the list are copied to one other JVM
+      # for fail-safety. Valid numbers are 0 (no backup), 1, 2 ... 6.
+      backup-count: 1
+      # Type of the value collection. It can be SET or LIST.
+      value-collection-type: SET
+      # While recovering from split-brain (network partitioning), data structure
+      # entries in the small cluster merge into the bigger cluster based on the
+      # policy set here. When an entry merges into the cluster, an entry with
+      # the same key (or value) might already exist in the cluster. The merge
+      # policy resolves these conflicts with different out-of-the-box or custom
+      # strategies. The out-of-the-box merge polices can be references by their
+      # simple class name. For custom merge policies you have to provide a
+      # fully qualified class name.
+      # The out-of-the-box policies are:
+      #    DiscardMergePolicy: the entry from the smaller cluster will be
+      #      discarded.
+      #    HigherHitsMergePolicy: the entry with the higher number of hits wins.
+      #    LatestAccessMergePolicy: the entry with the latest access wins.
+      #    LatestUpdateMergePolicy: the entry with the latest update wins.
+      #    PassThroughMergePolicy: the entry from the smaller cluster wins.
+      #    PutIfAbsentMergePolicy: the entry from the smaller cluster wins if
+      #      it doesn't exist in the cluster.
+      # The default policy is: PutIfAbsentMergePolicy
+      merge-policy:
+        batch-size: 100
+        class-name: com.hazelcast.spi.merge.PutIfAbsentMergePolicy
+
+  replicatedmap:
+    default:
+      # Specifies in which format data will be stored in your replicated map.
+      # Available values are as follows:
+      #  - BINARY: Data will be stored in serialized binary format. It is the
+      #      default option.
+      #  - OBJECT: Data will be stored in deserialized form.
+      in-memory-format: OBJECT
+      # Specifies whether the replicated map is available for reads before the
+      # initial replication is completed. Its default value is true. If false,
+      # no Exception will be thrown when the replicated map is not yet ready,
+      # but call is blocked until the initial replication is completed.
+      async-fillup: true
+      # When you enable it, you can retrieve replicated map entry statistics
+      # such as creation time, expiration time, number of hits, key, value, etc.
+      # Its default value is true.
+      statistics-enabled: true
+      merge-policy:
+        batch-size: 100
+        class-name: com.hazelcast.spi.merge.PutIfAbsentMergePolicy
+
+  list:
+    default:
+      # Number of synchronous backups. For example, if 1 is set as the
+      # backup-count, then all entries of the list are copied to one other JVM
+      # for fail-safety. Valid numbers are 0 (no backup), 1, 2 ... 6.
+      backup-count: 1
+      # While recovering from split-brain (network partitioning), data structure
+      # entries in the small cluster merge into the bigger cluster based on the
+      # policy set here. When an entry merges into the cluster, an entry with
+      # the same key (or value) might already exist in the cluster. The merge
+      # policy resolves these conflicts with different out-of-the-box or custom
+      # strategies. The out-of-the-box merge polices can be references by their
+      # simple class name. For custom merge policies you have to provide a
+      # fully qualified class name.
+      # The out-of-the-box policies are:
+      #    DiscardMergePolicy: the entry from the smaller cluster will be
+      #      discarded.
+      #    HigherHitsMergePolicy: the entry with the higher number of hits wins.
+      #    LatestAccessMergePolicy: the entry with the latest access wins.
+      #    LatestUpdateMergePolicy: the entry with the latest update wins.
+      #    PassThroughMergePolicy: the entry from the smaller cluster wins.
+      #    PutIfAbsentMergePolicy: the entry from the smaller cluster wins if
+      #      it doesn't exist in the cluster.
+      # The default policy is: PutIfAbsentMergePolicy
+      merge-policy:
+        batch-size: 100
+        class-name: com.hazelcast.spi.merge.PutIfAbsentMergePolicy
+
+  set:
+    default:
+      # Number of synchronous backups. Set is a non-partitioned data structure,
+      # so all entries of a Set reside in one partition. If it is set to 1,
+      # there will be 1 backup of that Set in another member in the cluster.
+      # When it is 2, 2 members will have the backup. Its default value is 1.
+      backup-count: 1
+      merge-policy:
+        batch-size: 100
+        class-name: com.hazelcast.spi.merge.PutIfAbsentMergePolicy
+
+  reliable-topic:
+    default:
+      # The batch size for reading from reliable topic. The ReliableTopic tries
+      # to read a batch of messages from the underlying ringbuffer. It will get
+      # at least one, but if there are more available, then it will try to get
+      # more to increase throughput.
+      read-batch-size: 10
+      # A policy to deal with an overloaded topic; so topic where there is no
+      # place to store new messages.
+      # The reliable topic uses a com.hazelcast.ringbuffer.Ringbuffer to store
+      # the messages. A ringbuffer doesn't track where readers are, so it has
+      # no concept of a slow consumers. This provides many advantages like high
+      # performance reads, but it also gives the ability to the reader to
+      # re-read the same message multiple times in case of an error. A
+      # ringbuffer has a limited, fixed capacity. A fast producer may overwrite
+      # old messages that are still being read by a slow consumer. To prevent
+      # this, we may configure a time-to-live on the ringbuffer (see
+      # com.hazelcast.config.RingbufferConfig#setTimeToLiveSeconds(int). Once
+      # the time-to-live is configured, the TopicOverloadPolicy controls how
+      # the publisher is going to deal with the situation that a ringbuffer is
+      # full and the oldest item in the ringbuffer is not old enough to get
+      # overwritten. Keep in mind that this retention period (time-to-live) can
+      # keep messages from being overwritten, even though all readers might have
+      # already completed reading. Its default value is BLOCK.
+      # Available values are as follows:
+      #  - DISCARD_OLDEST: Using this policy, a message that has not expired
+      #      can be overwritten. No matter the retention period set, the
+      #      overwrite will just overwrite the item. This can be a problem for
+      #      slow consumers because they were promised a certain time window
+      #      to process messages. But it will benefit producers and fast
+      #      consumers since they are able to continue. This policy sacrifices
+      #      the slow producer in favor of fast producers/consumers.
+      #  - DISCARD_NEWEST: Message that was to be published is discarded.
+      #  - BLOCK: The caller will wait until there is space in the Ringbuffer.
+      #  - ERROR: The publish call fails immediately
+      topic-overload-policy: BLOCK
+      # Specifies whether statistical information for the reliable topic
+      # is gathered and stored in this member.
+      statistics-enabled: true
+
+  ringbuffer:
+    default:
+      # The maximum number of items can be stored in the Ringbuffer.
+      capacity: 10000
+      # The number of synchronous backups. For example, if it is set to 1, then
+      # the Ringbuffer items are copied to one other member for fail-safety.
+      # Its default value is 1.
+      backup-count: 1
+      # The number of asynchronous backups. Its default value is 0.
+      async-backup-count: 0
+      # Specifies the time to live in seconds which is the maximum number of
+      # seconds for each item to stay in the ringbuffer before being removed.
+      # Entries that are older than time-to-live-seconds are removed from the
+      # ringbuffer on the next ringbuffer operation (read or write). Time to
+      # live can be disabled by setting time-to-live-seconds to 0. It means
+      # that items won't get removed because they expire. They may only be
+      # overwritten. When time-to-live-seconds is disabled and after the tail
+      # does a full loop in the ring, the ringbuffer size will always be equal
+      # to the capacity. The time-to-live-seconds can be any integer between 0
+      # and Integer#MAX_VALUE. 0 means infinite. The default is 0.
+      time-to-live-seconds: 0
+      # Sets the in-memory format. Setting the in-memory format controls the
+      # format of the stored item in the ringbuffer.
+      # The supported formats are:
+      #  - OBJECT: the item is stored in deserialized format (a regular object)
+      #  - BINARY (default): the item is stored in serialized format (a binary blob)
+      # The object in-memory format is useful when:
+      #  - the object stored in object format has a smaller footprint than in
+      #  binary format
+      #  - if there are readers using a filter. Since for every filter
+      #  invocation, the object needs to be available in object format.
+      in-memory-format: BINARY
+      # While recovering from split-brain (network partitioning), data structure
+      # entries in the small cluster merge into the bigger cluster based on the
+      # policy set here. When an entry merges into the cluster, an entry with
+      # the same key (or value) might already exist in the cluster. The merge
+      # policy resolves these conflicts with different out-of-the-box or custom
+      # strategies. The out-of-the-box merge polices can be references by their
+      # simple class name. For custom merge policies you have to provide a
+      # fully qualified class name.
+      # The out-of-the-box policies are:
+      #    DiscardMergePolicy: the entry from the smaller cluster will be
+      #      discarded.
+      #    HigherHitsMergePolicy: the entry with the higher number of hits wins.
+      #    LatestAccessMergePolicy: the entry with the latest access wins.
+      #    LatestUpdateMergePolicy: the entry with the latest update wins.
+      #    PassThroughMergePolicy: the entry from the smaller cluster wins.
+      #    PutIfAbsentMergePolicy: the entry from the smaller cluster wins if
+      #      it doesn't exist in the cluster.
+      # The default policy is: PutIfAbsentMergePolicy
+      merge-policy:
+        batch-size: 100
+        class-name: com.hazelcast.spi.merge.PutIfAbsentMergePolicy
+
+  flake-id-generator:
+    default:
+      # Sets how many IDs are pre-fetched on the background when one call to
+      # FlakeIdGenerator.newId() is made. Value must be in the range 1..100,000,
+      # default is 100. This setting pertains only to newId() calls made on the
+      # member that configured it.
+      prefetch-count: 100
+      # The validity timeout in ms for how long the pre-fetched IDs can be used.
+      # If this time elapses, a new batch of IDs will be fetched.
+      # The generated IDs contain timestamp component, which ensures rough
+      # global ordering of IDs. If an ID is assigned to an object that was
+      # created much later, it will be much out of order. If you don't care
+      # about ordering, set this value to 0. This setting pertains only to
+      # newId() calls made on the member that configured it.
+      prefetch-validity-millis: 600000
+      # Sets the offset of timestamp component. Time unit is milliseconds,
+      # default is 1514764800000 (1.1.2018 0:00 UTC).
+      epoch-start: 1514764800000
+      # Sets the offset that will be added to the node ID assigned to cluster
+      # member for this generator. Might be useful in A/B deployment scenarios
+      # where you have cluster A which you want to upgrade. You create cluster
+      # B and for some time both will generate IDs and you want to have them
+      # unique. In this case, configure node ID offset for generators on
+      # cluster B.
+      node-id-offset: 0
+      # The bit-length of the sequence component of this flake id generator.
+      # This configuration is limiting factor for the maximum rate at which IDs
+      # can be generated. Default is 6 bits.
+      bits-sequence: 6
+      # The bit-length of node id component of this flake id generator. Default
+      # value is 16 bits.
+      bits-node-id: 16
+      # Sets how far to the future is the generator allowed to go to generate
+      # IDs without blocking, default is 15 seconds.
+      allowed-future-millis: 15000
+      # Enables/disables statistics gathering for the flake-id generator on this member.
+      statistics-enabled: true
+
+  # The version of the portable serialization. Portable version is used to
+  # differentiate two same classes that have changes on it like adding/removing
+  # field or changing a type of a field.
+  serialization:
+    portable-version: 0
+
+  cardinality-estimator:
+    default:
+      # The number of synchronous backups. For example, if 1 is set as the
+      # backup-count, then the cardinality estimation will be copied to one
+      # other JVM for fail-safety. Valid numbers are 0 (no backup), 1, 2 ... 6.
+      backup-count: 1
+      # The number of asynchronous backups for this cardinality estimator.
+      async-backup-count: 0
+      merge-policy:
+        batch-size: 100
+        class-name: HyperLogLogMergePolicy
+
+  crdt-replication:
+    # The period between two replications of CRDT states in milliseconds. A
+    # lower value will increase the speed at which changes are disseminated to
+    # other cluster members at the expense of burst-like behaviour - less
+    # updates will be batched together in one replication message and one
+    # update to a CRDT may cause a sudden burst of replication messages in a
+    # short time interval. The value must be a positive non-null integer.
+    replication-period-millis: 1000
+    # The maximum number of target members that we replicate the CRDT states
+    # to in one period. A higher count will lead to states being disseminated
+    # more rapidly at the expense of burst-like behaviour - one update to a
+    # CRDT will lead to a sudden burst in the number of replication messages in
+    # a short time interval.
+    max-concurrent-replication-targets: 1
+
+  pn-counter:
+    default:
+      # Number of replicas on which the CRDT state will be kept. The updates
+      # are replicated asynchronously between replicas. The number must be
+      # greater than 1 and up to 2147483647 (Integer.MAX_VALUE). The default
+      # value is 2147483647 (Integer.MAX_VALUE).
+      replica-count: 2147483647
+      # True (default) if statistics gathering is enabled on the PN counter,
+      # false otherwise.
+      statistics-enabled: true
+
+  cp-subsystem:
+    # The number of CP members to initialize CP Subsystem. It is 0 by default,
+    # meaning that CP Subsystem is disabled. CP Subsystem is enabled when a
+    # positive value is set. After CP Subsystem is initialized successfully,
+    # more CP members can be added at run-time and the number of active CP
+    # members can go beyond the configured CP member count. The number of CP
+    # members can be smaller than total member count of the Hazelcast cluster.
+    # For instance, you can run 5 CP members in a Hazelcast cluster of 20
+    # members. If set, must be greater than or equal to group-size.
+    cp-member-count: 0
+    # The number of CP members to form CP groups. If set, it must be an odd
+    # number between 3 and 7. Otherwise, cp-member-count is respected while
+    # forming CP groups. If set, must be smaller than or equal to
+    # cp-member-count.
+    group-size: 0
+    # Duration for a CP session to be kept alive after the last received session
+    # heartbeat. A CP session is closed if no session heartbeat is received
+    # during this duration. Session TTL must be decided wisely. If a very small
+    # value is set, a CP session can be closed prematurely if its owner Hazelcast
+    # instance temporarily loses connectivity to CP Subsystem because of a
+    # network partition or a GC pause. In such an occasion, all CP resources of
+    # this Hazelcast instance, such as FencedLock or ISemaphore, are released.
+    # On the other hand, if a very large value is set, CP resources can remain
+    # assigned to an actually crashed Hazelcast instance for too long and
+    # liveliness problems can occur. CP Subsystem offers an API in
+    # CPSessionManagementService to deal with liveliness issues related to CP
+    # sessions. In order to prevent premature session expires, session TTL
+    # configuration can be set a relatively large value and
+    # CPSessionManagementService#forceCloseSession(String, long) can be manually
+    # called to close CP session of a crashed Hazelcast instance. Must be greater
+    # than session-heartbeat-interval-seconds, and smaller than or equal to
+    # missing-cp-member-auto-removal-seconds.
+    session-time-to-live-seconds: 300
+    # Interval for the periodically-committed CP session heartbeats. A CP
+    # session is started on a CP group with the first session-based request of
+    # a Hazelcast instance. After that moment, heartbeats are periodically
+    # committed to the CP group. Must be smaller than session-time-to-live-seconds.
+    session-heartbeat-interval-seconds: 5
+    # Duration to wait before automatically removing a missing CP member from
+    # CP Subsystem. When a CP member leaves the Hazelcast cluster, it is not
+    # automatically removed from CP Subsystem, since it could be still alive
+    # and left the cluster because of a network problem. On the other hand, if
+    # a missing CP member actually crashed, it creates a danger for CP groups,
+    # because it is still part of majority calculations. This situation could
+    # lead to losing majority of CP groups if multiple CP members leave the
+    # cluster over time. With the default configuration, missing CP members are
+    # automatically removed from CP Subsystem after 4 hours. This feature is
+    # very useful in terms of fault tolerance when CP member count is also
+    # configured to be larger than group size. In this case, a missing CP
+    # member is safely replaced in its CP groups with other available CP
+    # members in CP Subsystem. This configuration also implies that no network
+    # partition is expected to be longer than the configured duration. If a
+    # missing CP member comes back alive after it is removed from CP Subsystem
+    # with this feature, that CP member must be terminated manually. Must be
+    # greater than or equal to session-time-to-live-seconds.
+    missing-cp-member-auto-removal-seconds: 14400
+    # Offers a choice between at-least-once and at-most-once execution of
+    # operations on top of the Raft consensus algorithm. It is disabled by
+    # default and offers at-least-once execution guarantee. If enabled, it
+    # switches to at-most-once execution guarantee. When you invoke an API
+    # method on a CP data structure proxy, it sends an internal operation to
+    # the corresponding CP group. After this operation is committed on the
+    # majority of this CP group by the Raft leader node, it sends a response
+    # for the public API call. If a failure causes loss of the response, then
+    # the calling side cannot determine if the operation is committed on the CP
+    # group or not. In this case, if this configuration is disabled, the
+    # operation is replicated again to the CP group, and hence could be
+    # committed multiple times. If it is enabled, the public API call fails
+    # with com.hazelcast.core.IndeterminateOperationStateException.
+    fail-on-indeterminate-operation-state: false
+    # The CP member priority. The CP groups' leadership will be eventually
+    # transferred to members with higher priorities within the CP group.
+    cp-member-priority: 0
+    raft-algorithm:
+      # Leader election timeout in milliseconds. If a candidate cannot win
+      # majority of the votes in time, a new leader election round is initiated.
+      leader-election-timeout-in-millis: 2000
+      # Duration in milliseconds for a Raft leader node to send periodic
+      # heartbeat messages to its followers in order to denote its liveliness.
+      # Periodic heartbeat messages are actually append entries requests and
+      # can contain log entries for the lagging followers. If a too small value
+      # is set, heartbeat messages are sent from Raft leaders to followers too
+      # frequently and it can cause an unnecessary usage of CPU and network.
+      leader-heartbeat-period-in-millis: 5000
+      # Maximum number of missed Raft leader heartbeats for a follower to
+      # trigger a new leader election round. For instance, if
+      # leader-heartbeat-period-in-millis is 1 second and this value is set to
+      # 5, then a follower triggers a new leader election round if 5 seconds
+      # pass after the last heartbeat message of the current Raft leader node.
+      # If this duration is too small, new leader election rounds can be
+      # triggered unnecessarily if the current Raft leader temporarily slows
+      # down or a network congestion occurs. If it is too large, it takes
+      # longer to detect failures of Raft leaders.
+      max-missed-leader-heartbeat-count: 5
+      # Maximum number of Raft log entries that can be sent as a batch in a
+      # single append entries request. In Hazelcast's Raft consensus algorithm
+      # implementation, a Raft leader maintains a separate replication pipeline
+      # for each follower. It sends a new batch of Raft log entries to a
+      # follower after the follower acknowledges the last append entries request
+      # sent by the leader.
+      append-request-max-entry-count: 100
+      # Number of new commits to initiate a new snapshot after the last
+      # snapshot taken by the local Raft node. This value must be configured
+      # wisely as it effects performance of the system in multiple ways. If a
+      # small value is set, it means that snapshots are taken too frequently
+      # and Raft nodes keep a very short Raft log. If snapshots are large and
+      # CP Subsystem Persistence is enabled, this can create an unnecessary
+      # overhead on IO performance. Moreover, a Raft leader can send too many
+      # snapshots to followers and this can create an unnecessary overhead on
+      # network. On the other hand, if a very large value is set, it can create
+      # a memory overhead since Raft log entries are going to be kept in memory
+      # until the next snapshot.
+      commit-index-advance-count-to-snapshot: 10000
+      # Maximum number of uncommitted log entries in the leader's Raft log
+      # before temporarily rejecting new requests of callers. Since Raft
+      # leaders send log entries to followers in batches, they accumulate
+      # incoming requests in order to improve the throughput. You can configure
+      # this field by considering your degree of concurrency in your callers.
+      # For instance, if you have at most 1000 threads sending requests to a
+      # Raft leader, you can set this field to 1000 so that callers do not get
+      # retry responses unnecessarily.
+      uncommitted-entry-count-to-reject-new-appends: 100
+      # Timeout duration in milliseconds to apply backoff on append entries
+      # requests. After a Raft leader sends an append entries request to a
+      # follower, it will not send a subsequent append entries request either
+      # until the follower responds or this timeout occurs. Backoff durations
+      # are increased exponentially if followers remain unresponsive.
+      append-request-backoff-timeout-in-millis: 100
+#    semaphores:
+#      default:
+#        jdk-compatible: false
+#    locks:
+#      default:
+#        lock-acquire-limit: 0
+
+  # Configures Hazelcast's background collection of performance and health
+  # monitoring metrics.
+  metrics:
+    # Master-switch for the metrics system. Controls whether the metrics are
+    # collected and publishers are enabled. May be overridden by
+    # 'hazelcast.metrics.enabled' system property
+    enabled: true
+    management-center:
+      enabled: true
+      # Sets the number of seconds the metrics will be retained on the
+      # instance. By default, metrics are retained for 5 seconds (that is for
+      # one collection of metrics values, if default "collection-frequency-seconds"
+      # collection frequency is used). More retention means more heap memory,
+      # but allows for longer client hiccups without losing a value (for
+      # example to restart the Management Center). May be overridden by
+      # 'hazelcast.metrics.mc.retention' system property.
+      retention-seconds: 5
+    jmx:
+      # Controls whether the metrics collected are exposed to through JMX. It
+      # is enabled by default. In order to expose the metrics, the metrics
+      # system need to be enabled via the enabled master-switch attribute. May
+      # be overridden by 'hazelcast.metrics.jmx.enabled' system property.
+      enabled: true
+    # Sets the metrics collection frequency in seconds. By default, metrics are
+    # collected every 5 seconds. May be overridden by
+    # 'hazelcast.metrics.collection.frequency' system property.
+    collection-frequency-seconds: 5
+
+  sql:
+    # Sets the timeout in milliseconds that is applied to SQL statements
+    # without an explicit timeout. It is possible to set a timeout through the
+    # SqlStatement.setTimeout(long) method. If the statement timeout is not
+    # set, then the value of this parameter will be used. Zero value means no
+    # timeout. Negative values are prohibited.
+    statement-timeout-millis: 0
+
+  jet:
+    # Specifies whether if the jet is enabled or not in this member
+    enabled: false
+    # Specifies whether uploading resources when submitting the job is enabled or not
+    resource-upload-enabled: false
+    # period between flow control packets in milliseconds
+    flow-control-period: 100
+    # number of backup copies to configure for Hazelcast IMaps used internally in a Jet job
+    backup-count: 1
+    # the delay after which auto-scaled jobs will restart if a new member is added to the
+    # cluster. The default is 10 seconds. Has no effect on jobs with auto scaling disabled
+    scale-up-delay-millis: 10000
+    # Sets whether lossless job restart is enabled for the node. With
+    # lossless restart you can restart the whole cluster without losing the
+    # jobs and their state. The feature is implemented on top of the Persistence
+    # feature of Hazelcast which persists the data to disk.
+    lossless-restart-enabled: false
+    # Sets the maximum number of records that can be accumulated by any single
+    # Processor instance.
+    #
+    # Operations like grouping, sorting or joining require certain amount of
+    # records to be accumulated before they can proceed. You can set this option
+    # to reduce the probability of OutOfMemoryError.
+    #
+    # This option applies to each Processor instance separately, hence the
+    # effective limit of records accumulated by each cluster member is influenced
+    # by the vertex's localParallelism and the number of jobs in the cluster.
+    #
+    # Currently, maxProcessorAccumulatedRecords limits:
+    #    - number of items sorted by the sort operation
+    #    - number of distinct keys accumulated by aggregation operations
+    #    - number of entries in the hash-join lookup tables
+    #    - number of entries in stateful transforms
+    #    - number of distinct items in distinct operation
+    #
+    # Note: the limit does not apply to streaming aggregations.
+    max-processor-accumulated-records: 9223372036854775807
+
+    edge-defaults:
+      # capacity of the concurrent SPSC queue between each two processors
+      queue-size: 1024
+      # network packet size limit in bytes, only applies to distributed edges
+      packet-size-limit: 16384
+      # receive window size multiplier, only applies to distributed edges
+      receive-window-multiplier: 3
+
+  # Some features of Hazelcast are configured through the system properties.
+  # You can configure the same properties here. This configuration overrides the
+  # system properties. For a full list of recognized properties see
+  # https://docs.hazelcast.org/docs/latest/manual/html-single/#system-properties
+#  properties:
+#    property.name: value
+  ##
+  integrity-checker:
+    enabled: false
