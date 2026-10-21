@@ -148,6 +148,11 @@ public interface HttpRequest extends RequestMetadata {
 
     void setInputStream(InputStream is);
 
+    /**
+     * Releases request-scoped resources after request processing completes.
+     */
+    default void close() {}
+
     interface FileUpload {
 
         String name();

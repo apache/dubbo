@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.rest.support.basic
 
+import org.apache.dubbo.remoting.http12.HttpUtils
 import org.apache.dubbo.remoting.http12.message.MediaType
 import org.apache.dubbo.rpc.protocol.tri.rest.service.Book
 import org.apache.dubbo.rpc.protocol.tri.rest.service.DemoServiceImpl
@@ -25,6 +26,7 @@ import org.apache.dubbo.rpc.protocol.tri.test.TestRequest
 import org.apache.dubbo.rpc.protocol.tri.test.TestRunnerBuilder
 
 import io.netty.buffer.AbstractByteBuf
+import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory
 import io.netty.util.ResourceLeakDetector
 
 class RestProtocolTest extends BaseServiceTest {
@@ -210,6 +212,28 @@ class RestProtocolTest extends BaseServiceTest {
             path       | body             | output
             '/argTest' | 'name=Sam&age=8' | 'Sam is 8 years old'
             '/argTest' | '' | 'null is 0 years old'
+    }
+
+    @SuppressWarnings('GroovyAccessibility')
+    def "completed form request releases post data"() {
+        given:
+            HttpUtils.DATA_FACTORY.cleanAllHttpData()
+            def request = new TestRequest(
+                path: '/argTest',
+                contentType: MediaType.APPLICATION_FROM_URLENCODED,
+                body: 'name=Sam&age=8'
+            )
+        expect:
+            runner.post(request) == 'Sam is 8 years old'
+            trackedPostRequests() == 0
+        cleanup:
+            HttpUtils.DATA_FACTORY.cleanAllHttpData()
+    }
+
+    private static int trackedPostRequests() {
+        def field = DefaultHttpDataFactory.getDeclaredField('requestFileDeleteMap')
+        field.accessible = true
+        return ((Map<?, ?>) field.get(HttpUtils.DATA_FACTORY)).size()
     }
 
     def "override mapping test"() {
