@@ -676,6 +676,28 @@ public class DefaultHttpRequest implements HttpRequest {
         }
     }
 
+    /**
+     * Destroys the cached HttpPostRequestDecoder if it was created for parsing
+     * form data or multipart requests. This releases the synthetic request and
+     * HttpData entries held by the static {@code DefaultHttpDataFactory},
+     * preventing memory leaks after form request processing completes.
+     *
+     * <p>Should be called once the request has been fully processed and no
+     * further access to form parameters or multipart parts is required.
+     */
+    public void destroyPostDecoder() {
+        if (postDecoder != null) {
+            try {
+                postDecoder.destroy();
+            } catch (Exception ignored) {
+                // Netty may throw if the decoder is already destroyed
+            } finally {
+                postDecoder = null;
+                postParsed = false;
+            }
+        }
+    }
+
     @Override
     public String toString() {
         return "DefaultHttpRequest{" + fieldToString() + '}';
