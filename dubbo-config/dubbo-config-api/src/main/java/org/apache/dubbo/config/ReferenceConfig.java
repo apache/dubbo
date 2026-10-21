@@ -54,6 +54,8 @@ import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.stub.StubSuppliers;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
+import javax.annotation.Nonnull;
+
 import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -225,6 +227,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         this.services = services;
     }
 
+    @Nonnull
     @Override
     @Transient
     public T get(boolean check) {
