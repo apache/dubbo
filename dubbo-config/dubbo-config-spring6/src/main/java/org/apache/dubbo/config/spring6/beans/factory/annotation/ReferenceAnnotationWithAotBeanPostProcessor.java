@@ -23,6 +23,7 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.context.event.DubboConfigInitEvent;
+import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
 import org.apache.dubbo.config.spring.util.SpringCompatUtils;
 import org.apache.dubbo.config.spring6.beans.factory.aot.ReferencedFieldValueResolver;
 import org.apache.dubbo.config.spring6.beans.factory.aot.ReferencedMethodArgumentsResolver;
@@ -165,12 +166,105 @@ public class ReferenceAnnotationWithAotBeanPostProcessor extends ReferenceAnnota
         Class<?> beanClass = registeredBean.getBeanClass();
         String beanName = registeredBean.getBeanName();
         RootBeanDefinition beanDefinition = registeredBean.getMergedBeanDefinition();
+        if (isAnnotatedReferenceBean(beanDefinition)) {
+            Class<?> interfaceClass = (Class<?>) beanDefinition.getAttribute(ReferenceAttributes.INTERFACE_CLASS);
+            String interfaceName = (String) beanDefinition.getAttribute(ReferenceAttributes.INTERFACE_NAME);
+            if (interfaceClass == null) {
+                interfaceClass = (Class<?>) beanDefinition.getPropertyValues().get(ReferenceAttributes.INTERFACE_CLASS);
+            }
+            if (interfaceName == null) {
+                interfaceName = (String) beanDefinition.getPropertyValues().get(ReferenceAttributes.INTERFACE_NAME);
+            }
+            if (interfaceClass != null && interfaceName != null) {
+                return new ReferenceBeanAotContribution(interfaceClass, interfaceName, getClassLoader());
+            }
+        }
         AnnotatedInjectionMetadata metadata = findInjectionMetadata(beanDefinition, beanClass, beanName);
         if (!CollectionUtils.isEmpty(metadata.getFieldElements())
                 || !CollectionUtils.isEmpty(metadata.getMethodElements())) {
             return new AotContribution(beanClass, metadata, getAutowireCandidateResolver());
         }
         return null;
+    }
+
+    private static void registerHintsForInterface(
+            Class<?> interfaceClass,
+            @Nullable String interfaceName,
+            @Nullable ClassLoader classLoader,
+            RuntimeHints hints)
+            throws ClassNotFoundException {
+        AotUtils.registerSerializationForService(interfaceClass, hints);
+        hints.reflection().registerType(TypeReference.of(interfaceClass), MemberCategory.INVOKE_PUBLIC_METHODS);
+        registerProxyHints(hints, interfaceClass);
+
+        if (interfaceName != null && !interfaceClass.getName().equals(interfaceName)) {
+            Class<?> serviceInterface = ClassUtils.resolveClass(interfaceName, classLoader);
+            if (serviceInterface != null) {
+                AotUtils.registerSerializationForService(serviceInterface, hints);
+                hints.reflection()
+                        .registerType(TypeReference.of(serviceInterface), MemberCategory.INVOKE_PUBLIC_METHODS);
+                hints.proxies()
+                        .registerJdkProxy(interfaceClass, EchoService.class, Destroyable.class, serviceInterface);
+                hints.proxies()
+                        .registerJdkProxy(
+                                interfaceClass,
+                                EchoService.class,
+                                Destroyable.class,
+                                serviceInterface,
+                                SpringProxy.class,
+                                Advised.class,
+                                DecoratingProxy.class);
+            }
+        }
+    }
+
+    private static void registerProxyHints(RuntimeHints hints, Class<?> interfaceClass) {
+        // Need to enumerate all interfaces by the proxy.
+        hints.proxies().registerJdkProxy(interfaceClass, EchoService.class, Destroyable.class);
+        hints.proxies().registerJdkProxy(interfaceClass, EchoService.class, Destroyable.class, GenericService.class);
+        hints.proxies()
+                .registerJdkProxy(
+                        interfaceClass,
+                        EchoService.class,
+                        Destroyable.class,
+                        SpringProxy.class,
+                        Advised.class,
+                        DecoratingProxy.class);
+        hints.proxies()
+                .registerJdkProxy(
+                        interfaceClass,
+                        EchoService.class,
+                        GenericService.class,
+                        Destroyable.class,
+                        SpringProxy.class,
+                        Advised.class,
+                        DecoratingProxy.class);
+    }
+
+    private static class ReferenceBeanAotContribution implements BeanRegistrationAotContribution {
+
+        private final Class<?> interfaceClass;
+
+        private final String interfaceName;
+
+        @Nullable
+        private final ClassLoader classLoader;
+
+        ReferenceBeanAotContribution(Class<?> interfaceClass, String interfaceName, @Nullable ClassLoader classLoader) {
+            this.interfaceClass = interfaceClass;
+            this.interfaceName = interfaceName;
+            this.classLoader = classLoader;
+        }
+
+        @Override
+        public void applyTo(GenerationContext generationContext, BeanRegistrationCode beanRegistrationCode) {
+            try {
+                registerHintsForInterface(
+                        interfaceClass, interfaceName, classLoader, generationContext.getRuntimeHints());
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     private AnnotatedInjectionMetadata findInjectionMetadata(
@@ -258,29 +352,7 @@ public class ReferenceAnnotationWithAotBeanPostProcessor extends ReferenceAnnota
             Object injectedObject = referenceElement.injectedObject;
 
             try {
-                Class<?> c = referenceElement.getInjectedType();
-                AotUtils.registerSerializationForService(c, hints);
-                hints.reflection().registerType(TypeReference.of(c), MemberCategory.INVOKE_PUBLIC_METHODS);
-                // need to enumerate all interfaces by the proxy
-                hints.proxies().registerJdkProxy(c, EchoService.class, Destroyable.class);
-                hints.proxies().registerJdkProxy(c, EchoService.class, Destroyable.class, GenericService.class);
-                hints.proxies()
-                        .registerJdkProxy(
-                                c,
-                                EchoService.class,
-                                Destroyable.class,
-                                SpringProxy.class,
-                                Advised.class,
-                                DecoratingProxy.class);
-                hints.proxies()
-                        .registerJdkProxy(
-                                c,
-                                EchoService.class,
-                                GenericService.class,
-                                Destroyable.class,
-                                SpringProxy.class,
-                                Advised.class,
-                                DecoratingProxy.class);
+                registerHintsForInterface(referenceElement.getInjectedType(), null, null, hints);
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
