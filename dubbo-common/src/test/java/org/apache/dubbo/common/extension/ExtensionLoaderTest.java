@@ -68,14 +68,25 @@ import org.apache.dubbo.common.extension.wrapper.impl.DemoImpl;
 import org.apache.dubbo.common.extension.wrapper.impl.DemoWrapper;
 import org.apache.dubbo.common.extension.wrapper.impl.DemoWrapper2;
 import org.apache.dubbo.common.lang.Prioritized;
+import org.apache.dubbo.common.logger.LoggerAdapter;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.logger.log4j2.Log4j2LoggerAdapter;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -190,6 +201,35 @@ class ExtensionLoaderTest {
         assertEquals("Ext6Impl1-echo", impl1.echo(url, "ha"));
         assertEquals(echoCount1 + 1, Ext6Wrapper1.echoCount.get());
         assertEquals(echoCount2 + 1, Ext6Wrapper2.echoCount.get());
+    }
+
+    @Test
+    void test_getExtension_logsDebugWhenExtensionCreated() {
+        LoggerAdapter preLoggerAdapter = LoggerFactory.getCurrentLoggerAdapter();
+        if (!(preLoggerAdapter instanceof Log4j2LoggerAdapter)) {
+            LoggerFactory.setLoggerAdapter(new Log4j2LoggerAdapter());
+        }
+
+        try {
+            try (ExtensionLoaderTestContext<WrappedExt> testContext =
+                            createExtensionLoaderTestContext(WrappedExt.class);
+                    LogCollector logCollector = LogCollector.attach(ExtensionLoader.class)) {
+                WrappedExt impl1 = testContext.extensionLoader.getExtension("impl1");
+
+                assertNotNull(impl1);
+                assertTrue(logCollector.contains("Loaded extension instance, type=" + WrappedExt.class.getName()));
+                assertTrue(logCollector.contains("name=impl1"));
+                assertTrue(logCollector.contains("instanceClass=" + Ext6Wrapper1.class.getName())
+                        || logCollector.contains("instanceClass=" + Ext6Wrapper2.class.getName()));
+                assertTrue(logCollector.contains("wrapperClasses=["));
+                assertTrue(logCollector.contains(Ext6Wrapper1.class.getName()));
+                assertTrue(logCollector.contains(Ext6Wrapper2.class.getName()));
+            }
+        } finally {
+            if (!(preLoggerAdapter instanceof Log4j2LoggerAdapter)) {
+                LoggerFactory.setLoggerAdapter(preLoggerAdapter);
+            }
+        }
     }
 
     @Test
@@ -880,6 +920,97 @@ class ExtensionLoaderTest {
         @Override
         public int getPriority() {
             return MAX_PRIORITY;
+        }
+    }
+
+    private <T> ExtensionLoaderTestContext<T> createExtensionLoaderTestContext(Class<T> type) {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        return new ExtensionLoaderTestContext<>(
+                frameworkModel, applicationModel.getExtensionDirector().getExtensionLoader(type));
+    }
+
+    private static final class ExtensionLoaderTestContext<T> implements AutoCloseable {
+        private final FrameworkModel frameworkModel;
+        private final ExtensionLoader<T> extensionLoader;
+
+        private ExtensionLoaderTestContext(FrameworkModel frameworkModel, ExtensionLoader<T> extensionLoader) {
+            this.frameworkModel = frameworkModel;
+            this.extensionLoader = extensionLoader;
+        }
+
+        @Override
+        public void close() {
+            frameworkModel.destroy();
+        }
+    }
+
+    private static final class LogCollector implements AutoCloseable {
+        private final LoggerContext context;
+        private final Configuration configuration;
+        private final String loggerName;
+        private final LoggerConfig loggerConfig;
+        private final TestAppender appender;
+        private final LoggerConfig preLoggerConfig;
+
+        private LogCollector(
+                LoggerContext context,
+                Configuration configuration,
+                String loggerName,
+                LoggerConfig loggerConfig,
+                TestAppender appender,
+                LoggerConfig preLoggerConfig) {
+            this.context = context;
+            this.configuration = configuration;
+            this.loggerName = loggerName;
+            this.loggerConfig = loggerConfig;
+            this.appender = appender;
+            this.preLoggerConfig = preLoggerConfig;
+        }
+
+        static LogCollector attach(Class<?> loggerType) {
+            LoggerContext context = LoggerContext.getContext(false);
+            Configuration configuration = context.getConfiguration();
+            String loggerName = loggerType.getName();
+            TestAppender appender = new TestAppender("test-appender-" + loggerType.getSimpleName());
+            appender.start();
+            configuration.addAppender(appender);
+
+            LoggerConfig preLoggerConfig = configuration.getLoggers().get(loggerName);
+            LoggerConfig loggerConfig = new LoggerConfig(loggerName, org.apache.logging.log4j.Level.DEBUG, false);
+            loggerConfig.addAppender(appender, org.apache.logging.log4j.Level.DEBUG, null);
+            configuration.addLogger(loggerName, loggerConfig);
+            context.updateLoggers();
+            return new LogCollector(context, configuration, loggerName, loggerConfig, appender, preLoggerConfig);
+        }
+
+        boolean contains(String expected) {
+            return appender.messages.stream().anyMatch(message -> message.contains(expected));
+        }
+
+        @Override
+        public void close() {
+            loggerConfig.removeAppender(appender.getName());
+            configuration.removeLogger(loggerName);
+            appender.stop();
+            configuration.getAppenders().remove(appender.getName());
+            if (preLoggerConfig != null) {
+                configuration.addLogger(loggerName, preLoggerConfig);
+            }
+            context.updateLoggers();
+        }
+    }
+
+    private static final class TestAppender extends AbstractAppender {
+        private final List<String> messages = new CopyOnWriteArrayList<>();
+
+        private TestAppender(String name) {
+            super(name, null, PatternLayout.newBuilder().withPattern("%m").build(), false, null);
+        }
+
+        @Override
+        public void append(LogEvent event) {
+            messages.add(event.toImmutable().getMessage().getFormattedMessage());
         }
     }
 }
