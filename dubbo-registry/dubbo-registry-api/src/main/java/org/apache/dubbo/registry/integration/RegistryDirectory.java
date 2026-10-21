@@ -152,10 +152,13 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             consumerConfigurationListener.addNotifyListener(this);
             referenceConfigurationListener = new ReferenceConfigurationListener(moduleModel, this, url);
         }
-        String registryClusterName = registry.getUrl()
-                .getParameter(
-                        RegistryConstants.REGISTRY_CLUSTER_KEY,
-                        registry.getUrl().getParameter(PROTOCOL_KEY));
+        // registry.getUrl() may be null when the registry is unavailable and check=false (e.g. a weakly
+        // dependent registry is down at startup), in which case there is no cluster name to report.
+        URL registryUrl = registry.getUrl();
+        String registryClusterName = registryUrl == null
+                ? null
+                : registryUrl.getParameter(
+                        RegistryConstants.REGISTRY_CLUSTER_KEY, registryUrl.getParameter(PROTOCOL_KEY));
         MetricsEventBus.post(RegistryEvent.toSubscribeEvent(applicationModel, registryClusterName), () -> {
             super.subscribe(url);
             return null;

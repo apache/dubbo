@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -41,17 +42,19 @@ public class ListenerRegistryWrapper implements Registry {
 
     @Override
     public URL getUrl() {
-        return registry.getUrl();
+        return registry == null ? null : registry.getUrl();
     }
 
     @Override
     public boolean isAvailable() {
-        return registry.isAvailable();
+        return registry != null && registry.isAvailable();
     }
 
     @Override
     public void destroy() {
-        registry.destroy();
+        if (registry != null) {
+            registry.destroy();
+        }
     }
 
     @Override
@@ -94,7 +97,9 @@ public class ListenerRegistryWrapper implements Registry {
     @Override
     public void unsubscribe(URL url, NotifyListener listener) {
         try {
-            registry.unsubscribe(url, listener);
+            if (registry != null) {
+                registry.unsubscribe(url, listener);
+            }
         } finally {
             listenerEvent(serviceListener -> serviceListener.onUnsubscribe(url, registry));
         }
@@ -102,12 +107,12 @@ public class ListenerRegistryWrapper implements Registry {
 
     @Override
     public boolean isServiceDiscovery() {
-        return registry.isServiceDiscovery();
+        return registry != null && registry.isServiceDiscovery();
     }
 
     @Override
     public List<URL> lookup(URL url) {
-        return registry.lookup(url);
+        return registry == null ? Collections.emptyList() : registry.lookup(url);
     }
 
     public Registry getRegistry() {
