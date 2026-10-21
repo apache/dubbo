@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -786,11 +785,9 @@ public class Bytes {
      */
     public static byte[] zip(byte[] bytes) throws IOException {
         UnsafeByteArrayOutputStream bos = new UnsafeByteArrayOutputStream();
-        OutputStream os = new DeflaterOutputStream(bos);
-        try {
+        try (DeflaterOutputStream os = new DeflaterOutputStream(bos)) {
             os.write(bytes);
         } finally {
-            os.close();
             bos.close();
         }
         return bos.toByteArray();
@@ -804,16 +801,11 @@ public class Bytes {
      * @throws IOException
      */
     public static byte[] unzip(byte[] bytes) throws IOException {
-        UnsafeByteArrayInputStream bis = new UnsafeByteArrayInputStream(bytes);
-        UnsafeByteArrayOutputStream bos = new UnsafeByteArrayOutputStream();
-        InputStream is = new InflaterInputStream(bis);
-        try {
+        try (UnsafeByteArrayInputStream bis = new UnsafeByteArrayInputStream(bytes);
+                UnsafeByteArrayOutputStream bos = new UnsafeByteArrayOutputStream();
+                InflaterInputStream is = new InflaterInputStream(bis)) {
             IOUtils.write(is, bos);
             return bos.toByteArray();
-        } finally {
-            is.close();
-            bis.close();
-            bos.close();
         }
     }
 
