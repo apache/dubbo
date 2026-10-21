@@ -34,6 +34,42 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class GrpcStreamingDecoderTest {
 
     @Test
+    void reportsBytesReadForIncompleteMessage() {
+        GrpcStreamingDecoder decoder = new GrpcStreamingDecoder();
+        List<Integer> reported = new ArrayList<>();
+        decoder.setFragmentListener(new StreamingDecoder.FragmentListener() {
+            @Override
+            public void bytesRead(int numBytes) {
+                reported.add(numBytes);
+            }
+
+            @Override
+            public void onFragmentMessage(InputStream rawMessage, int messageLength) {}
+        });
+
+        // a message larger than the peer's send window arrives split across frames and the
+        // first part is buffered while the message is still incomplete: flow control bytes
+        // must be returned for that part, otherwise the peer can never send the rest
+        byte[] message = frame("incomplete");
+        byte[] firstPart = Arrays.copyOf(message, message.length - 1);
+        byte[] lastByte = new byte[] {message[message.length - 1]};
+
+        decoder.decode(new ByteArrayInputStream(firstPart));
+        assertEquals(firstPart.length, sum(reported));
+
+        decoder.decode(new ByteArrayInputStream(lastByte));
+        assertEquals(firstPart.length + lastByte.length, sum(reported));
+    }
+
+    private static int sum(List<Integer> values) {
+        int total = 0;
+        for (int value : values) {
+            total += value;
+        }
+        return total;
+    }
+
+    @Test
     void continueDecodingWithBufferedPartialFrameAfterListenerSwitch() {
         GrpcStreamingDecoder decoder = new GrpcStreamingDecoder();
         List<String> messages = new ArrayList<>();
