@@ -805,7 +805,7 @@ public abstract class AbstractConfig implements Serializable {
                 String propertyName = extractPropertyName(method.getName());
 
                 // if config mode is OVERRIDE_IF_ABSENT and property has set, skip
-                if (overrideIfAbsent && isPropertySet(methods, propertyName)) {
+                if (overrideIfAbsent && isPropertySet(obj, methods, propertyName)) {
                     continue;
                 }
 
@@ -922,8 +922,12 @@ public abstract class AbstractConfig implements Serializable {
             } else if (isNestedSetter(obj, method)) {
                 try {
                     Class<?> clazz = method.getParameterTypes()[0];
-                    Object inner = clazz.getDeclaredConstructor().newInstance();
                     String fieldName = MethodUtils.extractFieldName(method);
+                    Method getterMethod = findGetMethod(methods, calculatePropertyToGetter(fieldName));
+                    Object inner = getterMethod == null ? null : getterMethod.invoke(obj);
+                    if (inner == null) {
+                        inner = clazz.getDeclaredConstructor().newInstance();
+                    }
                     Map<String, String> subProperties = ConfigurationUtils.getSubProperties(properties, fieldName);
                     InmemoryConfiguration subPropsConfiguration = new InmemoryConfiguration(subProperties);
                     assignProperties(inner, environment, subProperties, subPropsConfiguration, configMode);
@@ -938,14 +942,14 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
-    private boolean isPropertySet(List<Method> methods, String propertyName) {
+    private boolean isPropertySet(Object obj, List<Method> methods, String propertyName) {
         try {
             String getterName = calculatePropertyToGetter(propertyName);
             Method getterMethod = findGetMethod(methods, getterName);
             if (getterMethod == null) {
                 return false;
             }
-            Object oldOne = getterMethod.invoke(this);
+            Object oldOne = getterMethod.invoke(obj);
             if (oldOne != null) {
                 return true;
             }
