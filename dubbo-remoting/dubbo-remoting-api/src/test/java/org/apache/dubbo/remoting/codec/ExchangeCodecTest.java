@@ -214,6 +214,20 @@ class ExchangeCodecTest extends TelnetCodecTest {
     }
 
     @Test
+    void test_Decode_Negative_Data_Length() {
+        // magic dabb, flag c2, id all ff, data length ffffffff (-1)
+        byte[] request =
+                new byte[] {MAGIC_HIGH, MAGIC_LOW, (byte) 0xc2, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+
+        try {
+            decode(request);
+            Assertions.fail();
+        } catch (IOException expected) {
+            Assertions.assertTrue(expected.getMessage().contains("Data length can not be negative: -1"));
+        }
+    }
+
+    @Test
     void test_Decode_Header_Need_Readmore() throws IOException {
         byte[] header = new byte[] {MAGIC_HIGH, MAGIC_LOW, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         testDecode_assertEquals(header, TelnetCodec.DecodeResult.NEED_MORE_INPUT);

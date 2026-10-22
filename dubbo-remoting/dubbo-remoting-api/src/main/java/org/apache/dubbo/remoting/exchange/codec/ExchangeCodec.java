@@ -118,6 +118,11 @@ public class ExchangeCodec extends TelnetCodec {
         // get data length.
         int len = Bytes.bytes2int(header, 12);
 
+        // data length can not be negative, see https://github.com/apache/dubbo/issues/16447.
+        if (len < 0) {
+            throw new IOException("Data length can not be negative: " + len);
+        }
+
         // When receiving response, how to exceed the length, then directly construct a response to the client.
         // see more detail from https://github.com/apache/dubbo/issues/7021.
         Object obj = finishRespWhenOverPayload(channel, len, header);
