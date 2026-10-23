@@ -17,7 +17,7 @@
 package org.apache.dubbo.common.convert;
 
 /**
- * A class to covert {@link String} to the target-typed value
+ * A class to convert {@link String} to the target-typed value
  *
  * @see Converter
  * @since 2.7.6
