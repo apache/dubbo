@@ -16,10 +16,14 @@
  */
 package org.apache.dubbo.common.utils;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -99,6 +103,69 @@ class LRU2CacheTest {
         // Old entries should be gone
         assertFalse(cache.containsKey("1"));
         assertFalse(cache.containsKey("2"));
+    }
+
+    @Test
+    void testComputeIfAbsentBasic() {
+        LRU2Cache<String, String> cache = new LRU2Cache<>(10);
+        // First call: goes to preCache, function is called
+        String result1 = cache.computeIfAbsent("key", k -> k.toUpperCase());
+        assertEquals("KEY", result1);
+
+        // Second call: promotes from preCache to main cache, function is called again (LRU-2 semantics)
+        String result2 = cache.computeIfAbsent("key", k -> k.toUpperCase());
+        assertEquals("KEY", result2);
+
+        // Third call: found in main cache, function should NOT be called
+        AtomicInteger callCount = new AtomicInteger(0);
+        String result3 = cache.computeIfAbsent("key", k -> {
+            callCount.incrementAndGet();
+            return k.toUpperCase();
+        });
+        assertEquals("KEY", result3);
+        assertEquals(0, callCount.get(), "Function should not be called when value is in main cache");
+    }
+
+    @Test
+    void testComputeIfAbsentConcurrency() throws InterruptedException {
+        LRU2Cache<String, String> cache = new LRU2Cache<>(1000);
+        int threadCount = 10;
+        int iterations = 1000;
+
+        // Pre-warm: put keys twice to promote them into main cache
+        for (int i = 0; i < 100; i++) {
+            String key = "key-" + i;
+            cache.put(key, key.toUpperCase());
+            cache.put(key, key.toUpperCase());
+        }
+
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch doneLatch = new CountDownLatch(threadCount);
+        AtomicInteger errors = new AtomicInteger(0);
+
+        for (int t = 0; t < threadCount; t++) {
+            new Thread(() -> {
+                        try {
+                            startLatch.await();
+                            for (int i = 0; i < iterations; i++) {
+                                String key = "key-" + (i % 100);
+                                String value = cache.computeIfAbsent(key, k -> k.toUpperCase());
+                                if (value == null || !value.equals(key.toUpperCase())) {
+                                    errors.incrementAndGet();
+                                }
+                            }
+                        } catch (Exception e) {
+                            errors.incrementAndGet();
+                        } finally {
+                            doneLatch.countDown();
+                        }
+                    })
+                    .start();
+        }
+
+        startLatch.countDown();
+        doneLatch.await();
+        assertEquals(0, errors.get(), "Concurrent computeIfAbsent should not produce errors");
     }
 
     @Test
