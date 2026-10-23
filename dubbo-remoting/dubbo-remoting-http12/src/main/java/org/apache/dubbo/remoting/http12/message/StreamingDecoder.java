@@ -45,7 +45,10 @@ public interface StreamingDecoder {
          * Called when a complete message fragment is received.
          *
          * @param rawMessage raw message as InputStream
-         * @param messageLength the length of the message payload in bytes
+         * @param messageLength the length of the message payload in bytes.
+         *                      For compressed messages using streaming decompression, this may be -1
+         *                      to indicate that the decompressed size is not precomputed in order to
+         *                      avoid buffering the entire message in memory.
          */
         void onFragmentMessage(InputStream rawMessage, int messageLength);
 

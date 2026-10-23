@@ -291,7 +291,7 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
      * Extends BufferedInputStream to support mark/reset, which is required by
      * deserializers like Hessian2.
      */
-    private static class BoundedInputStream extends BufferedInputStream {
+    protected static class BoundedInputStream extends BufferedInputStream {
 
         private final int limit;
         private int remaining;

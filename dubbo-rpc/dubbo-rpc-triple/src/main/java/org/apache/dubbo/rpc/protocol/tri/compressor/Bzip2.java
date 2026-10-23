@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
@@ -104,5 +105,10 @@ public class Bzip2 implements Compressor, DeCompressor {
             throw new IllegalStateException(e);
         }
         return out.toByteArray();
+    }
+
+    @Override
+    public InputStream decompress(InputStream inputStream) throws IOException {
+        return new BZip2CompressorInputStream(inputStream);
     }
 }

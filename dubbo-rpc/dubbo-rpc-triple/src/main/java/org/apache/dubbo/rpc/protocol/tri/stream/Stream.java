@@ -43,7 +43,10 @@ public interface Stream {
          * streaming .
          *
          * @param message message received from remote peer as InputStream
-         * @param messageLength the length of the message in bytes
+         * @param messageLength the length of the message in bytes.
+         *                      For compressed messages processed via streaming decompression,
+         *                      this may be -1 to indicate that the total decompressed length is
+         *                      not computed up front to avoid buffering the entire message in memory.
          * @param isReturnTriException whether the message is a Triple exception
          */
         void onMessage(InputStream message, int messageLength, boolean isReturnTriException);

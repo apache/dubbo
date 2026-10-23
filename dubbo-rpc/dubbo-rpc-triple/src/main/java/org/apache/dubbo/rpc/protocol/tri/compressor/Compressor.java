@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.protocol.tri.compressor;
 
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.OutputStream;
@@ -45,12 +44,17 @@ public interface Compressor extends MessageEncoding {
     }
 
     /**
-     * compress payload
-     *
-     * @param payloadByteArr payload byte array
-     * @return compressed payload byte array
+     * @deprecated use {@link #decorate(OutputStream)} instead for zero-copy
      */
+    @Deprecated
     byte[] compress(byte[] payloadByteArr);
 
+    /**
+     * Wraps the output stream with compression. Data written to the returned stream
+     * will be compressed and written to the underlying stream.
+     *
+     * @param outputStream target output stream
+     * @return compressed output stream wrapper
+     */
     OutputStream decorate(OutputStream outputStream);
 }
