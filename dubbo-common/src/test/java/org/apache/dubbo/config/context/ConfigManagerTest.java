@@ -31,11 +31,16 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
@@ -45,6 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -374,6 +380,34 @@ class ConfigManagerTest {
         } finally {
             System.clearProperty(DUBBO_CONFIG_MODE);
         }
+    }
+
+    @ParameterizedTest
+    @CsvSource({"OVERRIDE_ALL, false", "OVERRIDE_ALL, true", "OVERRIDE_IF_ABSENT, false", "OVERRIDE_IF_ABSENT, true"})
+    void testOverrideConfigPreservesIncomingParameters(ConfigMode mode, boolean readOnly) {
+        configManager.configMode = mode;
+        ApplicationConfig target = new ApplicationConfig("app");
+        target.setParameters(CollectionUtils.toStringMap("shared", "old", "old-only", "old-value"));
+        ApplicationConfig incoming = new ApplicationConfig("app");
+        Map<String, String> incomingParameters = CollectionUtils.toStringMap("shared", "new", "new-only", "new-value");
+        Map<String, String> originalParameters = new HashMap<>(incomingParameters);
+        if (readOnly) {
+            incomingParameters = Collections.unmodifiableMap(incomingParameters);
+        }
+        incoming.setParameters(incomingParameters);
+
+        configManager.addConfig(target);
+        configManager.addConfig(incoming);
+
+        assertSame(target, configManager.getApplicationOrElseThrow());
+        assertEquals(
+                CollectionUtils.toStringMap(
+                        "shared", mode == ConfigMode.OVERRIDE_ALL ? "new" : "old",
+                        "old-only", "old-value",
+                        "new-only", "new-value"),
+                target.getParameters());
+        assertEquals(originalParameters, incomingParameters);
+        assertEquals(originalParameters, incoming.getParameters());
     }
 
     @Test
