@@ -679,9 +679,36 @@ class ServiceInstancesChangedListenerTest {
         Assertions.assertEquals(2, serviceUrls2_after_retry.size());
     }
 
-    // Abnormal case. Instance does not have revision
+    // Revision failure scenario: after a successful notification, a later one with all metadata lookups failed
+    // should clear stale addresses.
     @Test
     @Order(12)
+    public void testRevisionFailureClearsStaleAddresses() {
+        Set<String> serviceNames = new HashSet<>();
+        serviceNames.add("app2");
+        listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
+
+        ServiceInstancesChangedEvent successEvent = new ServiceInstancesChangedEvent("app2", app1FailedInstances2);
+        listener.onEvent(successEvent);
+
+        ProtocolServiceKey protocolServiceKey2 = new ProtocolServiceKey(service2, null, null, "dubbo");
+        Assertions.assertEquals(
+                2, listener.getAddresses(protocolServiceKey2, consumerURL).size());
+
+        when(serviceDiscovery.getRemoteMetadata(eq("222"), anyList())).thenReturn(MetadataInfo.EMPTY);
+        List<Object> urlsFailedRevision2 = new ArrayList<>();
+        urlsFailedRevision2.add("30.10.0.1:20880?revision=222");
+        urlsFailedRevision2.add("30.10.0.2:20880?revision=222");
+        ServiceInstancesChangedEvent failedEvent =
+                new ServiceInstancesChangedEvent("app2", buildInstances(urlsFailedRevision2));
+        listener.onEvent(failedEvent);
+
+        assertTrue(isEmpty(listener.getAddresses(protocolServiceKey2, consumerURL)));
+    }
+
+    // Abnormal case. Instance does not have revision
+    @Test
+    @Order(13)
     public void testInstanceWithoutRevision() {
         Set<String> serviceNames = new HashSet<>();
         serviceNames.add("app1");
