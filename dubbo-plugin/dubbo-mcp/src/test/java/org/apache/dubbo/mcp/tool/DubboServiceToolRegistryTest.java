@@ -201,8 +201,12 @@ class DubboServiceToolRegistryTest {
 
     private java.util.Map<String, io.modelcontextprotocol.spec.McpSchema.Tool> createMockTools() {
         java.util.Map<String, io.modelcontextprotocol.spec.McpSchema.Tool> tools = new java.util.HashMap<>();
-        io.modelcontextprotocol.spec.McpSchema.Tool tool =
-                new io.modelcontextprotocol.spec.McpSchema.Tool("testTool", "Test description", "{}");
+        io.modelcontextprotocol.spec.McpSchema.Tool tool = io.modelcontextprotocol.spec.McpSchema.Tool.builder()
+                .name("testTool")
+                .description("Test description")
+                .inputSchema(new io.modelcontextprotocol.spec.McpSchema.JsonSchema(
+                        "object", java.util.Collections.emptyMap(), null, null, null, null))
+                .build();
         tools.put("testTool", tool);
         return tools;
     }
