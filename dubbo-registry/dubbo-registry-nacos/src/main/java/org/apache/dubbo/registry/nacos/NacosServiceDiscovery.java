@@ -134,7 +134,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
                 service.updateInstance(instance.getServiceName(), group, oldInstance, newInstance);
             });
         } catch (Exception e) {
-            throw new RpcException(REGISTRY_EXCEPTION, "Failed register instance " + newServiceInstance.toString(), e);
+            throw new RpcException(REGISTRY_EXCEPTION, "Failed register instance " + newServiceInstance, e);
         }
     }
 
@@ -230,11 +230,6 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
         public boolean isEmpty() {
             return listeners.isEmpty();
         }
-    }
-
-    @Override
-    public URL getUrl() {
-        return registryURL;
     }
 
     private void handleEvent(NamingEvent event, ServiceInstancesChangedListener listener) {
