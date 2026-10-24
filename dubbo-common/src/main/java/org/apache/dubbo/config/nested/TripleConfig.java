@@ -43,6 +43,8 @@ public class TripleConfig implements Serializable {
     public static final int DEFAULT_MAX_HEADER_LIST_SIZE = 32_768;
     public static final int DEFAULT_MAX_MESSAGE_SIZE = 50 * 1024 * 1024;
     public static final float DEFAULT_WINDOW_UPDATE_RATIO = 0.5f;
+    public static final long DEFAULT_MAX_CONNECTION_AGE = -1L;
+    public static final long DEFAULT_MAX_CONNECTION_AGE_GRACE = 10_000L;
 
     public static final String H2_SETTINGS_MAX_MESSAGE_SIZE_KEY = "dubbo.protocol.triple.max-message-size";
 
@@ -162,6 +164,31 @@ public class TripleConfig implements Serializable {
      * <p>For HTTP/2
      */
     private Float windowUpdateRatio;
+
+    /**
+     * Maximum connection age in milliseconds for the server side.
+     * When a connection has been established longer than this value, the server sends a
+     * GOAWAY frame (advisory, last-stream-id = MAX_INT) so that clients migrate to a new
+     * connection, which allows load balancers to redistribute traffic (e.g. after scale-up).
+     * A jitter of +/-10% is applied to avoid mass simultaneous reconnections.
+     * <p>-1 means disabled (connections are never terminated due to age).
+     * <p>For HTTP/2 server
+     *
+     * @since 3.3
+     */
+    private Long maxConnectionAge;
+
+    /**
+     * Grace time in milliseconds for the graceful connection termination started by
+     * {@link #maxConnectionAge}. After the advisory GOAWAY has been sent, in-flight requests
+     * are given this amount of time to complete before the server sends the final GOAWAY and
+     * closes the connection.
+     * <p>The default value is 10000 (10 seconds).
+     * <p>For HTTP/2 server
+     *
+     * @since 3.3
+     */
+    private Long maxConnectionAgeGrace;
 
     @Nested
     private RestConfig rest;
@@ -381,6 +408,39 @@ public class TripleConfig implements Serializable {
             throw new IllegalArgumentException("windowUpdateRatio must be > 0 and <= 1, but was: " + windowUpdateRatio);
         }
         this.windowUpdateRatio = windowUpdateRatio;
+    }
+
+    public Long getMaxConnectionAge() {
+        return maxConnectionAge;
+    }
+
+    @Parameter(excluded = true)
+    public long getMaxConnectionAgeOrDefault() {
+        return maxConnectionAge == null ? DEFAULT_MAX_CONNECTION_AGE : maxConnectionAge;
+    }
+
+    public void setMaxConnectionAge(Long maxConnectionAge) {
+        if (maxConnectionAge != null && maxConnectionAge <= 0 && maxConnectionAge != DEFAULT_MAX_CONNECTION_AGE) {
+            throw new IllegalArgumentException(
+                    "maxConnectionAge must be > 0 or -1 (disabled), but was: " + maxConnectionAge);
+        }
+        this.maxConnectionAge = maxConnectionAge;
+    }
+
+    public Long getMaxConnectionAgeGrace() {
+        return maxConnectionAgeGrace;
+    }
+
+    @Parameter(excluded = true)
+    public long getMaxConnectionAgeGraceOrDefault() {
+        return maxConnectionAgeGrace == null ? DEFAULT_MAX_CONNECTION_AGE_GRACE : maxConnectionAgeGrace;
+    }
+
+    public void setMaxConnectionAgeGrace(Long maxConnectionAgeGrace) {
+        if (maxConnectionAgeGrace != null && maxConnectionAgeGrace < 0) {
+            throw new IllegalArgumentException("maxConnectionAgeGrace must be >= 0, but was: " + maxConnectionAgeGrace);
+        }
+        this.maxConnectionAgeGrace = maxConnectionAgeGrace;
     }
 
     public RestConfig getRest() {

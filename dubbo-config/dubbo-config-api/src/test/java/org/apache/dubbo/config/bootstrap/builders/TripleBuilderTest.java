@@ -129,7 +129,9 @@ class TripleBuilderTest {
                 .initialWindowSize(4096)
                 .connectionInitialWindowSize(8192)
                 .maxFrameSize(1024)
-                .maxHeaderListSize(500);
+                .maxHeaderListSize(500)
+                .maxConnectionAge(60000L)
+                .maxConnectionAgeGrace(5000L);
 
         TripleConfig config = builder.build();
         TripleConfig config2 = builder.build();
@@ -146,6 +148,8 @@ class TripleBuilderTest {
         Assertions.assertEquals(4096, config.getInitialWindowSize());
         Assertions.assertEquals(1024, config.getMaxFrameSize());
         Assertions.assertEquals(500, config.getMaxHeaderListSize());
+        Assertions.assertEquals(60000L, config.getMaxConnectionAge());
+        Assertions.assertEquals(5000L, config.getMaxConnectionAgeGrace());
         Assertions.assertNotSame(config, config2);
     }
 }
