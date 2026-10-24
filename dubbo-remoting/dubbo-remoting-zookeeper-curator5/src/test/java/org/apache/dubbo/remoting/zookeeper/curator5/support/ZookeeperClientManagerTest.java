@@ -20,8 +20,15 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.zookeeper.curator5.Curator5ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.curator5.ZookeeperClientManager;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -242,6 +249,53 @@ class ZookeeperClientManagerTest {
         ZookeeperClient client1 = zookeeperClientManager.connect(url1);
         ZookeeperClient client2 = zookeeperClientManager.connect(url2);
         assertThat(client1, not(client2));
+    }
+
+    @Test
+    void testGetInstanceConcurrentRaceCondition() throws Exception {
+        // Clear static managerMap via reflection to start fresh
+        Field managerMapField = ZookeeperClientManager.class.getDeclaredField("managerMap");
+        managerMapField.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        Map<?, ?> managerMap = (Map<?, ?>) managerMapField.get(null);
+        managerMap.clear();
+
+        ApplicationModel appModel = ApplicationModel.defaultModel();
+        int threadCount = 20;
+        CountDownLatch startGate = new CountDownLatch(1);
+        CountDownLatch endGate = new CountDownLatch(threadCount);
+        Set<ZookeeperClientManager> uniqueInstances = Collections.synchronizedSet(new HashSet<>());
+
+        for (int i = 0; i < threadCount; i++) {
+            new Thread(() -> {
+                        try {
+                            startGate.await();
+                            ZookeeperClientManager instance = ZookeeperClientManager.getInstance(appModel);
+                            uniqueInstances.add(instance);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        } finally {
+                            endGate.countDown();
+                        }
+                    })
+                    .start();
+        }
+
+        startGate.countDown();
+        endGate.await();
+
+        // With the buggy code, multiple different instances may be created.
+        // With the fix (computeIfAbsent), exactly 1 instance should exist.
+        Assertions.assertEquals(
+                1,
+                uniqueInstances.size(),
+                "Expected exactly 1 ZookeeperClientManager instance, but got " + uniqueInstances.size()
+                        + ". This indicates a TOCTOU race condition in getInstance().");
+
+        // Also verify only 1 entry in the static map
+        Assertions.assertEquals(1, managerMap.size(), "Expected exactly 1 entry in managerMap");
+
+        managerMap.clear();
     }
 
     @AfterAll
