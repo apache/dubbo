@@ -138,4 +138,24 @@ class NettyChannelTest {
         Assertions.assertEquals(nettyChannel, nettyChannel);
         Assertions.assertNotEquals(nettyChannel, nettyChannel2);
     }
+
+    @Test
+    void testChannelMapCleanupOnRepeatedAddRemove() {
+        Channel channel = Mockito.mock(Channel.class);
+        Mockito.when(channel.isActive()).thenReturn(true);
+
+        URL url = URL.valueOf("test://127.0.0.1/test");
+        ChannelHandler handler = Mockito.mock(ChannelHandler.class);
+
+        for (int i = 0; i < 100; i++) {
+            NettyChannel nettyChannel = NettyChannel.getOrAddChannel(channel, url, handler);
+            Assertions.assertNotNull(nettyChannel);
+            NettyChannel.removeChannel(channel);
+        }
+
+        NettyChannel nettyChannel = NettyChannel.getOrAddChannel(channel, url, handler);
+        Assertions.assertTrue(nettyChannel.isActive());
+
+        NettyChannel.removeChannel(channel);
+    }
 }
