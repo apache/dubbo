@@ -18,6 +18,7 @@ package org.apache.dubbo.config.utils;
 
 import org.apache.dubbo.common.config.ReferenceCache;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.SysProps;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
@@ -26,9 +27,11 @@ import org.apache.dubbo.config.utils.service.FooService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ReferenceCacheTest {
@@ -52,17 +55,15 @@ class ReferenceCacheTest {
     }
 
     @Test
-    void testGetCacheSameReference() throws Exception {
+    void testGetCacheSameReference() {
         ReferenceCache cache = SimpleReferenceCache.getCache();
-        MockReferenceConfig config =
-                buildMockReferenceConfig("org.apache.dubbo.config.utils.service.FooService", "group1", "1.0.0");
+        MockReferenceConfig config = buildMockReferenceConfig();
         assertEquals(0L, config.getCounter());
         Object proxy = cache.get(config);
         assertTrue(config.isGetMethodRun());
 
         // singleton reference config by default
-        MockReferenceConfig configCopy =
-                buildMockReferenceConfig("org.apache.dubbo.config.utils.service.FooService", "group1", "1.0.0");
+        MockReferenceConfig configCopy = buildMockReferenceConfig();
         assertEquals(1L, configCopy.getCounter());
         Object proxyOfCopyConfig = cache.get(configCopy);
         assertFalse(configCopy.isGetMethodRun());
@@ -73,10 +74,9 @@ class ReferenceCacheTest {
     }
 
     @Test
-    void testGetCacheDiffReference() throws Exception {
+    void testGetCacheDiffReference() {
         ReferenceCache cache = SimpleReferenceCache.getCache();
-        MockReferenceConfig config =
-                buildMockReferenceConfig("org.apache.dubbo.config.utils.service.FooService", "group1", "1.0.0");
+        MockReferenceConfig config = buildMockReferenceConfig();
         assertEquals(0L, config.getCounter());
         cache.get(config);
         assertEquals(1L, config.getCounter());
@@ -84,8 +84,7 @@ class ReferenceCacheTest {
         cache.get(config);
         assertEquals(1L, config.getCounter());
 
-        XxxMockReferenceConfig configCopy =
-                buildXxxMockReferenceConfig("org.apache.dubbo.config.utils.service.XxxService", "group1", "1.0.0");
+        XxxMockReferenceConfig configCopy = buildXxxMockReferenceConfig();
         assertEquals(0L, configCopy.getCounter());
         cache.get(configCopy);
         assertTrue(configCopy.isGetMethodRun());
@@ -93,27 +92,25 @@ class ReferenceCacheTest {
     }
 
     @Test
-    void testGetCacheWithKey() throws Exception {
+    void testGetCacheWithKey() {
         ReferenceCache cache = SimpleReferenceCache.getCache();
-        MockReferenceConfig config =
-                buildMockReferenceConfig("org.apache.dubbo.config.utils.service.FooService", "group1", "1.0.0");
+        MockReferenceConfig config = buildMockReferenceConfig();
         FooService value = cache.get(config);
         assertEquals(
                 value, cache.get("group1/org.apache.dubbo.config.utils.service.FooService:1.0.0", FooService.class));
     }
 
     @Test
-    void testGetCacheDiffName() throws Exception {
+    void testGetCacheDiffName() {
         SimpleReferenceCache cache = SimpleReferenceCache.getCache();
-        MockReferenceConfig config =
-                buildMockReferenceConfig("org.apache.dubbo.config.utils.service.FooService", "group1", "1.0.0");
+        MockReferenceConfig config = buildMockReferenceConfig();
         assertEquals(0L, config.getCounter());
         cache.get(config);
         assertTrue(config.isGetMethodRun());
         assertEquals(1L, config.getCounter());
 
         cache = SimpleReferenceCache.getCache("foo");
-        config = buildMockReferenceConfig("org.apache.dubbo.config.utils.service.FooService", "group1", "1.0.0");
+        config = buildMockReferenceConfig();
         assertEquals(1L, config.getCounter());
         cache.get(config);
         // still init for the same ReferenceConfig if the cache is different
@@ -122,13 +119,11 @@ class ReferenceCacheTest {
     }
 
     @Test
-    void testDestroy() throws Exception {
+    void testDestroy() {
         SimpleReferenceCache cache = SimpleReferenceCache.getCache();
-        MockReferenceConfig config =
-                buildMockReferenceConfig("org.apache.dubbo.config.utils.service.FooService", "group1", "1.0.0");
+        MockReferenceConfig config = buildMockReferenceConfig();
         cache.get(config);
-        XxxMockReferenceConfig configCopy =
-                buildXxxMockReferenceConfig("org.apache.dubbo.config.utils.service.XxxService", "group1", "1.0.0");
+        XxxMockReferenceConfig configCopy = buildXxxMockReferenceConfig();
         cache.get(configCopy);
         assertEquals(2, cache.getReferenceMap().size());
         cache.destroy(config);
@@ -140,13 +135,11 @@ class ReferenceCacheTest {
     }
 
     @Test
-    void testDestroyAll() throws Exception {
+    void testDestroyAll() {
         SimpleReferenceCache cache = SimpleReferenceCache.getCache();
-        MockReferenceConfig config =
-                buildMockReferenceConfig("org.apache.dubbo.config.utils.service.FooService", "group1", "1.0.0");
+        MockReferenceConfig config = buildMockReferenceConfig();
         cache.get(config);
-        XxxMockReferenceConfig configCopy =
-                buildXxxMockReferenceConfig("org.apache.dubbo.config.utils.service.XxxService", "group1", "1.0.0");
+        XxxMockReferenceConfig configCopy = buildXxxMockReferenceConfig();
         cache.get(configCopy);
         assertEquals(2, cache.getReferenceMap().size());
         cache.destroyAll();
@@ -155,25 +148,51 @@ class ReferenceCacheTest {
         assertEquals(0, cache.getReferenceMap().size());
     }
 
-    private MockReferenceConfig buildMockReferenceConfig(String service, String group, String version) {
+    private MockReferenceConfig buildMockReferenceConfig() {
         MockReferenceConfig config = new MockReferenceConfig();
         config.setApplication(new ApplicationConfig("cache"));
         config.setRegistry(new RegistryConfig("multicast://224.5.6.7:1234"));
         config.setCheck(false);
-        config.setInterface(service);
-        config.setGroup(group);
-        config.setVersion(version);
+        config.setInterface("org.apache.dubbo.config.utils.service.FooService");
+        config.setGroup("group1");
+        config.setVersion("1.0.0");
         return config;
     }
 
-    private XxxMockReferenceConfig buildXxxMockReferenceConfig(String service, String group, String version) {
+    private XxxMockReferenceConfig buildXxxMockReferenceConfig() {
         XxxMockReferenceConfig config = new XxxMockReferenceConfig();
         config.setApplication(new ApplicationConfig("cache"));
         config.setRegistry(new RegistryConfig("multicast://224.5.6.7:1234"));
-        config.setInterface(service);
+        config.setInterface("org.apache.dubbo.config.utils.service.XxxService");
         config.setCheck(false);
-        config.setGroup(group);
-        config.setVersion(version);
+        config.setGroup("group1");
+        config.setVersion("1.0.0");
         return config;
+    }
+
+    @Test
+    void testKeyGenerationWithRegistry() {
+        // Mock two ReferenceConfigs with same Interface/Group/Version
+        ReferenceConfigBase<?> rc1 = Mockito.mock(ReferenceConfigBase.class);
+        ReferenceConfigBase<?> rc2 = Mockito.mock(ReferenceConfigBase.class);
+
+        Mockito.when(rc1.getInterface()).thenReturn("org.apache.dubbo.config.utils.service.FooService");
+        Mockito.when(rc1.getGroup()).thenReturn("group1");
+        Mockito.when(rc1.getVersion()).thenReturn("1.0.0");
+
+        Mockito.when(rc2.getInterface()).thenReturn("org.apache.dubbo.config.utils.service.FooService");
+        Mockito.when(rc2.getGroup()).thenReturn("group1");
+        Mockito.when(rc2.getVersion()).thenReturn("1.0.0");
+
+        Mockito.when(rc1.getRegistryIds()).thenReturn("registry-A");
+        Mockito.when(rc2.getRegistryIds()).thenReturn("registry-B");
+
+        String key1 = SimpleReferenceCache.DEFAULT_KEY_GENERATOR.generateKey(rc1);
+        String key2 = SimpleReferenceCache.DEFAULT_KEY_GENERATOR.generateKey(rc2);
+
+        assertNotEquals(key1, key2, "Keys should be different for different registries!");
+
+        assertTrue(key1.contains("@registry=registry-A"));
+        assertTrue(key2.contains("@registry=registry-B"));
     }
 }
