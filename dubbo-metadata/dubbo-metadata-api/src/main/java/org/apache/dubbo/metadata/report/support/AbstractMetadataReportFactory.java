@@ -19,6 +19,7 @@ package org.apache.dubbo.metadata.report.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 
@@ -26,7 +27,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_FAILED_EXPORT_SERVICE;
 import static org.apache.dubbo.metadata.MetadataConstants.NAMESPACE_KEY;
@@ -65,19 +65,19 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
             if (metadataReport != null) {
                 return metadataReport;
             }
-            boolean check = url.getParameter(CHECK_KEY, true) && url.getPort() != 0;
+            boolean check = UrlUtils.isCheck(url);
             try {
                 metadataReport = createMetadataReport(url);
             } catch (Exception e) {
                 if (!check) {
                     logger.warn(PROXY_FAILED_EXPORT_SERVICE, "", "", "The metadata reporter failed to initialize", e);
+                    return null;
                 } else {
                     throw e;
                 }
             }
-
-            if (check && metadataReport == null) {
-                throw new IllegalStateException("Can not create metadata Report " + url);
+            if (check && (metadataReport == null || !metadataReport.isAvailable())) {
+                throw new IllegalStateException("can not create metadata report " + url);
             }
             if (metadataReport != null) {
                 serviceStoreMap.put(key, metadataReport);

@@ -26,6 +26,7 @@ import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.MD5Utils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.metadata.MappingChangedEvent;
 import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.MetadataInfo;
@@ -43,6 +44,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -103,6 +105,9 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         int retryTimes = url.getPositiveParameter(NACOS_RETRY_KEY, 10);
         int sleepMsBetweenRetries = url.getPositiveParameter(NACOS_RETRY_WAIT_KEY, 1000);
         boolean check = url.getParameter(NACOS_CHECK_KEY, true);
+        if (check && !UrlUtils.isCheck(url)) {
+            check = false;
+        }
         ConfigService tmpConfigServices = null;
         try {
             for (int i = 0; i < retryTimes + 1; i++) {
@@ -204,8 +209,11 @@ public class NacosMetadataReport extends AbstractMetadataReport {
     public void publishAppMetadata(SubscriberMetadataIdentifier identifier, MetadataInfo metadataInfo) {
         try {
             if (metadataInfo.getContent() != null) {
-                configService.publishConfig(
+                boolean success = configService.publishConfig(
                         identifier.getApplication(), identifier.getRevision(), metadataInfo.getContent());
+                if (!success) {
+                    throw new IllegalStateException("publish config fail");
+                }
             }
         } catch (NacosException e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -546,5 +554,13 @@ public class NacosMetadataReport extends AbstractMetadataReport {
 
             listeners.forEach(listener -> listener.onEvent(mappingChangedEvent));
         }
+    }
+
+    @Override
+    public boolean isAvailable() {
+        Optional<String> status = Optional.ofNullable(configService)
+                .map(NacosConfigServiceWrapper::getConfigService)
+                .map(ConfigService::getServerStatus);
+        return status.isPresent() && UP.equals(status.get());
     }
 }

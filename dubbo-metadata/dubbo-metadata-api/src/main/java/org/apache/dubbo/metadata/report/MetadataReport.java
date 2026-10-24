@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata.report;
 
+import org.apache.dubbo.common.Node;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.metadata.MappingListener;
@@ -30,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public interface MetadataReport {
+public interface MetadataReport extends Node {
     /**
      * Service Definition -- START
      **/
@@ -55,8 +56,6 @@ public interface MetadataReport {
     void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap);
 
     List<String> getExportedURLs(ServiceMetadataIdentifier metadataIdentifier);
-
-    void destroy();
 
     void saveServiceMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url);
 

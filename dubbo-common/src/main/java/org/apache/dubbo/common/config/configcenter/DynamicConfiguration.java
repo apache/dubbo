@@ -222,4 +222,12 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
     default boolean removeConfig(String key, String group) {
         return true;
     }
+
+    /**
+     * check the config center client connection available
+     * @return the connection status
+     */
+    default boolean isAvailable() {
+        return true;
+    }
 }
