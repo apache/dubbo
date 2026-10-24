@@ -28,8 +28,13 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -653,5 +658,184 @@ class Hessian2SerializationTest {
             Assertions.assertInstanceOf(Map.class, objectInput.readObject());
             frameworkModel.destroy();
         }
+    }
+
+    @Test
+    void testReadObjectWithNestedGenericType() throws IOException, ClassNotFoundException {
+        // hessian2 encodes Byte/Short/Integer all as int on the wire, so narrow element types of
+        // generic collections can only be restored from the declared generic type (apache/dubbo#16440).
+
+        // Map<String, List<Byte>> — nested generic, inner elements must stay Byte
+        {
+            FrameworkModel frameworkModel = new FrameworkModel();
+            Serialization serialization =
+                    frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+            URL url = URL.valueOf("").setScopeModel(frameworkModel);
+
+            Map<String, List<Byte>> original = new LinkedHashMap<>();
+            original.put("c1", new ArrayList<>(Arrays.asList((byte) 1, (byte) 127, (byte) -1)));
+            original.put("c2", new ArrayList<>(Arrays.asList((byte) 5, (byte) -8)));
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ObjectOutput objectOutput = serialization.serialize(url, outputStream);
+            objectOutput.writeObject(original);
+            objectOutput.flushBuffer();
+
+            byte[] bytes = outputStream.toByteArray();
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+            ObjectInput objectInput = serialization.deserialize(url, inputStream);
+
+            Type mapOfListByte = parameterizedType(Map.class, String.class, parameterizedType(List.class, Byte.class));
+            Map<?, ?> result = objectInput.readObject(Map.class, mapOfListByte);
+
+            Assertions.assertEquals(2, result.size());
+            for (Object value : result.values()) {
+                Assertions.assertInstanceOf(List.class, value);
+                for (Object element : (List<?>) value) {
+                    Assertions.assertInstanceOf(
+                            Byte.class, element, "nested generic element must not be widened to Integer");
+                }
+            }
+            Assertions.assertEquals(original.get("c1"), result.get("c1"));
+            Assertions.assertEquals(original.get("c2"), result.get("c2"));
+
+            frameworkModel.destroy();
+        }
+
+        // List<List<Byte>> — deeply nested generic
+        {
+            FrameworkModel frameworkModel = new FrameworkModel();
+            Serialization serialization =
+                    frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+            URL url = URL.valueOf("").setScopeModel(frameworkModel);
+
+            List<List<Byte>> original = new ArrayList<>();
+            original.add(new ArrayList<>(Arrays.asList((byte) 1, (byte) 2, (byte) -3)));
+            original.add(new ArrayList<>(Arrays.asList((byte) 9, (byte) 10)));
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ObjectOutput objectOutput = serialization.serialize(url, outputStream);
+            objectOutput.writeObject(original);
+            objectOutput.flushBuffer();
+
+            byte[] bytes = outputStream.toByteArray();
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+            ObjectInput objectInput = serialization.deserialize(url, inputStream);
+
+            Type listOfListByte = parameterizedType(List.class, parameterizedType(List.class, Byte.class));
+            List<?> result = objectInput.readObject(List.class, listOfListByte);
+
+            Assertions.assertEquals(2, result.size());
+            for (Object inner : result) {
+                Assertions.assertInstanceOf(List.class, inner);
+                for (Object element : (List<?>) inner) {
+                    Assertions.assertInstanceOf(Byte.class, element);
+                }
+            }
+            Assertions.assertEquals(original, result);
+
+            frameworkModel.destroy();
+        }
+
+        // Map<String, List<Float>> — Float is encoded as double on the wire
+        {
+            FrameworkModel frameworkModel = new FrameworkModel();
+            Serialization serialization =
+                    frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+            URL url = URL.valueOf("").setScopeModel(frameworkModel);
+
+            Map<String, List<Float>> original = new LinkedHashMap<>();
+            original.put("m", new ArrayList<>(Arrays.asList(1.5f, -2.25f, 3.0f)));
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ObjectOutput objectOutput = serialization.serialize(url, outputStream);
+            objectOutput.writeObject(original);
+            objectOutput.flushBuffer();
+
+            byte[] bytes = outputStream.toByteArray();
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+            ObjectInput objectInput = serialization.deserialize(url, inputStream);
+
+            Type mapOfListFloat =
+                    parameterizedType(Map.class, String.class, parameterizedType(List.class, Float.class));
+            Map<?, ?> result = objectInput.readObject(Map.class, mapOfListFloat);
+
+            for (Object value : result.values()) {
+                for (Object element : (List<?>) value) {
+                    Assertions.assertInstanceOf(Float.class, element);
+                }
+            }
+            Assertions.assertEquals(original, result);
+
+            frameworkModel.destroy();
+        }
+
+        // simple List<Byte> keeps working
+        {
+            FrameworkModel frameworkModel = new FrameworkModel();
+            Serialization serialization =
+                    frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+            URL url = URL.valueOf("").setScopeModel(frameworkModel);
+
+            List<Byte> original = new ArrayList<>(Arrays.asList((byte) 1, (byte) 2, (byte) -5));
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ObjectOutput objectOutput = serialization.serialize(url, outputStream);
+            objectOutput.writeObject(original);
+            objectOutput.flushBuffer();
+
+            byte[] bytes = outputStream.toByteArray();
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+            ObjectInput objectInput = serialization.deserialize(url, inputStream);
+
+            List<?> result = objectInput.readObject(List.class, parameterizedType(List.class, Byte.class));
+            Assertions.assertEquals(original, result);
+            Assertions.assertInstanceOf(Byte.class, result.get(0));
+
+            frameworkModel.destroy();
+        }
+
+        // List<String> is untouched by the narrowing pass
+        {
+            FrameworkModel frameworkModel = new FrameworkModel();
+            Serialization serialization =
+                    frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+            URL url = URL.valueOf("").setScopeModel(frameworkModel);
+
+            List<String> original = new ArrayList<>(Arrays.asList("a", "b", "c"));
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ObjectOutput objectOutput = serialization.serialize(url, outputStream);
+            objectOutput.writeObject(original);
+            objectOutput.flushBuffer();
+
+            byte[] bytes = outputStream.toByteArray();
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+            ObjectInput objectInput = serialization.deserialize(url, inputStream);
+
+            List<?> result = objectInput.readObject(List.class, parameterizedType(List.class, String.class));
+            Assertions.assertEquals(original, result);
+
+            frameworkModel.destroy();
+        }
+    }
+
+    private static ParameterizedType parameterizedType(Type rawType, Type... typeArguments) {
+        return new ParameterizedType() {
+            @Override
+            public Type[] getActualTypeArguments() {
+                return typeArguments;
+            }
+
+            @Override
+            public Type getRawType() {
+                return rawType;
+            }
+
+            @Override
+            public Type getOwnerType() {
+                return null;
+            }
+        };
     }
 }

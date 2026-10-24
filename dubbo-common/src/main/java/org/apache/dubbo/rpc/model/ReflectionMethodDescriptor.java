@@ -44,6 +44,7 @@ public class ReflectionMethodDescriptor implements MethodDescriptor {
     public final String methodName;
     private final String[] compatibleParamSignatures;
     private final Class<?>[] parameterClasses;
+    private final Type[] genericParameterTypes;
     private final Class<?> returnClass;
     private final Type[] returnTypes;
     private final String paramDesc;
@@ -57,6 +58,7 @@ public class ReflectionMethodDescriptor implements MethodDescriptor {
         this.method = method;
         this.methodName = method.getName();
         this.parameterClasses = method.getParameterTypes();
+        this.genericParameterTypes = method.getGenericParameterTypes();
         this.returnClass = method.getReturnType();
         Type[] returnTypesResult;
         try {
@@ -147,6 +149,11 @@ public class ReflectionMethodDescriptor implements MethodDescriptor {
     @Override
     public Class<?>[] getParameterClasses() {
         return parameterClasses;
+    }
+
+    @Override
+    public Type[] getGenericParameterTypes() {
+        return genericParameterTypes;
     }
 
     @Override
