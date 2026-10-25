@@ -303,4 +303,25 @@ class MulticastRegistryTest {
         URL consumer = URL.valueOf("consumer://127.0.0.1/" + service);
         assertFalse(registry.isExpired(consumer), "consumer urls are never expired");
     }
+
+    /**
+     * The retry sleep is the only intentional wait in the expiry probe; if the calling thread is
+     * already interrupted it must still finish the probe and restore the interrupt flag rather
+     * than swallowing the InterruptedException.
+     */
+    @Test
+    void testIsExpiredRestoresInterruptDuringRetrySleep() {
+        URL unreachable = URL.valueOf("dubbo://192.0.2.1:20880/" + service + "?timeout=200");
+        Thread.currentThread().interrupt();
+        try {
+            boolean expired = registry.isExpired(unreachable);
+            assertTrue(expired, "an unreachable provider must be treated as expired");
+            assertTrue(
+                    Thread.currentThread().isInterrupted(),
+                    "the interrupt flag must be restored after the retry sleep");
+        } finally {
+            // clear the flag so it cannot leak into other tests
+            Thread.interrupted();
+        }
+    }
 }
