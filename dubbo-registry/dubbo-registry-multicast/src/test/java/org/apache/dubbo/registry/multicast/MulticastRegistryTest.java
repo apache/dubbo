@@ -269,4 +269,38 @@ class MulticastRegistryTest {
             }
         }
     }
+
+    /**
+     * An unreachable provider must not block the clean thread. TEST-NET-1 (RFC 5737) is reserved and
+     * unroutable, so without a bounded connect timeout this call would wait for the OS-level TCP
+     * timeout (tens of seconds) before returning.
+     */
+    @Test
+    void testIsExpiredBoundedForUnreachableProvider() {
+        URL unreachable = URL.valueOf("dubbo://192.0.2.1:20880/" + service + "?timeout=300");
+
+        long start = System.nanoTime();
+        boolean expired = registry.isExpired(unreachable);
+        long elapsedMillis = (System.nanoTime() - start) / 1_000_000L;
+
+        assertTrue(expired, "an unreachable provider must be treated as expired");
+        assertTrue(elapsedMillis < 20_000, "isExpired must honour the connect timeout, took " + elapsedMillis + "ms");
+    }
+
+    @Test
+    void testIsExpiredReturnsFalseForReachablePort() throws Exception {
+        try (java.net.ServerSocket serverSocket = new java.net.ServerSocket(0)) {
+            URL reachable = URL.valueOf("dubbo://127.0.0.1:" + serverSocket.getLocalPort() + "/" + service);
+            assertFalse(registry.isExpired(reachable), "a reachable provider must not be expired");
+        }
+    }
+
+    @Test
+    void testIsExpiredSkipsNonDynamicAndSpecialProtocols() {
+        URL dynamic = URL.valueOf("dubbo://127.0.0.1:20880/" + service + "?dynamic=false");
+        assertFalse(registry.isExpired(dynamic), "a non-dynamic provider is never expired");
+
+        URL consumer = URL.valueOf("consumer://127.0.0.1/" + service);
+        assertFalse(registry.isExpired(consumer), "consumer urls are never expired");
+    }
 }
