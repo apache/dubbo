@@ -80,4 +80,47 @@ class ReconnectTimerTaskTest {
         Thread.sleep(2000L);
         Assertions.assertTrue(channel.getReconnectCount() > 1);
     }
+
+    @Test
+    void testStopReconnectWhenClientClosed() throws Exception {
+        url = url.addParameter(DUBBO_VERSION_KEY, "2.1.1");
+
+        // Let the task attempt reconnection while client is open and disconnected
+        Thread.sleep(1500L);
+        int reconnectCountBeforeClose = channel.getReconnectCount();
+        Assertions.assertTrue(
+                reconnectCountBeforeClose > 0, "Should have attempted reconnection while channel is not connected");
+
+        // Close the client - simulates provider going offline and client being destroyed
+        channel.close();
+
+        // Wait for the timer to fire again
+        Thread.sleep(1500L);
+
+        // After closing, reconnect count should not increase
+        Assertions.assertEquals(
+                reconnectCountBeforeClose,
+                channel.getReconnectCount(),
+                "Should stop reconnecting after client is closed");
+
+        // The timer task should have been cancelled
+        Assertions.assertTrue(reconnectTimerTask.cancel, "Timer task should be cancelled when client is closed");
+    }
+
+    @Test
+    void testReconnectContinuesWhenNotClosed() throws Exception {
+        url = url.addParameter(DUBBO_VERSION_KEY, "2.1.1");
+
+        // Channel is disconnected but not closed - reconnection should continue
+        Thread.sleep(2000L);
+        int count1 = channel.getReconnectCount();
+        Assertions.assertTrue(count1 > 0, "Should attempt reconnection when disconnected but not closed");
+
+        Thread.sleep(1500L);
+        int count2 = channel.getReconnectCount();
+        Assertions.assertTrue(count2 > count1, "Should keep trying to reconnect");
+
+        Assertions.assertFalse(
+                reconnectTimerTask.cancel, "Timer task should not be cancelled when client is still open");
+    }
 }
