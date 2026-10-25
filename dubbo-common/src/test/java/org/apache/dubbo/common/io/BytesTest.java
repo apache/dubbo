@@ -16,8 +16,11 @@
  */
 package org.apache.dubbo.common.io;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Random;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -125,6 +128,33 @@ class BytesTest {
         byte[] md5 = Bytes.getMD5(new File(
                 getClass().getClassLoader().getResource("md5.testfile.txt").getFile()));
         assertThat(md5, is(Bytes.base642bytes("iNZ+5qHafVNPLJxHwLKJ3w==")));
+    }
+
+    @Test
+    void testMD5ForStreamWithShortFinalRead() throws IOException {
+        byte[] source = new byte[1024 * 8 + 17];
+        new Random().nextBytes(source);
+        assertThat(Bytes.getMD5(new ByteArrayInputStream(source)), is(Bytes.getMD5(source)));
+    }
+
+    @Test
+    void testMD5ForStreamWithZeroAvailable() throws IOException {
+        byte[] source = new byte[1024];
+        new Random().nextBytes(source);
+        InputStream is = new InputStream() {
+            private int pos;
+
+            @Override
+            public int available() {
+                return 0;
+            }
+
+            @Override
+            public int read() {
+                return pos < source.length ? source[pos++] & 0xff : -1;
+            }
+        };
+        assertThat(Bytes.getMD5(is), is(Bytes.getMD5(source)));
     }
 
     @Test
