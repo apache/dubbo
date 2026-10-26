@@ -63,8 +63,8 @@ class AppStateRouterFactoryTest {
         AppStateRouterFactory factory = new AppStateRouterFactory();
 
         // The first service has a downstream filtering router, as it would for a script rule.
-        SingleRouterChain<String> firstChain = chain(
-                factory.getRouter(String.class, firstUrl), new PortFilterRouter(firstUrl, 23982));
+        SingleRouterChain<String> firstChain =
+                chain(factory.getRouter(String.class, firstUrl), new PortFilterRouter(firstUrl, 23982));
         Invoker<String> firstV1 = invoker(firstService, 23981, moduleModel);
         Invoker<String> firstV2 = invoker(firstService, 23982, moduleModel);
         BitList<Invoker<String>> firstInvokers = new BitList<>(Arrays.asList(firstV1, firstV2));
@@ -98,8 +98,7 @@ class AppStateRouterFactoryTest {
     }
 
     private SingleRouterChain<String> chain(StateRouter<String> appRouter, StateRouter<String> nextRouter) {
-        return new SingleRouterChain<>(
-                Collections.emptyList(), Arrays.asList(appRouter, nextRouter), true, null);
+        return new SingleRouterChain<>(Collections.emptyList(), Arrays.asList(appRouter, nextRouter), true, null);
     }
 
     private static class PassThroughRouter extends AbstractStateRouter<String> {
