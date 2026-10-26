@@ -310,7 +310,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
         @Override
         public void writeBytes(byte[] v, int off, int len) throws IOException {
             try {
-                target.writeBytes(v);
+                target.writeBytes(v, off, len);
             } catch (Exception e) {
                 throw handleToIOException(e);
             }

@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
@@ -52,6 +53,21 @@ class DefaultSerializationExceptionWrapperTest {
         Assertions.assertInstanceOf(Cleanable.class, out);
         ((Cleanable) out).cleanup();
         verify((Cleanable) target).cleanup();
+    }
+
+    @Test
+    void testWriteBytesWithRangeForwardsOffsetAndLength() throws IOException {
+        ObjectOutput target = mock(ObjectOutput.class);
+        Serialization serialization = mock(Serialization.class);
+        when(serialization.serialize(null, null)).thenReturn(target);
+        byte[] data = {1, 2, 3, 4, 5};
+
+        new DefaultSerializationExceptionWrapper(serialization)
+                .serialize(null, null)
+                .writeBytes(data, 1, 3);
+
+        verify(target).writeBytes(data, 1, 3);
+        verify(target, never()).writeBytes(data);
     }
 
     @Test
