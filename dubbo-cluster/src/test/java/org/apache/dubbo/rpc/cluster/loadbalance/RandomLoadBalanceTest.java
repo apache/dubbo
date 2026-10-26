@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcStatus;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -82,5 +83,38 @@ class RandomLoadBalanceTest extends LoadBalanceBaseTest {
 
         // 1 : 9 : 6
         Assertions.assertEquals(sumInvoker1 + sumInvoker2 + sumInvoker3, loop, "select failed!");
+    }
+
+    @Test
+    void testSelectByWeightWithBitList() {
+        int loop = 10000;
+        int sumInvoker1 = 0;
+        int sumInvoker2 = 0;
+        int sumInvoker3 = 0;
+
+        RandomLoadBalance lb = new RandomLoadBalance();
+        // BitList#get(index) is O(index), make sure weighted selection still behaves correctly on it.
+        BitList<Invoker<LoadBalanceBaseTest>> bitList = new BitList<>(weightInvokers);
+        for (int i = 0; i < loop; i++) {
+            Invoker selected = lb.select(bitList, null, weightTestInvocation);
+
+            if (selected.getUrl().getProtocol().equals("test1")) {
+                sumInvoker1++;
+            }
+
+            if (selected.getUrl().getProtocol().equals("test2")) {
+                sumInvoker2++;
+            }
+
+            if (selected.getUrl().getProtocol().equals("test3")) {
+                sumInvoker3++;
+            }
+        }
+
+        // 1 : 9 : 6
+        Assertions.assertEquals(sumInvoker1 + sumInvoker2 + sumInvoker3, loop, "select failed!");
+        Assertions.assertEquals(0.0625d, sumInvoker1 * 1.0d / loop, 0.03d);
+        Assertions.assertEquals(0.5625d, sumInvoker2 * 1.0d / loop, 0.03d);
+        Assertions.assertEquals(0.3750d, sumInvoker3 * 1.0d / loop, 0.03d);
     }
 }
