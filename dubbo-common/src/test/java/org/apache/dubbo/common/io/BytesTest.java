@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Random;
 
 import org.junit.jupiter.api.Assertions;
@@ -125,9 +126,13 @@ class BytesTest {
 
     @Test
     void testMD5ForFile() throws IOException {
-        byte[] md5 = Bytes.getMD5(new File(
-                getClass().getClassLoader().getResource("md5.testfile.txt").getFile()));
-        assertThat(md5, is(Bytes.base642bytes("iNZ+5qHafVNPLJxHwLKJ3w==")));
+        File file = new File(getClass().getClassLoader().getResource("md5.testfile.txt").getFile());
+        byte[] md5 = Bytes.getMD5(file);
+        // md5.testfile.txt is much shorter than the 8 KiB read buffer, so this pins down that the
+        // digest covers only the bytes read from the file. The previous expectation was the digest
+        // of the whole buffer, i.e. the file content followed by ~8180 zero bytes.
+        assertThat(md5, is(Bytes.base642bytes("/D/5joxqDTCH1RXARz+Gdw==")));
+        assertThat(md5, is(Bytes.getMD5(Files.readAllBytes(file.toPath()))));
     }
 
     @Test
