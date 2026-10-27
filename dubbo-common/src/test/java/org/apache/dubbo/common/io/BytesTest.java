@@ -126,7 +126,8 @@ class BytesTest {
 
     @Test
     void testMD5ForFile() throws IOException {
-        File file = new File(getClass().getClassLoader().getResource("md5.testfile.txt").getFile());
+        File file = new File(
+                getClass().getClassLoader().getResource("md5.testfile.txt").getFile());
         byte[] md5 = Bytes.getMD5(file);
         // md5.testfile.txt is much shorter than the 8 KiB read buffer, so this pins down that the
         // digest covers only the bytes read from the file. The previous expectation was the digest
