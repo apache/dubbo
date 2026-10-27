@@ -92,18 +92,26 @@ public class AppScriptStateRouterTest {
         invocation.setMethodName("sayHello");
         String ruleKey = "demo-provider" + RULE_SUFFIX;
 
-        router.process(new ConfigChangedEvent(
-                ruleKey, DynamicConfiguration.DEFAULT_GROUP, rawRule, ConfigChangeType.ADDED));
-        Assertions.assertEquals(1, router.route(invokers.clone(), url, invocation, false, new Holder<>()).size());
-
-        router.process(new ConfigChangedEvent(
-                ruleKey, DynamicConfiguration.DEFAULT_GROUP, "", ConfigChangeType.DELETED));
+        router.process(
+                new ConfigChangedEvent(ruleKey, DynamicConfiguration.DEFAULT_GROUP, rawRule, ConfigChangeType.ADDED));
         Assertions.assertEquals(
-                invokers.size(), router.route(invokers.clone(), url, invocation, false, new Holder<>()).size());
+                1,
+                router.route(invokers.clone(), url, invocation, false, new Holder<>())
+                        .size());
 
-        router.process(new ConfigChangedEvent(
-                ruleKey, DynamicConfiguration.DEFAULT_GROUP, rawRule, ConfigChangeType.ADDED));
-        Assertions.assertEquals(1, router.route(invokers.clone(), url, invocation, false, new Holder<>()).size());
+        router.process(
+                new ConfigChangedEvent(ruleKey, DynamicConfiguration.DEFAULT_GROUP, "", ConfigChangeType.DELETED));
+        Assertions.assertEquals(
+                invokers.size(),
+                router.route(invokers.clone(), url, invocation, false, new Holder<>())
+                        .size());
+
+        router.process(
+                new ConfigChangedEvent(ruleKey, DynamicConfiguration.DEFAULT_GROUP, rawRule, ConfigChangeType.ADDED));
+        Assertions.assertEquals(
+                1,
+                router.route(invokers.clone(), url, invocation, false, new Holder<>())
+                        .size());
     }
 
     private BitList<Invoker<String>> getInvokers() {
