@@ -310,7 +310,7 @@ public class DefaultHttpRequest implements HttpRequest {
         }
         host = getHost0();
         if (host != null) {
-            int index = host.lastIndexOf(':');
+            int index = getHostPortSeparator(host);
             return index == -1 ? host : host.substring(0, index);
         }
         return localHost();
@@ -324,10 +324,16 @@ public class DefaultHttpRequest implements HttpRequest {
         }
         String host = getHost0();
         if (host != null) {
-            int index = host.lastIndexOf(':');
-            return index == -1 ? -1 : Integer.parseInt(host.substring(0, index));
+            int index = getHostPortSeparator(host);
+            return index == -1 ? -1 : Integer.parseInt(host.substring(index + 1));
         }
         return localPort();
+    }
+
+    private static int getHostPortSeparator(String host) {
+        int index = host.lastIndexOf(':');
+        // IPv6 地址内部的冒号不能作为端口分隔符。
+        return index > host.lastIndexOf(']') ? index : -1;
     }
 
     private String getHost0() {
