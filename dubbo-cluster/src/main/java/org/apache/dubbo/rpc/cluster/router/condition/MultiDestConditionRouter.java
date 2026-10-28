@@ -71,10 +71,10 @@ public class MultiDestConditionRouter<T> extends AbstractStateRouter<T> {
 
     public void init(Map<String, String> from, List<Map<String, String>> to) {
         try {
-            if (from == null || to == null) {
+            if (to == null) {
                 throw new IllegalArgumentException("Illegal route rule!");
             }
-            String whenRule = from.get("match");
+            String whenRule = from == null ? null : from.get("match");
             Map<String, ConditionMatcher> when =
                     StringUtils.isBlank(whenRule) || "true".equals(whenRule) ? new HashMap<>() : parseRule(whenRule);
             this.whenCondition = when;
