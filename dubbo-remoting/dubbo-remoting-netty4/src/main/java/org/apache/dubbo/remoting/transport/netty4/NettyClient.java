@@ -39,6 +39,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.proxy.Socks5ProxyHandler;
@@ -59,11 +60,11 @@ import static org.apache.dubbo.remoting.transport.netty4.NettyEventLoopFactory.s
  */
 public class NettyClient extends AbstractClient {
 
-    private static final String SOCKS_PROXY_HOST = "socksProxyHost";
+    public static final String SOCKS_PROXY_HOST = "socksProxyHost";
 
-    private static final String SOCKS_PROXY_PORT = "socksProxyPort";
+    public static final String SOCKS_PROXY_PORT = "socksProxyPort";
 
-    private static final String DEFAULT_SOCKS_PROXY_PORT = "1080";
+    public static final String DEFAULT_SOCKS_PROXY_PORT = "1080";
 
     /**
      * netty client bootstrap
@@ -123,33 +124,38 @@ public class NettyClient extends AbstractClient {
 
             @Override
             protected void initChannel(SocketChannel ch) throws Exception {
-                int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
+                URL url = getUrl();
+                ChannelPipeline pipeline = ch.pipeline();
+                int heartbeatInterval = UrlUtils.getHeartbeat(url);
 
                 if (sslContext != null) {
-                    ch.pipeline().addLast("negotiation", new SslClientTlsHandler(sslContext));
+                    pipeline.addLast("negotiation", new SslClientTlsHandler(sslContext));
                 }
 
-                NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyClient.this);
-                ch.pipeline() // .addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
+                NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), url, NettyClient.this);
+                pipeline // .addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
                         .addLast("decoder", adapter.getDecoder())
                         .addLast("encoder", adapter.getEncoder())
                         .addLast("client-idle-handler", new IdleStateHandler(heartbeatInterval, 0, 0, MILLISECONDS))
                         .addLast("handler", nettyClientHandler);
 
-                String socksProxyHost =
-                        ConfigurationUtils.getProperty(getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_HOST);
-                if (socksProxyHost != null && !isFilteredAddress(getUrl().getHost())) {
-                    int socksProxyPort = Integer.parseInt(ConfigurationUtils.getProperty(
-                            getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_PORT, DEFAULT_SOCKS_PROXY_PORT));
-                    Socks5ProxyHandler socks5ProxyHandler =
-                            new Socks5ProxyHandler(new InetSocketAddress(socksProxyHost, socksProxyPort));
-                    ch.pipeline().addFirst(socks5ProxyHandler);
-                }
+                configureSocks5Proxy(url, pipeline);
             }
         });
     }
 
-    private boolean isFilteredAddress(String host) {
+    static void configureSocks5Proxy(URL url, ChannelPipeline pipeline) {
+        String socksProxyHost = ConfigurationUtils.getProperty(url.getOrDefaultApplicationModel(), SOCKS_PROXY_HOST);
+        if (StringUtils.isNotBlank(socksProxyHost) && !isFilteredAddress(url.getHost())) {
+            int socksProxyPort = Integer.parseInt(ConfigurationUtils.getProperty(
+                    url.getOrDefaultApplicationModel(), SOCKS_PROXY_PORT, DEFAULT_SOCKS_PROXY_PORT));
+            Socks5ProxyHandler socks5ProxyHandler =
+                    new Socks5ProxyHandler(InetSocketAddress.createUnresolved(socksProxyHost, socksProxyPort));
+            pipeline.addFirst(socks5ProxyHandler);
+        }
+    }
+
+    static boolean isFilteredAddress(String host) {
         // filter local address
         return StringUtils.isEquals(NetUtils.getLocalHost(), host) || NetUtils.isLocalHost(host);
     }
