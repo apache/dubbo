@@ -45,6 +45,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -294,6 +295,23 @@ class PojoUtilsTest {
         assertThat(message.getContent(), equalTo("greeting"));
         assertThat(message.getFrom(), equalTo("dubbo"));
         assertTrue(message.isUrgent());
+    }
+
+    // In the Turkish locale "I".toLowerCase() is the dotless "ı", so getId() looked up "ıd" in the map.
+    @Test
+    void testMapToInterfaceUnderTurkishLocale() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", "T-1");
+        map.put("important", true);
+        Locale defaultLocale = Locale.getDefault();
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+        try {
+            Ticket ticket = (Ticket) PojoUtils.realize(map, Ticket.class);
+            assertThat(ticket.getId(), equalTo("T-1"));
+            assertTrue(ticket.isImportant());
+        } finally {
+            Locale.setDefault(defaultLocale);
+        }
     }
 
     @Test
@@ -1285,5 +1303,11 @@ class PojoUtilsTest {
         String getFrom();
 
         boolean isUrgent();
+    }
+
+    interface Ticket {
+        String getId();
+
+        boolean isImportant();
     }
 }

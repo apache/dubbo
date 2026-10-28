@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
@@ -70,7 +71,7 @@ public class EnvironmentAdapter implements InfraAdapter, ScopeModelAware {
                 String value = ConfigurationUtils.getProperty(applicationModel, key);
                 if (value != null) {
                     // since 3.2
-                    parameters.put(key.toLowerCase(), value);
+                    parameters.put(key.toLowerCase(Locale.ROOT), value);
                     // upper-case key kept for compatibility
                     parameters.put(key, value);
                 }

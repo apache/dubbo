@@ -31,6 +31,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.Collection;
+import java.util.Locale;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Assertions;
@@ -373,6 +374,23 @@ class ConfigManagerTest {
                     applicationConfig33.getParameters());
         } finally {
             System.clearProperty(DUBBO_CONFIG_MODE);
+        }
+    }
+
+    // In the Turkish locale "override".toUpperCase() is "OVERRİDE", which is not a ConfigMode constant.
+    @Test
+    void testConfigModeUnderTurkishLocale() {
+        Locale defaultLocale = Locale.getDefault();
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+        try {
+            System.setProperty(DUBBO_CONFIG_MODE, "override");
+            ApplicationModel.reset();
+            ConfigManager configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
+            Assertions.assertEquals(ConfigMode.OVERRIDE, configManager.getConfigMode());
+        } finally {
+            Locale.setDefault(defaultLocale);
+            System.clearProperty(DUBBO_CONFIG_MODE);
+            ApplicationModel.reset();
         }
     }
 

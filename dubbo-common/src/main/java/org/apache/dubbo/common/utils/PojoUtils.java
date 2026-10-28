@@ -48,6 +48,7 @@ import java.util.Hashtable;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -267,11 +268,11 @@ public class PojoUtils {
             String methodName = method.getName();
             Object value = null;
             if (methodName.length() > 3 && methodName.startsWith("get")) {
-                value = map.get(methodName.substring(3, 4).toLowerCase() + methodName.substring(4));
+                value = map.get(methodName.substring(3, 4).toLowerCase(Locale.ROOT) + methodName.substring(4));
             } else if (methodName.length() > 2 && methodName.startsWith("is")) {
-                value = map.get(methodName.substring(2, 3).toLowerCase() + methodName.substring(3));
+                value = map.get(methodName.substring(2, 3).toLowerCase(Locale.ROOT) + methodName.substring(3));
             } else {
-                value = map.get(methodName.substring(0, 1).toLowerCase() + methodName.substring(1));
+                value = map.get(methodName.substring(0, 1).toLowerCase(Locale.ROOT) + methodName.substring(1));
             }
             if (value instanceof Map<?, ?> && !Map.class.isAssignableFrom(method.getReturnType())) {
                 value = realize0(value, method.getReturnType(), null, new IdentityHashMap<>());
@@ -733,7 +734,7 @@ public class PojoUtils {
     }
 
     private static Method getSetterMethod(Class<?> cls, String property, Class<?> valueCls) {
-        String name = "set" + property.substring(0, 1).toUpperCase() + property.substring(1);
+        String name = "set" + property.substring(0, 1).toUpperCase(Locale.ROOT) + property.substring(1);
         Method method = NAME_METHODS_CACHE.get(cls.getName() + "." + name + "(" + valueCls.getName() + ")");
         if (method == null) {
             try {
