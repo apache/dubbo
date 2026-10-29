@@ -39,4 +39,9 @@ public class JaxrsDemoServiceImpl implements JaxrsDemoService {
     public MultivaluedMap<String, Integer> multiValueMapTest(MultivaluedMap<String, Integer> params) {
         return params;
     }
+
+    @Override
+    public String pathParamTest(String name) {
+        return name;
+    }
 }

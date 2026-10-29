@@ -72,6 +72,14 @@ public final class RequestUtils {
         }
     }
 
+    /**
+     * Decodes a value taken from the request path, such as a path or matrix variable.
+     * Unlike {@link #decodeURL(String)}, a '+' is kept: only form data and query strings use it for a space.
+     */
+    public static String decodePath(String value) {
+        return decodeURL(value.indexOf('+') == -1 ? value : value.replace("+", "%2B"));
+    }
+
     public static String encodeURL(String value) {
         try {
             return URLEncoder.encode(value, StandardCharsets.UTF_8.name());
@@ -136,7 +144,7 @@ public final class RequestUtils {
             return null;
         }
         int index = value.indexOf(';');
-        return decodeURL(index == -1 ? value : value.substring(0, index));
+        return decodePath(index == -1 ? value : value.substring(0, index));
     }
 
     public static Map<String, List<String>> parseMatrixVariables(String matrixVariables) {
@@ -160,7 +168,7 @@ public final class RequestUtils {
                 result = new LinkedHashMap<>();
             }
             for (String value : StringUtils.tokenize(pair.substring(index + 1), ',')) {
-                result.computeIfAbsent(name, k -> new ArrayList<>()).add(decodeURL(value));
+                result.computeIfAbsent(name, k -> new ArrayList<>()).add(decodePath(value));
             }
         }
         return result;

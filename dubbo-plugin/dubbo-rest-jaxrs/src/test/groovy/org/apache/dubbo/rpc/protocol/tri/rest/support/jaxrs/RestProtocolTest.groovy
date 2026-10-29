@@ -76,6 +76,15 @@ class RestProtocolTest extends BaseServiceTest {
             '/convertTest?user=3,sam' | '{"id":3,"name":"sam"}'
     }
 
+    def "path param test"() {
+        expect:
+            runner.get(path) == output
+        where:
+            path                                  | output
+            '/pathParamTest/a%20b'                | 'a b'
+            '/pathParamTest/john+tag@example.com' | 'john+tag@example.com'
+    }
+
     def "MultivaluedMap test"() {
         expect:
             TestRequest request = new TestRequest(

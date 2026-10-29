@@ -26,4 +26,9 @@ public class SpringDemoServiceImpl extends DemoServiceImpl implements SpringDemo
     public MultiValueMap<String, Integer> multiValueMapTest(MultiValueMap<String, Integer> params) {
         return params;
     }
+
+    @Override
+    public String springPathVariableTest(String name) {
+        return name;
+    }
 }
