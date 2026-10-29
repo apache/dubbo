@@ -410,12 +410,15 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      */
     private Map<String, AsyncMethodInfo> createAsyncMethodInfo() {
         Map<String, AsyncMethodInfo> attributes = null;
-        if (CollectionUtils.isNotEmpty(getMethods())) {
+        // Expand wildcard method names (e.g. "create*") so async info is registered under every
+        // matched interface method; exact-named configs take precedence over wildcards.
+        List<Map.Entry<String, MethodConfig>> resolvedMethods = resolveMethodConfigs(interfaceClass);
+        if (CollectionUtils.isNotEmpty(resolvedMethods)) {
             attributes = new HashMap<>(16);
-            for (MethodConfig methodConfig : getMethods()) {
-                AsyncMethodInfo asyncMethodInfo = methodConfig.convertMethodConfig2AsyncInfo();
+            for (Map.Entry<String, MethodConfig> resolvedMethod : resolvedMethods) {
+                AsyncMethodInfo asyncMethodInfo = resolvedMethod.getValue().convertMethodConfig2AsyncInfo();
                 if (asyncMethodInfo != null) {
-                    attributes.put(methodConfig.getName(), asyncMethodInfo);
+                    attributes.put(resolvedMethod.getKey(), asyncMethodInfo);
                 }
             }
         }
@@ -470,15 +473,17 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         map.put(REGISTER_IP_KEY, hostToRegistry);
 
-        if (CollectionUtils.isNotEmpty(getMethods())) {
-            for (MethodConfig methodConfig : getMethods()) {
-                AbstractConfig.appendParameters(map, methodConfig, methodConfig.getName());
-                String retryKey = methodConfig.getName() + ".retry";
-                if (map.containsKey(retryKey)) {
-                    String retryValue = map.remove(retryKey);
-                    if ("false".equals(retryValue)) {
-                        map.put(methodConfig.getName() + ".retries", "0");
-                    }
+        // Expand wildcard method names (e.g. "create*") to matched interface methods; exact-named
+        // configs take precedence over wildcard ones for the same method.
+        for (Map.Entry<String, MethodConfig> resolvedMethod : resolveMethodConfigs(interfaceClass)) {
+            MethodConfig methodConfig = resolvedMethod.getValue();
+            String methodName = resolvedMethod.getKey();
+            AbstractConfig.appendParameters(map, methodConfig, methodName);
+            String retryKey = methodName + ".retry";
+            if (map.containsKey(retryKey)) {
+                String retryValue = map.remove(retryKey);
+                if ("false".equals(retryValue)) {
+                    map.put(methodName + ".retries", "0");
                 }
             }
         }
