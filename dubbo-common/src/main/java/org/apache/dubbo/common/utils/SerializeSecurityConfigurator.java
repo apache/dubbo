@@ -50,6 +50,14 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
     private static final ErrorTypeAwareLogger LOGGER =
             LoggerFactory.getErrorTypeAwareLogger(SerializeSecurityConfigurator.class);
 
+    private static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
+
+    /**
+     * {@code Class.getPermittedSubclasses()} arrived in Java 17 and this module compiles at Java 8,
+     * so it is resolved reflectively and treated as absent on older runtimes.
+     */
+    private static final Method GET_PERMITTED_SUBCLASSES = resolveGetPermittedSubclasses();
+
     private final Set<Type> markedTypeCache = new HashSet<>();
 
     private final SerializeSecurityManager serializeSecurityManager;
@@ -333,6 +341,13 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
             checkType(genericSuperclass);
         }
 
+        // Safe to trust: a sealed type lists its subtypes in its own source, and the JVM rejects
+        // any subtype absent from that list. Otherwise only the parent is trusted, never the
+        // subtypes actually sent.
+        for (Class<?> permittedSubclass : getPermittedSubclasses(clazz)) {
+            checkClass(permittedSubclass);
+        }
+
         Field[] fields = clazz.getDeclaredFields();
 
         for (Field field : fields) {
@@ -346,6 +361,36 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
         }
 
         return true;
+    }
+
+    private static Method resolveGetPermittedSubclasses() {
+        try {
+            return Class.class.getMethod("getPermittedSubclasses");
+        } catch (NoSuchMethodException e) {
+            // Running on Java 8/11: sealed classes do not exist, so there is nothing to walk.
+            return null;
+        }
+    }
+
+    /**
+     * Returns the subtypes a sealed class permits, or an empty array when the class is not sealed,
+     * the runtime predates sealed classes, or the attribute cannot be read.
+     *
+     * <p>Note that a Kotlin {@code sealed} declaration only carries the JVM {@code
+     * PermittedSubclasses} attribute when compiled with {@code -jvm-target 17} or above; below that
+     * the sealed hierarchy exists only in {@code kotlin.Metadata} and is not visible here.
+     */
+    private static Class<?>[] getPermittedSubclasses(Class<?> clazz) {
+        if (GET_PERMITTED_SUBCLASSES == null) {
+            return EMPTY_CLASS_ARRAY;
+        }
+        try {
+            Class<?>[] permittedSubclasses = (Class<?>[]) GET_PERMITTED_SUBCLASSES.invoke(clazz);
+            return permittedSubclasses == null ? EMPTY_CLASS_ARRAY : permittedSubclasses;
+        } catch (Throwable t) {
+            // A permitted subtype that cannot be resolved must not stop the rest of the walk.
+            return EMPTY_CLASS_ARRAY;
+        }
     }
 
     private void addToAllow(Class<?> clazz) {
