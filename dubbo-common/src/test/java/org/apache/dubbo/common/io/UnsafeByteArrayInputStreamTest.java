@@ -84,6 +84,21 @@ class UnsafeByteArrayInputStreamTest {
     }
 
     @Test
+    void testReadZeroLength() {
+        UnsafeByteArrayInputStream emptyStream = new UnsafeByteArrayInputStream(new byte[0]);
+        assertThat(emptyStream.read(new byte[1], 0, 0), is(0));
+        assertThat(emptyStream.read(new byte[0]), is(0));
+
+        UnsafeByteArrayInputStream stream = new UnsafeByteArrayInputStream("abc".getBytes());
+        assertThat(stream.read(new byte[1], 0, 0), is(0));
+        byte[] buffer = new byte[3];
+        assertThat(stream.read(buffer, 0, 3), is(3));
+        assertThat(stream.read(new byte[1], 0, 0), is(0));
+        assertThat(stream.read(new byte[0]), is(0));
+        assertThat(stream.read(new byte[1], 0, 1), is(-1));
+    }
+
+    @Test
     void testSkipZero() {
         UnsafeByteArrayInputStream stream = new UnsafeByteArrayInputStream("abc".getBytes());
         long skip = stream.skip(-1);
