@@ -18,10 +18,14 @@ package org.apache.dubbo.registry.multicast;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.registry.Constants;
 import org.apache.dubbo.registry.NotifyListener;
 
+import java.net.ConnectException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
+import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +35,8 @@ import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedConstruction;
+import org.mockito.Mockito;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.hamcrest.CoreMatchers.is;
@@ -271,20 +277,44 @@ class MulticastRegistryTest {
     }
 
     /**
-     * An unreachable provider must not block the clean thread. TEST-NET-1 (RFC 5737) is reserved and
-     * unroutable, so without a bounded connect timeout this call would wait for the OS-level TCP
-     * timeout (tens of seconds) before returning.
+     * The liveness probe must pass an explicit timeout to {@code Socket.connect}.
+     *
+     * <p>This asserts the argument rather than the elapsed time on purpose. A wall-clock assertion
+     * against an unroutable address still passes without the timeout wherever the connect fails
+     * immediately (no route to host, or a firewall that rejects instead of dropping), so it does
+     * not prove the timeout is applied. Capturing the call is platform independent.
      */
     @Test
-    void testIsExpiredBoundedForUnreachableProvider() {
-        URL unreachable = URL.valueOf("dubbo://192.0.2.1:20880/" + service + "?timeout=300");
+    void testLivenessProbePassesTheConfiguredTimeoutToConnect() throws Exception {
+        // The option belongs to the registry url: the probe budget is a property of the registry
+        // doing the cleaning, not of the provider being checked.
+        MulticastRegistry timedRegistry =
+                new MulticastRegistry(URL.valueOf("multicast://239.239.239.240/?clean.check.timeout=250"));
+        try (MockedConstruction<Socket> mocked = Mockito.mockConstruction(Socket.class)) {
+            timedRegistry.isExpired(URL.valueOf("dubbo://127.0.0.1:20880/" + service));
 
-        long start = System.nanoTime();
-        boolean expired = registry.isExpired(unreachable);
-        long elapsedMillis = (System.nanoTime() - start) / 1_000_000L;
+            assertFalse(mocked.constructed().isEmpty(), "the probe must attempt a connect");
+            for (Socket socket : mocked.constructed()) {
+                Mockito.verify(socket).connect(Mockito.any(InetSocketAddress.class), Mockito.eq(250));
+            }
+        } finally {
+            timedRegistry.destroy();
+        }
+    }
 
-        assertTrue(expired, "an unreachable provider must be treated as expired");
-        assertTrue(elapsedMillis < 20_000, "isExpired must honour the connect timeout, took " + elapsedMillis + "ms");
+    @Test
+    void testLivenessProbeUsesTheDefaultTimeoutWhenNotConfigured() throws Exception {
+        try (MockedConstruction<Socket> mocked = Mockito.mockConstruction(Socket.class)) {
+            registry.isExpired(URL.valueOf("dubbo://127.0.0.1:20880/" + service));
+
+            assertFalse(mocked.constructed().isEmpty(), "the probe must attempt a connect");
+            for (Socket socket : mocked.constructed()) {
+                Mockito.verify(socket)
+                        .connect(
+                                Mockito.any(InetSocketAddress.class),
+                                Mockito.eq(Constants.DEFAULT_CLEAN_CHECK_TIMEOUT));
+            }
+        }
     }
 
     @Test
@@ -310,18 +340,24 @@ class MulticastRegistryTest {
      * than swallowing the InterruptedException.
      */
     @Test
-    void testIsExpiredRestoresInterruptDuringRetrySleep() {
-        URL unreachable = URL.valueOf("dubbo://192.0.2.1:20880/" + service + "?timeout=200");
-        Thread.currentThread().interrupt();
-        try {
-            boolean expired = registry.isExpired(unreachable);
-            assertTrue(expired, "an unreachable provider must be treated as expired");
-            assertTrue(
-                    Thread.currentThread().isInterrupted(),
-                    "the interrupt flag must be restored after the retry sleep");
-        } finally {
-            // clear the flag so it cannot leak into other tests
-            Thread.interrupted();
+    void testIsExpiredRestoresInterruptDuringRetrySleep() throws Exception {
+        URL unreachable = URL.valueOf("dubbo://127.0.0.1:20880/" + service);
+        // Force both probe attempts to fail without depending on the network, so the only reason
+        // the probe reaches the retry sleep is the connect failure itself.
+        try (MockedConstruction<Socket> mocked = Mockito.mockConstruction(
+                Socket.class, (mock, context) -> Mockito.doThrow(new ConnectException("refused"))
+                        .when(mock)
+                        .connect(Mockito.any(InetSocketAddress.class), Mockito.anyInt()))) {
+            Thread.currentThread().interrupt();
+            try {
+                assertTrue(registry.isExpired(unreachable), "a provider that cannot be reached is expired");
+                assertTrue(
+                        Thread.currentThread().isInterrupted(),
+                        "the interrupt flag must be restored after the retry sleep");
+            } finally {
+                // clear the flag so it cannot leak into other tests
+                Thread.interrupted();
+            }
         }
     }
 }

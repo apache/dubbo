@@ -89,6 +89,18 @@ public interface Constants {
     String SESSION_TIMEOUT_KEY = "session";
 
     /**
+     * Timeout in milliseconds for the liveness probe the multicast registry runs while cleaning
+     * expired providers. Kept separate from {@code timeout} so that bounding the probe does not
+     * change how long the registry waits on its own operations.
+     */
+    String CLEAN_CHECK_TIMEOUT_KEY = "clean.check.timeout";
+
+    /**
+     * Default liveness probe timeout: 1000 (ms)
+     */
+    int DEFAULT_CLEAN_CHECK_TIMEOUT = 1000;
+
+    /**
      * To decide the frequency of checking Distributed Service Discovery Registry callback hook (in ms)
      */
     String ECHO_POLLING_CYCLE_KEY = "echoPollingCycle";
