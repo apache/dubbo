@@ -66,6 +66,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
@@ -750,7 +751,7 @@ public class ExtensionLoader<T> {
 
         int i = 1;
         for (Map.Entry<String, IllegalStateException> entry : exceptions.entrySet()) {
-            if (entry.getKey().toLowerCase().startsWith(name.toLowerCase())) {
+            if (entry.getKey().toLowerCase(Locale.ROOT).startsWith(name.toLowerCase(Locale.ROOT))) {
                 if (i == 1) {
                     buf.append(", possible causes: ");
                 }
@@ -922,7 +923,7 @@ public class ExtensionLoader<T> {
      */
     private String getSetterProperty(Method method) {
         return method.getName().length() > 3
-                ? method.getName().substring(3, 4).toLowerCase()
+                ? method.getName().substring(3, 4).toLowerCase(Locale.ROOT)
                         + method.getName().substring(4)
                 : "";
     }
@@ -1428,7 +1429,7 @@ public class ExtensionLoader<T> {
         if (name.endsWith(type.getSimpleName())) {
             name = name.substring(0, name.length() - type.getSimpleName().length());
         }
-        return name.toLowerCase();
+        return name.toLowerCase(Locale.ROOT);
     }
 
     @SuppressWarnings("unchecked")

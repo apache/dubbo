@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -406,6 +407,22 @@ class StringUtilsTest {
         assertEquals("DUBBO_TAG1", StringUtils.toOSStyleKey("dubbo.tag1"));
         assertEquals("DUBBO_TAG1_TAG11", StringUtils.toOSStyleKey("dubbo.tag1.tag11"));
         assertEquals("DUBBO_TAG1", StringUtils.toOSStyleKey("tag1"));
+    }
+
+    // In the Turkish locale "I".toLowerCase() is the dotless "ı" and "i".toUpperCase() is the dotted "İ".
+    @Test
+    void testSplitNamesAndKeysUnderTurkishLocale() {
+        Locale defaultLocale = Locale.getDefault();
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+        try {
+            assertEquals("io-threads", StringUtils.camelToSplitName("IO-THREADS", "-"));
+            assertEquals("io-threads", StringUtils.snakeToSplitName("IO_THREADS", "-"));
+            assertEquals("iothreads", StringUtils.convertToSplitName("IOTHREADS", "-"));
+            assertEquals("dubbo.protocol.iothreads", StringUtils.toURLKey("DUBBO_PROTOCOL_IOTHREADS"));
+            assertEquals("DUBBO_PROTOCOL_IOTHREADS", StringUtils.toOSStyleKey("dubbo.protocol.iothreads"));
+        } finally {
+            Locale.setDefault(defaultLocale);
+        }
     }
 
     @Test

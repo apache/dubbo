@@ -39,6 +39,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -1102,11 +1103,11 @@ public final class ReflectUtils {
     public static String getPropertyNameFromBeanReadMethod(Method method) {
         if (isBeanPropertyReadMethod(method)) {
             if (method.getName().startsWith("get")) {
-                return method.getName().substring(3, 4).toLowerCase()
+                return method.getName().substring(3, 4).toLowerCase(Locale.ROOT)
                         + method.getName().substring(4);
             }
             if (method.getName().startsWith("is")) {
-                return method.getName().substring(2, 3).toLowerCase()
+                return method.getName().substring(2, 3).toLowerCase(Locale.ROOT)
                         + method.getName().substring(3);
             }
         }
@@ -1125,7 +1126,7 @@ public final class ReflectUtils {
 
     public static String getPropertyNameFromBeanWriteMethod(Method method) {
         if (isBeanPropertyWriteMethod(method)) {
-            return method.getName().substring(3, 4).toLowerCase()
+            return method.getName().substring(3, 4).toLowerCase(Locale.ROOT)
                     + method.getName().substring(4);
         }
         return null;

@@ -65,6 +65,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeSet;
@@ -1170,7 +1171,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     private static String getValueFromConfig(ProtocolConfig protocolConfig, String key) {
-        String protocolPrefix = protocolConfig.getName().toUpperCase() + "_";
+        String protocolPrefix = protocolConfig.getName().toUpperCase(Locale.ROOT) + "_";
         String value = ConfigUtils.getSystemProperty(protocolPrefix + key);
         if (StringUtils.isEmpty(value)) {
             value = ConfigUtils.getSystemProperty(key);
@@ -1179,12 +1180,12 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     private static Integer getRandomPort(String protocol) {
-        protocol = protocol.toLowerCase();
+        protocol = protocol.toLowerCase(Locale.ROOT);
         return RANDOM_PORT_MAP.getOrDefault(protocol, Integer.MIN_VALUE);
     }
 
     private static void putRandomPort(String protocol, Integer port) {
-        protocol = protocol.toLowerCase();
+        protocol = protocol.toLowerCase(Locale.ROOT);
         if (!RANDOM_PORT_MAP.containsKey(protocol)) {
             RANDOM_PORT_MAP.put(protocol, port);
             logger.warn(
