@@ -293,6 +293,31 @@ class ServiceConfigTest {
     }
 
     @Test
+    void testCheckRefReportsUnimplementedInterfaceForUserType() {
+        ServiceConfig<Object> service = new ServiceConfig<>();
+        service.setInterface(Greeting.class);
+        service.setRef(new DemoServiceImpl());
+
+        IllegalStateException e = Assertions.assertThrows(IllegalStateException.class, service::checkRef);
+        assertThat(e.getMessage(), containsString(DemoServiceImpl.class.getName()));
+        assertThat(e.getMessage(), containsString(Greeting.class.getName()));
+    }
+
+    @Test
+    void testCheckRefReportsUnimplementedInterfaceForBootstrapLoadedType() {
+        // Runnable is loaded by the bootstrap loader, so Class#getClassLoader() returns null for
+        // it. checkRef must still report the misconfiguration rather than throwing NPE while
+        // building its own message.
+        ServiceConfig<Object> service = new ServiceConfig<>();
+        service.setInterface(Runnable.class);
+        service.setRef(new DemoServiceImpl());
+
+        IllegalStateException e = Assertions.assertThrows(IllegalStateException.class, service::checkRef);
+        assertThat(e.getMessage(), containsString(DemoServiceImpl.class.getName()));
+        assertThat(e.getMessage(), containsString(Runnable.class.getName()));
+    }
+
+    @Test
     void testInterface2() throws Exception {
         ServiceConfig<DemoService> service = new ServiceConfig<>();
         service.setInterface(DemoService.class);
