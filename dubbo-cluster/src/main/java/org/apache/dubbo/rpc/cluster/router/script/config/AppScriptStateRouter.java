@@ -49,9 +49,18 @@ public class AppScriptStateRouter<T> extends AbstractStateRouter<T> implements C
             LoggerFactory.getErrorTypeAwareLogger(AppScriptStateRouter.class);
     private static final String RULE_SUFFIX = ".script-router";
 
-    private ScriptRule scriptRule;
-    private ScriptStateRouter<T> scriptRouter;
+    private volatile RouterState<T> routerState;
     private String application;
+
+    private static final class RouterState<T> {
+        private final ScriptRule rule;
+        private final ScriptStateRouter<T> router;
+
+        private RouterState(ScriptRule rule, ScriptStateRouter<T> router) {
+            this.rule = rule;
+            this.router = router;
+        }
+    }
 
     public AppScriptStateRouter(URL url) {
         super(url);
@@ -66,16 +75,17 @@ public class AppScriptStateRouter<T> extends AbstractStateRouter<T> implements C
             Holder<RouterSnapshotNode<T>> routerSnapshotNodeHolder,
             Holder<String> messageHolder)
             throws RpcException {
-        if (scriptRouter == null || !scriptRule.isValid() || !scriptRule.isEnabled()) {
+        RouterState<T> state = routerState;
+        if (state == null || state.router == null || !state.rule.isValid() || !state.rule.isEnabled()) {
             if (needToPrintMessage) {
                 messageHolder.set(
                         "Directly return from script router. Reason: Invokers from previous router is empty or script is not enabled. Script rule is: "
-                                + (scriptRule == null ? "null" : scriptRule.getRawRule()));
+                                + (state == null ? "null" : state.rule.getRawRule()));
             }
             return invokers;
         }
 
-        invokers = scriptRouter.route(invokers, url, invocation, needToPrintMessage, routerSnapshotNodeHolder);
+        invokers = state.router.route(invokers, url, invocation, needToPrintMessage, routerSnapshotNodeHolder);
 
         if (needToPrintMessage) {
             messageHolder.set(messageHolder.get());
@@ -93,16 +103,16 @@ public class AppScriptStateRouter<T> extends AbstractStateRouter<T> implements C
 
         try {
             if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
-                this.scriptRule = null;
+                routerState = null;
             } else {
-                this.scriptRule = ScriptRule.parse(event.getContent());
+                ScriptRule scriptRule = ScriptRule.parse(event.getContent());
                 URL scriptUrl = getUrl().addParameter(
                                 TYPE_KEY,
                                 isEmpty(scriptRule.getType()) ? DEFAULT_SCRIPT_TYPE_KEY : scriptRule.getType())
                         .addParameterAndEncoded(RULE_KEY, scriptRule.getScript())
                         .addParameter(FORCE_KEY, scriptRule.isForce())
                         .addParameter(RUNTIME_KEY, scriptRule.isRuntime());
-                scriptRouter = new ScriptStateRouter<>(scriptUrl);
+                routerState = new RouterState<>(scriptRule, new ScriptStateRouter<>(scriptUrl));
             }
         } catch (Exception e) {
             logger.error(
@@ -160,6 +170,7 @@ public class AppScriptStateRouter<T> extends AbstractStateRouter<T> implements C
 
     // for testing purpose
     public void setScriptRule(ScriptRule scriptRule) {
-        this.scriptRule = scriptRule;
+        RouterState<T> state = routerState;
+        routerState = scriptRule == null ? null : new RouterState<>(scriptRule, state == null ? null : state.router);
     }
 }
