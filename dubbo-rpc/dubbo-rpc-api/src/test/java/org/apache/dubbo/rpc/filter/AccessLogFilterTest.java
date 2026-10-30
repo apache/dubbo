@@ -83,6 +83,10 @@ class AccessLogFilterTest {
             customAccessLogFilter.invoke(invoker, invocation);
             sleep();
             assertEquals(1, LogUtil.findMessage("Change of accesslog file path not allowed"));
+            assertEquals(
+                    1,
+                    LogUtil.findMessage("[DUBBO] Will write to the default location, please enable this feature by "
+                            + "setting 'accesslog.fixed.path=false' and restart the process."));
         } finally {
             customAccessLogFilter.destroy();
             DubboAppender.clear();
@@ -99,7 +103,7 @@ class AccessLogFilterTest {
             Invocation invocation = new MockInvocation();
             customAccessLogFilter2.invoke(invoker, invocation);
             sleep();
-            assertEquals(1, LogUtil.findMessage("Accesslog file path changed to"));
+            assertEquals(1, LogUtil.findMessage("[DUBBO] Accesslog file path changed to custom-access.log"));
         } finally {
             customAccessLogFilter2.destroy();
             DubboAppender.clear();
