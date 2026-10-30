@@ -54,7 +54,7 @@ final class DummyServletContext implements ServletContext {
 
     @Override
     public String getContextPath() {
-        return "/";
+        return "";
     }
 
     @Override
