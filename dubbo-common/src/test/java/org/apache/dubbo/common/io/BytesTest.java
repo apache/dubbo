@@ -16,8 +16,12 @@
  */
 package org.apache.dubbo.common.io;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.util.Random;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -122,9 +126,41 @@ class BytesTest {
 
     @Test
     void testMD5ForFile() throws IOException {
-        byte[] md5 = Bytes.getMD5(new File(
-                getClass().getClassLoader().getResource("md5.testfile.txt").getFile()));
-        assertThat(md5, is(Bytes.base642bytes("iNZ+5qHafVNPLJxHwLKJ3w==")));
+        File file = new File(
+                getClass().getClassLoader().getResource("md5.testfile.txt").getFile());
+        byte[] md5 = Bytes.getMD5(file);
+        // md5.testfile.txt is much shorter than the 8 KiB read buffer, so this pins down that the
+        // digest covers only the bytes read from the file. The previous expectation was the digest
+        // of the whole buffer, i.e. the file content followed by ~8180 zero bytes.
+        assertThat(md5, is(Bytes.base642bytes("/D/5joxqDTCH1RXARz+Gdw==")));
+        assertThat(md5, is(Bytes.getMD5(Files.readAllBytes(file.toPath()))));
+    }
+
+    @Test
+    void testMD5ForStreamWithShortFinalRead() throws IOException {
+        byte[] source = new byte[1024 * 8 + 17];
+        new Random().nextBytes(source);
+        assertThat(Bytes.getMD5(new ByteArrayInputStream(source)), is(Bytes.getMD5(source)));
+    }
+
+    @Test
+    void testMD5ForStreamWithZeroAvailable() throws IOException {
+        byte[] source = new byte[1024];
+        new Random().nextBytes(source);
+        InputStream is = new InputStream() {
+            private int pos;
+
+            @Override
+            public int available() {
+                return 0;
+            }
+
+            @Override
+            public int read() {
+                return pos < source.length ? source[pos++] & 0xff : -1;
+            }
+        };
+        assertThat(Bytes.getMD5(is), is(Bytes.getMD5(source)));
     }
 
     @Test
