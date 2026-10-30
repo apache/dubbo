@@ -203,6 +203,11 @@ public class ReferenceAnnotationWithAotBeanPostProcessor extends ReferenceAnnota
                 AotUtils.registerSerializationForService(serviceInterface, hints);
                 hints.reflection()
                         .registerType(TypeReference.of(serviceInterface), MemberCategory.INVOKE_PUBLIC_METHODS);
+                if (GenericService.class.isAssignableFrom(interfaceClass)) {
+                    // AbstractProxyFactory adds the real service interface before the generic invoker interface.
+                    hints.proxies()
+                            .registerJdkProxy(serviceInterface, interfaceClass, EchoService.class, Destroyable.class);
+                }
                 hints.proxies()
                         .registerJdkProxy(interfaceClass, EchoService.class, Destroyable.class, serviceInterface);
                 hints.proxies()

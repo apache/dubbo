@@ -144,6 +144,12 @@ public class ReferenceAnnotationWithAotBeanPostProcessorTest {
                     new ClassNameGenerator(ClassName.get("org.apache.dubbo.generated", "GenericReferenceHints")),
                     new InMemoryGeneratedFiles());
             genericReferenceBeanContribution.applyTo(genericGenerationContext, null);
+            Assertions.assertTrue(
+                    RuntimeHintsPredicates.proxies()
+                            .forInterfaces(
+                                    DemoService.class, GenericService.class, EchoService.class, Destroyable.class)
+                            .test(genericGenerationContext.getRuntimeHints()),
+                    "The GenericService ReferenceBean proxy must match AbstractProxyFactory's interface order");
             Assertions.assertTrue(RuntimeHintsPredicates.proxies()
                     .forInterfaces(GenericService.class, EchoService.class, Destroyable.class, DemoService.class)
                     .test(genericGenerationContext.getRuntimeHints()));
