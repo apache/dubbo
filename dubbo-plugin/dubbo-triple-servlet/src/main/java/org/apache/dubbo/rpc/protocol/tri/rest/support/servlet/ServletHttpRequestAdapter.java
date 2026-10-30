@@ -127,7 +127,7 @@ public class ServletHttpRequestAdapter extends DefaultHttpRequest implements Htt
 
     @Override
     public String getContextPath() {
-        return "/";
+        return "";
     }
 
     @Override

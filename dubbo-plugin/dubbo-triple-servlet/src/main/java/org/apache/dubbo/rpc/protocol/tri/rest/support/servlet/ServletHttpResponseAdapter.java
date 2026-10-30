@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.tri.rest.support.servlet;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.http12.HttpUtils;
 import org.apache.dubbo.remoting.http12.message.DefaultHttpResponse;
-import org.apache.dubbo.rpc.protocol.tri.rest.util.RequestUtils;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
@@ -54,20 +53,20 @@ public class ServletHttpResponseAdapter extends DefaultHttpResponse implements H
 
     @Override
     public String encodeURL(String url) {
-        return RequestUtils.encodeURL(url);
+        return url;
     }
 
     @Override
     public String encodeRedirectURL(String url) {
-        return RequestUtils.encodeURL(url);
+        return url;
     }
 
     public String encodeUrl(String url) {
-        return RequestUtils.encodeURL(url);
+        return url;
     }
 
     public String encodeRedirectUrl(String url) {
-        return RequestUtils.encodeURL(url);
+        return url;
     }
 
     public void sendRedirect(String location, int sc, boolean clearBuffer) {
