@@ -71,6 +71,6 @@ public class PathParamArgumentResolver implements AnnotationBaseArgumentResolver
         if (index != -1) {
             value = value.substring(0, index);
         }
-        return parameter.isAnnotated(Annotations.Encoded) ? value : RequestUtils.decodeURL(value);
+        return parameter.isAnnotated(Annotations.Encoded) ? value : RequestUtils.decodePath(value);
     }
 }

@@ -20,6 +20,7 @@ import javax.ws.rs.BeanParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MultivaluedMap;
 
@@ -42,4 +43,8 @@ public interface JaxrsDemoService {
     @POST
     @Path("/multivaluedMapTest")
     MultivaluedMap<String, Integer> multiValueMapTest(MultivaluedMap<String, Integer> params);
+
+    @GET
+    @Path("/pathParamTest/{name}")
+    String pathParamTest(@PathParam("name") String name);
 }
