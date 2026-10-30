@@ -66,4 +66,16 @@ class ExtensionTest {
         Assertions.assertTrue(list.get(0).getClass() == OldActivateExt1Impl2.class
                 || list.get(0).getClass() == OldActivateExt1Impl3.class);
     }
+
+    @Test
+    void testOldActivateOnClass() {
+        // onClass of the com.alibaba @Activate points to a class that is not on the classpath,
+        // so the extension should be skipped, the same as with org.apache.dubbo's @Activate
+        ExtensionLoader<ActivateExt1> loader = getExtensionLoader(ActivateExt1.class);
+        Assertions.assertFalse(loader.hasExtension("old3"));
+
+        URL url = URL.valueOf("test://localhost/test");
+        List<ActivateExt1> list = loader.getActivateExtension(url, new String[] {}, "old_onClass");
+        Assertions.assertTrue(list.isEmpty());
+    }
 }
