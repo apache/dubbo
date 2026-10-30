@@ -771,6 +771,7 @@ public class ExtensionLoader<T> {
 
     @SuppressWarnings("unchecked")
     private T createExtension(String name, boolean wrap) {
+        final boolean debugEnabled = logger.isDebugEnabled();
         Class<?> clazz = getExtensionClasses().get(name);
         if (clazz == null || unacceptableExceptions.contains(name)) {
             throw findException(name);
@@ -785,6 +786,7 @@ public class ExtensionLoader<T> {
                 instance = postProcessAfterInitialization(instance, name);
             }
 
+            List<Class<?>> appliedWrapperClasses = Collections.emptyList();
             if (wrap) {
                 List<Class<?>> wrapperClassesList = new ArrayList<>();
                 if (cachedWrapperClasses != null) {
@@ -794,6 +796,9 @@ public class ExtensionLoader<T> {
                 }
 
                 if (CollectionUtils.isNotEmpty(wrapperClassesList)) {
+                    if (debugEnabled) {
+                        appliedWrapperClasses = new ArrayList<>(wrapperClassesList.size());
+                    }
                     for (Class<?> wrapperClass : wrapperClassesList) {
                         Wrapper wrapper = wrapperClass.getAnnotation(Wrapper.class);
                         boolean match = (wrapper == null)
@@ -801,6 +806,9 @@ public class ExtensionLoader<T> {
                                                 || ArrayUtils.contains(wrapper.matches(), name))
                                         && !ArrayUtils.contains(wrapper.mismatches(), name));
                         if (match) {
+                            if (debugEnabled) {
+                                appliedWrapperClasses.add(wrapperClass);
+                            }
                             instance = (T) wrapperClass.getConstructor(type).newInstance(instance);
                             instance = postProcessBeforeInitialization(instance, name);
                             injectExtension(instance);
@@ -813,6 +821,9 @@ public class ExtensionLoader<T> {
             // Warning: After an instance of Lifecycle is wrapped by cachedWrapperClasses, it may not still be Lifecycle
             // instance, this application may not invoke the lifecycle.initialize hook.
             initExtension(instance);
+            if (debugEnabled) {
+                logExtensionInstanceLoaded(name, instance, wrap, appliedWrapperClasses);
+            }
             return instance;
         } catch (Throwable t) {
             throw new IllegalStateException(
@@ -820,6 +831,17 @@ public class ExtensionLoader<T> {
                             + t.getMessage(),
                     t);
         }
+    }
+
+    private void logExtensionInstanceLoaded(String name, T instance, boolean wrap, List<Class<?>> wrapperClasses) {
+        logger.debug(
+                "Loaded extension instance, type={}, scopeModel={}, name={}, instanceClass={}, wrap={}, wrapperClasses={}",
+                type.getName(),
+                scopeModel,
+                name,
+                instance.getClass().getName(),
+                wrap,
+                wrapperClasses.stream().map(Class::getName).collect(Collectors.toList()));
     }
 
     private Object createExtensionInstance(Class<?> type) throws ReflectiveOperationException {
@@ -985,8 +1007,19 @@ public class ExtensionLoader<T> {
      */
     @SuppressWarnings("deprecation")
     private Map<String, Class<?>> loadExtensionClasses() throws InterruptedException {
+        final boolean debugEnabled = logger.isDebugEnabled();
         checkDestroyed();
         cacheDefaultExtensionName();
+
+        long startNanos = -1;
+        if (debugEnabled) {
+            startNanos = System.nanoTime();
+            logger.debug(
+                    "Start loading extension classes, type={}, scopeModel={}, defaultName={}",
+                    type.getName(),
+                    scopeModel,
+                    cachedDefaultName);
+        }
 
         Map<String, Class<?>> extensionClasses = new HashMap<>();
 
@@ -997,6 +1030,22 @@ public class ExtensionLoader<T> {
             if (this.type == ExtensionInjector.class) {
                 loadDirectory(extensionClasses, strategy, ExtensionFactory.class.getName());
             }
+        }
+
+        if (debugEnabled) {
+            long costMillis = (System.nanoTime() - startNanos) / 1_000_000L;
+            List<String> wrapperClassNames = cachedWrapperClasses == null
+                    ? Collections.emptyList()
+                    : cachedWrapperClasses.stream().map(Class::getName).collect(Collectors.toList());
+            logger.debug(
+                    "Finished loading extension classes, type={}, scopeModel={}, count={}, adaptiveClass={}, wrapperClasses={}, names={}, costInMillis={}",
+                    type.getName(),
+                    scopeModel,
+                    extensionClasses.size(),
+                    cachedAdaptiveClass == null ? null : cachedAdaptiveClass.getName(),
+                    wrapperClassNames,
+                    new TreeSet<>(extensionClasses.keySet()),
+                    costMillis);
         }
 
         return extensionClasses;
@@ -1270,22 +1319,38 @@ public class ExtensionLoader<T> {
             Class<?> clazz,
             String name,
             boolean overridden) {
+        final boolean debugEnabled = logger.isDebugEnabled();
         if (!type.isAssignableFrom(clazz)) {
             throw new IllegalStateException(
                     "Error occurred when loading extension class (interface: " + type + ", class line: "
                             + clazz.getName() + "), class " + clazz.getName() + " is not subtype of interface.");
         }
 
-        boolean isActive = loadClassIfActive(classLoader, clazz);
+        List<String> missingOnClass = findMissingOnClass(classLoader, clazz);
 
-        if (!isActive) {
+        if (missingOnClass != null && !missingOnClass.isEmpty()) {
+            if (debugEnabled) {
+                logger.debug(
+                        "Skip inactive extension class, type={}, scopeModel={}, class={}, resourceURL={}, missingOnClass={}",
+                        type.getName(),
+                        scopeModel,
+                        clazz.getName(),
+                        resourceURL,
+                        missingOnClass);
+            }
             return;
         }
 
         if (clazz.isAnnotationPresent(Adaptive.class)) {
             cacheAdaptiveClass(clazz, overridden);
+            if (debugEnabled) {
+                logLoadedExtensionClass("adaptive", clazz, null, resourceURL, overridden);
+            }
         } else if (isWrapperClass(clazz)) {
             cacheWrapperClass(clazz);
+            if (debugEnabled) {
+                logLoadedExtensionClass("wrapper", clazz, null, resourceURL, overridden);
+            }
         } else {
             if (StringUtils.isEmpty(name)) {
                 name = findAnnotationName(clazz);
@@ -1302,15 +1367,31 @@ public class ExtensionLoader<T> {
                     cacheName(clazz, n);
                     saveInExtensionClass(extensionClasses, clazz, n, overridden);
                 }
+                if (debugEnabled) {
+                    logLoadedExtensionClass("extension", clazz, names, resourceURL, overridden);
+                }
             }
         }
     }
 
-    private boolean loadClassIfActive(ClassLoader classLoader, Class<?> clazz) {
+    private void logLoadedExtensionClass(
+            String kind, Class<?> clazz, String[] names, java.net.URL resourceURL, boolean overridden) {
+        logger.debug(
+                "Loaded SPI {} class, type={}, scopeModel={}, names={}, class={}, resourceURL={}, overridden={}",
+                kind,
+                type.getName(),
+                scopeModel,
+                names != null ? Arrays.asList(names) : Collections.emptyList(),
+                clazz.getName(),
+                resourceURL,
+                overridden);
+    }
+
+    private List<String> findMissingOnClass(ClassLoader classLoader, Class<?> clazz) {
         Activate activate = clazz.getAnnotation(Activate.class);
 
         if (activate == null) {
-            return true;
+            return null;
         }
         String[] onClass = null;
 
@@ -1322,14 +1403,19 @@ public class ExtensionLoader<T> {
             onClass = Dubbo2ActivateUtils.getOnClass(activate);
         }
 
-        boolean isActive = true;
-
-        if (null != onClass && onClass.length > 0) {
-            isActive = Arrays.stream(onClass)
-                    .filter(StringUtils::isNotBlank)
-                    .allMatch(className -> ClassUtils.isPresent(className, classLoader));
+        if (onClass == null || onClass.length == 0) {
+            return null;
         }
-        return isActive;
+        List<String> missing = null;
+        for (String className : onClass) {
+            if (StringUtils.isNotBlank(className) && !ClassUtils.isPresent(className, classLoader)) {
+                if (missing == null) {
+                    missing = new ArrayList<>(2);
+                }
+                missing.add(className);
+            }
+        }
+        return missing;
     }
 
     /**
