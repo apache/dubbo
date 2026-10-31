@@ -25,6 +25,7 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 
 import java.util.Optional;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -180,14 +181,25 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
     protected void scheduleReconnect(long reconnectDuration, TimeUnit unit) {
         connectivityExecutor.schedule(
                 () -> {
+                    // doConnect() blocks on the connecting promise for up to the connect timeout. Running it inline
+                    // on the shared framework connectivity scheduler lets a batch of failing connections (e.g.
+                    // unreachable providers) occupy every scheduler thread and starve the reconnect tasks of other
+                    // clients. Delegate the blocking connect to the client executor so the shared scheduler only
+                    // handles the delay.
                     try {
-                        doConnect();
-                    } catch (RemotingException e) {
-                        logger.error(
-                                TRANSPORT_FAILED_RECONNECT,
-                                "",
-                                "",
-                                "Failed to connect to server: " + getConnectAddress());
+                        executor.execute(() -> {
+                            try {
+                                doConnect();
+                            } catch (RemotingException e) {
+                                logger.error(
+                                        TRANSPORT_FAILED_RECONNECT,
+                                        "",
+                                        "",
+                                        "Failed to connect to server: " + getConnectAddress());
+                            }
+                        });
+                    } catch (RejectedExecutionException ignored) {
+                        // The client is being closed and no more reconnects are needed.
                     }
                 },
                 reconnectDuration,
