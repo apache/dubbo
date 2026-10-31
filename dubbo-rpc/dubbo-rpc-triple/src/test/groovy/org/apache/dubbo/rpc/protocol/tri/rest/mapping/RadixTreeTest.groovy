@@ -109,4 +109,14 @@ class RadixTreeTest extends Specification {
             '/update/1222222'       | 'a'
             '/update/1222222/state' | 'b'
     }
+
+    def "question mark wildcard should be preserved during registration"() {
+        given:
+             def tree = new RadixTree<String>()
+             tree.addPath('/pages/t?st.html', 'page')
+        expect:
+            tree.match('/pages/test.html').size() == 1
+            tree.match('/pages/tst.html').empty
+            tree.match('/pages/t').empty
+    }
 }
