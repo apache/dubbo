@@ -76,6 +76,12 @@
     </dependency>
 
     <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+      <optional>true</optional>
+    </dependency>
+
+    <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-triple-servlet</artifactId>
       <version>${project.version}</version>
