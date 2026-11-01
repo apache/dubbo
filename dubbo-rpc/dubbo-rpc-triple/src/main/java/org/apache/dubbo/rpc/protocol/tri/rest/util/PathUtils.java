@@ -280,11 +280,12 @@ public final class PathUtils {
                     }
                     break;
                 case '?':
-                case '#':
                     if (!preservePatternChars) {
                         break out;
                     }
                     break;
+                case '#':
+                    break out;
                 default:
                     switch (state) {
                         case State.INITIAL:
