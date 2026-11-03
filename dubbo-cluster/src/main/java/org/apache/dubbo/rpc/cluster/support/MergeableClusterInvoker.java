@@ -37,8 +37,8 @@ import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -91,12 +91,13 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
             returnType = null;
         }
 
-        Map<String, Result> results = new HashMap<>();
+        List<Map.Entry<String, Result>> results = new ArrayList<>(invokers.size());
         for (final Invoker<T> invoker : invokers) {
             RpcInvocation subInvocation = new RpcInvocation(invocation, invoker);
             subInvocation.setAttachment(Constants.ASYNC_KEY, "true");
             try {
-                results.put(invoker.getUrl().getServiceKey(), invokeWithContext(invoker, subInvocation));
+                results.add(new AbstractMap.SimpleImmutableEntry<>(
+                        invoker.getUrl().getServiceKey(), invokeWithContext(invoker, subInvocation)));
             } catch (RpcException e) {
                 if (e.isNoInvokerAvailableAfterFilter()) {
                     log.warn(
@@ -116,7 +117,7 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
         List<Result> resultList = new ArrayList<>(results.size());
 
-        for (Map.Entry<String, Result> entry : results.entrySet()) {
+        for (Map.Entry<String, Result> entry : results) {
             Result asyncResult = entry.getValue();
             try {
                 Result r = asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
