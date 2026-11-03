@@ -17,7 +17,7 @@
 package org.apache.dubbo.common.convert;
 
 /**
- * A class to covert {@link String} to {@link String} value, just no-op
+ * A class to convert {@link String} to {@link String} value, just no-op
  *
  * @since 2.7.6
  */
