@@ -38,7 +38,13 @@ public class DefaultStreamingDecoder implements StreamingDecoder {
     @Override
     public void decode(InputStream inputStream) throws DecodeException {
         if (closed) {
-            // ignored
+            // Close late input rejected after the decoder has been closed, so the
+            // underlying ByteBuf (wrapped with releaseOnClose) is released.
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                throw new DecodeException(e);
+            }
             return;
         }
         accumulate.addInputStream(inputStream);
