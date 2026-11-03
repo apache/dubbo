@@ -47,9 +47,14 @@ public class ActiveLimitFilter implements Filter, Filter.Listener {
 
     private static final String ACTIVE_LIMIT_FILTER_START_TIME = "active_limit_filter_start_time";
 
+    private static final String ACTIVE_LIMIT_FILTER_COUNTED = "active_limit_filter_counted";
+
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         URL url = invoker.getUrl();
+        // Forking calls can share an invocation across different provider URLs.
+        String countKey = ACTIVE_LIMIT_FILTER_COUNTED + url.toIdentityString();
+        invocation.put(countKey, false);
         String methodName = RpcUtils.getMethodName(invocation);
         int max = invoker.getUrl().getMethodParameter(methodName, ACTIVES_KEY, 0);
         final RpcStatus rpcStatus = RpcStatus.getStatus(invoker.getUrl(), RpcUtils.getMethodName(invocation));
@@ -80,6 +85,7 @@ public class ActiveLimitFilter implements Filter, Filter.Listener {
             }
         }
 
+        invocation.put(countKey, true);
         invocation.put(ACTIVE_LIMIT_FILTER_START_TIME, System.currentTimeMillis());
 
         return invoker.invoke(invocation);
@@ -103,7 +109,9 @@ public class ActiveLimitFilter implements Filter, Filter.Listener {
 
         if (t instanceof RpcException) {
             RpcException rpcException = (RpcException) t;
-            if (rpcException.isLimitExceed()) {
+            // A downstream rejection still needs to release this filter's acquired slot.
+            if (rpcException.isLimitExceed()
+                    && !Boolean.TRUE.equals(invocation.get(ACTIVE_LIMIT_FILTER_COUNTED + url.toIdentityString()))) {
                 return;
             }
         }
