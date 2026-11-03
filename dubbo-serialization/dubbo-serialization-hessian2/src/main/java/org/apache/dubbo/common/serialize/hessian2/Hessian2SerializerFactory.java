@@ -20,6 +20,9 @@ import org.apache.dubbo.common.utils.DefaultSerializeClassChecker;
 
 import java.io.InputStream;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
 import com.alibaba.com.caucho.hessian.io.Deserializer;
 import com.alibaba.com.caucho.hessian.io.InputStreamDeserializer;
@@ -33,6 +36,9 @@ import com.alibaba.com.caucho.hessian.io.UnsafeDeserializer;
 import com.alibaba.com.caucho.hessian.io.UnsafeSerializer;
 
 public class Hessian2SerializerFactory extends SerializerFactory {
+
+    private static final String KOTLIN_METADATA_ANNOTATION = "kotlin.Metadata";
+    private static final String KOTLIN_OBJECT_INSTANCE_FIELD = "INSTANCE";
 
     private final DefaultSerializeClassChecker defaultSerializeClassChecker;
 
@@ -80,6 +86,11 @@ public class Hessian2SerializerFactory extends SerializerFactory {
 
         checkSerializable(cl);
 
+        Object kotlinObject = kotlinObjectInstance(cl);
+        if (kotlinObject != null) {
+            return new KotlinObjectDeserializer(cl, kotlinObject);
+        }
+
         if (RecordUtil.isRecord(cl)) {
             return new RecordDeserializer(cl, getFieldDeserializerFactory());
         } else {
@@ -87,6 +98,45 @@ public class Hessian2SerializerFactory extends SerializerFactory {
                 return new UnsafeDeserializer(cl, getFieldDeserializerFactory());
             } else return new JavaDeserializer(cl, getFieldDeserializerFactory());
         }
+    }
+
+    /**
+     * Returns the singleton held by a Kotlin {@code object} declaration, or {@code null} if this is
+     * not one. A Kotlin {@code object} compiles to a final class with a private constructor and a
+     * {@code public static final INSTANCE} field of its own type.
+     *
+     * <p>The {@code kotlin.Metadata} annotation is matched by name so that Dubbo needs no
+     * dependency on kotlin-stdlib. Requiring it also keeps the behaviour change scoped to Kotlin:
+     * a hand-written Java singleton with the same shape continues to deserialize as before.
+     */
+    private static Object kotlinObjectInstance(Class<?> cl) {
+        if (!isKotlinClass(cl)) {
+            return null;
+        }
+        try {
+            Field instance = cl.getDeclaredField(KOTLIN_OBJECT_INSTANCE_FIELD);
+            int modifiers = instance.getModifiers();
+            if (!Modifier.isStatic(modifiers) || !Modifier.isFinal(modifiers) || instance.getType() != cl) {
+                return null;
+            }
+            return instance.get(null);
+        } catch (NoSuchFieldException | IllegalAccessException | RuntimeException e) {
+            return null;
+        }
+    }
+
+    private static boolean isKotlinClass(Class<?> cl) {
+        try {
+            for (Annotation annotation : cl.getAnnotations()) {
+                if (KOTLIN_METADATA_ANNOTATION.equals(
+                        annotation.annotationType().getName())) {
+                    return true;
+                }
+            }
+        } catch (RuntimeException e) {
+            // Annotations that cannot be resolved are not Kotlin metadata.
+        }
+        return false;
     }
 
     private void checkSerializable(Class<?> cl) {
