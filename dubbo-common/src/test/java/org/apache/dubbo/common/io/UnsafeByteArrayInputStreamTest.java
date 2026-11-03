@@ -84,7 +84,7 @@ class UnsafeByteArrayInputStreamTest {
     }
 
     @Test
-    void testReadZeroLength() {
+    void testReadZeroLength() throws IOException {
         UnsafeByteArrayInputStream emptyStream = new UnsafeByteArrayInputStream(new byte[0]);
         assertThat(emptyStream.read(new byte[1], 0, 0), is(0));
         assertThat(emptyStream.read(new byte[0]), is(0));
