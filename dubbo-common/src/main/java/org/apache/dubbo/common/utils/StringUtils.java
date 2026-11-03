@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -944,7 +945,7 @@ public final class StringUtils {
         if (!isWord(camelName)) {
             // convert Ab-Cd-Ef to ab-cd-ef
             if (isSplitCase(camelName, split.charAt(0))) {
-                return camelName.toLowerCase();
+                return camelName.toLowerCase(Locale.ROOT);
             }
             // not camel case
             return camelName;
@@ -968,7 +969,7 @@ public final class StringUtils {
                 buf.append(ch);
             }
         }
-        return buf == null ? camelName.toLowerCase() : buf.toString().toLowerCase();
+        return buf == null ? camelName.toLowerCase(Locale.ROOT) : buf.toString().toLowerCase(Locale.ROOT);
     }
 
     private static boolean isSplitCase(String str, char separator) {
@@ -1002,7 +1003,7 @@ public final class StringUtils {
      * @return
      */
     public static String snakeToSplitName(String snakeName, String split) {
-        String lowerCase = snakeName.toLowerCase();
+        String lowerCase = snakeName.toLowerCase(Locale.ROOT);
         if (isSnakeCase(snakeName)) {
             return replace(lowerCase, "_", split);
         }
@@ -1010,7 +1011,9 @@ public final class StringUtils {
     }
 
     protected static boolean isSnakeCase(String str) {
-        return str.contains("_") || str.equals(str.toLowerCase()) || str.equals(str.toUpperCase());
+        return str.contains("_")
+                || str.equals(str.toLowerCase(Locale.ROOT))
+                || str.equals(str.toUpperCase(Locale.ROOT));
     }
 
     /**
@@ -1053,11 +1056,11 @@ public final class StringUtils {
     }
 
     public static String toURLKey(String key) {
-        return key.toLowerCase().replaceAll(SEPARATOR_REGEX, HIDE_KEY_PREFIX);
+        return key.toLowerCase(Locale.ROOT).replaceAll(SEPARATOR_REGEX, HIDE_KEY_PREFIX);
     }
 
     public static String toOSStyleKey(String key) {
-        key = key.toUpperCase().replaceAll(DOT_REGEX, UNDERLINE_SEPARATOR);
+        key = key.toUpperCase(Locale.ROOT).replaceAll(DOT_REGEX, UNDERLINE_SEPARATOR);
         if (!key.startsWith("DUBBO_")) {
             key = "DUBBO_" + key;
         }

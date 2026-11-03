@@ -46,6 +46,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -330,7 +331,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         Method[] methods = obj.getClass().getMethods();
         for (Method method : methods) {
             if (MethodUtils.isSetter(method)) {
-                String beanProperty = method.getName().substring(3, 4).toLowerCase()
+                String beanProperty = method.getName().substring(3, 4).toLowerCase(Locale.ROOT)
                         + method.getName().substring(4);
                 String property = StringUtils.camelToSplitName(beanProperty, "-");
                 String value = resolveAttribute(ele, property, parserContext);
@@ -395,7 +396,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                     && Modifier.isPublic(setter.getModifiers())
                     && setter.getParameterTypes().length == 1) {
                 Class<?> type = setter.getParameterTypes()[0];
-                String beanProperty = name.substring(3, 4).toLowerCase() + name.substring(4);
+                String beanProperty = name.substring(3, 4).toLowerCase(Locale.ROOT) + name.substring(4);
                 // check the setter/getter whether match
                 Method getter = null;
                 try {
