@@ -58,7 +58,13 @@ public final class NettyConnectionClient extends AbstractNettyConnectionClient {
 
     private AtomicReference<Promise<Void>> connectionPrefaceReceivedPromiseRef;
 
-    public NettyConnectionClient(URL url, ChannelHandler handler) throws RemotingException {
+    public static NettyConnectionClient create(URL url, ChannelHandler handler) throws RemotingException {
+        NettyConnectionClient client = new NettyConnectionClient(url, handler);
+        client.init();
+        return client;
+    }
+
+    private NettyConnectionClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
     }
 

@@ -66,7 +66,7 @@ public class AppResponse implements Result {
     public AppResponse() {}
 
     public AppResponse(Invocation invocation) {
-        this.setAttribute(INVOCATION_KEY, invocation);
+        this.attributes.put(INVOCATION_KEY, invocation);
     }
 
     public AppResponse(Object result) {

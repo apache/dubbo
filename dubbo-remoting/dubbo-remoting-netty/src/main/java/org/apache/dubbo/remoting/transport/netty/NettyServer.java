@@ -61,7 +61,13 @@ public class NettyServer extends AbstractServer implements RemotingServer {
 
     private org.jboss.netty.channel.Channel channel;
 
-    public NettyServer(URL url, ChannelHandler handler) throws RemotingException {
+    public static NettyServer create(URL url, ChannelHandler handler) throws RemotingException {
+        NettyServer server = new NettyServer(url, handler);
+        server.init();
+        return server;
+    }
+
+    private NettyServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, ChannelHandlers.wrap(handler, url));
     }
 

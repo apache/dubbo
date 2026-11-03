@@ -53,15 +53,16 @@ public abstract class AffinityListenableStateRouter<T> extends AbstractStateRout
     private volatile AffinityStateRouter<T> affinityRouter;
     private final String ruleKey;
 
-    public AffinityListenableStateRouter(URL url, String ruleKey) {
+    private volatile boolean initialized = false;
+
+    protected AffinityListenableStateRouter(URL url, String ruleKey) {
         super(url);
         this.setForce(false);
-        this.init(ruleKey);
         this.ruleKey = ruleKey;
     }
 
     @Override
-    public synchronized void process(ConfigChangedEvent event) {
+    public final synchronized void process(ConfigChangedEvent event) {
         if (logger.isInfoEnabled()) {
             logger.info("Notification of affinity rule, change type is: " + event.getChangeType() + ", raw rule is:\n "
                     + event.getContent());
@@ -96,6 +97,7 @@ public abstract class AffinityListenableStateRouter<T> extends AbstractStateRout
             Holder<RouterSnapshotNode<T>> nodeHolder,
             Holder<String> messageHolder)
             throws RpcException {
+        ensureInitialized();
         if (CollectionUtils.isEmpty(invokers) || affinityRouter == null) {
             if (needToPrintMessage) {
                 messageHolder.set(
@@ -121,6 +123,19 @@ public abstract class AffinityListenableStateRouter<T> extends AbstractStateRout
         return invokers;
     }
 
+    private void ensureInitialized() {
+        if (initialized) {
+            return;
+        }
+        synchronized (this) {
+            if (initialized) {
+                return;
+            }
+            init(this.ruleKey);
+            initialized = true;
+        }
+    }
+
     @Override
     public boolean isForce() {
         return (affinityRouterRule != null && affinityRouterRule.isForce());
@@ -135,12 +150,12 @@ public abstract class AffinityListenableStateRouter<T> extends AbstractStateRout
             return;
         }
         AffinityRouterRule affinityRule = (AffinityRouterRule) rule;
-        affinityRouter = new AffinityStateRouter<>(
+        affinityRouter = AffinityStateRouter.create(
                 getUrl(), affinityRule.getAffinityKey(), affinityRule.getRatio(), affinityRule.isEnabled());
         affinityRouter.setNextRouter(TailStateRouter.getInstance());
     }
 
-    private synchronized void init(String ruleKey) {
+    protected final synchronized void init(String ruleKey) {
         if (StringUtils.isEmpty(ruleKey)) {
             return;
         }

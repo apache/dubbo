@@ -689,10 +689,9 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
         ReferenceConfigurationListener(
                 ModuleModel moduleModel, ServiceDiscoveryRegistryDirectory<?> directory, URL url) {
-            super(moduleModel);
+            super(moduleModel, DynamicConfiguration.getRuleKey(url) + CONFIGURATORS_SUFFIX);
             this.directory = directory;
             this.url = url;
-            this.initWith(DynamicConfiguration.getRuleKey(url) + CONFIGURATORS_SUFFIX);
         }
 
         void stop() {

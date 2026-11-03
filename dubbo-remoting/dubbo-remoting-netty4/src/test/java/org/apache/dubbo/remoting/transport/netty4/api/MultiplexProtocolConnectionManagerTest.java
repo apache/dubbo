@@ -65,7 +65,7 @@ public class MultiplexProtocolConnectionManagerTest {
         url1 = url1.putAttribute(CommonConstants.SCOPE_MODEL, moduleModel);
         url2 = url2.setScopeModel(applicationModel);
         url2 = url2.putAttribute(CommonConstants.SCOPE_MODEL, moduleModel);
-        server = new NettyPortUnificationServer(url1, new DefaultPuHandler());
+        server = NettyPortUnificationServer.create(url1, new DefaultPuHandler());
         server.bind();
         connectionManager = url1.getOrDefaultFrameworkModel()
                 .getExtensionLoader(ConnectionManager.class)
@@ -96,7 +96,7 @@ public class MultiplexProtocolConnectionManagerTest {
     public void testForEachConnection() throws Throwable {
         DefaultPuHandler handler = new DefaultPuHandler();
 
-        NettyPortUnificationServer server2 = new NettyPortUnificationServer(url2, handler);
+        NettyPortUnificationServer server2 = NettyPortUnificationServer.create(url2, handler);
         server2.bind();
 
         final AbstractConnectionClient connect1 = connectionManager.connect(url1, handler);

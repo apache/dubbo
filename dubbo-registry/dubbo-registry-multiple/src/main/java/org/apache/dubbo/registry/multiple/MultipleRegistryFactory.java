@@ -24,6 +24,6 @@ public class MultipleRegistryFactory extends AbstractRegistryFactory {
 
     @Override
     protected Registry createRegistry(URL url) {
-        return new MultipleRegistry(url);
+        return MultipleRegistry.create(url);
     }
 }
