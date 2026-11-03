@@ -666,7 +666,28 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         directory.buildRouterChain(urlToRegistry);
         directory.subscribe(toSubscribeUrl(urlToRegistry));
 
+        String consumerCluster = parameters.get(CLUSTER_KEY);
+        if (StringUtils.isEmpty(consumerCluster)) {
+            String providerCluster = getProviderCluster(directory);
+            if (StringUtils.isNotEmpty(providerCluster)) {
+                cluster = Cluster.getCluster(directory.getConsumerUrl().getScopeModel(), providerCluster);
+            }
+        }
+
         return (ClusterInvoker<T>) cluster.join(directory, true);
+    }
+
+    private <T> String getProviderCluster(DynamicDirectory<T> directory) {
+        List<Invoker<T>> invokers = directory.getAllInvokers();
+        if (CollectionUtils.isNotEmpty(invokers)) {
+            for (Invoker<T> invoker : invokers) {
+                String providerCluster = invoker.getUrl().getParameter(CLUSTER_KEY);
+                if (StringUtils.isNotEmpty(providerCluster)) {
+                    return providerCluster;
+                }
+            }
+        }
+        return null;
     }
 
     public <T> void reRefer(ClusterInvoker<?> invoker, URL newSubscribeUrl) {
