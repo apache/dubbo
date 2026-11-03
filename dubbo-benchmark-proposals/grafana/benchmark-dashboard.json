@@ -1,0 +1,3474 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 2,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "cdgufsoabpm9sf"
+      },
+      "description": "1",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": true,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "op"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Mean",
+          "sortDesc": true,
+          "width": 0
+        },
+        "timezone": [
+          ""
+        ],
+        "tooltip": {
+          "maxWidth": 0,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), score AS 'dubbo' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientSimple.createUser' AND name = 'dubbo-fastjson2-3.2' AND mode = 'thrpt') order by benchmark_time asc LIMIT 1000",
+          "refId": "dubbo-fastjson2",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "benchmark_score"
+        },
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), score AS 'grpc' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientNativeGrpc.createUser' AND name = 'grpc' AND mode = 'thrpt') order by benchmark_time asc LIMIT 1000",
+          "refId": "grpc",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "benchmark_score"
+        },
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), score AS 'spring-cloud' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientSimple.createUser' AND name = 'spring-cloud' AND mode = 'thrpt') order by benchmark_time asc LIMIT 1000",
+          "refId": "spring-cloud",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "benchmark_score"
+        }
+      ],
+      "title": "Throughput (常见框架对比)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "cdgufsoabpm9sf"
+      },
+      "description": "1",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": true,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "op"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 9
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Mean",
+          "sortDesc": true,
+          "width": 0
+        },
+        "timezone": [
+          ""
+        ],
+        "tooltip": {
+          "maxWidth": 0,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), score AS 'triple' FROM benchmark.benchmark_score WHERE ( benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND name = 'triple-3.2' AND mode = 'thrpt') order by benchmark_time asc LIMIT 1000",
+          "refId": "triple-pb",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "whereJsonTree": {
+              "children1": [
+                {
+                  "id": "8b88abb9-4567-489a-bcde-f18e2e42406d",
+                  "properties": {
+                    "field": "method",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "org.apache.dubbo.benchmark.ClientPb.createUser"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                },
+                {
+                  "id": "bbab8a89-4567-489a-bcde-f18e2e4c364e",
+                  "properties": {
+                    "field": "mode",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "thrpt"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                }
+              ],
+              "id": "babaab8b-0123-4456-b89a-b18e2e2b3f6e",
+              "type": "group"
+            },
+            "whereString": "(method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND mode = 'thrpt')"
+          },
+          "table": "benchmark_score"
+        },
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), score AS 'dubbo-fastjson2' FROM benchmark.benchmark_score WHERE ( benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientSimple.createUser' AND name = 'dubbo-fastjson2-3.2' AND mode = 'thrpt') order by benchmark_time asc LIMIT 1000",
+          "refId": "dubbo",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "benchmark_score"
+        },
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), score AS 'grpc' FROM benchmark.benchmark_score WHERE ( benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientNativeGrpc.createUser' AND name = 'grpc' AND mode = 'thrpt') order by benchmark_time asc LIMIT 1000",
+          "refId": "grpc",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "benchmark_score"
+        },
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), score AS 'rest(spring-cloud)' FROM benchmark.benchmark_score WHERE ( benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientSimple.createUser' AND name = 'spring-cloud' AND mode = 'thrpt') order by benchmark_time asc LIMIT 1000",
+          "refId": "spring-cloud",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "benchmark_score"
+        }
+      ],
+      "title": "Throughput (各协议对比)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "cdgufsoabpm9sf"
+      },
+      "description": "1",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": true,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "op"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 9
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Mean",
+          "sortDesc": true,
+          "width": 0
+        },
+        "timezone": [
+          ""
+        ],
+        "tooltip": {
+          "maxWidth": 0,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), score AS 'dubbo-fastjson2' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientSimple.createUser' AND  name = 'dubbo-fastjson2-3.2' AND mode = 'thrpt') order by benchmark_time asc LIMIT 1000",
+          "refId": "dubbo-fastjson2",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "benchmark_score"
+        },
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), score AS 'dubbo-hessianlite' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientSimple.createUser' AND  name = 'dubbo-hessianlite-3.2' AND mode = 'thrpt') order by benchmark_time asc LIMIT 1000",
+          "refId": "hessianlite",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "benchmark_score"
+        },
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), score AS 'triple-pb' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND  name = 'triple-3.2' AND mode = 'thrpt') order by benchmark_time asc LIMIT 1000",
+          "refId": "triple-3.2",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "benchmark_score"
+        },
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), score AS 'dubbo-pb' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND  name = 'dubbo-pb-3.2' AND mode = 'thrpt') order by benchmark_time asc LIMIT 1000",
+          "refId": "dubbo-pb",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "benchmark_score"
+        },
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), score AS 'dubbo-kryo' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientSimple.createUser' AND name = 'dubbo-kryo-3.2' AND mode = 'thrpt') order by benchmark_time asc LIMIT 1000",
+          "refId": "dubbo-kryo",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "benchmark_score"
+        }
+      ],
+      "title": "Throughput (序列化对比)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "cdgufsoabpm9sf"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 19
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), score AS 'dubbo' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientSimple.createUser' AND name = 'dubbo-fastjson2-3.2' AND mode = 'avgt') order by benchmark_time asc LIMIT 1000",
+          "refId": "dubbo",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "whereJsonTree": {
+              "children1": [
+                {
+                  "id": "8b88abb9-4567-489a-bcde-f18e2e42406d",
+                  "properties": {
+                    "field": "method",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "org.apache.dubbo.benchmark.ClientPb.createUser"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                },
+                {
+                  "id": "bbab8a89-4567-489a-bcde-f18e2e4c364e",
+                  "properties": {
+                    "field": "mode",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "thrpt"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                }
+              ],
+              "id": "babaab8b-0123-4456-b89a-b18e2e2b3f6e",
+              "type": "group"
+            },
+            "whereString": "(method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND mode = 'thrpt')"
+          },
+          "table": "benchmark_score"
+        },
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), score AS 'grpc' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientNativeGrpc.createUser' AND name = 'grpc' AND mode = 'avgt') order by benchmark_time asc LIMIT 1000",
+          "refId": "grpc",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "whereJsonTree": {
+              "children1": [
+                {
+                  "id": "8b88abb9-4567-489a-bcde-f18e2e42406d",
+                  "properties": {
+                    "field": "method",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "org.apache.dubbo.benchmark.ClientPb.createUser"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                },
+                {
+                  "id": "bbab8a89-4567-489a-bcde-f18e2e4c364e",
+                  "properties": {
+                    "field": "mode",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "thrpt"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                }
+              ],
+              "id": "babaab8b-0123-4456-b89a-b18e2e2b3f6e",
+              "type": "group"
+            },
+            "whereString": "(method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND mode = 'thrpt')"
+          },
+          "table": "benchmark_score"
+        },
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), score AS 'spring-cloud' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientSimple.createUser' AND name = 'spring-cloud' AND mode = 'avgt') order by benchmark_time asc LIMIT 1000",
+          "refId": "spring-cloud",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "whereJsonTree": {
+              "children1": [
+                {
+                  "id": "8b88abb9-4567-489a-bcde-f18e2e42406d",
+                  "properties": {
+                    "field": "method",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "org.apache.dubbo.benchmark.ClientPb.createUser"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                },
+                {
+                  "id": "bbab8a89-4567-489a-bcde-f18e2e4c364e",
+                  "properties": {
+                    "field": "mode",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "thrpt"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                }
+              ],
+              "id": "babaab8b-0123-4456-b89a-b18e2e2b3f6e",
+              "type": "group"
+            },
+            "whereString": "(method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND mode = 'thrpt')"
+          },
+          "table": "benchmark_score"
+        }
+      ],
+      "title": "AverageTime (常见框架对比)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "cdgufsoabpm9sf"
+      },
+      "description": "1",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": true,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 29
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Mean",
+          "sortDesc": true,
+          "width": 0
+        },
+        "timezone": [
+          ""
+        ],
+        "tooltip": {
+          "maxWidth": 0,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), score AS 'triple' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND name = 'triple-3.2' AND method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND mode = 'avgt') order by benchmark_time asc LIMIT 1000",
+          "refId": "triple-pb",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "whereJsonTree": {
+              "children1": [
+                {
+                  "id": "8b88abb9-4567-489a-bcde-f18e2e42406d",
+                  "properties": {
+                    "field": "method",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "org.apache.dubbo.benchmark.ClientPb.createUser"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                },
+                {
+                  "id": "bbab8a89-4567-489a-bcde-f18e2e4c364e",
+                  "properties": {
+                    "field": "mode",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "thrpt"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                }
+              ],
+              "id": "babaab8b-0123-4456-b89a-b18e2e2b3f6e",
+              "type": "group"
+            },
+            "whereString": "(method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND mode = 'thrpt')"
+          },
+          "table": "benchmark_score"
+        },
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), score AS 'dubbo' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND name = 'dubbo-fastjson2-3.2' AND method = 'org.apache.dubbo.benchmark.ClientSimple.createUser' AND mode = 'avgt') order by benchmark_time asc LIMIT 1000",
+          "refId": "dubbo",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "benchmark_score"
+        },
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), score AS 'grpc' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND name = 'grpc' AND method = 'org.apache.dubbo.benchmark.ClientNativeGrpc.createUser' AND mode = 'avgt') order by benchmark_time asc LIMIT 1000",
+          "refId": "grpc",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "benchmark_score"
+        },
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), score AS 'rest(spring-cloud)' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND name = 'spring-cloud' AND method = 'org.apache.dubbo.benchmark.ClientSimple.createUser' AND mode = 'avgt') order by benchmark_time asc LIMIT 1000",
+          "refId": "spring-cloud",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          },
+          "table": "benchmark_score"
+        }
+      ],
+      "title": "AverageTime (各协议对比)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "cdgufsoabpm9sf"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 29
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), score AS 'triple-pb' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND name = 'triple-3.2' AND mode = 'avgt') order by benchmark_time asc LIMIT 1000",
+          "refId": "triple-pb",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "whereJsonTree": {
+              "children1": [
+                {
+                  "id": "8b88abb9-4567-489a-bcde-f18e2e42406d",
+                  "properties": {
+                    "field": "method",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "org.apache.dubbo.benchmark.ClientPb.createUser"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                },
+                {
+                  "id": "bbab8a89-4567-489a-bcde-f18e2e4c364e",
+                  "properties": {
+                    "field": "mode",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "thrpt"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                }
+              ],
+              "id": "babaab8b-0123-4456-b89a-b18e2e2b3f6e",
+              "type": "group"
+            },
+            "whereString": "(method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND mode = 'thrpt')"
+          },
+          "table": "benchmark_score"
+        },
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), score AS 'dubbo-fastjson2' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientSimple.createUser' AND name = 'dubbo-fastjson2-3.2' AND mode = 'avgt') order by benchmark_time asc LIMIT 1000",
+          "refId": "dubbo-fastjson2",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "whereJsonTree": {
+              "children1": [
+                {
+                  "id": "8b88abb9-4567-489a-bcde-f18e2e42406d",
+                  "properties": {
+                    "field": "method",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "org.apache.dubbo.benchmark.ClientPb.createUser"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                },
+                {
+                  "id": "bbab8a89-4567-489a-bcde-f18e2e4c364e",
+                  "properties": {
+                    "field": "mode",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "thrpt"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                }
+              ],
+              "id": "babaab8b-0123-4456-b89a-b18e2e2b3f6e",
+              "type": "group"
+            },
+            "whereString": "(method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND mode = 'thrpt')"
+          },
+          "table": "benchmark_score"
+        },
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), score AS 'dubbo-hessianlite' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientSimple.createUser' AND name = 'dubbo-hessianlite-3.2' AND mode = 'avgt') order by benchmark_time asc LIMIT 1000",
+          "refId": "dubbo-hessianlite",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "whereJsonTree": {
+              "children1": [
+                {
+                  "id": "8b88abb9-4567-489a-bcde-f18e2e42406d",
+                  "properties": {
+                    "field": "method",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "org.apache.dubbo.benchmark.ClientPb.createUser"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                },
+                {
+                  "id": "bbab8a89-4567-489a-bcde-f18e2e4c364e",
+                  "properties": {
+                    "field": "mode",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "thrpt"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                }
+              ],
+              "id": "babaab8b-0123-4456-b89a-b18e2e2b3f6e",
+              "type": "group"
+            },
+            "whereString": "(method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND mode = 'thrpt')"
+          },
+          "table": "benchmark_score"
+        },
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), score AS 'dubbo-pb' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND name = 'dubbo-pb-3.2' AND mode = 'avgt') order by benchmark_time asc LIMIT 1000",
+          "refId": "dubbo-pb",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "whereJsonTree": {
+              "children1": [
+                {
+                  "id": "8b88abb9-4567-489a-bcde-f18e2e42406d",
+                  "properties": {
+                    "field": "method",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "org.apache.dubbo.benchmark.ClientPb.createUser"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                },
+                {
+                  "id": "bbab8a89-4567-489a-bcde-f18e2e4c364e",
+                  "properties": {
+                    "field": "mode",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "thrpt"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                }
+              ],
+              "id": "babaab8b-0123-4456-b89a-b18e2e2b3f6e",
+              "type": "group"
+            },
+            "whereString": "(method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND mode = 'thrpt')"
+          },
+          "table": "benchmark_score"
+        },
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), score AS 'dubbo-kryo' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientSimple.createUser' AND name = 'dubbo-kryo-3.2' AND mode = 'avgt') order by benchmark_time asc LIMIT 1000",
+          "refId": "dubbo-kryo",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "whereJsonTree": {
+              "children1": [
+                {
+                  "id": "8b88abb9-4567-489a-bcde-f18e2e42406d",
+                  "properties": {
+                    "field": "method",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "org.apache.dubbo.benchmark.ClientPb.createUser"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                },
+                {
+                  "id": "bbab8a89-4567-489a-bcde-f18e2e4c364e",
+                  "properties": {
+                    "field": "mode",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "thrpt"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                }
+              ],
+              "id": "babaab8b-0123-4456-b89a-b18e2e2b3f6e",
+              "type": "group"
+            },
+            "whereString": "(method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND mode = 'thrpt')"
+          },
+          "table": "benchmark_score"
+        }
+      ],
+      "title": "AverageTime (序列化对比)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "cdgufsoabpm9sf"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 6,
+        "x": 0,
+        "y": 39
+      },
+      "id": 10,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.4.0",
+      "targets": [
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), p99 AS 'p99' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientSimple.createUser' AND name = 'dubbo-fastjson2-3.2' AND mode = 'sample') order by benchmark_time asc LIMIT 1000",
+          "refId": "p99",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "whereJsonTree": {
+              "children1": [
+                {
+                  "id": "8b88abb9-4567-489a-bcde-f18e2e42406d",
+                  "properties": {
+                    "field": "method",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "org.apache.dubbo.benchmark.ClientPb.createUser"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                },
+                {
+                  "id": "bbab8a89-4567-489a-bcde-f18e2e4c364e",
+                  "properties": {
+                    "field": "mode",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "thrpt"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                }
+              ],
+              "id": "babaab8b-0123-4456-b89a-b18e2e2b3f6e",
+              "type": "group"
+            },
+            "whereString": "(method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND mode = 'thrpt')"
+          },
+          "table": "benchmark_score"
+        },
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), p95 AS 'p95' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientSimple.createUser' AND name = 'dubbo-fastjson2-3.2' AND mode = 'sample') order by benchmark_time asc LIMIT 1000",
+          "refId": "p95",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "whereJsonTree": {
+              "children1": [
+                {
+                  "id": "8b88abb9-4567-489a-bcde-f18e2e42406d",
+                  "properties": {
+                    "field": "method",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "org.apache.dubbo.benchmark.ClientPb.createUser"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                },
+                {
+                  "id": "bbab8a89-4567-489a-bcde-f18e2e4c364e",
+                  "properties": {
+                    "field": "mode",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "thrpt"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                }
+              ],
+              "id": "babaab8b-0123-4456-b89a-b18e2e2b3f6e",
+              "type": "group"
+            },
+            "whereString": "(method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND mode = 'thrpt')"
+          },
+          "table": "benchmark_score"
+        },
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), p90 AS 'p90' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientSimple.createUser' AND name = 'dubbo-fastjson2-3.2' AND mode = 'sample') order by benchmark_time asc LIMIT 1000",
+          "refId": "p90",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "whereJsonTree": {
+              "children1": [
+                {
+                  "id": "8b88abb9-4567-489a-bcde-f18e2e42406d",
+                  "properties": {
+                    "field": "method",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "org.apache.dubbo.benchmark.ClientPb.createUser"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                },
+                {
+                  "id": "bbab8a89-4567-489a-bcde-f18e2e4c364e",
+                  "properties": {
+                    "field": "mode",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "thrpt"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                }
+              ],
+              "id": "babaab8b-0123-4456-b89a-b18e2e2b3f6e",
+              "type": "group"
+            },
+            "whereString": "(method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND mode = 'thrpt')"
+          },
+          "table": "benchmark_score"
+        }
+      ],
+      "title": "Dubbo Request Duration",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "cdgufsoabpm9sf"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 6,
+        "x": 6,
+        "y": 39
+      },
+      "id": 8,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.4.0",
+      "targets": [
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), p99 AS 'p99' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND name = 'triple-3.2' AND mode = 'sample') order by benchmark_time asc LIMIT 1000",
+          "refId": "p99",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "whereJsonTree": {
+              "children1": [
+                {
+                  "id": "8b88abb9-4567-489a-bcde-f18e2e42406d",
+                  "properties": {
+                    "field": "method",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "org.apache.dubbo.benchmark.ClientPb.createUser"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                },
+                {
+                  "id": "bbab8a89-4567-489a-bcde-f18e2e4c364e",
+                  "properties": {
+                    "field": "mode",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "thrpt"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                }
+              ],
+              "id": "babaab8b-0123-4456-b89a-b18e2e2b3f6e",
+              "type": "group"
+            },
+            "whereString": "(method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND mode = 'thrpt')"
+          },
+          "table": "benchmark_score"
+        },
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), p95 AS 'p95' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND name = 'triple-3.2' AND mode = 'sample') order by benchmark_time asc LIMIT 1000",
+          "refId": "p95",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "whereJsonTree": {
+              "children1": [
+                {
+                  "id": "8b88abb9-4567-489a-bcde-f18e2e42406d",
+                  "properties": {
+                    "field": "method",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "org.apache.dubbo.benchmark.ClientPb.createUser"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                },
+                {
+                  "id": "bbab8a89-4567-489a-bcde-f18e2e4c364e",
+                  "properties": {
+                    "field": "mode",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "thrpt"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                }
+              ],
+              "id": "babaab8b-0123-4456-b89a-b18e2e2b3f6e",
+              "type": "group"
+            },
+            "whereString": "(method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND mode = 'thrpt')"
+          },
+          "table": "benchmark_score"
+        },
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), p90 AS 'p90' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND name = 'triple-3.2' AND mode = 'sample') order by benchmark_time asc LIMIT 1000",
+          "refId": "p90",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "whereJsonTree": {
+              "children1": [
+                {
+                  "id": "8b88abb9-4567-489a-bcde-f18e2e42406d",
+                  "properties": {
+                    "field": "method",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "org.apache.dubbo.benchmark.ClientPb.createUser"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                },
+                {
+                  "id": "bbab8a89-4567-489a-bcde-f18e2e4c364e",
+                  "properties": {
+                    "field": "mode",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "thrpt"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                }
+              ],
+              "id": "babaab8b-0123-4456-b89a-b18e2e2b3f6e",
+              "type": "group"
+            },
+            "whereString": "(method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND mode = 'thrpt')"
+          },
+          "table": "benchmark_score"
+        }
+      ],
+      "title": "Triple Request Duration",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "cdgufsoabpm9sf"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 6,
+        "x": 12,
+        "y": 39
+      },
+      "id": 11,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.4.0",
+      "targets": [
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), p99 AS 'p99' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientNativeGrpc.createUser' AND name = 'grpc' AND mode = 'sample') order by benchmark_time asc LIMIT 1000",
+          "refId": "p99",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "whereJsonTree": {
+              "children1": [
+                {
+                  "id": "8b88abb9-4567-489a-bcde-f18e2e42406d",
+                  "properties": {
+                    "field": "method",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "org.apache.dubbo.benchmark.ClientPb.createUser"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                },
+                {
+                  "id": "bbab8a89-4567-489a-bcde-f18e2e4c364e",
+                  "properties": {
+                    "field": "mode",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "thrpt"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                }
+              ],
+              "id": "babaab8b-0123-4456-b89a-b18e2e2b3f6e",
+              "type": "group"
+            },
+            "whereString": "(method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND mode = 'thrpt')"
+          },
+          "table": "benchmark_score"
+        },
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), p95 AS 'p95' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientNativeGrpc.createUser' AND name = 'grpc' AND mode = 'sample') order by benchmark_time asc LIMIT 1000",
+          "refId": "p95",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "whereJsonTree": {
+              "children1": [
+                {
+                  "id": "8b88abb9-4567-489a-bcde-f18e2e42406d",
+                  "properties": {
+                    "field": "method",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "org.apache.dubbo.benchmark.ClientPb.createUser"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                },
+                {
+                  "id": "bbab8a89-4567-489a-bcde-f18e2e4c364e",
+                  "properties": {
+                    "field": "mode",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "thrpt"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                }
+              ],
+              "id": "babaab8b-0123-4456-b89a-b18e2e2b3f6e",
+              "type": "group"
+            },
+            "whereString": "(method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND mode = 'thrpt')"
+          },
+          "table": "benchmark_score"
+        },
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), p90 AS 'p90' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientNativeGrpc.createUser' AND name = 'grpc' AND mode = 'sample') order by benchmark_time asc LIMIT 1000",
+          "refId": "p90",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "whereJsonTree": {
+              "children1": [
+                {
+                  "id": "8b88abb9-4567-489a-bcde-f18e2e42406d",
+                  "properties": {
+                    "field": "method",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "org.apache.dubbo.benchmark.ClientPb.createUser"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                },
+                {
+                  "id": "bbab8a89-4567-489a-bcde-f18e2e4c364e",
+                  "properties": {
+                    "field": "mode",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "thrpt"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                }
+              ],
+              "id": "babaab8b-0123-4456-b89a-b18e2e2b3f6e",
+              "type": "group"
+            },
+            "whereString": "(method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND mode = 'thrpt')"
+          },
+          "table": "benchmark_score"
+        }
+      ],
+      "title": "gRPC Request Duration",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "cdgufsoabpm9sf"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 6,
+        "x": 18,
+        "y": 39
+      },
+      "id": 9,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.4.0",
+      "targets": [
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), p99 AS 'p99' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientSimple.createUser' AND name = 'spring-cloud' AND mode = 'sample') order by benchmark_time asc LIMIT 1000",
+          "refId": "p99",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "whereJsonTree": {
+              "children1": [
+                {
+                  "id": "8b88abb9-4567-489a-bcde-f18e2e42406d",
+                  "properties": {
+                    "field": "method",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "org.apache.dubbo.benchmark.ClientPb.createUser"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                },
+                {
+                  "id": "bbab8a89-4567-489a-bcde-f18e2e4c364e",
+                  "properties": {
+                    "field": "mode",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "thrpt"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                }
+              ],
+              "id": "babaab8b-0123-4456-b89a-b18e2e2b3f6e",
+              "type": "group"
+            },
+            "whereString": "(method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND mode = 'thrpt')"
+          },
+          "table": "benchmark_score"
+        },
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), p95 AS 'p95' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientSimple.createUser' AND name = 'spring-cloud' AND mode = 'sample') order by benchmark_time asc LIMIT 1000",
+          "refId": "p95",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "whereJsonTree": {
+              "children1": [
+                {
+                  "id": "8b88abb9-4567-489a-bcde-f18e2e42406d",
+                  "properties": {
+                    "field": "method",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "org.apache.dubbo.benchmark.ClientPb.createUser"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                },
+                {
+                  "id": "bbab8a89-4567-489a-bcde-f18e2e4c364e",
+                  "properties": {
+                    "field": "mode",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "thrpt"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                }
+              ],
+              "id": "babaab8b-0123-4456-b89a-b18e2e2b3f6e",
+              "type": "group"
+            },
+            "whereString": "(method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND mode = 'thrpt')"
+          },
+          "table": "benchmark_score"
+        },
+        {
+          "dataset": "benchmark",
+          "datasource": {
+            "type": "mysql",
+            "uid": "cdgufsoabpm9sf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT CONVERT_TZ(benchmark_time, '+08:00', '+00:00'), p90 AS 'p90' FROM benchmark.benchmark_score WHERE (benchmark_time >= $__timeFrom() AND benchmark_time <= $__timeTo() AND method = 'org.apache.dubbo.benchmark.ClientSimple.createUser' AND name = 'spring-cloud' AND mode = 'sample') order by benchmark_time asc LIMIT 1000",
+          "refId": "p90",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [
+                  {
+                    "name": "benchmark_time",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              },
+              {
+                "parameters": [
+                  {
+                    "name": "score",
+                    "type": "functionParameter"
+                  }
+                ],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50,
+            "whereJsonTree": {
+              "children1": [
+                {
+                  "id": "8b88abb9-4567-489a-bcde-f18e2e42406d",
+                  "properties": {
+                    "field": "method",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "org.apache.dubbo.benchmark.ClientPb.createUser"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                },
+                {
+                  "id": "bbab8a89-4567-489a-bcde-f18e2e4c364e",
+                  "properties": {
+                    "field": "mode",
+                    "fieldSrc": "field",
+                    "operator": "equal",
+                    "value": [
+                      "thrpt"
+                    ],
+                    "valueSrc": [
+                      "value"
+                    ],
+                    "valueType": [
+                      "text"
+                    ]
+                  },
+                  "type": "rule"
+                }
+              ],
+              "id": "babaab8b-0123-4456-b89a-b18e2e2b3f6e",
+              "type": "group"
+            },
+            "whereString": "(method = 'org.apache.dubbo.benchmark.ClientPb.createUser' AND mode = 'thrpt')"
+          },
+          "table": "benchmark_score"
+        }
+      ],
+      "title": "SpringCloud Request Duration",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 39,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "timepicker": {
+    "hidden": false,
+    "nowDelay": ""
+  },
+  "timezone": "browser",
+  "title": "benchmark",
+  "uid": "adfd3abtniznke",
+  "version": 7,
+  "weekStart": ""
+}

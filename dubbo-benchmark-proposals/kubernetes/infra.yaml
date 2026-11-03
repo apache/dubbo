@@ -1,0 +1,153 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-schema-configmap
+data:
+  schema.sql: |
+    use benchmark;
+    create table benchmark_score
+    (
+    id             bigint auto_increment primary key,
+    name           varchar(32) not null,
+    mode           varchar(16) not null,
+    score          double      not null,
+    p99            double      not null,
+    p95            double      not null,
+    p90            double      not null,
+    method         varchar(64) not null,
+    benchmark_time datetime    not null,
+    create_time    datetime    not null
+    );
+    create index idx on benchmark_score (benchmark_time, method, name, mode);
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-deployment
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0.36
+          env:
+            - name: TZ
+              value: "Asia/Shanghai"
+            - name: MYSQL_ROOT_PASSWORD
+              value: "root"
+            - name: MYSQL_DATABASE
+              value: "benchmark"
+          resources:
+            requests:
+              memory: "1024Mi"
+            limits:
+              memory: "1024Mi"
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: benchmark-pvc
+              mountPath: /var/lib/mysql
+              subPath: mysql
+            - name: init-script
+              mountPath: /home/dev/schema.sql
+              subPath: schema.sql
+
+      volumes:
+        - name: init-script
+          configMap:
+            name: mysql-schema-configmap
+        - name: benchmark-pvc
+          persistentVolumeClaim:
+            claimName: benchmark
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+spec:
+  type: ClusterIP
+  selector:
+    app: mysql
+  ports:
+    - port: 3306
+      targetPort: 3306
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-secret
+data:
+  config: TVlTUUxfSE9TVD0ibXlzcWwtc2VydmljZSIKTVlTUUxfVVNFUj0icm9vdCIKTVlTUUxfUEFTU1dPUkQ9InJvb3QiCk1ZU1FMX0RBVEFCQVNFPSJiZW5jaG1hcmsi
+
+#grafana
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-deployment
+spec:
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      securityContext:
+        fsGroup: 472
+        runAsUser: 472
+        runAsGroup: 472
+        runAsNonRoot: true
+      containers:
+        - name: grafana
+          image: grafana/grafana
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              memory: "512Mi"
+            limits:
+              memory: "512Mi"
+          ports:
+            - containerPort: 3000
+          volumeMounts:
+            #            - mountPath: /var/lib/grafana/
+            #              name: grafana-pvc
+            - mountPath: /etc/grafana/
+              name: grafana-config
+      volumes:
+        - name: grafana-pvc
+          persistentVolumeClaim:
+            claimName: benchmark
+        - name: grafana-config
+          configMap:
+            name: grafana
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana
+data:
+  grafana.ini: |
+    default_timezone = Asia/Shanghai
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+spec:
+  selector:
+    app: grafana
+  ports:
+    - port: 3000
+      targetPort: 3000
+  externalTrafficPolicy: Local
+  type: LoadBalancer
+---

@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: benchmark-shell-configmap
+data:
+  start.sh: |
+    #!/bin/bash
+    if [ -e "$MYSQL_SECRET" ]; then
+      source $MYSQL_SECRET
+    fi
+    echo "SHELL_HOME=$SHELL_HOME"
+    echo "benchmark-name=$BENCHMARK_NAME"
+    echo "branch=$BRANCH"
+    cd ~ || exit
+    echo $(pwd)
+    echo "pull dubbo source code."
+    git clone --depth 1 --single-branch --branch $BRANCH git@github.com:apache/dubbo.git || exit
+    REVISION=`awk '/<revision>[^<]+<\/revision>/{gsub(/<revision>|<\/revision>/,"",$1);print $1;exit;}' ./dubbo/pom.xml`
+    VERSION=$REVISION
+    echo "version=$REVISION"
+    mvn -T "$(nproc)" clean install -f ./dubbo/pom.xml -Dmaven.test.skip=true || exit
+
+    bash $SHELL_HOME/benchmark.sh $BENCHMARK_NAME $VERSION
+
+  benchmark.sh: |
+    BENCHMARK_NAME=$1
+    VERSION=$2
+    MINOR_VERSION=$(echo $VERSION | awk -F '.' '{print $1"."$2}')
+    echo "minor-version=$MINOR_VERSION"
+    cd ~ || exit
+    git clone --depth 1 --single-branch --branch master git@github.com:apache/dubbo-benchmark.git || exit
+    cd ~/dubbo-benchmark || exit
+    bash prepare.sh $VERSION
+    bash benchmark.sh -m profiling ${SERVER_MODULE_NAME} &
+    # wait for server to start
+    cleanup() {
+      echo "Received termination signal. Exiting..."
+      exit 0
+    }
+    trap cleanup SIGTERM SIGINT
+    attempt=0
+    while ! nc -z localhost 8080; do
+        echo "Waiting for port 8080 to open..."
+        attempt=$((attempt+1))
+        if [[ ${attempt} -eq 60 ]]; then
+          echo "Port 8080 not open after 10 minutes. Exiting."
+          exit 1
+        fi
+        sleep 10
+    done
+    bash benchmark.sh -m profiling ${CLIENT_MODULE_NAME}
+    server_pid=$(jps | grep "${SERVER_MODULE_NAME}" | awk '{print $1}')
+    kill -SIGTERM $server_pid
+    while ps -p "$server_pid" > /dev/null; do
+      echo "Waiting for server to stop..."
+      sleep 5
+    done
+    bash $SHELL_HOME/push_mysql.sh ${BENCHMARK_NAME}
+
+  push_mysql.sh: |
+    #!/bin/bash
+    source $MYSQL_SECRET
+    NAME=$1
+    parse_jmh_results() {
+      cat *.json | jq -c '.[]' | while IFS= read -r obj; do
+        method=$(echo "$obj" | jq -r '.benchmark')
+        mode=$(echo "$obj" | jq -r '.mode')
+        score=$(echo "$obj" | jq -r '.primaryMetric.score')
+        p99=$(echo "$obj" | jq -r '.primaryMetric.scorePercentiles."99.9999"')
+        p95=$(echo "$obj" | jq -r '.primaryMetric.scorePercentiles."95.0"')
+        p90=$(echo "$obj" | jq -r '.primaryMetric.scorePercentiles."90.0"')
+        sql="INSERT INTO benchmark_score (name, method, mode, score, p99, p95, p90, benchmark_time, create_time) VALUES ('$NAME', '$method', '$mode', $score, $p99, $p95, $p90, now(), now());"
+        echo "$sql" >> ./inserts.sql
+      done
+      cat ./inserts.sql
+      echo "push data to mysql."
+      mycli -h "${MYSQL_HOST}" -u "${MYSQL_USER}" -p "${MYSQL_PASSWORD}" -D "${MYSQL_DATABASE}" -e "source ./inserts.sql"
+    }
+    parse_jmh_results
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: git-ssh
+type: Opaque
+data:
+  id_ed25519: private_key_base64
+  id_ed25519.pub: public_key_base64
+  known_hosts: Z2l0aHViLmNvbSBzc2gtZWQyNTUxOSBBQUFBQzNOemFDMWxaREkxTlRFNUFBQUFJT01xcW5rVnpybTBTZEc2VU9vcUtMc2FiZ0g1Qzlva1dpMGRoMmw5R0tKbApnaXRodWIuY29tIGVjZHNhLXNoYTItbmlzdHAyNTYgQUFBQUUyVmpaSE5oTFhOb1lUSXRibWx6ZEhBeU5UWUFBQUFJYm1semRIQXlOVFlBQUFCQkJFbUtTRU5qUUVlek9teGtaTXk3b3BLZ3dGQjlua3Q1WVJyWU1qTnVHNU44N3VSZ2c2Q0xyYm81d0FkVC95NnYwbUtWMFUydzBXWjJZQi8rK1Rwb2NrZz0KZ2l0aHViLmNvbSBzc2gtcnNhIEFBQUFCM056YUMxeWMyRUFBQUFEQVFBQkFBQUJnUUNqN25kTnhRb3dnY1FuanNoY0xycVBFaWlwaG50K1ZUVHZEUDZtSEJMOWoxYU5Va1k0VWUxZ3Z3bkdMVmxPaEdlWXJuWmFNZ1JLNitQS0NVWGFEYkM3cXRiVzhnSWtoTDdhR0NzT3IvQzU2U0pNeS9CQ1pmeGQxbld6QU94U0RQZ1ZzbWVyT0JZZk5xbHRWOS9oV0NxQnl3SU5JUis1ZElnNkpUSjcycGNFcEVqY1lnWGtFMllFRlhWMUpIbnNLZ2JMV05saFNjcWIyVW15UmtReXl0Ukx0TCszOFRHeGt4Q2ZsbU8rNVo4Q1NTTlk3R2lkak1JWjdRNHpNakEybjFuR3JsVERrendEQ3N3K3dxRlBHUUExNzljbmZHV09XUlZydWoxNno2WHl2eHZqSndiejB3UVo3NVhLNXRLU2I3Rk55ZUlFczRUVDRqaytTNGRoUGVBVUM1eStiRFlpcllnTTRHQzd1RW56dG5aeWFWV1E3QjM4MUFLNFFkcnd0NTFacUV4S2JRcFRVTm4rRWpxb1R3dnFOajRrcXg1UVVDSTBUaFMvWWtPeEpDWG1QVVdaYmhqcENnNTZpKzJhQjZDbUsySkdobjU3SzVtajBNTmRCWEE0L1dud0g2WG9QV0p6SzVOeXUyekIzbkFacCtTNWhwUXMrcDF2TjEvd3Nqaz0=
+
