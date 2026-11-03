@@ -57,15 +57,18 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
         boolean sameWeight = true;
 
         // Filter out all the least active invokers
-        for (int i = 0; i < length; i++) {
-            Invoker<T> invoker = invokers.get(i);
+        // The invokers may be a BitList, whose get(index) is O(index) because it walks the bitset from the
+        // beginning on every call. Iterating by index would make this loop O(N^2), so iterate the list
+        // directly, which is O(N) for both BitList and ordinary lists.
+        int index = 0;
+        for (Invoker<T> invoker : invokers) {
             // Get the active number of the invoker
             int active = RpcStatus.getStatus(invoker.getUrl(), RpcUtils.getMethodName(invocation))
                     .getActive();
             // Get the weight of the invoker's configuration. The default value is 100.
             int afterWarmup = getWeight(invoker, invocation);
             // save for later use
-            weights[i] = afterWarmup;
+            weights[index] = afterWarmup;
             // If it is the first invoker or the active number of the invoker is less than the current least active
             // number
             if (leastActive == -1 || active < leastActive) {
@@ -74,7 +77,7 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
                 // Reset the number of least active invokers
                 leastCount = 1;
                 // Put the first least active invoker first in leastIndexes
-                leastIndexes[0] = i;
+                leastIndexes[0] = index;
                 // Reset totalWeight
                 totalWeight = afterWarmup;
                 // Record the weight the first least active invoker
@@ -84,7 +87,7 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
                 // If current invoker's active value equals with leaseActive, then accumulating.
             } else if (active == leastActive) {
                 // Record the index of the least active invoker in leastIndexes order
-                leastIndexes[leastCount++] = i;
+                leastIndexes[leastCount++] = index;
                 // Accumulate the total weight of the least active invoker
                 totalWeight += afterWarmup;
                 // If every invoker has the same weight?
@@ -92,6 +95,7 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
                     sameWeight = false;
                 }
             }
+            index++;
         }
         // Choose an invoker from all the least active invokers
         if (leastCount == 1) {
