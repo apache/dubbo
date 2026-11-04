@@ -66,6 +66,16 @@ class AbstractMetadataReportFactoryTest {
                 }
 
                 @Override
+                public URL getUrl() {
+                    return null;
+                }
+
+                @Override
+                public boolean isAvailable() {
+                    return true;
+                }
+
+                @Override
                 public void destroy() {}
 
                 @Override

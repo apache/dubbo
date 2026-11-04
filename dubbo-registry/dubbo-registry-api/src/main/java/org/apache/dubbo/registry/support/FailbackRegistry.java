@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.function.ThrowableAction;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
@@ -135,12 +136,16 @@ public abstract class FailbackRegistry extends AbstractRegistry {
     }
 
     protected void addFailedSubscribed(URL url, NotifyListener listener) {
+        addFailedSubscribed(url, listener, null);
+    }
+
+    protected void addFailedSubscribed(URL url, NotifyListener listener, ThrowableAction handler) {
         Holder h = new Holder(url, listener);
         FailedSubscribedTask oldOne = failedSubscribed.get(h);
         if (oldOne != null) {
             return;
         }
-        FailedSubscribedTask newTask = new FailedSubscribedTask(url, this, listener);
+        FailedSubscribedTask newTask = new FailedSubscribedTask(url, this, listener, handler);
         oldOne = failedSubscribed.putIfAbsent(h, newTask);
         if (oldOne == null) {
             // never has a retry task. then start a new task for retry.

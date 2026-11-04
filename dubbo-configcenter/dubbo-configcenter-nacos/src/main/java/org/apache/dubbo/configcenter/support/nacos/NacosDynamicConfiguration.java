@@ -28,11 +28,13 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.MD5Utils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.metrics.config.event.ConfigCenterEvent;
 import org.apache.dubbo.metrics.event.MetricsEventBus;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -103,6 +105,9 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         int retryTimes = url.getPositiveParameter(NACOS_RETRY_KEY, 10);
         int sleepMsBetweenRetries = url.getPositiveParameter(NACOS_RETRY_WAIT_KEY, 1000);
         boolean check = url.getParameter(NACOS_CHECK_KEY, true);
+        if (check && !UrlUtils.isCheck(url)) {
+            check = false;
+        }
         ConfigService tmpConfigServices = null;
         try {
             for (int i = 0; i < retryTimes + 1; i++) {
@@ -393,5 +398,13 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     protected String buildListenerKey(String key, String group) {
         return key + HYPHEN_CHAR + group;
+    }
+
+    @Override
+    public boolean isAvailable() {
+        Optional<String> status = Optional.ofNullable(configService)
+                .map(NacosConfigServiceWrapper::getConfigService)
+                .map(ConfigService::getServerStatus);
+        return status.isPresent() && UP.equals(status.get());
     }
 }

@@ -25,6 +25,7 @@ import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedLi
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -154,6 +155,7 @@ class ZookeeperServiceDiscoveryTest {
         assertEquals(0, serviceInstances.size());
 
         discovery.register(URL.valueOf("dubbo://1.1.2.3:20880/DemoService"));
+        when(mockServiceDiscovery.queryForNames()).thenReturn(Collections.singletonList(SERVICE_NAME));
         discovery.register();
 
         DefaultServiceInstance serviceInstance = (DefaultServiceInstance) discovery.getLocalInstance();
