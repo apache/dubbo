@@ -54,14 +54,14 @@ public class UnsafeByteArrayInputStream extends InputStream {
         if (off < 0 || len < 0 || len > b.length - off) {
             throw new IndexOutOfBoundsException();
         }
+        if (len == 0) {
+            return 0;
+        }
         if (mPosition >= mLimit) {
             return -1;
         }
         if (mPosition + len > mLimit) {
             len = mLimit - mPosition;
-        }
-        if (len <= 0) {
-            return 0;
         }
         System.arraycopy(mData, mPosition, b, off, len);
         mPosition += len;
