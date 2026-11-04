@@ -24,6 +24,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.DubboServiceAddressURL;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
@@ -473,26 +474,32 @@ public class NacosRegistry extends FailbackRegistry {
 
     private void scheduleServiceNamesLookup(final URL url, final NacosAggregateListener listener) {
         if (scheduledExecutorService == null) {
-            scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-            scheduledExecutorService.scheduleAtFixedRate(
-                    () -> {
-                        Set<String> serviceNames = getAllServiceNames();
-                        filterData(serviceNames, serviceName -> {
-                            boolean accepted = false;
-                            for (String category : ALL_SUPPORTED_CATEGORIES) {
-                                String prefix = category + SERVICE_NAME_SEPARATOR;
-                                if (serviceName != null && serviceName.startsWith(prefix)) {
-                                    accepted = true;
-                                    break;
-                                }
-                            }
-                            return accepted;
-                        });
-                        doSubscribe(url, listener, serviceNames);
-                    },
-                    LOOKUP_INTERVAL,
-                    LOOKUP_INTERVAL,
-                    TimeUnit.SECONDS);
+            synchronized (this) {
+                if (scheduledExecutorService == null) {
+                    ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(
+                            new NamedThreadFactory("Dubbo-Nacos-Registry-Scheduler", true));
+                    executor.scheduleAtFixedRate(
+                            () -> {
+                                Set<String> serviceNames = getAllServiceNames();
+                                filterData(serviceNames, serviceName -> {
+                                    boolean accepted = false;
+                                    for (String category : ALL_SUPPORTED_CATEGORIES) {
+                                        String prefix = category + SERVICE_NAME_SEPARATOR;
+                                        if (serviceName != null && serviceName.startsWith(prefix)) {
+                                            accepted = true;
+                                            break;
+                                        }
+                                    }
+                                    return accepted;
+                                });
+                                doSubscribe(url, listener, serviceNames);
+                            },
+                            LOOKUP_INTERVAL,
+                            LOOKUP_INTERVAL,
+                            TimeUnit.SECONDS);
+                    scheduledExecutorService = executor;
+                }
+            }
         }
     }
 
