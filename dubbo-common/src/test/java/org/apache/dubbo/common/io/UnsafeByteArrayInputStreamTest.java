@@ -20,6 +20,8 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -90,5 +92,40 @@ class UnsafeByteArrayInputStreamTest {
 
         assertThat(skip, is(0L));
         assertThat(stream.position(), is(0));
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = {Long.MAX_VALUE, Long.MAX_VALUE - 1, Integer.MAX_VALUE})
+    void testSkipLargeCountFromNonzeroPosition(long requested) {
+        UnsafeByteArrayInputStream stream = new UnsafeByteArrayInputStream(new byte[] {10, 20, 30, 40}, 1, 2);
+        assertThat(stream.read(), is(20));
+        stream.mark(0);
+        assertThat(stream.skip(requested), is(1L));
+        assertThat(stream.position(), is(3));
+        assertThat(stream.available(), is(0));
+        assertThat(stream.read(), is(-1));
+        stream.reset();
+        assertThat(stream.read(), is(30));
+        assertThat(stream.read(), is(-1));
+    }
+
+    @Test
+    void testLargeSkipAtEndDoesNotRewind() {
+        UnsafeByteArrayInputStream stream = new UnsafeByteArrayInputStream(new byte[] {10, 20, 30});
+        assertThat(stream.skip(3), is(3L));
+        assertThat(stream.skip(Long.MAX_VALUE), is(0L));
+        assertThat(stream.position(), is(3));
+        assertThat(stream.available(), is(0));
+        assertThat(stream.read(), is(-1));
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = {0, -1, Long.MIN_VALUE})
+    void testNonPositiveSkipKeepsPosition(long requested) {
+        UnsafeByteArrayInputStream stream = new UnsafeByteArrayInputStream(new byte[] {10, 20});
+        stream.read();
+        assertThat(stream.skip(requested), is(0L));
+        assertThat(stream.position(), is(1));
+        assertThat(stream.read(), is(20));
     }
 }
