@@ -67,6 +67,20 @@ class FileCacheStoreTest {
         assertEquals(0, propertiesLimitTo1.size());
     }
 
+    @Test
+    void testLoadCacheReadsBackWhatRefreshCacheWrote() throws Exception {
+        String directoryPath = getDirectoryOfClassPath();
+        Map<String, String> newProperties = new HashMap<>();
+        newProperties.put("newKey1", "{\"params\":{\"desc\":\"订单服务\",\"token\":\"YWJjZA==\"}}");
+        newProperties.put("newKey2", "a=b=c");
+        cacheStore = FileCacheStoreFactory.getInstance(directoryPath, "round-trip.dubbo.cache");
+        cacheStore.refreshCache(newProperties, "test refresh cache", 0);
+
+        assertEquals(newProperties, cacheStore.loadCache(10));
+
+        cacheStore.destroy();
+    }
+
     private String getDirectoryOfClassPath() throws URISyntaxException {
         URL resource = this.getClass().getResource("/log4j2-test.xml");
         String path = Paths.get(resource.toURI()).toFile().getAbsolutePath();
