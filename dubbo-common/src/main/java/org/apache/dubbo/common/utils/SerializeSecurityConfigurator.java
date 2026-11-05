@@ -45,6 +45,7 @@ import java.util.stream.Collectors;
 import static org.apache.dubbo.common.constants.CommonConstants.SERIALIZE_ALLOW_LIST_FILE_PATH;
 import static org.apache.dubbo.common.constants.CommonConstants.SERIALIZE_BLOCKED_LIST_FILE_PATH;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_IO_EXCEPTION;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_REFLECTIVE_OPERATION_FAILED;
 
 public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<ModuleModel> {
     private static final ErrorTypeAwareLogger LOGGER =
@@ -229,25 +230,34 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
                 checkClass(parameterType);
             }
 
-            Type[] genericParameterTypes = method.getGenericParameterTypes();
-            for (Type genericParameterType : genericParameterTypes) {
-                checkType(genericParameterType);
+            try {
+                for (Type genericParameterType : method.getGenericParameterTypes()) {
+                    checkType(genericParameterType);
+                }
+            } catch (LinkageError | TypeNotPresentException e) {
+                logScanFailure(clazz.getName() + "#" + method.getName() + " parameter types", e);
             }
 
             Class<?> returnType = method.getReturnType();
             checkClass(returnType);
 
-            Type genericReturnType = method.getGenericReturnType();
-            checkType(genericReturnType);
+            try {
+                checkType(method.getGenericReturnType());
+            } catch (LinkageError | TypeNotPresentException e) {
+                logScanFailure(clazz.getName() + "#" + method.getName() + " return type", e);
+            }
 
             Class<?>[] exceptionTypes = method.getExceptionTypes();
             for (Class<?> exceptionType : exceptionTypes) {
                 checkClass(exceptionType);
             }
 
-            Type[] genericExceptionTypes = method.getGenericExceptionTypes();
-            for (Type genericExceptionType : genericExceptionTypes) {
-                checkType(genericExceptionType);
+            try {
+                for (Type genericExceptionType : method.getGenericExceptionTypes()) {
+                    checkType(genericExceptionType);
+                }
+            } catch (LinkageError | TypeNotPresentException e) {
+                logScanFailure(clazz.getName() + "#" + method.getName() + " exception types", e);
             }
         }
     }
@@ -266,28 +276,32 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
             return;
         }
 
-        if (type instanceof ParameterizedType) {
-            ParameterizedType parameterizedType = (ParameterizedType) type;
-            checkClass((Class<?>) parameterizedType.getRawType());
-            for (Type actualTypeArgument : parameterizedType.getActualTypeArguments()) {
-                checkType(actualTypeArgument);
+        try {
+            if (type instanceof ParameterizedType) {
+                ParameterizedType parameterizedType = (ParameterizedType) type;
+                checkClass((Class<?>) parameterizedType.getRawType());
+                for (Type actualTypeArgument : parameterizedType.getActualTypeArguments()) {
+                    checkType(actualTypeArgument);
+                }
+            } else if (type instanceof GenericArrayType) {
+                GenericArrayType genericArrayType = (GenericArrayType) type;
+                checkType(genericArrayType.getGenericComponentType());
+            } else if (type instanceof TypeVariable) {
+                TypeVariable typeVariable = (TypeVariable) type;
+                for (Type bound : typeVariable.getBounds()) {
+                    checkType(bound);
+                }
+            } else if (type instanceof WildcardType) {
+                WildcardType wildcardType = (WildcardType) type;
+                for (Type bound : wildcardType.getUpperBounds()) {
+                    checkType(bound);
+                }
+                for (Type bound : wildcardType.getLowerBounds()) {
+                    checkType(bound);
+                }
             }
-        } else if (type instanceof GenericArrayType) {
-            GenericArrayType genericArrayType = (GenericArrayType) type;
-            checkType(genericArrayType.getGenericComponentType());
-        } else if (type instanceof TypeVariable) {
-            TypeVariable typeVariable = (TypeVariable) type;
-            for (Type bound : typeVariable.getBounds()) {
-                checkType(bound);
-            }
-        } else if (type instanceof WildcardType) {
-            WildcardType wildcardType = (WildcardType) type;
-            for (Type bound : wildcardType.getUpperBounds()) {
-                checkType(bound);
-            }
-            for (Type bound : wildcardType.getLowerBounds()) {
-                checkType(bound);
-            }
+        } catch (LinkageError | TypeNotPresentException e) {
+            logScanFailure("generic type bounds or arguments", e);
         }
     }
 
@@ -319,8 +333,12 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
             checkClass(interfaceClass);
         }
 
-        for (Type genericInterface : clazz.getGenericInterfaces()) {
-            checkType(genericInterface);
+        try {
+            for (Type genericInterface : clazz.getGenericInterfaces()) {
+                checkType(genericInterface);
+            }
+        } catch (LinkageError | TypeNotPresentException e) {
+            logScanFailure(className + " generic interfaces", e);
         }
 
         Class<?> superclass = clazz.getSuperclass();
@@ -328,12 +346,21 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
             checkClass(superclass);
         }
 
-        Type genericSuperclass = clazz.getGenericSuperclass();
-        if (genericSuperclass != null) {
-            checkType(genericSuperclass);
+        try {
+            checkType(clazz.getGenericSuperclass());
+        } catch (LinkageError | TypeNotPresentException e) {
+            logScanFailure(className + " generic superclass", e);
         }
 
-        Field[] fields = clazz.getDeclaredFields();
+        Field[] fields;
+        try {
+            fields = clazz.getDeclaredFields();
+        } catch (LinkageError | TypeNotPresentException e) {
+            // Reflection resolves all raw field types before returning any Field objects.
+            // Skip this class's fields, but let callers continue scanning other reachable types.
+            logScanFailure(className + " fields", e);
+            return true;
+        }
 
         for (Field field : fields) {
             if (Modifier.isTransient(field.getModifiers())) {
@@ -342,10 +369,25 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
 
             Class<?> fieldClass = field.getType();
             checkClass(fieldClass);
-            checkType(field.getGenericType());
+            try {
+                checkType(field.getGenericType());
+            } catch (LinkageError | TypeNotPresentException e) {
+                logScanFailure(className + "#" + field.getName(), e);
+            }
         }
 
         return true;
+    }
+
+    private void logScanFailure(String source, Throwable cause) {
+        LOGGER.warn(
+                COMMON_REFLECTIVE_OPERATION_FAILED,
+                "",
+                "",
+                "Failed to inspect " + source
+                        + " for the serialization allow list; continuing with other types. "
+                        + "Check that the application's dependencies are available.",
+                cause);
     }
 
     private void addToAllow(Class<?> clazz) {
