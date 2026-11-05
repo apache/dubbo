@@ -20,6 +20,9 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -81,6 +84,51 @@ class UnsafeByteArrayInputStreamTest {
             UnsafeByteArrayInputStream stream = new UnsafeByteArrayInputStream("abc".getBytes());
             stream.read(null, 0, 1);
         });
+    }
+
+    @ParameterizedTest
+    @CsvSource({"0, 0, 0", "3, 0, 0", "3, 0, 3", "3, 1, 1", "3, 3, 0"})
+    void testZeroLengthReadAtEndOfStream(int size, int offset, int length) throws IOException {
+        UnsafeByteArrayInputStream stream = new UnsafeByteArrayInputStream(new byte[size], offset, length);
+        stream.skip(length);
+        byte[] bytes = {1, 2, 3};
+        int position = stream.position();
+
+        assertThat(stream.read(bytes, 0, 1), is(-1));
+        assertThat(stream.read(bytes, 1, 0), is(0));
+        assertThat(stream.read(bytes, bytes.length, 0), is(0));
+        assertThat(stream.read(new byte[0]), is(0));
+        assertThat(stream.position(), is(position));
+        assertThat(stream.available(), is(0));
+        assertThat(bytes, is(new byte[] {1, 2, 3}));
+        assertThat(stream.read(), is(-1));
+    }
+
+    @Test
+    void testZeroLengthReadDoesNotConsumeInput() {
+        UnsafeByteArrayInputStream stream = new UnsafeByteArrayInputStream(new byte[] {1, 2, 3});
+        byte[] bytes = {4, 5, 6};
+
+        assertThat(stream.read(bytes, bytes.length, 0), is(0));
+        assertThat(stream.position(), is(0));
+        assertThat(stream.available(), is(3));
+        assertThat(bytes, is(new byte[] {4, 5, 6}));
+        assertThat(stream.read(), is(1));
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {-1, 4, Integer.MAX_VALUE})
+    void testZeroLengthReadValidatesOffsetAtEndOfStream(int offset) {
+        UnsafeByteArrayInputStream stream = new UnsafeByteArrayInputStream(new byte[0]);
+
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> stream.read(new byte[3], offset, 0));
+    }
+
+    @Test
+    void testZeroLengthReadValidatesBufferAtEndOfStream() {
+        UnsafeByteArrayInputStream stream = new UnsafeByteArrayInputStream(new byte[0]);
+
+        Assertions.assertThrows(NullPointerException.class, () -> stream.read(null, 0, 0));
     }
 
     @Test
