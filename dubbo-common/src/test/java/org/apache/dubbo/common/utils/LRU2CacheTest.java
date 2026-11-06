@@ -25,6 +25,46 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LRU2CacheTest {
     @Test
+    void testPutUpdatesPromotedEntry() {
+        LRU2Cache<String, String> cache = new LRU2Cache<>(2);
+        cache.put("key", "original");
+        cache.put("key", "original");
+
+        assertThat(cache.put("key", "updated"), equalTo("original"));
+        assertThat(cache.get("key"), equalTo("updated"));
+        assertThat(cache.size(), equalTo(1));
+    }
+
+    @Test
+    void testUpdatingPromotedEntryRefreshesLruOrder() {
+        LRU2Cache<String, Integer> cache = new LRU2Cache<>(2);
+        cache.put("first", 1);
+        cache.put("first", 1);
+        cache.put("second", 2);
+        cache.put("second", 2);
+
+        cache.put("first", 11);
+        cache.put("third", 3);
+        cache.put("third", 3);
+
+        assertTrue(cache.containsKey("first"));
+        assertFalse(cache.containsKey("second"));
+        assertTrue(cache.containsKey("third"));
+        assertThat(cache.get("first"), equalTo(11));
+    }
+
+    @Test
+    void testPutUpdatesPromotedNullValue() {
+        LRU2Cache<String, String> cache = new LRU2Cache<>(2);
+        cache.put("nullable", null);
+        cache.put("nullable", null);
+        assertTrue(cache.containsKey("nullable"));
+
+        assertThat(cache.put("nullable", "updated"), equalTo((String) null));
+        assertThat(cache.get("nullable"), equalTo("updated"));
+    }
+
+    @Test
     void testCache() {
         LRU2Cache<String, Integer> cache = new LRU2Cache<String, Integer>(3);
         cache.put("one", 1);
