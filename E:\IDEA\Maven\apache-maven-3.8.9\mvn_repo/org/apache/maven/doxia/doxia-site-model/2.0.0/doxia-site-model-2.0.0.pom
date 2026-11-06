@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.apache.maven.doxia</groupId>
+    <artifactId>doxia-sitetools</artifactId>
+    <version>2.0.0</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>doxia-site-model</artifactId>
+
+  <name>Doxia Sitetools :: Site Model</name>
+  <description>The Site Model handles the descriptor for sites, also known as site.xml.</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.eclipse.sisu</groupId>
+      <artifactId>org.eclipse.sisu.plexus</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.inject</groupId>
+      <artifactId>javax.inject</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-xml</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.modello</groupId>
+        <artifactId>modello-maven-plugin</artifactId>
+        <configuration>
+          <firstVersion>1.0.0</firstVersion>
+        </configuration>
+        <executions>
+          <execution>
+            <id>descriptor</id>
+            <goals>
+              <goal>xpp3-writer</goal>
+              <goal>java</goal>
+              <goal>xpp3-reader</goal>
+              <goal>xsd</goal>
+            </goals>
+            <phase>generate-sources</phase>
+            <configuration>
+              <models>
+                <model>src/main/mdo/site.mdo</model>
+              </models>
+              <!-- TODO Do not forget to update the version in the description. See DOXIASITETOOLS-98. -->
+              <version>2.0.0</version>
+            </configuration>
+          </execution>
+          <execution>
+            <id>old-descriptor</id>
+            <goals>
+              <goal>java</goal>
+              <goal>xpp3-reader</goal>
+              <goal>xsd</goal>
+            </goals>
+            <phase>generate-sources</phase>
+            <configuration>
+              <models>
+                <model>src/main/mdo/decoration.mdo</model>
+              </models>
+              <version>1.8.1</version>
+            </configuration>
+          </execution>
+          <execution>
+            <id>descriptor-xdoc</id>
+            <goals>
+              <goal>xdoc</goal>
+            </goals>
+            <phase>pre-site</phase>
+            <configuration>
+              <models>
+                <model>src/main/mdo/site.mdo</model>
+              </models>
+              <!-- TODO Do not forget to update the version in the description. See DOXIASITETOOLS-98. -->
+              <version>2.0.0</version>
+            </configuration>
+          </execution>
+          <execution>
+            <id>old-descriptor-xdoc</id>
+            <goals>
+              <goal>xdoc</goal>
+            </goals>
+            <phase>pre-site</phase>
+            <configuration>
+              <models>
+                <model>src/main/mdo/decoration.mdo</model>
+              </models>
+              <version>1.8.1</version>
+            </configuration>
+          </execution>
+          <execution>
+            <id>descriptor-xsd</id>
+            <goals>
+              <goal>xsd</goal>
+            </goals>
+            <phase>pre-site</phase>
+            <configuration>
+              <models>
+                <model>src/main/mdo/site.mdo</model>
+              </models>
+              <!-- TODO Do not forget to update the version in the description. See DOXIASITETOOLS-98. -->
+              <version>2.0.0</version>
+              <outputDirectory>${project.build.directory}/generated-site/resources/xsd</outputDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>old-descriptor-xsd</id>
+            <goals>
+              <goal>xsd</goal>
+            </goals>
+            <phase>pre-site</phase>
+            <configuration>
+              <models>
+                <model>src/main/mdo/decoration.mdo</model>
+              </models>
+              <version>1.8.1</version>
+              <outputDirectory>${project.build.directory}/generated-site/resources/xsd</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

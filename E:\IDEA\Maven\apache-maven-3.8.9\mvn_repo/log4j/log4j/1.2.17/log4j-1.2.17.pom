@@ -1,0 +1,592 @@
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one or more
+ contributor license agreements.  See the NOTICE file distributed with
+ this work for additional information regarding copyright ownership.
+ The ASF licenses this file to You under the Apache License, Version 2.0
+ (the "License"); you may not use this file except in compliance with
+ the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+
+-->
+<!--
+Usage notes:
+
+To build NTEventLogAppender.dll using MinGW, place mingw\bin on path for Windows or install mingw
+package on other platforms.  Build will execute gcc and windres on Windows and
+i586-mingw32msvc-gcc and i586-mingw32msvc-windres on other platforms.
+
+To build NTEventLogAppender.dll using Microsoft tools, run the appropriate vcvars for the
+target platform and specify -Dntdll_target=msbuild on the mvn command line.
+
+-->        
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>log4j</groupId>
+  <artifactId>log4j</artifactId>
+  <packaging>bundle</packaging>
+  <name>Apache Log4j</name>
+  <version>1.2.17</version>
+  <description>Apache Log4j 1.2</description>
+  <url>http://logging.apache.org/log4j/1.2/</url>
+  <issueManagement>
+    <system>Bugzilla</system>
+    <url>https://issues.apache.org/bugzilla/describecomponents.cgi?product=Log4j</url>
+  </issueManagement>
+  <ciManagement>
+    <system>Gump</system>
+    <url>http://vmgump.apache.org/gump/public/logging-log4j-12/logging-log4j-12/index.html</url>
+  </ciManagement>
+  <inceptionYear>1999</inceptionYear>
+  <mailingLists>
+    <mailingList>
+      <name>log4j-user</name>
+      <subscribe>log4j-user-subscribe@logging.apache.org</subscribe>
+      <unsubscribe>log4j-user-unsubscribe@logging.apache.org</unsubscribe>
+      <post>log4j-user@logging.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/logging-log4j-user/</archive>
+      <otherArchives>
+        <otherArchive>http://marc.info/?l=log4j-user</otherArchive>
+        <otherArchive>http://dir.gmane.org/gmane.comp.jakarta.log4j.user</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>log4j-dev</name>
+      <subscribe>log4j-dev-subscribe@logging.apache.org</subscribe>
+      <unsubscribe>log4j-dev-unsubscribe@logging.apache.org</unsubscribe>
+      <post>log4j-dev@logging.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/logging-log4j-dev/</archive>
+      <otherArchives>
+        <otherArchive>http://marc.info/?l=log4j-dev</otherArchive>
+        <otherArchive>http://dir.gmane.org/gmane.comp.jakarta.log4j.devel</otherArchive>
+      </otherArchives>
+    </mailingList>
+  </mailingLists>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <scm>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/logging/log4j/tags/v1_2_17_rc3</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/logging/log4j/tags/v1_2_17_rc3</developerConnection>
+    <url>http://svn.apache.org/viewvc/logging/log4j/tags/v1_2_17_rc3</url>
+  </scm>
+  <organization>
+    <name>Apache Software Foundation</name>
+    <url>http://www.apache.org</url>
+  </organization>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <configuration>
+          <encoding>UTF-8</encoding>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.5</version>
+        <configuration>
+          <workingDirectory>tests</workingDirectory>
+          <reportFormat>plain</reportFormat>
+          <forkMode>pertest</forkMode>
+          <skip>true</skip>
+          <includes>
+            <include>org/apache/log4j/LevelTest.java</include>
+            <include>org/apache/log4j/PriorityTest.java</include>
+            <include>org/apache/log4j/CategoryTest.java</include>
+            <include>org/apache/log4j/FileAppenderTest.java</include>
+            <include>org/apache/log4j/LogManagerTest.java</include>
+            <include>org/apache/log4j/helpers.LogLogTest.java</include>
+            <include>org/apache/log4j/LayoutTest.java</include>
+            <include>org/apache/log4j/helpers.DateLayoutTest.java</include>
+            <include>org/apache/log4j/TTCCLayoutTest.java</include>
+            <include>org/apache/log4j/xml.XMLLayoutTest.java</include>
+            <include>org/apache/log4j/HTMLLayoutTest.java</include>
+            <include>org/apache/log4j/PatternLayoutTest.java</include>
+            <include>org/apache/log4j/spi.LoggingEventTest.java</include>
+            <include>org/apache/log4j/spi.ThrowableInformationTest.java</include>
+            <include>org/apache/log4j/spi.LocationInfoTest.java</include>
+            <include>org/apache/log4j/PropertyConfiguratorTest.java</include>
+            <include>org/apache/log4j/MinimumTestCase.java</include>
+            <include>org/apache/log4j/LoggerTestCase.java</include>
+            <include>org/apache/log4j/PatternLayoutTestCase.java</include>
+            <include>org/apache/log4j/HierarchyThresholdTestCase.java</include>
+            <include>org/apache/log4j/xml/DOMTestCase.java</include>
+            <include>org/apache/log4j/xml/CustomLevelTestCase.java</include>
+            <include>org/apache/log4j/customLogger/XLoggerTestCase.java</include>
+            <!-- DefaultInit  -->
+            <!-- SocketServer -->
+            <include>org/apache/log4j/xml/XMLLayoutTestCase.java</include>
+            <include>org/apache/log4j/xml/AsyncAppenderTestCase.java</include>
+            <include>org/apache/log4j/varia/LevelMatchFilterTestCase.java</include>
+            <!--   ErrorHandlerTestCase is not run in Ant build either
+            <include>org/apache/log4j/varia/ErrorHandlerTestCase.java</include>
+            -->
+            <!-- include>org/apache/log4j/helpers/OptionConverterTestCase.java</include -->
+            <include>org/apache/log4j/helpers/BoundedFIFOTestCase.java</include>
+            <include>org/apache/log4j/helpers/CyclicBufferTestCase.java</include>
+            <include>org/apache/log4j/helpers/PatternParserTestCase.java</include>
+            <include>org/apache/log4j/or/ORTestCase.java</include>
+            <include>org/apache/log4j/DRFATestCase.java</include>
+            <include>org/apache/log4j/RFATestCase.java</include>
+            <include>org/apache/log4j/varia/ERFATestCase.java</include>
+            <include>org/apache/log4j/net/SyslogAppenderTest</include>
+            <include>org/apache/log4j/nt/NTEventLogAppenderTest</include>
+            <include>org/apache/log4j/net/SocketAppenderTest</include>
+          </includes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.1</version>
+        <configuration>
+          <source>1.4</source>
+          <target>1.4</target>
+          <encoding>UTF-8</encoding>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.3</version>
+        <configuration>
+          <archive>
+            <manifestSections>
+              <manifestSection>
+                <name>org.apache.log4j</name>
+                <manifestEntries>
+		          <DynamicImport-Package>*</DynamicImport-Package>
+                  <Implementation-Title>log4j</Implementation-Title>
+                  <Implementation-Version>${project.version}</Implementation-Version>
+                  <Implementation-Vendor>"Apache Software Foundation"</Implementation-Vendor>
+                </manifestEntries>
+              </manifestSection>
+            </manifestSections>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.2</version>
+        <executions>
+          <!--   generate NTEventLogAppender.dll    -->
+          <execution>
+            <phase>process-classes</phase>
+            <id>ntdll</id>
+            <configuration>
+              <tasks>
+                <ant antfile="src/ntdll/build.xml" target="${ntdll_target}">
+                  <property name="target.dir" location="target" />
+                  <property name="classes.dir" location="target/classes" />
+                  <property name="src.dir" location="src/ntdll" />
+                  <property name="jni.include.dir" location="${java.home}/../include" />
+                </ant>
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+          <!--   create tests/output prior to test run    -->
+          <execution>
+            <phase>test-compile</phase>
+            <id>mkdir_tests_output</id>
+            <configuration>
+              <tasks>
+                <mkdir dir="tests/output" />
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+          <execution>
+            <phase>clean</phase>
+            <id>rmdir_tests_output</id>
+            <configuration>
+              <tasks>
+                <delete dir="tests/output" />
+                <delete dir="tests/classes" />
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+          <execution>
+            <phase>test</phase>
+            <id>runAll</id>
+            <configuration>
+              <tasks>
+                 <ant dir="tests" target="runAll">
+                  <property name="m2_repo" location="${m2_repo}" />
+                  <property name="log4j.jar" location="target/classes" />
+                  <property name="project.lib.home" location="target" />
+                </ant>
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+          <!--   release builds will put SVN tags into the SCM page, this changes it back to trunk  -->
+          <execution>
+            <phase>site</phase>
+            <id>untag-site</id>
+            <configuration>
+              <tasks>
+                <taskdef name="replaceregexp" classname="org.apache.tools.ant.taskdefs.optional.ReplaceRegExp" />
+                <replaceregexp file="target/site/source-repository.html" match="/tags/[^ &quot;'&lt;]*" replace="/trunk" flags="g" />
+                <replaceregexp match="-- Generated by (.*) on .*--" replace="-- Generated by \1 --" flags="g">
+                  <fileset dir="target/site/apidocs" includes="**/*.html" />
+                </replaceregexp>
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+          <execution>
+            <phase>post-site</phase>
+            <id>post-site</id>
+            <configuration>
+              <tasks>
+                <ant target="post-site" />
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+          <execution>
+            <phase>site-deploy</phase>
+            <id>site-deploy</id>
+            <configuration>
+              <tasks>
+                <ant target="site-deploy" />
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>javadoc.resources</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <tasks>
+                <copy todir="${project.build.directory}/apidocs/META-INF">
+                  <fileset dir="${basedir}">
+                    <include name="LICENSE" />
+                    <include name="NOTICE" />
+                  </fileset>
+                </copy>
+              </tasks>
+            </configuration>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>ant</groupId>
+            <artifactId>ant-nodeps</artifactId>
+            <version>1.6.5</version>
+          </dependency>
+          <dependency>
+            <groupId>ant-contrib</groupId>
+            <artifactId>ant-contrib</artifactId>
+            <version>1.0b2</version>
+          </dependency>
+          <dependency>
+            <groupId>ant</groupId>
+            <artifactId>ant-junit</artifactId>
+            <version>1.6.5</version>
+          </dependency>
+          <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.8.1</version>
+            <scope>compile</scope>
+          </dependency>
+          <dependency>
+            <groupId>sun.jdk</groupId>
+            <artifactId>tools</artifactId>
+            <version>1.4.2</version>
+            <scope>system</scope>
+            <systemPath>${tools.jar}</systemPath>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.2-beta-5</version>
+        <configuration>
+          <descriptors>
+            <descriptor>src/assembly/bin.xml</descriptor>
+          </descriptors>
+          <appendAssemblyId>false</appendAssemblyId>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>assembly</goal>
+            </goals>
+          </execution>
+        </executions>
+
+      </plugin>
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.7</version>
+        <configuration>
+          <docfilessubdirs>true</docfilessubdirs>
+          <excludedocfilessubdir>.svn</excludedocfilessubdir>
+          <encoding>UTF-8</encoding>
+          <docEncoding>UTF-8</docEncoding>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>jar</goal>
+              <goal>javadoc</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>site</id>
+	    <phase>pre-site</phase>
+            <goals>
+              <goal>javadoc</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>2.0-beta-9</version>
+        <!--
+          Bug MRELEASE-273 has been throwing NPE during release:perform,
+          typically after deploy so this places it last.
+        -->
+        <configuration>
+          <goals>package site-deploy assembly:attached deploy</goals>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>2.1.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!--
+        clirr:check will fail with NullPointerException
+        due to missing javax.jms.MessageListener,
+        however it will trigger download of supporting components
+        which can allow "ant clirr" to succeed.
+        Could possibly run on a JavaEE platform.
+       -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>clirr-maven-plugin</artifactId>
+        <version>2.2.2</version>
+        <configuration>
+          <comparisonVersion>1.2.15</comparisonVersion>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>rat-maven-plugin</artifactId>
+        <version>1.0-alpha-3</version>
+        <configuration>
+            <excludes>
+                <exclude>tests/witness/**</exclude>
+                <exclude>tests/output/**</exclude>
+                <exclude>tests/classes/**</exclude>
+            </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <version>2.1.0</version>
+        <extensions>true</extensions>
+        <configuration>
+            <instructions>
+                <!-- omit chainsaw and LF5   -->
+                <Export-Package>!org.apache.log4j.lf5.*,
+                                !org.apache.log4j.chainsaw.*,
+                                org.apache.log4j.*;version=1.2.17;-noimport:=true</Export-Package>
+		<!--  all other potential imports are covered by DynamicImport-Package earlier -->
+		<Import-Package>!javax.swing.*,
+				!com.ibm.uvm.tools.*,
+				!com.sun.jdmk.comm.*,
+				javax.jmdns.*;resolution:=optional,
+				javax.jms.*;resolution:=optional,
+				javax.mail.*;resolution:=optional,
+                                *</Import-Package>
+                <Bundle-DocURL>http://logging.apache.org/log4j/1.2</Bundle-DocURL>
+            </instructions>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-site-plugin</artifactId>
+        <version>3.1</version>
+        <configuration>
+	       <templateFile>${basedir}/src/site/maven-site.vm</templateFile>
+           <excludeDefaults>true</excludeDefaults>
+        </configuration>
+        <executions>
+          <execution>
+		      <phase>package</phase>		
+            <goals>
+               <goal>site</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+    <testSourceDirectory>tests/src/java</testSourceDirectory>
+    <testResources>
+      <testResource>
+        <directory>tests/resources</directory>
+      </testResource>
+    </testResources>
+  </build>
+  <reporting>
+    <plugins>
+    <plugin>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>2.4</version>
+        <reportSets>
+        <reportSet>
+            <reports>
+            <report>scm</report>
+            <report>dependencies</report>
+            <report>cim</report>
+            <report>issue-tracking</report>
+            <report>mailing-list</report>
+            <report>license</report>
+            </reports>
+        </reportSet>
+        </reportSets>
+    </plugin>
+    <plugin>
+        <artifactId>maven-jxr-plugin</artifactId>
+        <version>2.1</version>
+    </plugin>
+    <plugin>
+        <artifactId>maven-changes-plugin</artifactId>
+        <version>2.7</version>
+        <reportSets>
+        <reportSet>
+            <reports>
+            <report>changes-report</report>
+            </reports>
+        </reportSet>
+        </reportSets>
+    </plugin>
+    </plugins>
+  </reporting>
+  <profiles>
+    <profile>
+      <id>mac</id>
+      <activation>
+        <os>
+          <family>mac</family>
+        </os>
+      </activation>
+      <properties>
+        <tools.jar>${java.home}/../Classes/classes.jar</tools.jar>
+        <m2_repo>${user.home}/.m2/repository</m2_repo>
+        <ntdll_target>build</ntdll_target>
+      </properties>
+    </profile>
+    <profile>
+      <id>default</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <tools.jar>${java.home}/../lib/tools.jar</tools.jar>
+        <m2_repo>${user.home}/.m2/repository</m2_repo>
+        <ntdll_target>build</ntdll_target>
+      </properties>
+    </profile>
+  </profiles>
+  <repositories>
+    <repository>
+      <id>maven2-repository.dev.java.net</id>
+      <name>Java.net Repository for Maven</name>
+      <url>http://download.java.net/maven/2/</url>
+      <layout>default</layout>
+    </repository>
+  </repositories>
+  <dependencies>
+    <dependency>
+      <groupId>javax.mail</groupId>
+      <artifactId>mail</artifactId>
+      <version>1.4.3</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.openejb</groupId>
+      <artifactId>javaee-api</artifactId>
+      <version>5.0-2</version>
+      <type>jar</type>
+      <scope>provided</scope>
+    </dependency>
+    <!--  the following dependency is not needed on JDK 1.5 and higher 
+    <dependency>
+      <groupId>com.sun.jmx</groupId>
+      <artifactId>jmxri</artifactId>
+      <version>1.2.1</version>
+      <optional>true</optional>
+    </dependency>
+    -->
+    <dependency>
+      <groupId>oro</groupId>
+      <artifactId>oro</artifactId>
+      <version>2.0.8</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geronimo.specs</groupId>
+      <artifactId>geronimo-jms_1.1_spec</artifactId>
+      <version>1.0</version>
+      <optional>true</optional>
+    </dependency>
+ </dependencies>
+  <distributionManagement>
+    <repository>
+      <id>logging.repo</id>
+      <url>scp://people.apache.org/www/people.apache.org/builds/logging/repo/</url>
+    </repository>
+    <site>
+      <id>logging.site</id>
+      <url>scp://localhost/${user.dir}/target/site-deploy</url>
+    </site>
+  </distributionManagement>
+</project>
+

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>io.micrometer</groupId>
+  <artifactId>micrometer-tracing-bom</artifactId>
+  <version>1.6.5</version>
+  <packaging>pom</packaging>
+  <name>micrometer-tracing-bom</name>
+  <description>Micrometer Tracing BOM (Bill of Materials) for managing Micrometer Tracing artifact versions</description>
+  <url>https://github.com/micrometer-metrics/tracing</url>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>shakuzen</id>
+      <name>Tommy Ludwig</name>
+      <email>tludwig@vmware.com</email>
+    </developer>
+    <developer>
+      <id>jonatan-ivanov</id>
+      <name>Jonatan Ivanov</name>
+      <email>jivanov@vmware.com</email>
+    </developer>
+    <developer>
+      <id>marcingrzejszczak</id>
+      <name>Marcin Grzejszczak</name>
+      <email>mgrzejszczak@vmware.com</email>
+    </developer>
+  </developers>
+  <scm>
+    <url>git@github.com:micrometer-metrics/tracing.git</url>
+  </scm>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.micrometer</groupId>
+        <artifactId>micrometer-tracing</artifactId>
+        <version>1.6.5</version>
+      </dependency>
+      <dependency>
+        <groupId>io.micrometer</groupId>
+        <artifactId>micrometer-tracing-bridge-brave</artifactId>
+        <version>1.6.5</version>
+      </dependency>
+      <dependency>
+        <groupId>io.micrometer</groupId>
+        <artifactId>micrometer-tracing-bridge-otel</artifactId>
+        <version>1.6.5</version>
+      </dependency>
+      <dependency>
+        <groupId>io.micrometer</groupId>
+        <artifactId>micrometer-tracing-integration-test</artifactId>
+        <version>1.6.5</version>
+      </dependency>
+      <dependency>
+        <groupId>io.micrometer</groupId>
+        <artifactId>micrometer-tracing-reporter-wavefront</artifactId>
+        <version>1.6.5</version>
+      </dependency>
+      <dependency>
+        <groupId>io.micrometer</groupId>
+        <artifactId>micrometer-tracing-test</artifactId>
+        <version>1.6.5</version>
+      </dependency>
+      <dependency>
+        <groupId>io.micrometer</groupId>
+        <artifactId>micrometer-bom</artifactId>
+        <version>1.16.5</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+  <properties>
+    <nebula_Manifest_Version>1.0</nebula_Manifest_Version>
+    <nebula_Implementation_Title>io.micrometer#micrometer-tracing-bom;1.6.5</nebula_Implementation_Title>
+    <nebula_Implementation_Version>1.6.5</nebula_Implementation_Version>
+    <nebula_Built_Status>release</nebula_Built_Status>
+    <nebula_Built_By>circleci</nebula_Built_By>
+    <nebula_Built_OS>Linux</nebula_Built_OS>
+    <nebula_Build_Timezone>Etc/UTC</nebula_Build_Timezone>
+    <nebula_Build_Date_UTC>2026-04-13T16:28:24.563387768Z</nebula_Build_Date_UTC>
+    <nebula_Build_Date>2026-04-13_16:28:24</nebula_Build_Date>
+    <nebula_Gradle_Version>8.14.4</nebula_Gradle_Version>
+    <nebula_Module_Source>/micrometer-tracing-bom</nebula_Module_Source>
+    <nebula_Module_Origin>git@github.com:micrometer-metrics/tracing.git</nebula_Module_Origin>
+    <nebula_Change>fbc9d86</nebula_Change>
+    <nebula_Full_Change>fbc9d86802b2dbe79ee8a50d30fe393d4d09d118</nebula_Full_Change>
+    <nebula_Branch>HEAD</nebula_Branch>
+    <nebula_Build_Host>9325adbe9ba1</nebula_Build_Host>
+    <nebula_Build_Job>deploy</nebula_Build_Job>
+    <nebula_Build_Number>14757</nebula_Build_Number>
+    <nebula_Build_Id>14757</nebula_Build_Id>
+    <nebula_Build_Url>https://circleci.com/gh/micrometer-metrics/tracing/14757</nebula_Build_Url>
+    <nebula_Created_By>21.0.8+9-LTS (Eclipse Adoptium)</nebula_Created_By>
+    <nebula_Module_Owner>tludwig@vmware.com,jivanov@vmware.com,mgrzejszczak@vmware.com</nebula_Module_Owner>
+    <nebula_Module_Email>tludwig@vmware.com,jivanov@vmware.com,mgrzejszczak@vmware.com</nebula_Module_Email>
+  </properties>
+</project>

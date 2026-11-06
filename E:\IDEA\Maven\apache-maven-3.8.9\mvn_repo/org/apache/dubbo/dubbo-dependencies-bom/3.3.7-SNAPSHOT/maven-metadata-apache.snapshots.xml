@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata modelVersion="1.1.0">
+  <groupId>org.apache.dubbo</groupId>
+  <artifactId>dubbo-dependencies-bom</artifactId>
+  <version>3.3.7-SNAPSHOT</version>
+  <versioning>
+    <snapshot>
+      <timestamp>20260512.182559</timestamp>
+      <buildNumber>231</buildNumber>
+    </snapshot>
+    <lastUpdated>20260512182559</lastUpdated>
+    <snapshotVersions>
+      <snapshotVersion>
+        <extension>pom</extension>
+        <value>3.3.7-20260512.182559-231</value>
+        <updated>20260512182559</updated>
+      </snapshotVersion>
+    </snapshotVersions>
+  </versioning>
+</metadata>

@@ -1,0 +1,56 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>xml-apis</groupId>
+  <artifactId>xml-apis</artifactId>
+  <name>XML Commons External Components XML APIs</name>
+  <version>1.0.b2</version>
+  <url>http://xml.apache.org/commons/#external</url>
+
+  <description>xml-commons provides an Apache-hosted set of DOM, SAX, and 
+    JAXP interfaces for use in other xml-based projects. Our hope is that we 
+    can standardize on both a common version and packaging scheme for these 
+    critical XML standards interfaces to make the lives of both our developers 
+    and users easier. The External Components portion of xml-commons contains 
+    interfaces that are defined by external standards organizations. For DOM, 
+    that's the W3C; for SAX it's David Megginson and sax.sourceforge.net; for 
+    JAXP it's Sun.</description>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <organization>
+    <name>Apache Software Foundation</name>
+    <url>http://www.apache.org/</url>
+  </organization>
+
+  <issueManagement>
+    <system>bugzilla</system>
+    <url>http://issues.apache.org/bugzilla/</url>
+  </issueManagement>
+
+  <mailingLists>
+    <mailingList>
+      <name>XML Commons Developer's List</name>
+      <subscribe>commons-dev-subscribe@xml.apache.org</subscribe>
+      <unsubscribe>commons-dev-unsubscribe@xml.apache.org</unsubscribe>
+      <post>commons-dev@xml.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/xml-commons-dev/</archive>
+    </mailingList>
+  </mailingLists>
+
+  <scm>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/xml/commons/tags/xml-commons-1_0_b2</connection>
+    <url>http://svn.apache.org/viewvc/xml/commons/tags/xml-commons-1_0_b2</url>
+  </scm>
+
+  <distributionManagement>
+    <downloadUrl>http://www.apache.org/dist/xml/commons/binaries/xml-commons-1.0.b2.tar.gz</downloadUrl>
+  </distributionManagement>
+</project>

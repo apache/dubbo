@@ -1,0 +1,1664 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- for more information, see the documentation of this POM: https://maven.apache.org/pom/maven/ -->
+  <parent>
+    <groupId>org.apache</groupId>
+    <artifactId>apache</artifactId>
+    <version>34</version>
+    <relativePath />
+  </parent>
+
+  <groupId>org.apache.maven</groupId>
+  <artifactId>maven-parent</artifactId>
+  <version>44</version>
+  <packaging>pom</packaging>
+
+  <name>Apache Maven</name>
+  <description>Maven is a software project management and comprehension tool. Based on the concept of a project object model (POM), Maven can manage a project's build, reporting and documentation from a central piece of information.</description>
+  <url>https://maven.apache.org/</url>
+  <inceptionYear>2002</inceptionYear>
+
+  <!-- Developers listed by PMC Chair, PMC, Committers, Contributers, all alphabetical-->
+  <developers>
+    <developer>
+      <id>hboutemy</id>
+      <name>Hervé Boutemy</name>
+      <email>hboutemy@apache.org</email>
+      <organization>ASF</organization>
+      <roles>
+        <role>PMC Chair</role>
+      </roles>
+      <timezone>Europe/Paris</timezone>
+    </developer>
+    <developer>
+      <id>aheritier</id>
+      <name>Arnaud Héritier</name>
+      <email>aheritier@apache.org</email>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>andham</id>
+      <name>Anders Hammar</name>
+      <email>andham@apache.org</email>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>baerrach</id>
+      <name>Barrie Treloar</name>
+      <email>baerrach@apache.org</email>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>Australia/Adelaide</timezone>
+    </developer>
+    <developer>
+      <id>bimargulies</id>
+      <name>Benson Margulies</name>
+      <email>bimargulies@apache.org</email>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>America/New_York</timezone>
+    </developer>
+    <developer>
+      <id>bmarwell</id>
+      <name>Benjamin Marwell</name>
+      <email>bmarwell@apache.org</email>
+      <organization>ASF</organization>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>Europe/Berlin</timezone>
+    </developer>
+    <developer>
+      <id>brianf</id>
+      <name>Brian Fox</name>
+      <email>brianf@apache.org</email>
+      <organization>Sonatype</organization>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>-5</timezone>
+    </developer>
+    <developer>
+      <id>cstamas</id>
+      <name>Tamas Cservenak</name>
+      <email>cstamas@apache.org</email>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>dennisl</id>
+      <name>Dennis Lundberg</name>
+      <email>dennisl@apache.org</email>
+      <organization>ASF</organization>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>dkulp</id>
+      <name>Daniel Kulp</name>
+      <email>dkulp@apache.org</email>
+      <organization>ASF</organization>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>-5</timezone>
+    </developer>
+    <developer>
+      <id>evenisse</id>
+      <name>Emmanuel Venisse</name>
+      <email>evenisse@apache.org</email>
+      <organization>ASF</organization>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>gboue</id>
+      <name>Guillaume Boué</name>
+      <email>gboue@apache.org</email>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>Europe/Paris</timezone>
+    </developer>
+    <developer>
+      <id>gnodet</id>
+      <name>Guillaume Nodet</name>
+      <email>gnodet@apache.org</email>
+      <organization>Red Hat</organization>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>Europe/Paris</timezone>
+    </developer>
+    <developer>
+      <id>henning</id>
+      <name>Henning Schmiedehausen</name>
+      <email>henning@apache.org</email>
+      <organization>ASF</organization>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>America/Los_Angeles</timezone>
+    </developer>
+    <developer>
+      <id>ifedorenko</id>
+      <name>Igor Fedorenko</name>
+      <email>igor@ifedorenko.com</email>
+      <organization>Sonatype</organization>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>-5</timezone>
+    </developer>
+    <developer>
+      <id>jvanzyl</id>
+      <name>Jason van Zyl</name>
+      <email>jason@maven.org</email>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>-5</timezone>
+    </developer>
+    <developer>
+      <id>khmarbaise</id>
+      <name>Karl Heinz Marbaise</name>
+      <email>khmarbaise@apache.org</email>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>+1</timezone>
+      <properties>
+        <twitter>@khmarbaise</twitter>
+      </properties>
+    </developer>
+    <developer>
+      <id>krosenvold</id>
+      <name>Kristian Rosenvold</name>
+      <email>krosenvold@apache.org</email>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>kwin</id>
+      <name>Konrad Windszus</name>
+      <email>kwin@apache.org</email>
+      <organization>Cognizant Netcentric</organization>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>Europe/Berlin</timezone>
+    </developer>
+    <developer>
+      <id>mkleint</id>
+      <name>Milos Kleint</name>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>mthmulders</id>
+      <name>Maarten Mulders</name>
+      <email>mthmulders@apache.org</email>
+      <organization>Info Support</organization>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>Europe/Amsterdam</timezone>
+    </developer>
+    <developer>
+      <id>olamy</id>
+      <name>Olivier Lamy</name>
+      <email>olamy@apache.org</email>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>Australia/Brisbane</timezone>
+    </developer>
+    <developer>
+      <id>michaelo</id>
+      <name>Michael Osipov</name>
+      <email>michaelo@apache.org</email>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>Europe/Berlin</timezone>
+    </developer>
+    <developer>
+      <id>rfscholte</id>
+      <name>Robert Scholte</name>
+      <email>rfscholte@apache.org</email>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>Europe/Amsterdam</timezone>
+      <properties>
+        <twitter>@rfscholte</twitter>
+      </properties>
+    </developer>
+    <developer>
+      <id>rgoers</id>
+      <name>Ralph Goers</name>
+      <email>rgoers@apache.org</email>
+      <organization>Intuit</organization>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>-8</timezone>
+    </developer>
+    <developer>
+      <id>sjaranowski</id>
+      <name>Slawomir Jaranowski</name>
+      <email>sjaranowski@apache.org</email>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>Europe/Warsaw</timezone>
+    </developer>
+    <developer>
+      <id>stephenc</id>
+      <name>Stephen Connolly</name>
+      <email>stephenc@apache.org</email>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>0</timezone>
+    </developer>
+    <developer>
+      <id>slachiewicz</id>
+      <name>Sylwester Lachiewicz</name>
+      <email>slachiewicz@apache.org</email>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>Europe/Warsaw</timezone>
+    </developer>
+    <developer>
+      <id>struberg</id>
+      <name>Mark Struberg</name>
+      <email>struberg@apache.org</email>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>tibordigana</id>
+      <name>Tibor Digaňa</name>
+      <email>tibordigana@apache.org</email>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>Europe/Bratislava</timezone>
+    </developer>
+    <developer>
+      <id>vsiveton</id>
+      <name>Vincent Siveton</name>
+      <email>vsiveton@apache.org</email>
+      <organization>ASF</organization>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>-5</timezone>
+    </developer>
+    <developer>
+      <id>wfay</id>
+      <name>Wayne Fay</name>
+      <email>wfay@apache.org</email>
+      <organization>ASF</organization>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>-6</timezone>
+    </developer>
+
+    <!--Committers-->
+    <developer>
+      <id>adangel</id>
+      <name>Andreas Dangel</name>
+      <email>adangel@apache.org</email>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>Europe/Berlin</timezone>
+    </developer>
+    <developer>
+      <id>bdemers</id>
+      <name>Brian Demers</name>
+      <email>bdemers@apache.org</email>
+      <organization>Sonatype</organization>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>-5</timezone>
+    </developer>
+    <developer>
+      <id>bellingard</id>
+      <name>Fabrice Bellingard</name>
+      <roles>
+        <role>Committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>bentmann</id>
+      <name>Benjamin Bentmann</name>
+      <email>bentmann@apache.org</email>
+      <organization>Sonatype</organization>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>chrisgwarp</id>
+      <name>Chris Graham</name>
+      <email>chrisgwarp@apache.org</email>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>Australia/Melbourne</timezone>
+    </developer>
+    <developer>
+      <id>dantran</id>
+      <name>Dan Tran</name>
+      <email>dantran@apache.org</email>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>-8</timezone>
+    </developer>
+    <developer>
+      <id>dbradicich</id>
+      <name>Damian Bradicich</name>
+      <email>dbradicich@apache.org</email>
+      <organization>Sonatype</organization>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>-5</timezone>
+    </developer>
+    <developer>
+      <id>brett</id>
+      <name>Brett Porter</name>
+      <email>brett@apache.org</email>
+      <organization>ASF</organization>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>+10</timezone>
+    </developer>
+    <developer>
+      <id>dfabulich</id>
+      <name>Daniel Fabulich</name>
+      <email>dfabulich@apache.org</email>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>-8</timezone>
+    </developer>
+    <developer>
+      <id>eolivelli</id>
+      <name>Enrico Olivelli</name>
+      <email>eolivelli@apache.org</email>
+      <organization>Diennea</organization>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>Europe/Rome</timezone>
+    </developer>
+    <developer>
+      <id>fgiust</id>
+      <name>Fabrizio Giustina</name>
+      <email>fgiust@apache.org</email>
+      <organization>openmind</organization>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>godin</id>
+      <name>Evgeny Mandrikov</name>
+      <email>godin@apache.org</email>
+      <organization>SonarSource</organization>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>+3</timezone>
+    </developer>
+    <developer>
+      <id>handyande</id>
+      <name>Andrew Williams</name>
+      <email>handyande@apache.org</email>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>0</timezone>
+    </developer>
+    <developer>
+      <id>imod</id>
+      <name>Dominik Bartholdi</name>
+      <email>imod@apache.org</email>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>Europe/Zurich</timezone>
+    </developer>
+    <developer>
+      <id>jjensen</id>
+      <name>Jeff Jensen</name>
+      <roles>
+        <role>Committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>ltheussl</id>
+      <name>Lukas Theussl</name>
+      <email>ltheussl@apache.org</email>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>markh</id>
+      <name>Mark Hobson</name>
+      <email>markh@apache.org</email>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>0</timezone>
+    </developer>
+    <developer>
+      <id>martinkanters</id>
+      <name>Martin Kanters</name>
+      <email>martinkanters@apache.org</email>
+      <organization>JPoint</organization>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>Europe/Amsterdam</timezone>
+    </developer>
+    <developer>
+      <id>mauro</id>
+      <name>Mauro Talevi</name>
+      <roles>
+        <role>Committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>mbuenger</id>
+      <name>Matthias Bünger</name>
+      <email>mbuenger@apache.org</email>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>Europe/Berlin</timezone>
+    </developer>
+    <developer>
+      <id>mfriedenhagen</id>
+      <name>Mirko Friedenhagen</name>
+      <email>mfriedenhagen@apache.org</email>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>mmoser</id>
+      <name>Manfred Moser</name>
+      <email>mmoser@apache.org</email>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>-8</timezone>
+    </developer>
+    <developer>
+      <id>nicolas</id>
+      <name>Nicolas de Loof</name>
+      <roles>
+        <role>Committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>oching</id>
+      <name>Maria Odea B. Ching</name>
+      <roles>
+        <role>Committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>pgier</id>
+      <name>Paul Gier</name>
+      <email>pgier@apache.org</email>
+      <organization>Red Hat</organization>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>-6</timezone>
+    </developer>
+    <developer>
+      <id>ptahchiev</id>
+      <name>Petar Tahchiev</name>
+      <email>ptahchiev@apache.org</email>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>+2</timezone>
+    </developer>
+    <developer>
+      <id>rafale</id>
+      <name>Raphaël Piéroni</name>
+      <email>rafale@apache.org</email>
+      <organization>Dexem</organization>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>schulte</id>
+      <name>Christian Schulte</name>
+      <email>schulte@apache.org</email>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>Europe/Berlin</timezone>
+    </developer>
+    <developer>
+      <id>snicoll</id>
+      <name>Stephane Nicoll</name>
+      <email>snicoll@apache.org</email>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>simonetripodi</id>
+      <name>Simone Tripodi</name>
+      <email>simonetripodi@apache.org</email>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>sor</id>
+      <name>Christian Stein</name>
+      <email>sor@apache.org</email>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>Europe/Berlin</timezone>
+    </developer>
+    <developer>
+      <id>tchemit</id>
+      <name>Tony Chemit</name>
+      <email>tchemit@apache.org</email>
+      <organization>CodeLutin</organization>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>Europe/Paris</timezone>
+    </developer>
+    <developer>
+      <id>vmassol</id>
+      <name>Vincent Massol</name>
+      <email>vmassol@apache.org</email>
+      <organization>ASF</organization>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>elharo</id>
+      <name>Elliotte Rusty Harold</name>
+      <email>elharo@apache.org</email>
+      <roles>
+        <role>Committer</role>
+      </roles>
+      <timezone>America/New_York</timezone>
+    </developer>
+    <!--End Committers-->
+
+    <developer>
+      <id>agudian</id>
+      <name>Andreas Gudian</name>
+      <email>agudian@apache.org</email>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+      <timezone>Europe/Berlin</timezone>
+    </developer>
+    <developer>
+      <id>aramirez</id>
+      <name>Allan Q. Ramirez</name>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>bayard</id>
+      <name>Henri Yandell</name>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>carlos</id>
+      <name>Carlos Sanchez</name>
+      <email>carlos@apache.org</email>
+      <organization>ASF</organization>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>chrisjs</id>
+      <name>Chris Stevenson</name>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>dblevins</id>
+      <name>David Blevins</name>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>dlr</id>
+      <name>Daniel Rall</name>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>epunzalan</id>
+      <name>Edwin Punzalan</name>
+      <email>epunzalan@apache.org</email>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+      <timezone>-8</timezone>
+    </developer>
+    <developer>
+      <id>felipeal</id>
+      <name>Felipe Leme</name>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>jdcasey</id>
+      <name>John Casey</name>
+      <email>jdcasey@apache.org</email>
+      <organization>ASF</organization>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+      <timezone>-6</timezone>
+    </developer>
+    <developer>
+      <id>jmcconnell</id>
+      <name>Jesse McConnell</name>
+      <email>jmcconnell@apache.org</email>
+      <organization>ASF</organization>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+      <timezone>-6</timezone>
+    </developer>
+    <developer>
+      <id>joakime</id>
+      <name>Joakim Erdfelt</name>
+      <email>joakime@apache.org</email>
+      <organization>ASF</organization>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+      <timezone>-5</timezone>
+    </developer>
+    <developer>
+      <id>jruiz</id>
+      <name>Johnny Ruiz III</name>
+      <email>jruiz@apache.org</email>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>jstrachan</id>
+      <name>James Strachan</name>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>jtolentino</id>
+      <name>Ernesto Tolentino Jr.</name>
+      <email>jtolentino@apache.org</email>
+      <organization>ASF</organization>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+      <timezone>+8</timezone>
+    </developer>
+    <developer>
+      <id>kenney</id>
+      <name>Kenney Westerhof</name>
+      <email>kenney@apache.org</email>
+      <organization>Neonics</organization>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>mperham</id>
+      <name>Mike Perham</name>
+      <email>mperham@gmail.com</email>
+      <organization>IBM</organization>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+      <timezone>-6</timezone>
+    </developer>
+    <developer>
+      <id>ogusakov</id>
+      <name>Oleg Gusakov</name>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>pschneider</id>
+      <name>Patrick Schneider</name>
+      <email>pschneider@gmail.com</email>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+      <timezone>-6</timezone>
+    </developer>
+    <developer>
+      <id>rinku</id>
+      <name>Rahul Thakur</name>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>shinobu</id>
+      <name>Shinobu Kuwai</name>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>smorgrav</id>
+      <name>Torbjorn Eikli Smorgrav</name>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>trygvis</id>
+      <name>Trygve Laugstol</name>
+      <email>trygvis@apache.org</email>
+      <organization>ASF</organization>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>wsmoak</id>
+      <name>Wendy Smoak</name>
+      <email>wsmoak@apache.org</email>
+      <roles>
+        <role>Emeritus</role>
+      </roles>
+      <timezone>-7</timezone>
+    </developer>
+  </developers>
+
+  <mailingLists>
+    <mailingList>
+      <name>Maven User List</name>
+      <subscribe>mailto:users-subscribe@maven.apache.org</subscribe>
+      <unsubscribe>mailto:users-unsubscribe@maven.apache.org</unsubscribe>
+      <post>mailto:users@maven.apache.org</post>
+      <archive>https://lists.apache.org/list.html?users@maven.apache.org</archive>
+      <otherArchives>
+        <otherArchive>https://mail-archives.apache.org/mod_mbox/maven-users</otherArchive>
+        <otherArchive>https://www.mail-archive.com/users@maven.apache.org/</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>Maven Developer List</name>
+      <subscribe>mailto:dev-subscribe@maven.apache.org</subscribe>
+      <unsubscribe>mailto:dev-unsubscribe@maven.apache.org</unsubscribe>
+      <post>mailto:dev@maven.apache.org</post>
+      <archive>https://lists.apache.org/list.html?dev@maven.apache.org</archive>
+      <otherArchives>
+        <otherArchive>https://mail-archives.apache.org/mod_mbox/maven-dev</otherArchive>
+        <otherArchive>https://www.mail-archive.com/dev@maven.apache.org/</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>Maven Issues List</name>
+      <subscribe>mailto:issues-subscribe@maven.apache.org</subscribe>
+      <unsubscribe>mailto:issues-unsubscribe@maven.apache.org</unsubscribe>
+      <archive>https://lists.apache.org/list.html?issues@maven.apache.org</archive>
+      <otherArchives>
+        <otherArchive>https://mail-archives.apache.org/mod_mbox/maven-issues/</otherArchive>
+        <otherArchive>https://www.mail-archive.com/issues@maven.apache.org</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>Maven Commits List</name>
+      <subscribe>mailto:commits-subscribe@maven.apache.org</subscribe>
+      <unsubscribe>mailto:commits-unsubscribe@maven.apache.org</unsubscribe>
+      <archive>https://lists.apache.org/list.html?commits@maven.apache.org</archive>
+      <otherArchives>
+        <otherArchive>https://mail-archives.apache.org/mod_mbox/maven-commits/</otherArchive>
+        <otherArchive>https://www.mail-archive.com/commits@maven.apache.org</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>Maven Announcements List</name>
+      <subscribe>mailto:announce-subscribe@maven.apache.org</subscribe>
+      <unsubscribe>mailto:announce-unsubscribe@maven.apache.org</unsubscribe>
+      <post>announce@maven.apache.org</post>
+      <archive>https://lists.apache.org/list.html?announce@maven.apache.org</archive>
+      <otherArchives>
+        <otherArchive>https://mail-archives.apache.org/mod_mbox/maven-announce/</otherArchive>
+        <otherArchive>https://www.mail-archive.com/announce@maven.apache.org</otherArchive>
+      </otherArchives>
+    </mailingList>
+  </mailingLists>
+
+  <modules>
+    <module>maven-extensions</module>
+    <module>maven-plugins</module>
+    <module>maven-shared-components</module>
+    <module>maven-skins</module>
+    <module>doxia-tools</module>
+    <module>docs</module>
+  </modules>
+
+  <scm>
+    <connection>scm:git:https://gitbox.apache.org/repos/asf/maven-parent.git</connection>
+    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-parent.git</developerConnection>
+    <tag>v44</tag>
+    <url>https://github.com/apache/maven-parent/tree/${project.scm.tag}</url>
+  </scm>
+
+  <ciManagement>
+    <system>Jenkins</system>
+    <url>https://ci-maven.apache.org/job/Maven/job/maven-box/</url>
+    <notifiers>
+      <notifier>
+        <type>mail</type>
+        <configuration>
+          <address>notifications@maven.apache.org</address>
+        </configuration>
+      </notifier>
+    </notifiers>
+  </ciManagement>
+  <distributionManagement>
+    <site>
+      <id>apache.website</id>
+      <url>scm:svn:https://svn.apache.org/repos/asf/maven/website/components/${maven.site.path}</url>
+    </site>
+  </distributionManagement>
+
+  <properties>
+    <javaVersion>8</javaVersion>
+    <maven.compiler.source>${javaVersion}</maven.compiler.source>
+    <maven.compiler.target>${javaVersion}</maven.compiler.target>
+    <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
+    <checkstyle.includeTestSourceDirectory>true</checkstyle.includeTestSourceDirectory>
+    <!-- in order to restore default annotation processing behaviour, please override with empty value -->
+    <maven.compiler.proc>none</maven.compiler.proc>
+    <maven.site.cache>${user.home}/maven-sites</maven.site.cache>
+    <!-- to be overridden -->
+    <maven.site.path>../..</maven.site.path>
+    <maven.site.path.suffix>LATEST</maven.site.path.suffix>
+    <invoker.streamLogsOnFailures>true</invoker.streamLogsOnFailures>
+    <version.sisu-maven-plugin>0.9.0.M3</version.sisu-maven-plugin>
+    <version.plexus-utils>4.0.2</version.plexus-utils>
+    <!-- DO NOT UPGRADE to 4: incompatible with Maven 3 -->
+    <version.plexus-xml>3.0.1</version.plexus-xml>
+    <versions.junit5>5.12.1</versions.junit5>
+    <version.maven-shared-resources>6</version.maven-shared-resources>
+    <project.build.outputTimestamp>2025-03-15T19:28:22Z</project.build.outputTimestamp>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- Plexus Shim -->
+      <dependency>
+        <groupId>org.eclipse.sisu</groupId>
+        <artifactId>org.eclipse.sisu.inject</artifactId>
+        <version>${version.sisu-maven-plugin}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.sisu</groupId>
+        <artifactId>org.eclipse.sisu.plexus</artifactId>
+        <version>${version.sisu-maven-plugin}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-utils</artifactId>
+        <version>${version.plexus-utils}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-xml</artifactId>
+        <version>${version.plexus-xml}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${versions.junit5}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.eclipse.sisu</groupId>
+          <artifactId>sisu-maven-plugin</artifactId>
+          <version>${version.sisu-maven-plugin}</version>
+          <executions>
+            <execution>
+              <id>index-project</id>
+              <goals>
+                <goal>main-index</goal>
+                <goal>test-index</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+            <proc>${maven.compiler.proc}</proc>
+            <showDeprecation>${maven.compiler.showDeprecation}</showDeprecation>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-plugin-plugin</artifactId>
+          <configuration>
+            <extractors>
+              <extractor>java-annotations</extractor>
+            </extractors>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.modello</groupId>
+          <artifactId>modello-maven-plugin</artifactId>
+          <version>2.4.0</version>
+          <configuration>
+            <licenseText>Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.</licenseText>
+          </configuration>
+        </plugin>
+        <!-- site publishing configuration -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <configuration>
+            <!-- for multi-modules site staging -->
+            <topSiteURL>scm:svn:https://svn.apache.org/repos/asf/maven/website/components/${maven.site.path}</topSiteURL>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-scm-publish-plugin</artifactId>
+          <configuration>
+            <checkoutDirectory>${maven.site.cache}/${maven.site.path}</checkoutDirectory>
+            <serverId>apache.releases.https</serverId>
+            <tryUpdate>true</tryUpdate>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <configuration>
+            <configLocation>config/maven_checks_nocodestyle.xml</configLocation>
+            <includeTestSourceDirectory>${checkstyle.includeTestSourceDirectory}</includeTestSourceDirectory>
+            <excludeGeneratedSources>true</excludeGeneratedSources>
+          </configuration>
+          <dependencies>
+            <!-- MCHECKSTYLE-327: the maven_checks.xml was moved to a shared project -->
+            <dependency>
+              <groupId>org.apache.maven.shared</groupId>
+              <artifactId>maven-shared-resources</artifactId>
+              <version>${version.maven-shared-resources}</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jxr-plugin</artifactId>
+          <version>3.6.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-pmd-plugin</artifactId>
+          <version>3.26.0</version>
+          <configuration>
+            <targetJdk>${maven.compiler.target}</targetJdk>
+            <rulesets>
+              <ruleset>rulesets/maven.xml</ruleset>
+            </rulesets>
+            <excludeRoots>
+              <excludeRoot>${project.build.directory}/generated-sources/modello</excludeRoot>
+              <excludeRoot>${project.build.directory}/generated-sources/plugin</excludeRoot>
+            </excludeRoots>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <configuration>
+            <tagNameFormat>v@{project.version}</tagNameFormat>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-toolchains-plugin</artifactId>
+          <version>3.2.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>taglist-maven-plugin</artifactId>
+          <version>3.2.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <configuration>
+            <notimestamp>true</notimestamp>
+            <quiet>true</quiet>
+            <locale>en</locale>
+          </configuration>
+        </plugin>
+        <!--
+          The Maven TLP's sub-projects are likely to fork Maven for tests
+          ensure such forked tests do not get picked up by CI
+        -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <environmentVariables>
+              <JENKINS_MAVEN_AGENT_DISABLED>true</JENKINS_MAVEN_AGENT_DISABLED>
+            </environmentVariables>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <configuration>
+            <environmentVariables>
+              <JENKINS_MAVEN_AGENT_DISABLED>true</JENKINS_MAVEN_AGENT_DISABLED>
+            </environmentVariables>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-invoker-plugin</artifactId>
+          <configuration>
+            <streamLogsOnFailures>${invoker.streamLogsOnFailures}</streamLogsOnFailures>
+            <environmentVariables>
+              <JENKINS_MAVEN_AGENT_DISABLED>true</JENKINS_MAVEN_AGENT_DISABLED>
+            </environmentVariables>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <dependencies>
+            <dependency>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>extra-enforcer-rules</artifactId>
+              <version>1.9.0</version>
+            </dependency>
+          </dependencies>
+          <executions>
+            <execution>
+              <id>enforce-bytecode-version</id>
+              <goals>
+                <goal>enforce</goal>
+              </goals>
+              <configuration>
+                <rules>
+                  <enforceBytecodeVersion>
+                    <maxJdkVersion>${maven.compiler.target}</maxJdkVersion>
+                  </enforceBytecodeVersion>
+                </rules>
+                <fail>true</fail>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>com.diffplug.spotless</groupId>
+          <artifactId>spotless-maven-plugin</artifactId>
+          <version>2.44.3</version>
+          <configuration>
+            <java>
+              <!-- orders of used formatters are important MPOM-376 -->
+              <!-- eg. palantir override importOrder, so should be first -->
+              <palantirJavaFormat />
+              <removeUnusedImports />
+              <importOrder>
+                <file>config/maven-eclipse-importorder.txt</file>
+              </importOrder>
+              <licenseHeader>
+                <file>config/maven-header-plain.txt</file>
+              </licenseHeader>
+            </java>
+            <!-- accept all endings to support validations on top of source archives -->
+            <lineEndings>PRESERVE</lineEndings>
+            <pom>
+              <sortPom>
+                <expandEmptyElements>false</expandEmptyElements>
+                <!-- https://issues.apache.org/jira/browse/MRELEASE-1111 -->
+                <spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
+                <quiet>true</quiet>
+              </sortPom>
+            </pom>
+            <upToDateChecking>
+              <enabled>true</enabled>
+            </upToDateChecking>
+          </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.maven.shared</groupId>
+              <artifactId>maven-shared-resources</artifactId>
+              <version>${version.maven-shared-resources}</version>
+            </dependency>
+          </dependencies>
+          <executions>
+            <execution>
+              <goals>
+                <goal>${spotless.action}</goal>
+              </goals>
+              <phase>process-sources</phase>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>checkstyle-check</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>process-sources</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <configuration>
+          <excludes combine.children="append">
+            <exclude>.java-version</exclude>
+            <!-- Jenkins job with local Maven repository -->
+            <exclude>.repository/**</exclude>
+            <!-- Hudson Maven3 integration log -->
+            <exclude>.maven/spy.log</exclude>
+            <!-- Maven shade plugin -->
+            <exclude>dependency-reduced-pom.xml</exclude>
+            <!-- GitHub Support -->
+            <exclude>.asf.yaml</exclude>
+          </excludes>
+        </configuration>
+        <executions>
+          <execution>
+            <id>rat-check</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <!-- execute after spotless-maven-plugin -->
+            <phase>process-resources</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-descriptor</id>
+            <goals>
+              <goal>attach-descriptor</goal>
+            </goals>
+            <inherited>false</inherited>
+          </execution>
+          <execution>
+            <id>default-site</id>
+            <inherited>false</inherited>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>index</report>
+              <report>summary</report>
+              <report>dependency-info</report>
+              <report>modules</report>
+              <report>team</report>
+              <report>scm</report>
+              <report>issue-management</report>
+              <report>mailing-lists</report>
+              <report>dependency-management</report>
+              <report>dependencies</report>
+              <report>dependency-convergence</report>
+              <report>ci-management</report>
+              <report>plugin-management</report>
+              <report>plugins</report>
+              <report>distribution-management</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+    </plugins>
+  </reporting>
+
+  <profiles>
+    <profile>
+      <id>java11+</id>
+      <activation>
+        <jdk>[11,)</jdk>
+      </activation>
+      <build>
+        <!--- newer versions of plugins requires JDK 11 -->
+        <plugins>
+          <plugin>
+            <groupId>com.diffplug.spotless</groupId>
+            <artifactId>spotless-maven-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>apache-release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.cyclonedx</groupId>
+            <artifactId>cyclonedx-maven-plugin</artifactId>
+            <version>2.9.1</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>makeAggregateBom</goal>
+                </goals>
+                <phase>package</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>format-check</id>
+      <activation>
+        <property>
+          <name>env.CI</name>
+        </property>
+      </activation>
+      <properties>
+        <spotless.action>check</spotless.action>
+      </properties>
+    </profile>
+    <profile>
+      <id>format</id>
+      <activation>
+        <property>
+          <name>!env.CI</name>
+        </property>
+      </activation>
+      <properties>
+        <spotless.action>apply</spotless.action>
+      </properties>
+    </profile>
+    <profile>
+      <!-- "utility" profile allowing all downstream projects to prepare for upcoming bans: drop legacy -->
+      <id>drop-legacy-dependencies</id>
+      <properties>
+        <!-- If you MUST depend on any of these, set this to "false", but we WILL come after you! -->
+        <drop-legacy-dependencies.include>true</drop-legacy-dependencies.include>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-enforcer-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>drop-legacy-dependencies</id>
+                <goals>
+                  <goal>enforce</goal>
+                </goals>
+                <configuration>
+                  <rules>
+                    <bannedDependencies>
+                      <excludes>
+                        <!-- Original Plexus -> org.eclipse.sisu:org.eclipse.sisu.plexus -->
+                        <exclude>org.codehaus.plexus:plexus-container-default</exclude>
+                        <!-- Legacy Shim -> org.eclipse.sisu:org.eclipse.sisu.(inject|plexus) -->
+                        <exclude>org.sonatype.sisu:sisu-inject-bean</exclude>
+                        <exclude>org.sonatype.sisu:sisu-inject-plexus</exclude>
+                        <!-- Resolver: -> org.eclipse.aether OR -> org.apache.maven.resolver instead -->
+                        <exclude>org.sonatype.aether:*</exclude>
+                        <!-- Various: most probably you want org.codehaus.plexus instead -->
+                        <exclude>org.sonatype.plexus:*</exclude>
+                        <!-- Maven: lowest version we support -->
+                        <exclude>org.apache.maven:maven-plugin-api:[,3.2.5)</exclude>
+                        <exclude>org.apache.maven:maven-core:[,3.2.5)</exclude>
+                        <exclude>org.apache.maven:maven-compat:[,3.2.5)</exclude>
+                      </excludes>
+                      <includes>
+                        <!-- This is dead API -->
+                        <include>org.sonatype.plexus:plexus-build-api</include>
+                        <!-- Not including these would make painful lives of anyone depending on maven-core < 3.8.3 -->
+                        <include>org.sonatype.plexus:plexus-sec-dispatcher</include>
+                        <include>org.sonatype.plexus:plexus-cipher</include>
+                      </includes>
+                    </bannedDependencies>
+                  </rules>
+                  <fail>${drop-legacy-dependencies.include}</fail>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>jdk-toolchain</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-toolchains-plugin</artifactId>
+            <configuration>
+              <toolchains>
+                <jdk>
+                  <version>${maven.compiler.target}</version>
+                </jdk>
+              </toolchains>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>toolchain</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>quality-checks</id>
+      <activation>
+        <property>
+          <name>quality-checks</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-pmd-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>cpd-check</id>
+                <goals>
+                  <goal>cpd-check</goal>
+                </goals>
+                <phase>verify</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>reporting</id>
+      <reporting>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-project-info-reports-plugin</artifactId>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-report-plugin</artifactId>
+            <configuration>
+              <alwaysGenerateSurefireReport>false</alwaysGenerateSurefireReport>
+              <alwaysGenerateFailsafeReport>false</alwaysGenerateFailsafeReport>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-checkstyle-plugin</artifactId>
+            <reportSets>
+              <reportSet>
+                <id>default</id>
+                <reports>
+                  <report>checkstyle</report>
+                </reports>
+              </reportSet>
+            </reportSets>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-pmd-plugin</artifactId>
+            <configuration>
+              <skipEmptyReport>true</skipEmptyReport>
+            </configuration>
+            <reportSets>
+              <reportSet>
+                <id>default</id>
+                <reports>
+                  <report>cpd</report>
+                  <report>pmd</report>
+                </reports>
+              </reportSet>
+            </reportSets>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jxr-plugin</artifactId>
+            <reportSets>
+              <reportSet>
+                <id>default</id>
+                <reports>
+                  <report>jxr</report>
+                  <report>test-jxr</report>
+                </reports>
+              </reportSet>
+            </reportSets>
+          </plugin>
+          <!-- Taglist Plugin must be executed after JXR Plugin -->
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>taglist-maven-plugin</artifactId>
+            <configuration>
+              <skipEmptyReport>true</skipEmptyReport>
+              <tagListOptions>
+                <tagClasses>
+                  <tagClass>
+                    <displayName>FIXME Work</displayName>
+                    <tags>
+                      <tag>
+                        <matchString>fixme</matchString>
+                        <matchType>ignoreCase</matchType>
+                      </tag>
+                      <tag>
+                        <matchString>@fixme</matchString>
+                        <matchType>ignoreCase</matchType>
+                      </tag>
+                    </tags>
+                  </tagClass>
+                  <tagClass>
+                    <displayName>Todo Work</displayName>
+                    <tags>
+                      <tag>
+                        <matchString>todo</matchString>
+                        <matchType>ignoreCase</matchType>
+                      </tag>
+                      <tag>
+                        <matchString>@todo</matchString>
+                        <matchType>ignoreCase</matchType>
+                      </tag>
+                    </tags>
+                  </tagClass>
+                  <tagClass>
+                    <displayName>Deprecated Work</displayName>
+                    <tags>
+                      <tag>
+                        <matchString>@deprecated</matchString>
+                        <matchType>ignoreCase</matchType>
+                      </tag>
+                    </tags>
+                  </tagClass>
+                </tagClasses>
+              </tagListOptions>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <reportSets>
+              <reportSet>
+                <id>default</id>
+                <reports>
+                  <report>javadoc</report>
+                </reports>
+              </reportSet>
+            </reportSets>
+          </plugin>
+        </plugins>
+      </reporting>
+    </profile>
+    <profile>
+      <id>use-apache-snapshots</id>
+      <activation>
+        <property>
+          <name>apache.snapshots</name>
+        </property>
+      </activation>
+      <repositories>
+        <repository>
+          <releases>
+            <enabled>false</enabled>
+          </releases>
+          <id>apache.snapshots</id>
+          <name>Apache Snapshot Repository</name>
+          <url>https://repository.apache.org/snapshots</url>
+        </repository>
+      </repositories>
+      <pluginRepositories>
+        <pluginRepository>
+          <releases>
+            <enabled>false</enabled>
+          </releases>
+          <id>apache.snapshots</id>
+          <name>Apache Snapshot Repository</name>
+          <url>https://repository.apache.org/snapshots</url>
+        </pluginRepository>
+      </pluginRepositories>
+    </profile>
+  </profiles>
+</project>

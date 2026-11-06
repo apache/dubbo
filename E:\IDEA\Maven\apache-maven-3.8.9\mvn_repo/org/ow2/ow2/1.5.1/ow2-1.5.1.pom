@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2011-2012 Bull S.A.S.
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.ow2</groupId>
+  <artifactId>ow2</artifactId>
+  <version>1.5.1</version>
+  <packaging>pom</packaging>
+
+  <name>OW2 Consortium</name>
+  <description>
+    The OW2 Consortium is an open source community committed to making available to everyone
+    the best and most reliable middleware technology, including generic enterprise applications
+    and cloud computing technologies. The mission of the OW2 Consortium is to
+      i) develop open source code for middleware, generic enterprise applications and cloud computing and
+      ii) to foster a vibrant community and business ecosystem.
+  </description>
+
+  <!-- License of this POM -->
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <!-- Consortium description -->
+  <organization>
+    <name>OW2 Consortium</name>
+    <url>http://www.ow2.org</url>
+  </organization>
+
+  <!-- TODO Needs to be changed in the future
+       with a reference to a page explaining how to do releases -->
+  <url>http://www.ow2.org</url>
+
+  <!-- Who worked on this project ? -->
+  <developers>
+    <developer>
+      <id>sauthieg</id>
+      <name>Guillaume Sauthier</name>
+      <email>guillaume.sauthier@ow2.org</email>
+    </developer>
+  </developers>
+
+  <properties>
+    <!-- OW2 Logo can be referred using the '${organization.logo}' property -->
+    <organization.logo>
+      http://www.ow2.org/xwiki/bin/download/NewsEvents/MarketingResources/ow2_logo_small_transp.png
+    </organization.logo>
+    <!-- Avoid the annoying warning -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <!-- Use properties so they could be overridden if needed -->
+    <ow2DistMgmtSnapshotsUrl>https://repository.ow2.org/nexus/content/repositories/snapshots</ow2DistMgmtSnapshotsUrl>
+    <ow2DistMgmtReleasesUrl>https://repository.ow2.org/nexus/service/local/staging/deploy/maven2</ow2DistMgmtReleasesUrl>
+    <ow2SourceAssemblyDescriptorRef>source-release</ow2SourceAssemblyDescriptorRef>
+    <ow2ReleaseProfiles>ow2-release</ow2ReleaseProfiles>
+    <maven-source-assemblies.version>1.0.1</maven-source-assemblies.version>
+
+    <!-- Used plugins default versions (make them overridable) -->
+    <maven-assembly-plugin.version>2.3</maven-assembly-plugin.version>
+    <maven-gpg-plugin.version>1.4</maven-gpg-plugin.version>
+    <maven-javadoc-plugin.version>2.8.1</maven-javadoc-plugin.version>
+    <maven-source-plugin.version>2.1.2</maven-source-plugin.version>
+    <maven-release-plugin.version>2.3.2</maven-release-plugin.version>
+  </properties>
+
+  <!-- Source Code Management -->
+  <scm>
+    <connection>scm:git:git@gitlab.ow2.org:ow2-lifecycle/ow2-parent-pom.git</connection>
+    <developerConnection>scm:git:git@gitlab.ow2.org:ow2-lifecycle/ow2-parent-pom.git</developerConnection>
+    <url>https://gitlab.ow2.org/ow2-lifecycle/ow2-parent-pom/</url>
+    <tag>1.5.1</tag>
+  </scm>
+
+  <!-- Distribution -->
+  <distributionManagement>
+
+    <!-- Site omitted - each project must provide their own -->
+
+    <!-- Release Repository (with staging):
+         Refer to this server in your settings.xml using the 'ow2.release' ID -->
+    <repository>
+      <id>ow2.release</id>
+      <name>OW2 Maven Releases Repository</name>
+      <url>${ow2DistMgmtReleasesUrl}</url>
+    </repository>
+
+    <!-- Snapshots Repository:
+         Refer to this server in your settings.xml using the 'ow2.snapshot' ID -->
+    <snapshotRepository>
+      <id>ow2.snapshot</id>
+      <name>OW2 Maven Snapshots Repository</name>
+      <url>${ow2DistMgmtSnapshotsUrl}</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+  <!-- ============================================================================================
+     - TODO Remove the snapshots repositories from the super pom
+     - Explanation:
+     -  http://www.sonatype.com/people/2010/03/why-external-repos-are-being-phased-out-of-central/
+     ============================================================================================ -->
+
+  <!-- Plugin Repositories -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    - Used to search plugins, plugins dependencies and build extensions
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <pluginRepositories>
+
+    <!-- Only list the snapshot repository here since the
+         main repository is synchronized to central -->
+    <pluginRepository>
+      <id>ow2-plugin-snapshot</id>
+      <name>OW2 Snapshot Plugin Repository</name>
+      <url>https://repository.ow2.org/nexus/content/repositories/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+    </pluginRepository>
+
+  </pluginRepositories>
+
+  <!-- Repositories -->
+  <repositories>
+
+    <!-- Only list the snapshot repository here since the
+         main repository is synchronized to central -->
+    <repository>
+      <id>ow2-snapshot</id>
+      <name>OW2 Snapshot Repository</name>
+      <url>https://repository.ow2.org/nexus/content/repositories/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+    </repository>
+  </repositories>
+
+  <build>
+    <plugins>
+
+      <!-- Enforce Maven version usage: excludes some that are known with defects -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>1.0-beta-1</version>
+        <executions>
+          <execution>
+            <id>enforce-maven</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <version>(,2.1.0),(2.1.0,2.2.0),(2.2.0,)</version>
+                  <message>Maven 2.1.0 and 2.2.0 produce incorrect GPG signatures and checksums respectively.</message>
+                </requireMavenVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+
+    <pluginManagement>
+      <plugins>
+        <!-- Default configuration of the maven-release-plugin:
+             * 'release' profile not used
+             * use 'ow2-release' profile
+           -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>${maven-release-plugin.version}</version>
+          <configuration>
+            <mavenExecutorId>forked-path</mavenExecutorId>
+
+            <!-- Do not use the default release profile, use our own instead -->
+            <useReleaseProfile>false</useReleaseProfile>
+            <!-- Our own release profile -->
+            <releaseProfiles>${ow2ReleaseProfiles}</releaseProfiles>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+  </build>
+
+  <profiles>
+    <profile>
+
+      <id>ow2-release</id>
+      <build>
+        <plugins>
+          <!-- - - - - - - - - - - - - - - - - - - - - -->
+          <!--  Attach the sources to the project      -->
+          <!-- - - - - - - - - - - - - - - - - - - - - -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>${maven-source-plugin.version}</version>
+
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+
+          </plugin>
+
+          <!-- - - - - - - - - - - - - - - - - - - - - -->
+          <!--  Attach the javadoc to the project      -->
+          <!-- - - - - - - - - - - - - - - - - - - - - -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>${maven-javadoc-plugin.version}</version>
+            <executions>
+              <execution>
+
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <!-- - - - - - - - - - - - - - - - - - - - - -->
+          <!--  Sign all the artifacts                 -->
+          <!-- - - - - - - - - - - - - - - - - - - - - -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>${maven-gpg-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <!-- - - - - - - - - - - - - - - - - - - - - -->
+          <!--  Generates a source assembly            -->
+          <!-- - - - - - - - - - - - - - - - - - - - - -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>${maven-assembly-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>source-release-assembly</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+                <configuration>
+                  <!-- Do not execute that plugin for all modules -->
+                  <runOnlyAtExecutionRoot>true</runOnlyAtExecutionRoot>
+                  <descriptorRefs>
+                    <descriptorRef>${ow2SourceAssemblyDescriptorRef}</descriptorRef>
+                  </descriptorRefs>
+                  <!-- Use GNU Tar -->
+                  <tarLongFileMode>gnu</tarLongFileMode>
+                </configuration>
+              </execution>
+            </executions>
+            <dependencies>
+              <dependency>
+                <groupId>org.ow2</groupId>
+                <artifactId>maven-source-assemblies</artifactId>
+                <version>${maven-source-assemblies.version}</version>
+              </dependency>
+            </dependencies>
+          </plugin>
+
+        </plugins>
+      </build>
+
+    </profile>
+  </profiles>
+
+
+</project>
+

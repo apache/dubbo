@@ -1,0 +1,632 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright 2015 Google LLC
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" child.project.url.inherit.append.path="false">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.google.code.gson</groupId>
+  <artifactId>gson-parent</artifactId>
+  <version>2.14.0</version>
+  <packaging>pom</packaging>
+
+  <name>Gson Parent</name>
+  <description>Gson JSON library</description>
+  <url>https://github.com/google/gson</url>
+
+  <modules>
+    <module>gson</module>
+    <module>test-jpms</module>
+    <module>test-graal-native-image</module>
+    <module>test-shrinker</module>
+    <module>extras</module>
+    <module>metrics</module>
+    <module>proto</module>
+  </modules>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>8</maven.compiler.release>
+    <maven.compiler.testRelease>11</maven.compiler.testRelease>
+
+    <!-- Make the build reproducible, see https://maven.apache.org/guides/mini/guide-reproducible-builds.html -->
+    <!-- Automatically updated by Maven Release Plugin -->
+    <project.build.outputTimestamp>2026-04-23T18:59:45Z</project.build.outputTimestamp>
+
+    <!-- These properties are to be overwritten by the Maven modules -->
+    <!-- Whether this module is an integration test module -->
+    <gson.isTestModule>false</gson.isTestModule>
+  </properties>
+
+  <!-- These attributes specify that the URLs should be inherited by the modules as is, to avoid constructing
+    invalid URLs, see also https://maven.apache.org/ref/3.9.1/maven-model-builder/index.html#inheritance-assembly -->
+  <scm child.scm.url.inherit.append.path="false" child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false">
+    <url>https://github.com/google/gson/</url>
+    <connection>scm:git:https://github.com/google/gson.git</connection>
+    <developerConnection>scm:git:git@github.com:google/gson.git</developerConnection>
+    <tag>gson-parent-2.14.0</tag>
+  </scm>
+
+  <developers>
+    <developer>
+      <id>google</id>
+      <organization>Google</organization>
+      <organizationUrl>https://www.google.com</organizationUrl>
+    </developer>
+  </developers>
+
+  <issueManagement>
+    <system>GitHub Issues</system>
+    <url>https://github.com/google/gson/issues</url>
+  </issueManagement>
+
+  <licenses>
+    <license>
+      <name>Apache-2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.13.2</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.google.truth</groupId>
+        <artifactId>truth</artifactId>
+        <version>1.4.5</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>3.6.2</version>
+        <executions>
+          <execution>
+            <id>enforce-versions</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <!-- Usage of `.mvn/jvm.config` for Error Prone requires at least Maven 3.3.1 -->
+                  <version>[3.3.1,)</version>
+                </requireMavenVersion>
+
+                <!-- Enforce that correct JDK version is used to avoid cryptic build errors -->
+                <requireJavaVersion>
+                  <!-- Some plugins and test dependencies require at least JDK 17 -->
+                  <!-- Also disallow too new JDK versions; they might introduce new lints, drop support
+                    for older compiler Java target versions or cause issues for some Maven plugins.
+                    Failing fast for such versions is better than failing with a confusing error during build. -->
+                  <version>[17,22)</version>
+                </requireJavaVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Spotless plugin: keeps the code formatted following the google-java-styleguide -->
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <version>3.3.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+        <!-- Note: The configuration here is not specific to the `<execution>` above to allow users to run
+          `mvn spotless:apply` from the command line, using the same configuration -->
+        <configuration>
+          <!-- Perform some basic formatting for non-Java code -->
+          <formats>
+            <format>
+              <includes>
+                <include>*.md</include>
+                <include>*.xml</include>
+                <include>.github/**/*.yml</include>
+                <include>.gitignore</include>
+              </includes>
+              <!-- For Markdown files removing trailing whitespace causes issues for hard line breaks,
+                which use two trailing spaces. However, the trailing spaces are difficult to notice anyway;
+                prefer a trailing `\` instead of two spaces. -->
+              <trimTrailingWhitespace />
+              <endWithNewline />
+              <indent>
+                <spaces>true</spaces>
+                <!-- This seems to mostly (or only?) affect the suggested fix in case code contains tabs -->
+                <spacesPerTab>2</spacesPerTab>
+              </indent>
+            </format>
+          </formats>
+
+          <java>
+            <googleJavaFormat>
+              <style>GOOGLE</style>
+              <reflowLongStrings>true</reflowLongStrings>
+              <reorderImports>true</reorderImports>
+              <formatJavadoc>true</formatJavadoc>
+            </googleJavaFormat>
+            <formatAnnotations />     <!-- Puts type annotations immediately before types. -->
+          </java>
+        </configuration>
+      </plugin>
+
+      <!-- Attaches a `.buildinfo` file which contains information for reproducing the build,
+        such as OS, JDK version, ...
+        Since this is a multi-module Maven project, only one aggregated file will be created for
+        the last module, see the note on https://maven.apache.org/plugins/maven-artifact-plugin/usage.html#recording-buildinfo-file -->
+      <!-- The other goals of this plugin are run by the GitHub workflow to verify that
+        the build is reproducible (see `artifact:...` usage in the workflow) -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-artifact-plugin</artifactId>
+        <version>3.6.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>buildinfo</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Publish gson-parent to Maven Central on `deploy` (common configuration is defined in `pluginManagement`) -->
+      <plugin>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+        <!-- Set `inherited=false` to only apply this execution to gson-parent;
+          if modules should be deployed, it has to be configured explicitly for them -->
+        <inherited>false</inherited>
+      </plugin>
+    </plugins>
+
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.15.0</version>
+          <configuration>
+            <showWarnings>true</showWarnings>
+            <showDeprecation>true</showDeprecation>
+            <failOnWarning>true</failOnWarning>
+            <compilerArgs>
+              <!-- Args related to Error Prone, see: https://errorprone.info/docs/installation#maven -->
+              <arg>-XDcompilePolicy=simple</arg>
+              <arg>-XDaddTypeAnnotationsToSymbol=true</arg>
+              <arg>--should-stop=ifError=FLOW</arg>
+              <arg>-Xplugin:ErrorProne
+                -XepExcludedPaths:.*/generated-test-sources/protobuf/.*
+                -Xep:NotJavadoc:OFF <!-- Triggered by local class. -->
+                <!-- Increase severity from 'suggestion' to 'warning' so that the user has to fix
+                  found issues, and they are not overlooked
+                  TODO: Does not work properly yet, see https://github.com/google/error-prone/issues/4206,
+                        so for now have to manually set them to `:WARN` -->
+                -XepAllSuggestionsAsWarnings
+                <!-- Enable some experimental checks which are disabled by default
+                  In case they cause issues or are unreliable turn them off by adding `:OFF`,
+                  and add a comment mentioning why they were disabled -->
+                -Xep:AnnotationPosition <!-- required by style guide -->
+                -Xep:AssertFalse
+                -Xep:ClassName <!-- required by style guide -->
+                -Xep:ClassNamedLikeTypeParameter:WARN
+                -Xep:ComparisonContractViolated
+                -Xep:ConstantField:WARN <!-- required by style guide -->
+                -Xep:DepAnn
+                -Xep:DifferentNameButSame
+                -Xep:EmptyIf
+                -Xep:EqualsBrokenForNull
+                -Xep:ForEachIterable:WARN
+                -Xep:FunctionalInterfaceClash
+                -Xep:InitializeInline
+                -Xep:InterfaceWithOnlyStatics
+                -Xep:LambdaFunctionalInterface:WARN <!-- only relevant for test code at the moment, which uses Java 11 -->
+                -Xep:LongLiteralLowerCaseSuffix <!-- required by style guide -->
+                -Xep:MemberName <!-- required by style guide -->
+                -Xep:MissingBraces:WARN
+                -Xep:MissingDefault <!-- required by style guide -->
+                -Xep:MixedArrayDimensions:WARN <!-- required by style guide -->
+                -Xep:MultiVariableDeclaration:WARN <!-- required by style guide -->
+                -Xep:MultipleTopLevelClasses:WARN <!-- required by style guide -->
+                -Xep:NonCanonicalStaticMemberImport
+                -Xep:NonFinalStaticField
+                -Xep:PackageLocation:WARN
+                -Xep:PatternMatchingInstanceof:OFF <!-- disabled: requires Java 16 -->
+                -Xep:PrimitiveArrayPassedToVarargsMethod
+                -Xep:PrivateConstructorForUtilityClass:WARN
+                -Xep:RemoveUnusedImports:WARN
+                -Xep:StatementSwitchToExpressionSwitch:OFF <!-- disabled: requires Java 14 -->
+                -Xep:StaticQualifiedUsingExpression <!-- required by style guide -->
+                -Xep:StringConcatToTextBlock:OFF <!-- disabled: requires Java 15 -->
+                -Xep:SwitchDefault:WARN
+                -Xep:SystemExitOutsideMain
+                -Xep:SystemOut
+                -Xep:TestExceptionChecker
+                -Xep:ThrowSpecificExceptions:OFF <!-- disabled: Gson has no proper exception hierarchy yet, see https://github.com/google/gson/issues/2359 -->
+                -Xep:TryFailRefactoring:OFF <!-- disabled: there are too many tests which violate this -->
+                -Xep:TypeParameterNaming:WARN <!-- required by style guide -->
+                -Xep:UnescapedEntity
+                -Xep:UngroupedOverloads:WARN <!-- required by style guide -->
+                -Xep:UnnecessarilyFullyQualified
+                -Xep:UnnecessarilyUsedValue
+                -Xep:UnnecessaryBoxedVariable:WARN
+                -Xep:UnnecessaryDefaultInEnumSwitch
+                -Xep:UnnecessaryFinal
+                -Xep:UnnecessaryStaticImport:WARN <!-- required by style guide -->
+                -Xep:UnusedException
+                -Xep:UrlInSee
+                -Xep:UseCorrectAssertInTests
+                -Xep:UseEnumSwitch:WARN
+                -Xep:WildcardImport:WARN <!-- required by style guide -->
+                -Xep:YodaCondition
+              </arg>
+              <!-- Enable all warnings, except for ones which cause issues when building with newer JDKs, see also
+                https://docs.oracle.com/en/java/javase/11/tools/javac.html -->
+              <compilerArg>-Xlint:all,-options</compilerArg>
+            </compilerArgs>
+            <annotationProcessorPaths>
+              <path>
+                <groupId>com.google.errorprone</groupId>
+                <artifactId>error_prone_core</artifactId>
+                <version>2.48.0</version>
+              </path>
+            </annotationProcessorPaths>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>3.12.0</version>
+          <configuration>
+            <skip>${gson.isTestModule}</skip>
+
+            <!-- Specify newer JDK as target to allow linking to newer Java API, and to generate
+              module overview in Javadoc for Gson's module descriptor -->
+            <release>11</release>
+            <!-- Exclude `missing` group because some tags have been omitted when they are redundant -->
+            <doclint>all,-missing</doclint>
+            <!-- Link against newer Java API Javadoc because most users likely
+              use a newer Java version than the one used for building this project -->
+            <detectJavaApiLink>false</detectJavaApiLink>
+            <links>
+              <link>https://docs.oracle.com/en/java/javase/11/docs/api/</link>
+              <link>https://errorprone.info/api/latest/</link>
+            </links>
+            <!-- Disable detection of offline links between Maven modules:
+              (1) Only `gson` module is published, so for other modules Javadoc links don't
+              matter much at the moment; (2) The derived URL for the modules is based on
+              the project URL (= Gson GitHub repo) which is incorrect because it is not
+              hosting the Javadoc (3) It might fail due to https://bugs.openjdk.java.net/browse/JDK-8212233 -->
+            <detectOfflineLinks>false</detectOfflineLinks>
+            <!-- Only show warnings and errors -->
+            <quiet>true</quiet>
+            <failOnWarnings>true</failOnWarnings>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.5.5</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>3.5.5</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.5.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>3.1.4</version>
+          <configuration>
+            <skip>${gson.isTestModule}</skip>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>3.4.0</version>
+          <configuration>
+            <skipSource>${gson.isTestModule}</skipSource>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>3.2.8</version>
+          <configuration>
+            <skip>${gson.isTestModule}</skip>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>3.1.4</version>
+          <configuration>
+            <!-- skip because central-publishing-maven-plugin is used for deployment -->
+            <skip>true</skip>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.sonatype.central</groupId>
+          <artifactId>central-publishing-maven-plugin</artifactId>
+          <version>0.10.0</version>
+          <extensions>true</extensions>
+          <configuration>
+            <publishingServerId>central</publishingServerId>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>3.3.1</version>
+          <configuration>
+            <autoVersionSubmodules>true</autoVersionSubmodules>
+            <!-- Disable Maven Super POM release profile and instead use own one -->
+            <useReleaseProfile>false</useReleaseProfile>
+            <releaseProfiles>release</releaseProfiles>
+            <!-- Run custom goals to replace version references, see plugin configuration below -->
+            <!-- Also run `verify` to make sure tests still pass with new version number;
+              also seems to be necessary because without `package`, goals fail for modules depending
+              on each other; possibly same issue as https://issues.apache.org/jira/browse/MRELEASE-271 -->
+            <preparationGoals>
+              clean verify
+              antrun:run@replace-version-placeholders
+              antrun:run@replace-old-version-references
+              antrun:run@git-add-changed
+            </preparationGoals>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>3.2.0</version>
+          <executions>
+            <!-- Replaces version placeholders with the current version; this is mainly useful for
+              Javadoc where this allows writing `@since $next-version$` -->
+            <execution>
+              <id>replace-version-placeholders</id>
+              <goals>
+                <goal>run</goal>
+              </goals>
+              <configuration>
+                <target>
+                  <replace token="$next-version$" value="${project.version}" encoding="${project.build.sourceEncoding}">
+                    <!-- erroronmissingdir=false for gson-parent which does not have source directory -->
+                    <fileset dir="${project.build.sourceDirectory}" includes="**" erroronmissingdir="false" />
+                  </replace>
+                </target>
+              </configuration>
+            </execution>
+            <!-- Replaces references to the old version in the documentation -->
+            <execution>
+              <id>replace-old-version-references</id>
+              <goals>
+                <goal>run</goal>
+              </goals>
+              <configuration>
+                <target>
+                  <!-- Replace Maven and Gradle version references; uses regex lookbehind and lookahead -->
+                  <replaceregexp match="(?&lt;=&lt;version&gt;).*(?=&lt;/version&gt;)|(?&lt;='com\.google\.code\.gson:gson:).*(?=')" flags="g" replace="${project.version}" encoding="${project.build.sourceEncoding}">
+                    <fileset dir="${project.basedir}">
+                      <include name="README.md" />
+                      <include name="UserGuide.md" />
+                    </fileset>
+                  </replaceregexp>
+                </target>
+              </configuration>
+              <!-- Only has to be executed for parent project; don't inherit this to modules -->
+              <!-- This might be a bit hacky; execution with this ID seems to be missing for modules and Maven just executes default
+                configuration which does not have any targets configured. (not sure if this behavior is guaranteed) -->
+              <inherited>false</inherited>
+            </execution>
+            <!-- Adds changed files to the Git index; workaround because Maven Release Plugin does not support committing
+              additional files yet (https://issues.apache.org/jira/browse/MRELEASE-798), and for workarounds with
+              Maven SCM Plugin it is apparently necessary to know modified files in advance -->
+            <!-- Maven Release Plugin then just happens to include these changed files in its Git commit;
+              not sure if this behavior is guaranteed or if this relies on implementation details -->
+            <execution>
+              <id>git-add-changed</id>
+              <goals>
+                <goal>run</goal>
+              </goals>
+              <configuration>
+                <target>
+                  <exec executable="git" dir="${project.basedir}" failonerror="true">
+                    <arg value="add" />
+                    <!-- Don't add (unrelated) not yet tracked files -->
+                    <arg value="--update" />
+                    <arg value="." />
+                  </exec>
+                </target>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+
+        <!-- Plugin for checking source and binary compatibility; used by GitHub workflow -->
+        <plugin>
+          <groupId>com.github.siom79.japicmp</groupId>
+          <artifactId>japicmp-maven-plugin</artifactId>
+          <version>0.25.4</version>
+          <configuration>
+            <skip>${gson.isTestModule}</skip>
+
+            <oldVersion>
+              <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>${project.artifactId}</artifactId>
+                <!-- This is set by the GitHub workflow -->
+                <version>0.0.0-JAPICMP-OLD</version>
+              </dependency>
+            </oldVersion>
+
+            <!-- 'new version' is automatically the version currently being build -->
+
+            <parameter>
+              <breakBuildOnSourceIncompatibleModifications>true</breakBuildOnSourceIncompatibleModifications>
+              <breakBuildOnBinaryIncompatibleModifications>true</breakBuildOnBinaryIncompatibleModifications>
+              <excludes>
+                <exclude>com.google.gson.internal</exclude>
+              </excludes>
+              <onlyModified>true</onlyModified>
+              <skipXmlReport>true</skipXmlReport>
+              <reportOnlyFilename>true</reportOnlyFilename>
+            </parameter>
+          </configuration>
+        </plugin>
+
+        <!-- Plugin for checking compatibility with Android API -->
+        <!-- Note: For now this is not part of a normal Maven build but instead executed only by a
+          GitHub workflow because the Animal Sniffer signature files use Java Serialization, so they
+          could in theory contain malicious data (in case we don't fully trust the author) -->
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>animal-sniffer-maven-plugin</artifactId>
+          <version>1.27</version>
+          <executions>
+            <execution>
+              <id>check-android-compatibility</id>
+              <goals>
+                <goal>check</goal>
+              </goals>
+              <configuration>
+                <skip>${gson.isTestModule}</skip>
+                <signature>
+                  <!-- Google's internal use currently requires API Level 23 without desugaring. -->
+                  <groupId>net.sf.androidscents.signature</groupId>
+                  <artifactId>android-api-level-23</artifactId>
+                  <version>6.0_r3</version>
+                </signature>
+                <annotations>
+                  <annotation>com.google.gson.internal.bind.IgnoreJRERequirement</annotation>
+                </annotations>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <profiles>
+    <!-- Disable Spotless before Java 17 -->
+    <profile>
+      <id>disable-spotless</id>
+      <activation>
+        <jdk>[,17)</jdk>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.diffplug.spotless</groupId>
+            <artifactId>spotless-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>default</id>
+                <phase>none</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <!-- Disable Error Prone before Java 21 -->
+    <profile>
+      <id>disable-error-prone</id>
+      <activation>
+        <jdk>[,21)</jdk>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <compilerArgs combine.self="override">
+                <compilerArg>-Xlint:all,-options</compilerArg>
+              </compilerArgs>
+              <annotationProcessorPaths combine.self="override" />
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- Profile defining additional plugins to be executed for release -->
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

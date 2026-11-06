@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.codehaus.plexus</groupId>
+    <artifactId>plexus-compiler</artifactId>
+    <version>2.16.2</version>
+  </parent>
+
+  <artifactId>plexus-compilers</artifactId>
+  <packaging>pom</packaging>
+
+  <name>Plexus Compilers</name>
+
+  <modules>
+    <module>plexus-compiler-aspectj</module>
+    <module>plexus-compiler-csharp</module>
+    <module>plexus-compiler-eclipse</module>
+    <module>plexus-compiler-javac</module>
+    <module>plexus-compiler-javac-errorprone</module>
+  </modules>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-compiler-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-compiler-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- this is used for populating a test classpath in AbstractCompiler and is required in the local repository -->
+    <dependency>
+      <groupId>commons-lang</groupId>
+      <artifactId>commons-lang</artifactId>
+      <version>2.0</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+</project>
