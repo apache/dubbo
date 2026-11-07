@@ -66,7 +66,13 @@ public class CachedThreadPool implements ThreadPool {
             blockingQueue = new LinkedBlockingQueue<>(queues);
         }
 
-        return new ThreadPoolExecutor(
+        // The cached thread pool is self-tuned: idle threads are supposed to be recycled
+        // after the keep-alive time (see this class' javadoc and Executors#newCachedThreadPool).
+        // A core thread is not timed out by default in ThreadPoolExecutor, so when corethreads
+        // is configured to a positive value those core threads would stay forever. Allow core
+        // threads to time out as well, otherwise idle threads can never be fully recycled.
+        // See https://github.com/apache/dubbo/issues/8342
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(
                 cores,
                 threads,
                 alive,
@@ -74,5 +80,7 @@ public class CachedThreadPool implements ThreadPool {
                 blockingQueue,
                 new NamedInternalThreadFactory(name, true),
                 new AbortPolicyWithReport(name, url));
+        executor.allowCoreThreadTimeOut(true);
+        return executor;
     }
 }
