@@ -220,9 +220,8 @@ class ZookeeperServiceDiscoveryTest {
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         registryUrl.setScopeModel(applicationModel);
 
-        Assertions.assertDoesNotThrow(() -> {
-            new ZookeeperServiceDiscovery(applicationModel, registryUrl);
-        });
+        Assertions.assertThrowsExactly(
+                IllegalStateException.class, () -> new ZookeeperServiceDiscovery(applicationModel, registryUrl));
     }
 
     @AfterAll
