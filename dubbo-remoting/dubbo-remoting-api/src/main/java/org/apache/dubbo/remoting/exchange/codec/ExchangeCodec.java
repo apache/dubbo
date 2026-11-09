@@ -87,6 +87,13 @@ public class ExchangeCodec extends TelnetCodec {
     @Override
     public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
         int readable = buffer.readableBytes();
+        if (readable > 0
+                && isServerSide(channel)
+                && (readable < 2
+                        || buffer.getByte(buffer.readerIndex()) != MAGIC_HIGH
+                        || buffer.getByte(buffer.readerIndex() + 1) != MAGIC_LOW)) {
+            checkPayload(channel, readable);
+        }
         byte[] header = new byte[Math.min(readable, HEADER_LENGTH)];
         buffer.readBytes(header);
         return decode(channel, buffer, readable, header);
