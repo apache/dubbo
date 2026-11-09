@@ -58,7 +58,13 @@ public class NettyClient extends AbstractClient {
 
     private volatile Channel channel; // volatile, please copy reference to use
 
-    public NettyClient(final URL url, final ChannelHandler handler) throws RemotingException {
+    public static NettyClient create(final URL url, final ChannelHandler handler) throws RemotingException {
+        NettyClient client = new NettyClient(url, handler);
+        client.init();
+        return client;
+    }
+
+    private NettyClient(final URL url, final ChannelHandler handler) throws RemotingException {
         super(url, wrapChannelHandler(url, handler));
     }
 

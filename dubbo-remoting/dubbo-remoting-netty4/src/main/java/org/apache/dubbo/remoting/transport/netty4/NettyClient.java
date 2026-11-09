@@ -81,14 +81,13 @@ public class NettyClient extends AbstractClient {
      */
     private volatile Channel channel;
 
-    /**
-     * The constructor of NettyClient.
-     * It wil init and start netty.
-     */
-    public NettyClient(final URL url, final ChannelHandler handler) throws RemotingException {
-        // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in
-        // CommonConstants.
-        // the handler will be wrapped: MultiMessageHandler->HeartbeatHandler->handler
+    public static NettyClient create(final URL url, final ChannelHandler handler) throws RemotingException {
+        NettyClient client = new NettyClient(url, handler);
+        client.init();
+        return client;
+    }
+
+    private NettyClient(final URL url, final ChannelHandler handler) throws RemotingException {
         super(url, wrapChannelHandler(url, handler));
     }
 

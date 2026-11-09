@@ -58,34 +58,41 @@ public class MultipleRegistry extends AbstractRegistry {
     protected List<String> effectServiceRegistryURLs;
     protected List<String> effectReferenceRegistryURLs;
 
-    public MultipleRegistry(URL url) {
-        this(url, true, true);
+    public static MultipleRegistry create(URL url) {
+        return create(url, true, true);
+    }
+
+    public static MultipleRegistry create(URL url, boolean initServiceRegistry, boolean initReferenceRegistry) {
+        MultipleRegistry multipleRegistry = new MultipleRegistry(url);
+
+        multipleRegistry.init();
+        multipleRegistry.checkApplicationName(multipleRegistry.applicationName);
+
+        Map<String, Registry> registryMap = new HashMap<>();
+        if (initServiceRegistry) {
+            multipleRegistry.initServiceRegistry(url, registryMap);
+        }
+        if (initReferenceRegistry) {
+            multipleRegistry.initReferenceRegistry(url, registryMap);
+        }
+
         boolean defaultRegistry = url.getParameter(CommonConstants.DEFAULT_KEY, true);
-        if (defaultRegistry && effectServiceRegistryURLs.isEmpty() && effectReferenceRegistryURLs.isEmpty()) {
+        if (defaultRegistry
+                && multipleRegistry.effectServiceRegistryURLs.isEmpty()
+                && multipleRegistry.effectReferenceRegistryURLs.isEmpty()) {
             throw new IllegalArgumentException("Illegal registry url. You need to configure parameter "
                     + REGISTRY_FOR_SERVICE + " or " + REGISTRY_FOR_REFERENCE);
         }
+        return multipleRegistry;
     }
 
-    public MultipleRegistry(URL url, boolean initServiceRegistry, boolean initReferenceRegistry) {
+    private MultipleRegistry(URL url) {
         super(url);
         this.registryUrl = url;
         this.applicationName = url.getApplication();
         this.registryFactory = url.getOrDefaultApplicationModel()
                 .getExtensionLoader(RegistryFactory.class)
                 .getAdaptiveExtension();
-
-        init();
-        checkApplicationName(this.applicationName);
-        // This urls contain parameter, and it does not inherit from the parameter of url in MultipleRegistry
-
-        Map<String, Registry> registryMap = new HashMap<>();
-        if (initServiceRegistry) {
-            initServiceRegistry(url, registryMap);
-        }
-        if (initReferenceRegistry) {
-            initReferenceRegistry(url, registryMap);
-        }
     }
 
     protected void initServiceRegistry(URL url, Map<String, Registry> registryMap) {
