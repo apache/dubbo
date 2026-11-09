@@ -565,14 +565,24 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("endStream: {} DATA: {}", endStream, data.toString(StandardCharsets.UTF_8));
             }
+            if (isCallbackExecutorShutdown()) {
+                // The callback executor (e.g. ThreadlessExecutor) has been shut down, e.g.
+                // after the request timed out in {@link AsyncRpcResult}. SerializingExecutor would
+                // silently drop the submitted task so doOnData would never run; release the
+                // ByteBuf now to avoid an off-heap memory leak.
+                ReferenceCountUtil.release(data);
+                LOGGER.warn(
+                        PROTOCOL_FAILED_RESPONSE, "", "", "Drop late response data: callback executor is shut down");
+                return;
+            }
             try {
                 executor.execute(() -> doOnData(data, endStream));
             } catch (Throwable t) {
-                // Tasks will be rejected when the thread pool is closed or full,
-                // ByteBuf needs to be released to avoid out of heap memory leakage.
-                // For example, ThreadLessExecutor will be shutdown when request timeout {@link AsyncRpcResult}
+                // The task can be rejected when the thread pool is closed or full (e.g. the
+                // ThreadlessExecutor is shut down after a request timeout {@link AsyncRpcResult}).
+                // Release the ByteBuf to avoid a memory leak.
                 ReferenceCountUtil.release(data);
-                LOGGER.error(PROTOCOL_FAILED_RESPONSE, "", "", "submit onData task failed", t);
+                LOGGER.warn(PROTOCOL_FAILED_RESPONSE, "", "", "Drop response data, executor rejected the task", t);
             }
         }
 

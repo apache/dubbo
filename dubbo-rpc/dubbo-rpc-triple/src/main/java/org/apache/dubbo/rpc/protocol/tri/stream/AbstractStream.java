@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.concurrent.Executor;
@@ -30,15 +31,36 @@ public abstract class AbstractStream implements Stream {
     protected Executor executor;
     protected final FrameworkModel frameworkModel;
 
+    /**
+     * The executor passed by the caller, kept for shutdown-state checks. It is wrapped by
+     * {@link SerializingExecutor} exposed via {@link #executor}.
+     */
+    private Executor callbackExecutor;
+
     private static final boolean HAS_PROTOBUF = ClassUtils.hasProtobuf();
 
     public AbstractStream(Executor executor, FrameworkModel frameworkModel) {
+        this.callbackExecutor = executor;
         this.executor = new SerializingExecutor(executor);
         this.frameworkModel = frameworkModel;
     }
 
     public void setExecutor(Executor executor) {
+        this.callbackExecutor = executor;
         this.executor = new SerializingExecutor(executor);
+    }
+
+    /**
+     * Whether the callback executor has been shut down (e.g. the {@code ThreadlessExecutor}
+     * of a sync call is shut down after a request timeout). {@link SerializingExecutor}
+     * silently drops tasks submitted to a shut-down executor, so callers must release any
+     * task-owned resources (e.g. a ByteBuf) when this returns {@code true}.
+     *
+     * @return true if the callback executor is an {@link java.util.concurrent.ExecutorService}
+     *         that has been shut down
+     */
+    protected boolean isCallbackExecutorShutdown() {
+        return callbackExecutor != null && ExecutorUtil.isShutdown(callbackExecutor);
     }
 
     public static boolean getGrpcStatusDetailEnabled() {
