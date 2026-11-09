@@ -16,12 +16,14 @@
  */
 package org.apache.dubbo.rpc.cluster.router.state;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -635,6 +637,150 @@ class BitListTest {
             countDownLatch2.await();
 
             Assertions.assertDoesNotThrow(() -> ref.get().iterator().hasNext());
+        }
+    }
+
+    @Test
+    void testSubListAfterRemove() {
+        // B and D have been removed (e.g. filtered out by a router), so the list is [A, C, E] + [F, G]
+        BitList<String> bitList = new BitList<>(Arrays.asList("A", "B", "C", "D", "E"));
+        bitList.remove("B");
+        bitList.remove("D");
+        bitList.add("F");
+        bitList.add("G");
+        List<String> expected = Arrays.asList("A", "C", "E", "F", "G");
+        Assertions.assertEquals(expected, bitList);
+
+        for (int from = 0; from <= expected.size(); from++) {
+            for (int to = from; to <= expected.size(); to++) {
+                BitList<String> subList = bitList.subList(from, to);
+                Assertions.assertEquals(expected.subList(from, to), subList, "subList(" + from + ", " + to + ")");
+                Assertions.assertEquals(to - from, subList.size());
+            }
+        }
+
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> bitList.subList(-1, 2));
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> bitList.subList(0, 6));
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> bitList.subList(3, 2));
+    }
+
+    @Test
+    void testCopyConstructorFromBitList() {
+        BitList<String> bitList = new BitList<>(Arrays.asList("A", "B", "C", "D", "E"));
+        bitList.remove("A");
+        bitList.remove("C");
+        bitList.add("F");
+
+        BitList<String> copy = new BitList<>(bitList);
+        Assertions.assertEquals(Arrays.asList("B", "D", "E", "F"), copy);
+        Assertions.assertEquals(bitList, copy);
+
+        // the copy is independent of the source
+        copy.add("G");
+        copy.remove("F");
+        copy.remove("B");
+        Assertions.assertEquals(Arrays.asList("B", "D", "E", "F"), bitList);
+        Assertions.assertEquals(Arrays.asList("D", "E", "G"), copy);
+
+        BitList<String> emptyCopy = new BitList<>(bitList, true);
+        Assertions.assertTrue(emptyCopy.isEmpty());
+        Assertions.assertSame(bitList.getOriginList(), emptyCopy.getOriginList());
+    }
+
+    @Test
+    void testListIteratorRemove() {
+        BitList<String> bitList = new BitList<>(Arrays.asList("A", "B", "C", "D"));
+        bitList.remove("B");
+        bitList.add("E");
+        List<String> expected = new LinkedList<>(Arrays.asList("A", "C", "D", "E"));
+        Assertions.assertEquals(expected, bitList);
+
+        ListIterator<String> iterator = bitList.listIterator();
+        ListIterator<String> expectedIterator = expected.listIterator();
+
+        Assertions.assertEquals(expectedIterator.next(), iterator.next());
+        iterator.remove();
+        expectedIterator.remove();
+        // a second remove() without next()/previous() must not remove another element
+        Assertions.assertThrows(IllegalStateException.class, iterator::remove);
+        Assertions.assertEquals(expected, bitList);
+        // the removed element must not be returned by previous()
+        Assertions.assertEquals(expectedIterator.hasPrevious(), iterator.hasPrevious());
+        Assertions.assertEquals(expectedIterator.nextIndex(), iterator.nextIndex());
+        Assertions.assertEquals(expectedIterator.previousIndex(), iterator.previousIndex());
+
+        Assertions.assertEquals(expectedIterator.next(), iterator.next());
+        Assertions.assertEquals(expectedIterator.next(), iterator.next());
+        Assertions.assertEquals(expectedIterator.previous(), iterator.previous());
+        iterator.remove();
+        expectedIterator.remove();
+        Assertions.assertEquals(expected, bitList);
+        Assertions.assertEquals(expectedIterator.nextIndex(), iterator.nextIndex());
+        Assertions.assertEquals(expectedIterator.previous(), iterator.previous());
+
+        while (expectedIterator.hasNext()) {
+            Assertions.assertTrue(iterator.hasNext());
+            Assertions.assertEquals(expectedIterator.nextIndex(), iterator.nextIndex());
+            Assertions.assertEquals(expectedIterator.next(), iterator.next());
+        }
+        Assertions.assertFalse(iterator.hasNext());
+        // at the end of the list nextIndex() is the list size
+        Assertions.assertEquals(expected.size(), iterator.nextIndex());
+        Assertions.assertEquals(expected.size() - 1, iterator.previousIndex());
+    }
+
+    @Test
+    void testListIteratorMatchesArrayList() {
+        Random random = new Random(0);
+        for (int round = 0; round < 2000; round++) {
+            List<String> origin = new ArrayList<>();
+            int originSize = random.nextInt(6);
+            for (int i = 0; i < originSize; i++) {
+                origin.add("o" + i);
+            }
+            BitList<String> bitList = new BitList<>(origin);
+            for (int i = 0; i < originSize; i++) {
+                if (random.nextBoolean()) {
+                    bitList.remove("o" + i);
+                }
+            }
+            int tailSize = random.nextInt(3);
+            for (int i = 0; i < tailSize; i++) {
+                bitList.add("t" + i);
+            }
+            List<String> expected = new ArrayList<>(bitList);
+
+            int start = random.nextInt(expected.size() + 1);
+            ListIterator<String> iterator = bitList.listIterator(start);
+            ListIterator<String> expectedIterator = expected.listIterator(start);
+            for (int step = 0; step < 10; step++) {
+                String context = "round " + round + " step " + step;
+                switch (random.nextInt(3)) {
+                    case 0:
+                        Assertions.assertEquals(expectedIterator.hasNext(), iterator.hasNext(), context);
+                        if (expectedIterator.hasNext()) {
+                            Assertions.assertEquals(expectedIterator.next(), iterator.next(), context);
+                        }
+                        break;
+                    case 1:
+                        Assertions.assertEquals(expectedIterator.hasPrevious(), iterator.hasPrevious(), context);
+                        if (expectedIterator.hasPrevious()) {
+                            Assertions.assertEquals(expectedIterator.previous(), iterator.previous(), context);
+                        }
+                        break;
+                    default:
+                        try {
+                            expectedIterator.remove();
+                        } catch (IllegalStateException e) {
+                            Assertions.assertThrows(IllegalStateException.class, iterator::remove, context);
+                            break;
+                        }
+                        iterator.remove();
+                }
+                Assertions.assertEquals(expectedIterator.nextIndex(), iterator.nextIndex(), context);
+                Assertions.assertEquals(expectedIterator.previousIndex(), iterator.previousIndex(), context);
+                Assertions.assertEquals(expected, bitList, context);
+            }
         }
     }
 }
