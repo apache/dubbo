@@ -1307,7 +1307,11 @@ public class ExtensionLoader<T> {
     }
 
     private boolean loadClassIfActive(ClassLoader classLoader, Class<?> clazz) {
-        Activate activate = clazz.getAnnotation(Activate.class);
+        Annotation activate = clazz.getAnnotation(Activate.class);
+        if (activate == null && Dubbo2CompactUtils.isEnabled() && Dubbo2ActivateUtils.isActivateLoaded()) {
+            // support com.alibaba.dubbo.common.extension.Activate, same as cacheActivateClass
+            activate = clazz.getAnnotation(Dubbo2ActivateUtils.getActivateClass());
+        }
 
         if (activate == null) {
             return true;
