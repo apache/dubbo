@@ -20,22 +20,32 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.CompositeConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
+import org.apache.dubbo.common.utils.ReflectionUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.client.migration.MigrationInvoker;
 import org.apache.dubbo.registry.client.migration.MigrationRuleListener;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.cluster.Cluster;
+import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.support.FailoverCluster;
+import org.apache.dubbo.rpc.cluster.support.FailoverClusterInvoker;
+import org.apache.dubbo.rpc.cluster.support.FailsafeClusterInvoker;
+import org.apache.dubbo.rpc.cluster.support.MergeableCluster;
+import org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterInvoker;
 import org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterWrapper;
+import org.apache.dubbo.rpc.cluster.support.wrapper.ScopeClusterInvoker;
 import org.apache.dubbo.rpc.cluster.support.wrapper.ScopeClusterWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +55,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -543,5 +554,294 @@ class RegistryProtocolTest {
                 .setScopeModel(moduleModel);
 
         verify(registry, times(1)).register(registeredConsumerUrl);
+    }
+
+    @Test
+    void testProviderClusterAndConsumerNot() {
+        ApplicationConfig applicationConfig = new ApplicationConfig();
+        applicationConfig.setName("application1");
+
+        ConfigManager configManager = mock(ConfigManager.class);
+        when(configManager.getApplicationOrElseThrow()).thenReturn(applicationConfig);
+
+        CompositeConfiguration compositeConfiguration = mock(CompositeConfiguration.class);
+        when(compositeConfiguration.convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true))
+                .thenReturn(true);
+
+        // 1) Consumer config: intentionally omit CLUSTER_KEY
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put(INTERFACE_KEY, DemoService.class.getName());
+        parameters.put("registry", "zookeeper");
+        parameters.put("register", "false");
+        // No parameters.put(CLUSTER_KEY, ...)
+
+        Map<String, Object> attributes = new HashMap<>();
+        ServiceConfigURL serviceConfigURL = new ServiceConfigURL(
+                "registry", "127.0.0.1", 2181, "org.apache.dubbo.registry.RegistryService", parameters);
+        Map<String, String> refer = new HashMap<>();
+        attributes.put(REFER_KEY, refer);
+        URL url = serviceConfigURL.addAttributes(attributes);
+
+        RegistryFactory registryFactory = mock(RegistryFactory.class);
+        Registry registry = mock(Registry.class);
+        when(registry.getUrl()).thenReturn(URL.valueOf("zookeeper://127.0.0.1:2181"));
+
+        MigrationRuleListener migrationRuleListener = mock(MigrationRuleListener.class);
+        List<RegistryProtocolListener> registryProtocolListeners = new ArrayList<>();
+        registryProtocolListeners.add(migrationRuleListener);
+
+        RegistryProtocol registryProtocol = new RegistryProtocol();
+        Protocol protocol = mock(Protocol.class);
+        registryProtocol.setProtocol(protocol);
+        ModuleModel moduleModel = Mockito.spy(ApplicationModel.defaultModel().getDefaultModule());
+        moduleModel
+                .getApplicationModel()
+                .getApplicationConfigManager()
+                .setApplication(new ApplicationConfig("application1"));
+        ExtensionLoader extensionLoaderMock = mock(ExtensionLoader.class);
+        Mockito.when(moduleModel.getExtensionLoader(RegistryProtocolListener.class))
+                .thenReturn(extensionLoaderMock);
+        Mockito.when(extensionLoaderMock.getActivateExtension(url, REGISTRY_PROTOCOL_LISTENER_KEY))
+                .thenReturn(registryProtocolListeners);
+        url = url.setScopeModel(moduleModel);
+        url = url.putAttribute(CONSUMER_URL_KEY, buildConsumerUrl(url, parameters));
+
+        // 2) Provider config: CLUSTER_KEY is set to failsafe
+        URL providerUrl = new ServiceConfigURL(
+                "tri", "localhost", 20880, DemoService.class.getName(), new HashMap<String, String>() {
+                    {
+                        put(CLUSTER_KEY, "failsafe"); // Provider-side cluster setting
+                    }
+                });
+        Invoker<DemoService> providerInvoker = mock(Invoker.class);
+        when(providerInvoker.getUrl()).thenReturn(providerUrl);
+        when(protocol.refer(Mockito.eq(DemoService.class), Mockito.any(URL.class)))
+                .thenReturn(providerInvoker);
+
+        // Simulate registry behavior: notify provider URL on subscribe
+        when(registryFactory.getRegistry(registryProtocol.getRegistryUrl(url))).thenReturn(registry);
+        Mockito.doAnswer(invocation -> {
+                    NotifyListener listener = invocation.getArgument(1);
+                    // Notify provider URL so directory can pick up provider params
+                    listener.notify(Collections.singletonList(providerUrl));
+                    return null;
+                })
+                .when(registry)
+                .subscribe(Mockito.any(), Mockito.any());
+
+        Cluster consumerCluster = Cluster.getCluster(url.getScopeModel(), parameters.get(CLUSTER_KEY));
+        ClusterInvoker<?> clusterInvoker =
+                registryProtocol.getInvoker(consumerCluster, registry, DemoService.class, url);
+
+        Invoker<?> coreInvoker = unwrapClusterInvoker(clusterInvoker);
+        Assertions.assertTrue(
+                coreInvoker instanceof FailsafeClusterInvoker,
+                "Provider cluster 'failsafe' should be chosen when consumer cluster is not set");
+    }
+
+    @Test
+    void testUseConsumerCluster() {
+        ApplicationConfig applicationConfig = new ApplicationConfig();
+        applicationConfig.setName("application1");
+
+        ConfigManager configManager = mock(ConfigManager.class);
+        when(configManager.getApplicationOrElseThrow()).thenReturn(applicationConfig);
+
+        CompositeConfiguration compositeConfiguration = mock(CompositeConfiguration.class);
+        when(compositeConfiguration.convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true))
+                .thenReturn(true);
+
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put(INTERFACE_KEY, DemoService.class.getName());
+        parameters.put("registry", "zookeeper");
+        parameters.put("register", "false");
+        parameters.put(CLUSTER_KEY, "failover");
+
+        Map<String, Object> attributes = new HashMap<>();
+        ServiceConfigURL serviceConfigURL = new ServiceConfigURL(
+                "registry", "127.0.0.1", 2181, "org.apache.dubbo.registry.RegistryService", parameters);
+        Map<String, String> refer = new HashMap<>();
+        attributes.put(REFER_KEY, refer);
+        URL url = serviceConfigURL.addAttributes(attributes);
+
+        RegistryFactory registryFactory = mock(RegistryFactory.class);
+        Registry registry = mock(Registry.class);
+
+        MigrationRuleListener migrationRuleListener = mock(MigrationRuleListener.class);
+        List<RegistryProtocolListener> registryProtocolListeners = new ArrayList<>();
+        registryProtocolListeners.add(migrationRuleListener);
+
+        RegistryProtocol registryProtocol = new RegistryProtocol();
+        ModuleModel moduleModel = Mockito.spy(ApplicationModel.defaultModel().getDefaultModule());
+        moduleModel
+                .getApplicationModel()
+                .getApplicationConfigManager()
+                .setApplication(new ApplicationConfig("application1"));
+        ExtensionLoader extensionLoaderMock = mock(ExtensionLoader.class);
+        Mockito.when(moduleModel.getExtensionLoader(RegistryProtocolListener.class))
+                .thenReturn(extensionLoaderMock);
+        Mockito.when(extensionLoaderMock.getActivateExtension(url, REGISTRY_PROTOCOL_LISTENER_KEY))
+                .thenReturn(registryProtocolListeners);
+        url = url.setScopeModel(moduleModel);
+        url = url.putAttribute(CONSUMER_URL_KEY, buildConsumerUrl(url, parameters));
+
+        when(registryFactory.getRegistry(registryProtocol.getRegistryUrl(url))).thenReturn(registry);
+
+        Cluster mockCluster = mock(Cluster.class);
+        Invoker<Object> mockClusterInvoker = mock(Invoker.class);
+        when(mockCluster.join(Mockito.any(), Mockito.anyBoolean())).thenReturn(mockClusterInvoker);
+
+        Invoker<?> invoker = registryProtocol.doRefer(mockCluster, registry, DemoService.class, url, parameters);
+
+        Assertions.assertTrue(invoker instanceof MigrationInvoker);
+        Assertions.assertNotNull(invoker);
+    }
+
+    @Test
+    void testConsumerClusterOverridesProvider() {
+        ApplicationConfig applicationConfig = new ApplicationConfig();
+        applicationConfig.setName("application1");
+
+        ConfigManager configManager = mock(ConfigManager.class);
+        when(configManager.getApplicationOrElseThrow()).thenReturn(applicationConfig);
+
+        CompositeConfiguration compositeConfiguration = mock(CompositeConfiguration.class);
+        when(compositeConfiguration.convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true))
+                .thenReturn(true);
+
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put(INTERFACE_KEY, DemoService.class.getName());
+        parameters.put("registry", "zookeeper");
+        parameters.put("register", "false");
+        parameters.put(CLUSTER_KEY, "failover");
+
+        Map<String, Object> attributes = new HashMap<>();
+        ServiceConfigURL serviceConfigURL = new ServiceConfigURL(
+                "registry", "127.0.0.1", 2181, "org.apache.dubbo.registry.RegistryService", parameters);
+        Map<String, String> refer = new HashMap<>();
+        attributes.put(REFER_KEY, refer);
+        URL url = serviceConfigURL.addAttributes(attributes);
+
+        RegistryFactory registryFactory = mock(RegistryFactory.class);
+        Registry registry = mock(Registry.class);
+        when(registry.getUrl()).thenReturn(URL.valueOf("zookeeper://127.0.0.1:2181"));
+
+        MigrationRuleListener migrationRuleListener = mock(MigrationRuleListener.class);
+        List<RegistryProtocolListener> registryProtocolListeners = new ArrayList<>();
+        registryProtocolListeners.add(migrationRuleListener);
+
+        RegistryProtocol registryProtocol = new RegistryProtocol();
+        Protocol protocol = mock(Protocol.class);
+        registryProtocol.setProtocol(protocol);
+        ModuleModel moduleModel = Mockito.spy(ApplicationModel.defaultModel().getDefaultModule());
+        moduleModel
+                .getApplicationModel()
+                .getApplicationConfigManager()
+                .setApplication(new ApplicationConfig("application1"));
+        ExtensionLoader extensionLoaderMock = mock(ExtensionLoader.class);
+        Mockito.when(moduleModel.getExtensionLoader(RegistryProtocolListener.class))
+                .thenReturn(extensionLoaderMock);
+        Mockito.when(extensionLoaderMock.getActivateExtension(url, REGISTRY_PROTOCOL_LISTENER_KEY))
+                .thenReturn(registryProtocolListeners);
+        url = url.setScopeModel(moduleModel);
+        url = url.putAttribute(CONSUMER_URL_KEY, buildConsumerUrl(url, parameters));
+
+        when(registryFactory.getRegistry(registryProtocol.getRegistryUrl(url))).thenReturn(registry);
+
+        Cluster mockCluster = mock(Cluster.class);
+        Invoker<Object> mockClusterInvoker = mock(Invoker.class);
+
+        when(mockCluster.join(Mockito.any(), Mockito.anyBoolean())).thenReturn(mockClusterInvoker);
+
+        Invoker<DemoService> providerInvoker = mock(Invoker.class);
+        URL providerUrl = new ServiceConfigURL(
+                "tri", "localhost", 20880, DemoService.class.getName(), new HashMap<String, String>() {
+                    {
+                        put(CLUSTER_KEY, "failsafe");
+                    }
+                });
+        when(providerInvoker.getUrl()).thenReturn(providerUrl);
+        when(protocol.refer(Mockito.eq(DemoService.class), Mockito.any(URL.class)))
+                .thenReturn(providerInvoker);
+        Mockito.doAnswer(invocation -> {
+                    NotifyListener listener = invocation.getArgument(1);
+                    listener.notify(Collections.singletonList(providerUrl));
+                    return null;
+                })
+                .when(registry)
+                .subscribe(Mockito.any(), Mockito.any());
+
+        Cluster consumerCluster = Cluster.getCluster(url.getScopeModel(), parameters.get(CLUSTER_KEY));
+        ClusterInvoker<?> clusterInvoker =
+                registryProtocol.getInvoker(consumerCluster, registry, DemoService.class, url);
+
+        Invoker<?> coreInvoker = unwrapClusterInvoker(clusterInvoker);
+        Assertions.assertEquals(
+                FailoverClusterInvoker.class,
+                coreInvoker.getClass(),
+                "Consumer config 'failover' should take precedence over provider hints");
+    }
+
+    private static Invoker<?> unwrapClusterInvoker(Invoker<?> invoker) {
+        Invoker<?> current = invoker;
+        while (true) {
+            Invoker<?> next = current;
+            if (next instanceof ScopeClusterInvoker) {
+                next = ((ScopeClusterInvoker<?>) next).getInvoker();
+            } else if (next instanceof MockClusterInvoker) {
+                next = (Invoker<?>) ReflectionUtils.getField(next, "invoker");
+            } else {
+                Invoker<?> originalInvoker = tryGetInvokerField(next, "originalInvoker");
+                if (originalInvoker != null) {
+                    next = originalInvoker;
+                } else {
+                    Invoker<?> filterInvoker = tryGetInvokerField(next, "filterInvoker");
+                    if (filterInvoker != null) {
+                        next = filterInvoker;
+                    } else {
+                        Invoker<?> interceptorInvoker = tryGetInvokerField(next, "interceptorInvoker");
+                        if (interceptorInvoker != null) {
+                            next = interceptorInvoker;
+                        }
+                    }
+                }
+            }
+            if (next == current) {
+                return current;
+            }
+            current = next;
+        }
+    }
+
+    private static Invoker<?> tryGetInvokerField(Object source, String fieldName) {
+        try {
+            Object value = ReflectionUtils.getField(source, fieldName);
+            return value instanceof Invoker ? (Invoker<?>) value : null;
+        } catch (RuntimeException ignored) {
+            return null;
+        }
+    }
+
+    private static URL buildConsumerUrl(URL url, Map<String, String> parameters) {
+        Map<String, Object> consumerAttribute = new HashMap<>(url.getAttributes());
+        consumerAttribute.remove(REFER_KEY);
+        String protocol = parameters.get(PROTOCOL_KEY) == null ? CONSUMER : parameters.get(PROTOCOL_KEY);
+        URL consumerUrl = new ServiceConfigURL(
+                protocol,
+                null,
+                null,
+                parameters.get(REGISTER_IP_KEY),
+                0,
+                parameters.get(INTERFACE_KEY),
+                parameters,
+                consumerAttribute);
+        String serviceInterface = parameters.get(INTERFACE_KEY);
+        if (serviceInterface != null) {
+            consumerUrl = consumerUrl.setServiceInterface(serviceInterface).setPath(serviceInterface);
+        }
+        if (url.getScopeModel() != null) {
+            consumerUrl = consumerUrl.setScopeModel(url.getScopeModel());
+        }
+        return consumerUrl;
     }
 }
