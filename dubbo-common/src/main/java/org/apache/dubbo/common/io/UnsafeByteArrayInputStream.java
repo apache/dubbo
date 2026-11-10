@@ -70,7 +70,7 @@ public class UnsafeByteArrayInputStream extends InputStream {
 
     @Override
     public long skip(long len) {
-        if (mPosition + len > mLimit) {
+        if (len > mLimit - mPosition) {
             len = mLimit - mPosition;
         }
         if (len <= 0) {
