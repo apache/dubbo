@@ -39,3 +39,4 @@ getAddress=org.apache.dubbo.qos.command.impl.GetAddress
 gracefulShutdown=org.apache.dubbo.qos.command.impl.GracefulShutdown
 metrics_default=org.apache.dubbo.qos.command.impl.DefaultMetricsReporterCmd
 getOpenAPI=org.apache.dubbo.qos.command.impl.GetOpenAPI
+discovery-timeline=org.apache.dubbo.qos.command.impl.DiscoveryTimelineCommand
