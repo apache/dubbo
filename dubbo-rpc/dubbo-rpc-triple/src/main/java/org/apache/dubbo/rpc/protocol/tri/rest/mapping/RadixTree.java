@@ -116,7 +116,7 @@ public final class RadixTree<T> {
             return value;
         }
         if (separator == '/') {
-            path = PathUtils.normalize(path);
+            path = PathUtils.normalizePattern(path);
         } else {
             path = path.replace(separator, '/');
             if (path.isEmpty() || path.charAt(0) != '/') {
