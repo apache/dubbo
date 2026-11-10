@@ -320,6 +320,88 @@ class GenericHttp2ServerTransportListenerTest {
         assertEquals(1, messageCloses.get());
     }
 
+    @Test
+    void deliversWebSocketFinalFragmentWithoutClosingStream() {
+        listener = new WebSocketTestListener(framework);
+        listener.onMetadata(mock(Http2Header.class));
+        input = new FragmentInput(true, new byte[] {42});
+        listener.onData(new Http2InputMessageFrame(input, false));
+        assertArrayEquals(new byte[] {42}, listener.decoded);
+        assertReleasedOnce();
+    }
+
+    @Test
+    void buffersWebSocketFragmentsUntilFinalAndKeepsStreamReusable() {
+        listener = new WebSocketTestListener(framework);
+        listener.onMetadata(mock(Http2Header.class));
+        CountingInput first = new FragmentInput(false, new byte[] {1, 2});
+        input = new FragmentInput(true, new byte[] {3});
+        listener.onData(new Http2InputMessageFrame(first, false));
+        assertNull(listener.decoded);
+        listener.onData(new Http2InputMessageFrame(input, false));
+        assertArrayEquals(new byte[] {1, 2, 3}, listener.decoded);
+        assertEquals(0, first.buffer.refCnt());
+        assertReleasedOnce();
+        input = new FragmentInput(true, new byte[] {4});
+        listener.onData(new Http2InputMessageFrame(input, false));
+        assertArrayEquals(new byte[] {4}, listener.decoded);
+        assertReleasedOnce();
+    }
+
+    private static final class FragmentInput extends CountingInput
+            implements org.apache.dubbo.remoting.websocket.FinalFragment {
+        private final boolean last;
+
+        FragmentInput(boolean last, byte[] data) {
+            super(Unpooled.wrappedBuffer(data));
+            this.last = last;
+        }
+
+        @Override
+        public boolean isFinalFragment() {
+            return last;
+        }
+    }
+
+    @Test
+    void closesOriginalMessageOnceEvenWhenCloseThrows() {
+        initialize(Runnable::run);
+        listener.close();
+        input = new CountingInput();
+        AtomicInteger closes = new AtomicInteger();
+        listener.onData(new Http2InputMessage() {
+            @Override
+            public InputStream getBody() {
+                return input;
+            }
+
+            @Override
+            public long id() {
+                return 41;
+            }
+
+            @Override
+            public String name() {
+                return "DATA";
+            }
+
+            @Override
+            public boolean isEndStream() {
+                return false;
+            }
+
+            @Override
+            public void close() throws IOException {
+                closes.incrementAndGet();
+                input.close();
+                throw new IOException("test close failure after releasing input");
+            }
+        });
+        listener.close();
+        assertReleasedOnce();
+        assertEquals(1, closes.get());
+    }
+
     private void initialize(Executor executor) {
         listener = new TestListener(framework, executor);
         listener.onMetadata(mock(Http2Header.class));
@@ -330,7 +412,7 @@ class GenericHttp2ServerTransportListenerTest {
         assertEquals(1, input.closes);
     }
 
-    private static final class CountingInput extends ByteBufInputStream {
+    private static class CountingInput extends ByteBufInputStream {
         private final ByteBuf buffer;
         private int closes;
         private CountDownLatch readStarted;
@@ -366,7 +448,19 @@ class GenericHttp2ServerTransportListenerTest {
         }
     }
 
-    private static final class TestListener extends GenericHttp2ServerTransportListener {
+    private static final class WebSocketTestListener extends TestListener {
+        WebSocketTestListener(FrameworkModel framework) {
+            super(framework, Runnable::run);
+        }
+
+        @Override
+        protected StreamingDecoder newStreamingDecoder() {
+            return new org.apache.dubbo.remoting.websocket.FinalFragmentStreamingDecoder();
+        }
+    }
+
+    private static class TestListener
+            extends org.apache.dubbo.rpc.protocol.tri.websocket.DefaultWebSocketServerTransportListener {
         private Executor dataExecutor;
         private byte[] decoded;
         private CountDownLatch dataPrepared;
@@ -383,6 +477,9 @@ class GenericHttp2ServerTransportListenerTest {
 
         @Override
         protected void onBeforeMetadata(Http2Header metadata) {}
+
+        @Override
+        protected void onPrepareMetadata(Http2Header metadata) {}
 
         @Override
         protected Executor initializeExecutor(URL url, Http2Header metadata) {

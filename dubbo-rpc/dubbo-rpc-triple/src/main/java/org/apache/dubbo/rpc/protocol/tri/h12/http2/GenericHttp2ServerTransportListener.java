@@ -201,7 +201,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
 
     @Override
     protected Http2InputMessage onDataReceived(Http2InputMessage message) {
-        PendingInput input = new PendingInput(message);
+        PendingInput input = newPendingInput(message);
         synchronized (inputLock) {
             pendingInputs.add(input);
             if (inputClosed && processingInputs == 0) {
@@ -209,6 +209,10 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
             }
         }
         return new Http2InputMessageFrame(message.id(), input, message.isEndStream());
+    }
+
+    protected PendingInput newPendingInput(Http2InputMessage message) {
+        return new PendingInput(message);
     }
 
     @Override
@@ -318,12 +322,12 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
         }
     }
 
-    private final class PendingInput extends FilterInputStream {
+    protected class PendingInput extends FilterInputStream {
 
         private final AtomicBoolean closed = new AtomicBoolean();
         private final Http2InputMessage message;
 
-        private PendingInput(Http2InputMessage message) {
+        protected PendingInput(Http2InputMessage message) {
             super(message.getBody());
             this.message = message;
         }
