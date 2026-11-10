@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.compressor;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
@@ -49,7 +50,8 @@ public class Snappy implements Compressor, DeCompressor {
 
     @Override
     public OutputStream decorate(OutputStream outputStream) {
-        return outputStream;
+        // Snappy wraps output with SnappyOutputStream for streaming compression
+        return new org.xerial.snappy.SnappyOutputStream(outputStream);
     }
 
     @Override
@@ -63,5 +65,10 @@ public class Snappy implements Compressor, DeCompressor {
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    @Override
+    public InputStream decompress(InputStream inputStream) throws IOException {
+        return new org.xerial.snappy.SnappyInputStream(inputStream);
     }
 }

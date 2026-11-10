@@ -86,6 +86,15 @@ public class UnsafeByteArrayOutputStream extends OutputStream {
         out.write(mBuffer, 0, mCount);
     }
 
+    /**
+     * Returns an InputStream that reads from the internal buffer without copying.
+     *
+     * @return an InputStream wrapping the internal buffer
+     */
+    public UnsafeByteArrayInputStream toInputStream() {
+        return new UnsafeByteArrayInputStream(mBuffer, 0, mCount);
+    }
+
     @Override
     public String toString() {
         return new String(mBuffer, 0, mCount);
