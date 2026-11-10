@@ -23,11 +23,14 @@ import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.Request;
+import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.handler.MockedChannel;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -58,6 +61,79 @@ class DefaultFutureTest {
         // cancel a future
         future.cancel();
         Assertions.assertTrue(future.isDone(), "cancel a future failed!");
+    }
+
+    @Test
+    void testRepeatedCancel() {
+        Channel channel = new MockedChannel();
+        Request request = new Request(-1000 - index.incrementAndGet());
+        ThreadlessExecutor executor = new ThreadlessExecutor();
+        DefaultFuture future = DefaultFuture.newFuture(channel, request, 60000, executor);
+
+        future.cancel(false);
+        Assertions.assertDoesNotThrow(() -> future.cancel(false));
+
+        Assertions.assertTrue(executor.isShutdown());
+        Assertions.assertNull(DefaultFuture.getFuture(request.getId()));
+        Assertions.assertFalse(DefaultFuture.hasFuture(channel));
+    }
+
+    @Test
+    void testCancelAfterResponse() {
+        Channel channel = new MockedChannel();
+        Request request = new Request(-1000 - index.incrementAndGet());
+        ThreadlessExecutor executor = new ThreadlessExecutor();
+        DefaultFuture future = DefaultFuture.newFuture(channel, request, 60000, executor);
+        Response response = new Response(request.getId());
+        response.setStatus(Response.OK);
+        response.setResult("completed");
+        DefaultFuture.received(channel, response);
+
+        Assertions.assertDoesNotThrow(() -> future.cancel(false));
+
+        Assertions.assertEquals("completed", future.join());
+        Assertions.assertTrue(executor.isShutdown());
+        Assertions.assertNull(DefaultFuture.getFuture(request.getId()));
+        Assertions.assertFalse(DefaultFuture.hasFuture(channel));
+    }
+
+    @Test
+    void testCancelAfterTimeout() {
+        Channel channel = new MockedChannel();
+        Request request = new Request(-1000 - index.incrementAndGet());
+        ThreadlessExecutor executor = new ThreadlessExecutor();
+        DefaultFuture future = DefaultFuture.newFuture(channel, request, 60000, executor);
+        Response response = new Response(request.getId());
+        response.setStatus(Response.CLIENT_TIMEOUT);
+        response.setErrorMessage("timeout");
+        DefaultFuture.received(channel, response, true);
+
+        Assertions.assertDoesNotThrow(() -> future.cancel(false));
+
+        CompletionException error = Assertions.assertThrows(CompletionException.class, future::join);
+        Assertions.assertInstanceOf(TimeoutException.class, error.getCause());
+        Assertions.assertTrue(executor.isShutdown());
+        Assertions.assertNull(DefaultFuture.getFuture(request.getId()));
+        Assertions.assertFalse(DefaultFuture.hasFuture(channel));
+    }
+
+    @Test
+    void testCancelFromCompletionCallback() {
+        Channel channel = new MockedChannel();
+        Request request = new Request(-1000 - index.incrementAndGet());
+        ThreadlessExecutor executor = new ThreadlessExecutor();
+        DefaultFuture future = DefaultFuture.newFuture(channel, request, 60000, executor);
+        CompletableFuture<Object> callback = future.whenComplete((value, error) -> future.cancel(false));
+        Response response = new Response(request.getId());
+        response.setStatus(Response.OK);
+        response.setResult("completed");
+
+        DefaultFuture.received(channel, response);
+
+        Assertions.assertEquals("completed", callback.join());
+        Assertions.assertTrue(executor.isShutdown());
+        Assertions.assertNull(DefaultFuture.getFuture(request.getId()));
+        Assertions.assertFalse(DefaultFuture.hasFuture(channel));
     }
 
     /**
