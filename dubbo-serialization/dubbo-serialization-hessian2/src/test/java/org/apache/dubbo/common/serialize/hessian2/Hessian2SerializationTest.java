@@ -28,6 +28,9 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -506,6 +509,225 @@ class Hessian2SerializationTest {
             ObjectInput objectInput = serialization.deserialize(url, inputStream);
             Assertions.assertThrows(IOException.class, () -> objectInput.readObject(Map.class));
         }
+
+        frameworkModel.destroy();
+    }
+
+    @Test
+    void testReadObjectWithGenericType_ListByte() throws Exception {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        Serialization serialization =
+                frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+        URL url = URL.valueOf("").setScopeModel(frameworkModel);
+
+        List<Byte> original = Arrays.asList((byte) 1, (byte) 2, (byte) 127, (byte) -1);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ObjectOutput objectOutput = serialization.serialize(url, outputStream);
+        objectOutput.writeObject(original);
+        objectOutput.flushBuffer();
+
+        byte[] bytes = outputStream.toByteArray();
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+        ObjectInput objectInput = serialization.deserialize(url, inputStream);
+
+        Type listByteType = makeParameterizedType(List.class, Byte.class);
+        List<?> result = objectInput.readObject(List.class, listByteType);
+
+        Assertions.assertEquals(original.size(), result.size());
+        for (int i = 0; i < original.size(); i++) {
+            Assertions.assertInstanceOf(
+                    Byte.class,
+                    result.get(i),
+                    "Element at index " + i + " should be Byte but was "
+                            + result.get(i).getClass().getName());
+            Assertions.assertEquals(original.get(i), result.get(i));
+        }
+
+        frameworkModel.destroy();
+    }
+
+    @Test
+    void testReadObjectWithGenericType_ListShort() throws Exception {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        Serialization serialization =
+                frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+        URL url = URL.valueOf("").setScopeModel(frameworkModel);
+
+        List<Short> original = Arrays.asList((short) 1, (short) 200, (short) -100);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ObjectOutput objectOutput = serialization.serialize(url, outputStream);
+        objectOutput.writeObject(original);
+        objectOutput.flushBuffer();
+
+        byte[] bytes = outputStream.toByteArray();
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+        ObjectInput objectInput = serialization.deserialize(url, inputStream);
+
+        Type listShortType = makeParameterizedType(List.class, Short.class);
+        List<?> result = objectInput.readObject(List.class, listShortType);
+
+        Assertions.assertEquals(original.size(), result.size());
+        for (int i = 0; i < original.size(); i++) {
+            Assertions.assertInstanceOf(Short.class, result.get(i));
+            Assertions.assertEquals(original.get(i), result.get(i));
+        }
+
+        frameworkModel.destroy();
+    }
+
+    @Test
+    void testReadObjectWithGenericType_ListFloat() throws Exception {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        Serialization serialization =
+                frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+        URL url = URL.valueOf("").setScopeModel(frameworkModel);
+
+        List<Float> original = Arrays.asList(1.5f, 2.5f, -3.14f);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ObjectOutput objectOutput = serialization.serialize(url, outputStream);
+        objectOutput.writeObject(original);
+        objectOutput.flushBuffer();
+
+        byte[] bytes = outputStream.toByteArray();
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+        ObjectInput objectInput = serialization.deserialize(url, inputStream);
+
+        Type listFloatType = makeParameterizedType(List.class, Float.class);
+        List<?> result = objectInput.readObject(List.class, listFloatType);
+
+        Assertions.assertEquals(original.size(), result.size());
+        for (int i = 0; i < original.size(); i++) {
+            Assertions.assertInstanceOf(Float.class, result.get(i));
+            Assertions.assertEquals(original.get(i), result.get(i));
+        }
+
+        frameworkModel.destroy();
+    }
+
+    @Test
+    void testReadObjectWithGenericType_MapStringByte() throws Exception {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        Serialization serialization =
+                frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+        URL url = URL.valueOf("").setScopeModel(frameworkModel);
+
+        Map<String, Byte> original = new HashMap<>();
+        original.put("a", (byte) 1);
+        original.put("b", (byte) 2);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ObjectOutput objectOutput = serialization.serialize(url, outputStream);
+        objectOutput.writeObject(original);
+        objectOutput.flushBuffer();
+
+        byte[] bytes = outputStream.toByteArray();
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+        ObjectInput objectInput = serialization.deserialize(url, inputStream);
+
+        Type mapType = makeParameterizedType(Map.class, String.class, Byte.class);
+        Map<?, ?> result = objectInput.readObject(Map.class, mapType);
+
+        Assertions.assertEquals(original.size(), result.size());
+        for (Map.Entry<?, ?> entry : result.entrySet()) {
+            Assertions.assertInstanceOf(
+                    Byte.class, entry.getValue(), "Value for key '" + entry.getKey() + "' should be Byte");
+        }
+        Assertions.assertEquals(original.get("a"), result.get("a"));
+        Assertions.assertEquals(original.get("b"), result.get("b"));
+
+        frameworkModel.destroy();
+    }
+
+    @Test
+    void testReadObjectWithGenericType_nonGenericUnchanged() throws Exception {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        Serialization serialization =
+                frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+        URL url = URL.valueOf("").setScopeModel(frameworkModel);
+
+        String original = "hello";
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ObjectOutput objectOutput = serialization.serialize(url, outputStream);
+        objectOutput.writeObject(original);
+        objectOutput.flushBuffer();
+
+        byte[] bytes = outputStream.toByteArray();
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+        ObjectInput objectInput = serialization.deserialize(url, inputStream);
+        Assertions.assertEquals(original, objectInput.readObject(String.class, String.class));
+
+        frameworkModel.destroy();
+    }
+
+    private static ParameterizedType makeParameterizedType(Class<?> rawType, Type... typeArguments) {
+        return new ParameterizedType() {
+            @Override
+            public Type[] getActualTypeArguments() {
+                return typeArguments;
+            }
+
+            @Override
+            public Type getRawType() {
+                return rawType;
+            }
+
+            @Override
+            public Type getOwnerType() {
+                return null;
+            }
+        };
+    }
+
+    @Test
+    void testReadObjectWithGenericType_pojoWithNarrowNumberFields() throws Exception {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        Serialization serialization =
+                frameworkModel.getExtensionLoader(Serialization.class).getExtension("hessian2");
+        URL url = URL.valueOf("").setScopeModel(frameworkModel);
+
+        List<Byte> scores = Arrays.asList((byte) 90, (byte) 85);
+        Map<String, Byte> attrs = new HashMap<>();
+        attrs.put("level", (byte) 5);
+        attrs.put("rank", (byte) 3);
+        NarrowNumberPojo original = new NarrowNumberPojo("Alice", (byte) 30, (short) 170, 12345.67f, scores, attrs);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ObjectOutput objectOutput = serialization.serialize(url, outputStream);
+        objectOutput.writeObject(original);
+        objectOutput.flushBuffer();
+
+        byte[] bytes = outputStream.toByteArray();
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+        ObjectInput objectInput = serialization.deserialize(url, inputStream);
+
+        NarrowNumberPojo result = objectInput.readObject(NarrowNumberPojo.class, NarrowNumberPojo.class);
+
+        Assertions.assertEquals("Alice", result.getName());
+        Assertions.assertEquals((byte) 30, result.getAge());
+        Assertions.assertEquals((short) 170, result.getHeight());
+        Assertions.assertEquals(12345.67f, result.getSalary(), 0.01f);
+
+        Assertions.assertNotNull(result.getScores());
+        Assertions.assertEquals(2, result.getScores().size());
+        for (Object elem : result.getScores()) {
+            Assertions.assertInstanceOf(Byte.class, elem, "Score element should be Byte but was " + elem.getClass());
+        }
+        Assertions.assertEquals((byte) 90, result.getScores().get(0));
+        Assertions.assertEquals((byte) 85, result.getScores().get(1));
+
+        Assertions.assertNotNull(result.getAttributes());
+        for (Map.Entry<String, Byte> entry : result.getAttributes().entrySet()) {
+            Assertions.assertInstanceOf(
+                    Byte.class,
+                    entry.getValue(),
+                    "Attribute value should be Byte but was " + entry.getValue().getClass());
+        }
+        Assertions.assertEquals((byte) 5, result.getAttributes().get("level"));
+        Assertions.assertEquals((byte) 3, result.getAttributes().get("rank"));
 
         frameworkModel.destroy();
     }
