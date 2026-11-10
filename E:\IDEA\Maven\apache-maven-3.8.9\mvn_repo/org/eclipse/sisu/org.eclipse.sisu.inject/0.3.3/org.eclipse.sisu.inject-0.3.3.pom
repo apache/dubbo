@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ ~ Copyright (c) 2010, 2015 Sonatype, Inc.
+ ~ All rights reserved. This program and the accompanying materials
+ ~ are made available under the terms of the Eclipse Public License v1.0
+ ~ which accompanies this distribution, and is available at
+ ~ http://www.eclipse.org/legal/epl-v10.html
+ ~
+ ~ Contributors:
+ ~    Stuart McCulloch (Sonatype, Inc.) - initial API and implementation
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.eclipse.sisu</groupId>
+    <artifactId>sisu-inject</artifactId>
+    <version>0.3.3</version>
+  </parent>
+
+  <artifactId>org.eclipse.sisu.inject</artifactId>
+  <packaging>eclipse-plugin</packaging>
+
+  <!--
+   | Minimum requirements
+  -->
+  <dependencies>
+    <!--
+     | Can use guice or sisu-guice; AOP or No-AOP (faster)
+    -->
+    <dependency>
+      <groupId>com.google.inject</groupId>
+      <artifactId>guice</artifactId>
+      <version>3.0</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <sourceDirectory>src</sourceDirectory>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>1.9.1</version>
+        <executions>
+          <execution>
+            <id>attach-build-target</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>build.target</file>
+                  <classifier>build</classifier>
+                  <type>target</type>
+                </artifact>
+              </artifacts>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>animal-sniffer-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>target-platform-configuration</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>tycho-maven-plugin</artifactId>
+        <extensions>true</extensions>
+      </plugin>
+      <plugin>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>tycho-source-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

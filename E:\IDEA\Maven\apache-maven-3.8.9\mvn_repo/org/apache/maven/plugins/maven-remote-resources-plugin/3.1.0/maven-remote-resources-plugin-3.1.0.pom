@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-plugins</artifactId>
+    <version>39</version>
+    <relativePath />
+  </parent>
+
+  <artifactId>maven-remote-resources-plugin</artifactId>
+  <version>3.1.0</version>
+  <packaging>maven-plugin</packaging>
+
+  <name>Apache Maven Remote Resources Plugin</name>
+  <description>Process resources packaged in JARs that have been deployed to
+    a remote repository. The primary use case being satisfied is the consistent
+    inclusion of common resources in a large set of projects. Maven projects at
+    Apache use this plug-in to satisfy licensing requirements at Apache where
+    each project must include license and notice files for each release.</description>
+
+  <prerequisites>
+    <maven>${mavenVersion}</maven>
+  </prerequisites>
+
+  <scm>
+    <connection>scm:git:https://gitbox.apache.org/repos/asf/maven-remote-resources-plugin.git</connection>
+    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-remote-resources-plugin.git</developerConnection>
+    <tag>maven-remote-resources-plugin-3.1.0</tag>
+    <url>https://github.com/apache/maven-remote-resources-plugin/tree/${project.scm.tag}</url>
+  </scm>
+  <issueManagement>
+    <system>JIRA</system>
+    <url>https://issues.apache.org/jira/browse/MRRESOURCES</url>
+  </issueManagement>
+  <ciManagement>
+    <system>Jenkins</system>
+    <url>https://ci-builds.apache.org/job/Maven/job/maven-box/job/maven-remote-resources-plugin/</url>
+  </ciManagement>
+  <distributionManagement>
+    <site>
+      <id>apache.website</id>
+      <url>scm:svn:https://svn.apache.org/repos/asf/maven/website/components/${maven.site.path}</url>
+    </site>
+  </distributionManagement>
+
+  <properties>
+    <javaVersion>8</javaVersion>
+    <mavenVersion>3.2.5</mavenVersion>
+    <!-- the same version like in Maven 3.2.5 -->
+    <aether.version>1.0.0.v20140518</aether.version>
+    <project.build.outputTimestamp>2023-05-08T18:48:49Z</project.build.outputTimestamp>
+
+    <!-- Used by site documentation as well, do not remove -->
+    <mavenFilteringVersion>3.3.0</mavenFilteringVersion>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-utils</artifactId>
+        <version>3.5.1</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <!-- maven core -->
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-core</artifactId>
+      <version>${mavenVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-model</artifactId>
+      <version>${mavenVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-model-builder</artifactId>
+      <version>${mavenVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-api</artifactId>
+      <version>${mavenVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-artifact</artifactId>
+      <version>${mavenVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-api</artifactId>
+      <version>${aether.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-util</artifactId>
+      <version>${aether.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.maven.plugin-tools</groupId>
+      <artifactId>maven-plugin-annotations</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- maven shared -->
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-archiver</artifactId>
+      <version>3.6.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-filtering</artifactId>
+      <version>${mavenFilteringVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-common-artifact-filters</artifactId>
+      <version>3.3.2</version>
+    </dependency>
+
+    <!-- plexus -->
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-resources</artifactId>
+      <version>1.2.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
+    </dependency>
+
+    <!-- other -->
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.11.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.velocity</groupId>
+      <artifactId>velocity-engine-core</artifactId>
+      <version>2.3</version>
+    </dependency>
+
+    <!-- test -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.plugin-testing</groupId>
+      <artifactId>maven-plugin-testing-harness</artifactId>
+      <version>3.3.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-verifier</artifactId>
+      <version>2.0.0-M1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!-- needed in tests runtime -->
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-compat</artifactId>
+      <version>${mavenVersion}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!-- needed in tests runtime -->
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>1.7.36</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+      </testResource>
+    </testResources>
+
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.rat</groupId>
+          <artifactId>apache-rat-plugin</artifactId>
+          <configuration>
+            <excludes combine.children="append">
+              <!--
+                These files cannot contain a license header as that would break
+                the tests.
+              -->
+              <exclude>src/test/resources/ISO-8859-1.bin.vm</exclude>
+              <exclude>src/test/resources/UTF-8.bin.vm</exclude>
+            </excludes>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-plugin-report-plugin</artifactId>
+          <configuration>
+            <requirementsHistories>
+              <requirementsHistory>
+                <version>3.0.0</version>
+                <maven>3.2.5</maven>
+                <jdk>1.7</jdk>
+              </requirementsHistory>
+              <requirementsHistory>
+                <version>1.7.0</version>
+                <maven>2.2.1</maven>
+                <jdk>1.7</jdk>
+              </requirementsHistory>
+              <requirementsHistory>
+                <version>1.6.0</version>
+                <maven>2.2.1</maven>
+                <jdk>1.6</jdk>
+              </requirementsHistory>
+              <requirementsHistory>
+                <version>1.5</version>
+                <maven>2.2.1</maven>
+                <jdk>1.5</jdk>
+              </requirementsHistory>
+            </requirementsHistories>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.modello</groupId>
+        <artifactId>modello-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate-xsd-site-remote-resources</id>
+            <goals>
+              <goal>xsd</goal>
+            </goals>
+            <phase>pre-site</phase>
+            <configuration>
+              <version>1.1.0</version>
+              <outputDirectory>${project.reporting.outputDirectory}/xsd</outputDirectory>
+              <models>
+                <model>src/main/mdo/remote-resources.mdo</model>
+              </models>
+            </configuration>
+          </execution>
+          <execution>
+            <id>generate-xsd-site-supplemental-model</id>
+            <goals>
+              <goal>xsd</goal>
+            </goals>
+            <phase>pre-site</phase>
+            <configuration>
+              <version>1.0.0</version>
+              <outputDirectory>${project.reporting.outputDirectory}/xsd</outputDirectory>
+              <models>
+                <model>src/main/mdo/supplemental-model.mdo</model>
+              </models>
+            </configuration>
+          </execution>
+          <execution>
+            <id>site-docs-remote-resources</id>
+            <goals>
+              <goal>xdoc</goal>
+            </goals>
+            <phase>pre-site</phase>
+            <configuration>
+              <version>1.1.0</version>
+              <models>
+                <model>src/main/mdo/remote-resources.mdo</model>
+              </models>
+            </configuration>
+          </execution>
+          <execution>
+            <id>site-docs-supplemental-models</id>
+            <goals>
+              <goal>xdoc</goal>
+            </goals>
+            <phase>pre-site</phase>
+            <configuration>
+              <version>1.0.0</version>
+              <models>
+                <model>src/main/mdo/supplemental-model.mdo</model>
+              </models>
+            </configuration>
+          </execution>
+          <execution>
+            <id>remote-resources</id>
+            <goals>
+              <goal>xpp3-writer</goal>
+              <goal>java</goal>
+              <goal>xpp3-reader</goal>
+            </goals>
+            <configuration>
+              <version>1.1.0</version>
+              <models>
+                <model>src/main/mdo/remote-resources.mdo</model>
+              </models>
+            </configuration>
+          </execution>
+          <execution>
+            <id>supplemental-models</id>
+            <goals>
+              <goal>xpp3-writer</goal>
+              <goal>java</goal>
+              <goal>xpp3-reader</goal>
+            </goals>
+            <configuration>
+              <version>1.0.0</version>
+              <models>
+                <model>src/main/mdo/supplemental-model.mdo</model>
+              </models>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-plugin-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate-descriptor</id>
+            <goals>
+              <goal>descriptor</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>run-its</id>
+      <properties>
+        <remoteRepository>${project.build.directory}/remote-repo</remoteRepository>
+      </properties>
+      <build>
+        <testResources>
+          <testResource>
+            <filtering>true</filtering>
+            <directory>src/it/resources</directory>
+            <excludes>
+              <exclude>custom-filter-delim/src/main/resources/**</exclude>
+              <exclude>**/*.jar</exclude>
+              <!-- maven-filtering chokes on JARs -->
+            </excludes>
+          </testResource>
+          <testResource>
+            <filtering>false</filtering>
+            <directory>src/it/resources</directory>
+            <includes>
+              <include>custom-filter-delim/src/main/resources/**</include>
+              <include>**/*.jar</include>
+              <!-- maven-filtering chokes on JARs -->
+            </includes>
+          </testResource>
+        </testResources>
+
+        <plugins>
+          <plugin>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>integration-tests</id>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+                <configuration>
+                  <systemPropertyVariables>
+                    <!--
+                      The tests have to pick the right repository.
+                      SUREFIRE-1385: Cannot set maven.repo.local directly because it might have been set by the user 
+                      on the CLI directly (and it would be preferred)
+                    -->
+                    <localRepositoryPath>${project.build.directory}/it-repo</localRepositoryPath>
+                  </systemPropertyVariables>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-invoker-plugin</artifactId>
+            <!-- TODO remove with next parent -->
+            <version>3.5.1</version>
+            <executions>
+              <execution>
+                <id>install-descriptor</id>
+                <goals>
+                  <goal>install</goal>
+                </goals>
+                <phase>pre-integration-test</phase>
+                <configuration>
+                  <localRepositoryPath>${project.build.directory}/it-repo</localRepositoryPath>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.seleniumhq.selenium</groupId>
+  <artifactId>selenium-bom</artifactId>
+  <version>4.31.0</version>
+  <packaging>pom</packaging>
+
+  <name>org.seleniumhq.selenium:selenium-bom</name>
+  <description>Selenium automates browsers. That's it! What you do with that power is entirely up to you.</description>
+  <url>https://selenium.dev/</url>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <scm>
+    <url>https://github.com/SeleniumHQ/selenium/</url>
+    <connection>scm:git:https://github.com/SeleniumHQ/selenium.git</connection>
+    <developerConnection>scm:git:git@github.com:SeleniumHQ/selenium.git</developerConnection>
+  </scm>
+
+  <developers>
+    <developer>
+      <id>simon.m.stewart</id>
+      <name>Simon Stewart</name>
+      <roles>
+        <role>Owner</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>barancev</id>
+      <name>Alexei Barantsev</name>
+      <roles>
+        <role>Committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>diemol</id>
+      <name>Diego Molina</name>
+      <roles>
+        <role>Committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>james.h.evans.jr</id>
+      <name>Jim Evans</name>
+      <roles>
+        <role>Committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>theautomatedtester</id>
+      <name>David Burns</name>
+      <roles>
+        <role>Committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>titusfortner</id>
+      <name>Titus Fortner</name>
+      <roles>
+        <role>Committer</role>
+      </roles>
+    </developer>
+  </developers>
+
+  <dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-api</artifactId>
+            <version>4.31.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-chrome-driver</artifactId>
+            <version>4.31.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-chromium-driver</artifactId>
+            <version>4.31.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-devtools-v133</artifactId>
+            <version>4.31.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-devtools-v134</artifactId>
+            <version>4.31.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-devtools-v135</artifactId>
+            <version>4.31.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-edge-driver</artifactId>
+            <version>4.31.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-firefox-driver</artifactId>
+            <version>4.31.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-grid</artifactId>
+            <version>4.31.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-http</artifactId>
+            <version>4.31.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-ie-driver</artifactId>
+            <version>4.31.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>4.31.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-json</artifactId>
+            <version>4.31.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-manager</artifactId>
+            <version>4.31.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-remote-driver</artifactId>
+            <version>4.31.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-safari-driver</artifactId>
+            <version>4.31.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-session-map-jdbc</artifactId>
+            <version>4.31.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-session-map-redis</artifactId>
+            <version>4.31.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-support</artifactId>
+            <version>4.31.0</version>
+        </dependency>
+    </dependencies>
+  </dependencyManagement>
+</project>

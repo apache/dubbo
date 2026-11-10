@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.eclipse.jetty.ee10</groupId>
+  <artifactId>jetty-ee10-bom</artifactId>
+  <version>12.0.34</version>
+  <packaging>pom</packaging>
+  <name>EE10 :: BOM</name>
+  <description>Jetty EE10 APIs BOM artifact</description>
+  <url>https://jetty.org/jetty-ee10/jetty-ee10-bom</url>
+  <inceptionYear>1995</inceptionYear>
+  <organization>
+    <name>Webtide</name>
+    <url>https://webtide.com</url>
+  </organization>
+  <licenses>
+    <license>
+      <name>EPL-2.0</name>
+      <url>https://www.eclipse.org/legal/epl-2.0/</url>
+      <distribution>repo</distribution>
+    </license>
+    <license>
+      <name>Apache-2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>gregw</id>
+      <name>Greg Wilkins</name>
+      <email>gregw@webtide.com</email>
+      <organization>Webtide, LLC</organization>
+      <organizationUrl>https://webtide.com</organizationUrl>
+      <timezone>10</timezone>
+    </developer>
+    <developer>
+      <id>janb</id>
+      <name>Jan Bartel</name>
+      <email>janb@webtide.com</email>
+      <organization>Webtide, LLC</organization>
+      <organizationUrl>https://webtide.com</organizationUrl>
+      <timezone>10</timezone>
+    </developer>
+    <developer>
+      <id>jesse</id>
+      <name>Jesse McConnell</name>
+      <email>jesse.mcconnell@gmail.com</email>
+      <organization>Webtide, LLC</organization>
+      <organizationUrl>https://webtide.com</organizationUrl>
+      <timezone>-6</timezone>
+    </developer>
+    <developer>
+      <id>joakime</id>
+      <name>Joakim Erdfelt</name>
+      <email>joakim.erdfelt@gmail.com</email>
+      <organization>Webtide, LLC</organization>
+      <organizationUrl>https://webtide.com</organizationUrl>
+      <timezone>-6</timezone>
+    </developer>
+    <developer>
+      <id>sbordet</id>
+      <name>Simone Bordet</name>
+      <email>simone.bordet@gmail.com</email>
+      <organization>Webtide, LLC</organization>
+      <organizationUrl>https://webtide.com</organizationUrl>
+      <timezone>1</timezone>
+    </developer>
+    <developer>
+      <id>djencks</id>
+      <name>David Jencks</name>
+      <email>david.a.jencks@gmail.com</email>
+      <organization>IBM</organization>
+      <timezone>-8</timezone>
+    </developer>
+    <developer>
+      <id>olamy</id>
+      <name>Olivier Lamy</name>
+      <email>oliver.lamy@gmail.com</email>
+      <organization>Webtide, LLC</organization>
+      <organizationUrl>https://webtide.com</organizationUrl>
+      <timezone>Australia/Brisbane</timezone>
+    </developer>
+    <developer>
+      <id>lorban</id>
+      <name>Ludovic Orban</name>
+      <email>lorban@bitronix.be</email>
+      <organization>Webtide, LLC</organization>
+      <organizationUrl>https://webtide.com</organizationUrl>
+      <timezone>1</timezone>
+    </developer>
+    <developer>
+      <id>lachlan-roberts</id>
+      <name>Lachlan Roberts</name>
+      <email>lachlan@webtide.com</email>
+      <organization>Webtide, LLC</organization>
+      <organizationUrl>https://webtide.com</organizationUrl>
+      <timezone>Australia/Sydney</timezone>
+    </developer>
+  </developers>
+  <mailingLists>
+    <mailingList>
+      <name>Jetty Developer Mailing List</name>
+      <subscribe>https://accounts.eclipse.org/mailing-list/jetty-dev</subscribe>
+      <archive>https://www.eclipse.org/lists/jetty-dev/</archive>
+    </mailingList>
+    <mailingList>
+      <name>Jetty Users Mailing List</name>
+      <subscribe>https://accounts.eclipse.org/mailing-list/jetty-users</subscribe>
+      <archive>https://www.eclipse.org/lists/jetty-users/</archive>
+    </mailingList>
+    <mailingList>
+      <name>Jetty Announce Mailing List</name>
+      <subscribe>https://accounts.eclipse.org/mailing-list/jetty-announce</subscribe>
+      <archive>https://www.eclipse.org/lists/jetty-announce/</archive>
+    </mailingList>
+  </mailingLists>
+  <scm>
+    <connection>scm:git:https://github.com/jetty/jetty.project.git/jetty-ee10/jetty-ee10-bom</connection>
+    <developerConnection>scm:git:git@github.com:jetty/jetty.project.git/jetty-ee10/jetty-ee10-bom</developerConnection>
+    <url>https://github.com/jetty/jetty.project/jetty-ee10/jetty-ee10-bom</url>
+  </scm>
+  <issueManagement>
+    <system>github</system>
+    <url>https://github.com/jetty/jetty.project/issues</url>
+  </issueManagement>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-annotations</artifactId>
+        <version>12.0.34</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-apache-jsp</artifactId>
+        <version>12.0.34</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-cdi</artifactId>
+        <version>12.0.34</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-fcgi-proxy</artifactId>
+        <version>12.0.34</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-glassfish-jstl</artifactId>
+        <version>12.0.34</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-jaspi</artifactId>
+        <version>12.0.34</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-jndi</artifactId>
+        <version>12.0.34</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-jspc-maven-plugin</artifactId>
+        <version>12.0.34</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-maven-plugin</artifactId>
+        <version>12.0.34</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-plus</artifactId>
+        <version>12.0.34</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-proxy</artifactId>
+        <version>12.0.34</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-quickstart</artifactId>
+        <version>12.0.34</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-runner</artifactId>
+        <version>12.0.34</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-servlet</artifactId>
+        <version>12.0.34</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-servlets</artifactId>
+        <version>12.0.34</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-webapp</artifactId>
+        <version>12.0.34</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10.osgi</groupId>
+        <artifactId>jetty-ee10-osgi-alpn</artifactId>
+        <version>12.0.34</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10.osgi</groupId>
+        <artifactId>jetty-ee10-osgi-boot</artifactId>
+        <version>12.0.34</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10.osgi</groupId>
+        <artifactId>jetty-ee10-osgi-boot-jsp</artifactId>
+        <version>12.0.34</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10.websocket</groupId>
+        <artifactId>jetty-ee10-websocket-jakarta-client</artifactId>
+        <version>12.0.34</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10.websocket</groupId>
+        <artifactId>jetty-ee10-websocket-jakarta-client-webapp</artifactId>
+        <version>12.0.34</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10.websocket</groupId>
+        <artifactId>jetty-ee10-websocket-jakarta-common</artifactId>
+        <version>12.0.34</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10.websocket</groupId>
+        <artifactId>jetty-ee10-websocket-jakarta-server</artifactId>
+        <version>12.0.34</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10.websocket</groupId>
+        <artifactId>jetty-ee10-websocket-jetty-client-webapp</artifactId>
+        <version>12.0.34</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10.websocket</groupId>
+        <artifactId>jetty-ee10-websocket-jetty-server</artifactId>
+        <version>12.0.34</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty.ee10.websocket</groupId>
+        <artifactId>jetty-ee10-websocket-servlet</artifactId>
+        <version>12.0.34</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+</project>

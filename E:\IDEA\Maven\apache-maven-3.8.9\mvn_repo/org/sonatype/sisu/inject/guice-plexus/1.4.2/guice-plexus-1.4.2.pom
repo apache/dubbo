@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <relativePath>../guice-bean</relativePath>
+    <groupId>org.sonatype.sisu.inject</groupId>
+    <artifactId>guice-bean</artifactId>
+    <version>1.4.2</version>
+  </parent>
+
+  <packaging>pom</packaging>
+
+  <artifactId>guice-plexus</artifactId>
+
+  <name>Guice - Plexus</name>
+
+  <modules>
+    <module>guice-plexus-metadata</module>
+    <module>guice-plexus-scanners</module>
+    <module>guice-plexus-converters</module>
+    <module>guice-plexus-locators</module>
+    <module>guice-plexus-binders</module>
+    <module>guice-plexus-shim</module>
+    <module>sisu-inject-plexus</module>
+  </modules>
+
+  <dependencyManagement>
+    <dependencies>
+
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-component-annotations</artifactId>
+        <version>1.5.4</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-classworlds</artifactId>
+        <version>2.2.3</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-utils</artifactId>
+        <version>2.0.5</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.sonatype.sisu.inject</groupId>
+        <artifactId>guice-plexus-metadata</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.sonatype.sisu.inject</groupId>
+        <artifactId>guice-plexus-scanners</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.sonatype.sisu.inject</groupId>
+        <artifactId>guice-plexus-converters</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.sonatype.sisu.inject</groupId>
+        <artifactId>guice-plexus-locators</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.sonatype.sisu.inject</groupId>
+        <artifactId>guice-plexus-binders</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.sonatype.sisu.inject</groupId>
+        <artifactId>guice-plexus-shim</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.sonatype.sisu.inject</groupId>
+        <artifactId>guice-plexus-tck</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.sonatype.sisu</groupId>
+        <artifactId>sisu-inject-plexus</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+    </dependencies>
+  </dependencyManagement>
+
+</project>

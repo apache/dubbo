@@ -1,0 +1,167 @@
+<!--
+  ~ Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
+  ~ Use of this file is governed by the BSD 3-clause license that
+  ~ can be found in the LICENSE.txt file in the project root.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>9</version>
+	</parent>
+	<groupId>org.antlr</groupId>
+	<artifactId>antlr4-master</artifactId>
+	<version>4.9.2</version>
+	<packaging>pom</packaging>
+
+	<name>ANTLR 4</name>
+	<description>ANTLR 4 Master Build POM</description>
+	<url>http://www.antlr.org</url>
+	<inceptionYear>1992</inceptionYear>
+	<organization>
+		<name>ANTLR</name>
+		<url>http://www.antlr.org</url>
+	</organization>
+
+	<licenses>
+		<license>
+			<name>The BSD License</name>
+			<url>http://www.antlr.org/license.html</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<name>Terence Parr</name>
+			<url>http://parrt.cs.usfca.edu</url>
+			<roles>
+				<role>Project lead - ANTLR</role>
+			</roles>
+		</developer>
+		<developer>
+			<name>Sam Harwell</name>
+			<url>http://tunnelvisionlabs.com</url>
+			<roles>
+				<role>Developer</role>
+			</roles>
+		</developer>
+		<developer>
+			<name>Eric Vergnaud</name>
+			<roles>
+				<role>Developer - JavaScript, C#, Python 2, Python 3</role>
+			</roles>
+		</developer>
+		<developer>
+			<name>Peter Boyer</name>
+			<roles>
+				<role>Developer - Go</role>
+			</roles>
+		</developer>
+		<developer>
+			<name>Jim Idle</name>
+			<email>jimi@idle.ws</email>
+			<url>http://www.linkedin.com/in/jimidle</url>
+			<roles>
+				<role>Developer - Maven Plugin</role>
+			</roles>
+		</developer>
+		<developer>
+			<name>Mike Lischke</name>
+			<roles>
+				<role>Developer - C++ Target</role>
+			</roles>
+		</developer>
+		<developer>
+			<name>Tom Everett</name>
+			<roles>
+				<role>Developer</role>
+			</roles>
+		</developer>
+	</developers>
+
+	<modules>
+		<module>runtime/Java</module>
+		<module>tool</module>
+		<module>antlr4-maven-plugin</module>
+		<module>tool-testsuite</module>
+		<module>runtime-testsuite/annotations</module>
+		<module>runtime-testsuite/processors</module>
+		<module>runtime-testsuite</module>
+	</modules>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<antlr.testinprocess>true</antlr.testinprocess>
+		<maven.compiler.source>1.7</maven.compiler.source>
+		<maven.compiler.target>1.7</maven.compiler.target>
+	</properties>
+
+	<mailingLists>
+		<mailingList>
+			<name>antlr-discussion</name>
+			<archive>https://groups.google.com/forum/?fromgroups#!forum/antlr-discussion</archive>
+		</mailingList>
+	</mailingLists>
+
+	<issueManagement>
+		<system>GitHub Issues</system>
+		<url>https://github.com/antlr/antlr4/issues</url>
+	</issueManagement>
+
+	<scm>
+		<url>https://github.com/antlr/antlr4/tree/master</url>
+		<connection>scm:git:git://github.com/antlr/antlr4.git</connection>
+		<developerConnection>scm:git:git@github.com:antlr/antlr4.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>resources</directory>
+			</resource>
+		</resources>
+		<testResources>
+			<testResource>
+				<directory>test</directory>
+			</testResource>
+		</testResources>
+		<plugins>
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>3.0.0</version>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>runtime/Swift/.build</directory>
+						</fileset>
+						<fileset>
+							<directory>runtime/Swift/Tests/Antlr4Tests/gen</directory>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+		</plugins>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.8.1</version>
+					<configuration>
+						<source>${maven.compiler.source}</source>
+						<target>${maven.compiler.target}</target>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+</project>

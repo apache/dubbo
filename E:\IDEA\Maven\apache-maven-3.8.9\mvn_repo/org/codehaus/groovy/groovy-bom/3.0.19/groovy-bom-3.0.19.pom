@@ -1,0 +1,975 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.codehaus.groovy</groupId>
+  <artifactId>groovy-bom</artifactId>
+  <version>3.0.19</version>
+  <packaging>pom</packaging>
+  <name>Apache Groovy</name>
+  <description>Groovy: A powerful, dynamic language for the JVM</description>
+  <url>https://groovy-lang.org</url>
+  <inceptionYear>2003</inceptionYear>
+  <organization>
+    <name>Apache Software Foundation</name>
+    <url>https://apache.org</url>
+  </organization>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>glaforge</id>
+      <name>Guillaume Laforge</name>
+      <organization>Google</organization>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>bob</id>
+      <name>bob mcwhirter</name>
+      <email>bob@werken.com</email>
+      <organization>The Werken Company</organization>
+      <roles>
+        <role>Founder</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>jstrachan</id>
+      <name>James Strachan</name>
+      <email>james@coredevelopers.com</email>
+      <organization>Core Developers Network</organization>
+      <roles>
+        <role>Founder</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>joe</id>
+      <name>Joe Walnes</name>
+      <organization>ThoughtWorks</organization>
+      <roles>
+        <role>Developer Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>skizz</id>
+      <name>Chris Stevenson</name>
+      <organization>ThoughtWorks</organization>
+      <roles>
+        <role>Developer Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>jamiemc</id>
+      <name>Jamie McCrindle</name>
+      <organization>Three</organization>
+      <roles>
+        <role>Developer Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>mattf</id>
+      <name>Matt Foemmel</name>
+      <organization>ThoughtWorks</organization>
+      <roles>
+        <role>Developer Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>alextkachman</id>
+      <name>Alex Tkachman</name>
+      <roles>
+        <role>Developer Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>roshandawrani</id>
+      <name>Roshan Dawrani</name>
+      <roles>
+        <role>Developer Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>spullara</id>
+      <name>Sam Pullara</name>
+      <email>sam@sampullara.com</email>
+      <roles>
+        <role>Developer Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>kasper</id>
+      <name>Kasper Nielsen</name>
+      <roles>
+        <role>Developer Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>travis</id>
+      <name>Travis Kay</name>
+      <roles>
+        <role>Developer Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>zohar</id>
+      <name>Zohar Melamed</name>
+      <roles>
+        <role>Developer Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>jwilson</id>
+      <name>John Wilson</name>
+      <email>tug@wilson.co.uk</email>
+      <organization>The Wilson Partnership</organization>
+      <roles>
+        <role>Developer Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>cpoirier</id>
+      <name>Chris Poirier</name>
+      <email>cpoirier@dreaming.org</email>
+      <roles>
+        <role>Developer Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>ckl</id>
+      <name>Christiaan ten Klooster</name>
+      <email>ckl@dacelo.nl</email>
+      <organization>Dacelo WebDevelopment</organization>
+      <roles>
+        <role>Developer Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>goetze</id>
+      <name>Steve Goetze</name>
+      <email>goetze@dovetail.com</email>
+      <organization>Dovetailed Technologies, LLC</organization>
+      <roles>
+        <role>Developer Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>bran</id>
+      <name>Bing Ran</name>
+      <email>b55r@sina.com</email>
+      <organization>Leadingcare</organization>
+      <roles>
+        <role>Developer Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>jez</id>
+      <name>Jeremy Rayner</name>
+      <email>jeremy.rayner@gmail.com</email>
+      <organization>javanicus</organization>
+      <roles>
+        <role>Developer Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>jstump</id>
+      <name>John Stump</name>
+      <email>johnstump2@yahoo.com</email>
+      <roles>
+        <role>Developer Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>blackdrag</id>
+      <name>Jochen Theodorou</name>
+      <email>blackdrag@gmx.org</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>russel</id>
+      <name>Russel Winder</name>
+      <email>russel@winder.org.uk</email>
+      <organization>Concertant LLP &amp; It'z Interactive Ltd</organization>
+      <roles>
+        <role>Developer</role>
+        <role>Founder of Gant</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>phk</id>
+      <name>Pilho Kim</name>
+      <email>phkim@cluecom.co.kr</email>
+      <roles>
+        <role>Developer Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>cstein</id>
+      <name>Christian Stein</name>
+      <email>sormuras@gmx.de</email>
+      <organization>CTSR.de</organization>
+      <roles>
+        <role>Developer Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>mittie</id>
+      <name>Dierk Koenig</name>
+      <organization>Karakun AG</organization>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>paulk</id>
+      <name>Paul King</name>
+      <email>paulk@asert.com.au</email>
+      <organization>OCI, Australia</organization>
+      <roles>
+        <role>Project Manager</role>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>galleon</id>
+      <name>Guillaume Alleon</name>
+      <email>guillaume.alleon@gmail.com</email>
+      <roles>
+        <role>Developer Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>user57</id>
+      <name>Jason Dillon</name>
+      <email>jason@planet57.com</email>
+      <roles>
+        <role>Developer Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>shemnon</id>
+      <name>Danno Ferrin</name>
+      <roles>
+        <role>Developer Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>jwill</id>
+      <name>James Williams</name>
+      <roles>
+        <role>Developer Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>timyates</id>
+      <name>Tim Yates</name>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>aalmiray</id>
+      <name>Andres Almiray</name>
+      <email>aalmiray@users.sourceforge.net</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>mguillem</id>
+      <name>Marc Guillemot</name>
+      <email>mguillemot@yahoo.fr</email>
+      <roles>
+        <role>Developer Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>jimwhite</id>
+      <name>Jim White</name>
+      <email>jim@pagesmiths.com</email>
+      <organization>IFCX.org</organization>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>pniederw</id>
+      <name>Peter Niederwieser</name>
+      <email>pniederw@gmail.com</email>
+      <roles>
+        <role>Developer Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>andresteingress</id>
+      <name>Andre Steingress</name>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>hamletdrc</id>
+      <name>Hamlet D'Arcy</name>
+      <email>hamletdrc@gmail.com</email>
+      <roles>
+        <role>Developer Emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>melix</id>
+      <name>Cedric Champeau</name>
+      <email>cedric.champeau@gmail.com</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>pascalschumacher</id>
+      <name>Pascal Schumacher</name>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>sunlan</id>
+      <name>Daniel Sun</name>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>rpopma</id>
+      <name>Remko Popma</name>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>grocher</id>
+      <name>Graeme Rocher</name>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>emilles</id>
+      <name>Eric Milles</name>
+      <organization>Thomson Reuters</organization>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+  </developers>
+  <contributors>
+    <contributor>
+      <name>Joern Eyrich</name>
+    </contributor>
+    <contributor>
+      <name>Robert Kuzelj</name>
+    </contributor>
+    <contributor>
+      <name>Rod Cope</name>
+    </contributor>
+    <contributor>
+      <name>Yuri Schimke</name>
+    </contributor>
+    <contributor>
+      <name>James Birchfield</name>
+    </contributor>
+    <contributor>
+      <name>Robert Fuller</name>
+    </contributor>
+    <contributor>
+      <name>Sergey Udovenko</name>
+    </contributor>
+    <contributor>
+      <name>Hallvard Traetteberg</name>
+    </contributor>
+    <contributor>
+      <name>Peter Reilly</name>
+    </contributor>
+    <contributor>
+      <name>Brian McCallister</name>
+    </contributor>
+    <contributor>
+      <name>Richard Monson-Haefel</name>
+    </contributor>
+    <contributor>
+      <name>Brian Larson</name>
+    </contributor>
+    <contributor>
+      <name>Artur Biesiadowski</name>
+      <email>abies@pg.gda.pl</email>
+    </contributor>
+    <contributor>
+      <name>Ivan Z. Ganza</name>
+    </contributor>
+    <contributor>
+      <name>Larry Jacobson</name>
+    </contributor>
+    <contributor>
+      <name>Jake Gage</name>
+    </contributor>
+    <contributor>
+      <name>Arjun Nayyar</name>
+    </contributor>
+    <contributor>
+      <name>Masato Nagai</name>
+    </contributor>
+    <contributor>
+      <name>Mark Chu-Carroll</name>
+    </contributor>
+    <contributor>
+      <name>Mark Turansky</name>
+    </contributor>
+    <contributor>
+      <name>Jean-Louis Berliet</name>
+    </contributor>
+    <contributor>
+      <name>Graham Miller</name>
+    </contributor>
+    <contributor>
+      <name>Marc Palmer</name>
+    </contributor>
+    <contributor>
+      <name>Tugdual Grall</name>
+    </contributor>
+    <contributor>
+      <name>Edwin Tellman</name>
+    </contributor>
+    <contributor>
+      <name>Evan "Hippy" Slatis</name>
+    </contributor>
+    <contributor>
+      <name>Mike Dillon</name>
+    </contributor>
+    <contributor>
+      <name>Bernhard Huber</name>
+    </contributor>
+    <contributor>
+      <name>Yasuharu Nakano</name>
+    </contributor>
+    <contributor>
+      <name>Marc DeXeT</name>
+    </contributor>
+    <contributor>
+      <name>Dejan Bosanac</name>
+      <email>dejan@nighttale.net</email>
+    </contributor>
+    <contributor>
+      <name>Denver Dino</name>
+    </contributor>
+    <contributor>
+      <name>Ted Naleid</name>
+    </contributor>
+    <contributor>
+      <name>Ted Leung</name>
+    </contributor>
+    <contributor>
+      <name>Merrick Schincariol</name>
+    </contributor>
+    <contributor>
+      <name>Chanwit Kaewkasi</name>
+    </contributor>
+    <contributor>
+      <name>Stefan Matthias Aust</name>
+    </contributor>
+    <contributor>
+      <name>Andy Dwelly</name>
+    </contributor>
+    <contributor>
+      <name>Philip Milne</name>
+    </contributor>
+    <contributor>
+      <name>Tiago Fernandez</name>
+    </contributor>
+    <contributor>
+      <name>Steve Button</name>
+    </contributor>
+    <contributor>
+      <name>Joachim Baumann</name>
+    </contributor>
+    <contributor>
+      <name>Jochen Eddel+</name>
+    </contributor>
+    <contributor>
+      <name>Ilinca V. Hallberg</name>
+    </contributor>
+    <contributor>
+      <name>Björn Westlin</name>
+    </contributor>
+    <contributor>
+      <name>Andrew Glover</name>
+    </contributor>
+    <contributor>
+      <name>Brad Long</name>
+    </contributor>
+    <contributor>
+      <name>John Bito</name>
+    </contributor>
+    <contributor>
+      <name>Jim Jagielski</name>
+    </contributor>
+    <contributor>
+      <name>Rodolfo Velasco</name>
+    </contributor>
+    <contributor>
+      <name>John Hurst</name>
+    </contributor>
+    <contributor>
+      <name>Merlyn Albery-Speyer</name>
+    </contributor>
+    <contributor>
+      <name>jeremi Joslin</name>
+    </contributor>
+    <contributor>
+      <name>UEHARA Junji</name>
+    </contributor>
+    <contributor>
+      <name>NAKANO Yasuharu</name>
+    </contributor>
+    <contributor>
+      <name>Dinko Srkoc</name>
+    </contributor>
+    <contributor>
+      <name>Raffaele Cigni</name>
+    </contributor>
+    <contributor>
+      <name>Alberto Vilches Raton</name>
+    </contributor>
+    <contributor>
+      <name>Paulo Poiati</name>
+    </contributor>
+    <contributor>
+      <name>Alexander Klein</name>
+    </contributor>
+    <contributor>
+      <name>Adam Murdoch</name>
+    </contributor>
+    <contributor>
+      <name>David Durham</name>
+    </contributor>
+    <contributor>
+      <name>Daniel Henrique Alves Lima</name>
+    </contributor>
+    <contributor>
+      <name>John Wagenleitner</name>
+    </contributor>
+    <contributor>
+      <name>Colin Harrington</name>
+    </contributor>
+    <contributor>
+      <name>Brian Alexander</name>
+    </contributor>
+    <contributor>
+      <name>Jan Weitz</name>
+    </contributor>
+    <contributor>
+      <name>Chris K Wensel</name>
+    </contributor>
+    <contributor>
+      <name>David Sutherland</name>
+    </contributor>
+    <contributor>
+      <name>Mattias Reichel</name>
+    </contributor>
+    <contributor>
+      <name>David Lee</name>
+    </contributor>
+    <contributor>
+      <name>Sergei Egorov</name>
+    </contributor>
+    <contributor>
+      <name>Hein Meling</name>
+    </contributor>
+    <contributor>
+      <name>Michael Baehr</name>
+    </contributor>
+    <contributor>
+      <name>Craig Andrews</name>
+    </contributor>
+    <contributor>
+      <name>Peter Ledbrook</name>
+    </contributor>
+    <contributor>
+      <name>Scott Stirling</name>
+    </contributor>
+    <contributor>
+      <name>Thibault Kruse</name>
+    </contributor>
+    <contributor>
+      <name>Tim Tiemens</name>
+    </contributor>
+    <contributor>
+      <name>Mike Spille</name>
+    </contributor>
+    <contributor>
+      <name>Nikolay Chugunov</name>
+    </contributor>
+    <contributor>
+      <name>Francesco Durbin</name>
+    </contributor>
+    <contributor>
+      <name>Paolo Di Tommaso</name>
+    </contributor>
+    <contributor>
+      <name>Rene Scheibe</name>
+    </contributor>
+    <contributor>
+      <name>Matias Bjarland</name>
+    </contributor>
+    <contributor>
+      <name>Tomasz Bujok</name>
+    </contributor>
+    <contributor>
+      <name>Richard Hightower</name>
+    </contributor>
+    <contributor>
+      <name>Andrey Bloschetsov</name>
+    </contributor>
+    <contributor>
+      <name>Yu Kobayashi</name>
+    </contributor>
+    <contributor>
+      <name>Nick Grealy</name>
+    </contributor>
+    <contributor>
+      <name>Vaclav Pech</name>
+    </contributor>
+    <contributor>
+      <name>Chuck Tassoni</name>
+    </contributor>
+    <contributor>
+      <name>Steven Devijver</name>
+    </contributor>
+    <contributor>
+      <name>Ben Manes</name>
+    </contributor>
+    <contributor>
+      <name>Troy Heninger</name>
+    </contributor>
+    <contributor>
+      <name>Andrew Eisenberg</name>
+    </contributor>
+    <contributor>
+      <name>Eric Milles</name>
+    </contributor>
+    <contributor>
+      <name>Kohsuke Kawaguchi</name>
+    </contributor>
+    <contributor>
+      <name>Scott Vlaminck</name>
+    </contributor>
+    <contributor>
+      <name>Hjalmar Ekengren</name>
+    </contributor>
+    <contributor>
+      <name>Rafael Luque</name>
+    </contributor>
+    <contributor>
+      <name>Joachim Heldmann</name>
+    </contributor>
+    <contributor>
+      <name>dgouyette</name>
+    </contributor>
+    <contributor>
+      <name>Marcin Grzejszczak</name>
+    </contributor>
+    <contributor>
+      <name>Pap Lőrinc</name>
+    </contributor>
+    <contributor>
+      <name>Guillaume Balaine</name>
+    </contributor>
+    <contributor>
+      <name>Santhosh Kumar T</name>
+    </contributor>
+    <contributor>
+      <name>Alan Green</name>
+    </contributor>
+    <contributor>
+      <name>Marty Saxton</name>
+    </contributor>
+    <contributor>
+      <name>Marcel Overdijk</name>
+    </contributor>
+    <contributor>
+      <name>Jonathan Carlson</name>
+    </contributor>
+    <contributor>
+      <name>Thomas Heller</name>
+    </contributor>
+    <contributor>
+      <name>John Stump</name>
+    </contributor>
+    <contributor>
+      <name>Ivan Ganza</name>
+    </contributor>
+    <contributor>
+      <name>Alex Popescu</name>
+    </contributor>
+    <contributor>
+      <name>Martin Kempf</name>
+    </contributor>
+    <contributor>
+      <name>Martin Ghados</name>
+    </contributor>
+    <contributor>
+      <name>Martin Stockhammer</name>
+    </contributor>
+    <contributor>
+      <name>Martin C. Martin</name>
+    </contributor>
+    <contributor>
+      <name>Alexey Verkhovsky</name>
+    </contributor>
+    <contributor>
+      <name>Alberto Mijares</name>
+    </contributor>
+    <contributor>
+      <name>Matthias Cullmann</name>
+    </contributor>
+    <contributor>
+      <name>Tomek Bujok</name>
+    </contributor>
+    <contributor>
+      <name>Stephane Landelle</name>
+    </contributor>
+    <contributor>
+      <name>Stephane Maldini</name>
+    </contributor>
+    <contributor>
+      <name>Mark Volkmann</name>
+    </contributor>
+    <contributor>
+      <name>Andrew Taylor</name>
+    </contributor>
+    <contributor>
+      <name>Vladimir Vivien</name>
+    </contributor>
+    <contributor>
+      <name>Vladimir Orany</name>
+    </contributor>
+    <contributor>
+      <name>Joe Wolf</name>
+    </contributor>
+    <contributor>
+      <name>Kent Inge Fagerland Simonsen</name>
+    </contributor>
+    <contributor>
+      <name>Tom Nichols</name>
+    </contributor>
+    <contributor>
+      <name>Ingo Hoffmann</name>
+    </contributor>
+    <contributor>
+      <name>Sergii Bondarenko</name>
+    </contributor>
+    <contributor>
+      <name>mgroovy</name>
+    </contributor>
+    <contributor>
+      <name>Dominik Przybysz</name>
+    </contributor>
+    <contributor>
+      <name>Jason Thomas</name>
+    </contributor>
+    <contributor>
+      <name>Trygve Amundsens</name>
+    </contributor>
+    <contributor>
+      <name>Morgan Hankins</name>
+    </contributor>
+    <contributor>
+      <name>Shruti Gupta</name>
+    </contributor>
+    <contributor>
+      <name>Ben Yu</name>
+    </contributor>
+    <contributor>
+      <name>Dejan Bosanac</name>
+    </contributor>
+    <contributor>
+      <name>Lidia Donajczyk-Lipinska</name>
+    </contributor>
+    <contributor>
+      <name>Peter Gromov</name>
+    </contributor>
+    <contributor>
+      <name>Johannes Link</name>
+    </contributor>
+    <contributor>
+      <name>Chris Reeves</name>
+    </contributor>
+    <contributor>
+      <name>Sean Timm</name>
+    </contributor>
+    <contributor>
+      <name>Dmitry Vyazelenko</name>
+    </contributor>
+  </contributors>
+  <mailingLists>
+    <mailingList>
+      <name>Groovy Developer List</name>
+      <archive>https://mail-archives.apache.org/mod_mbox/groovy-dev/</archive>
+    </mailingList>
+    <mailingList>
+      <name>Groovy User List</name>
+      <archive>https://mail-archives.apache.org/mod_mbox/groovy-users/</archive>
+    </mailingList>
+  </mailingLists>
+  <scm>
+    <connection>scm:git:https://github.com/apache/groovy.git</connection>
+    <developerConnection>scm:git:https://github.com/apache/groovy.git</developerConnection>
+    <url>https://github.com/apache/groovy.git</url>
+  </scm>
+  <issueManagement>
+    <system>jira</system>
+    <url>https://issues.apache.org/jira/browse/GROOVY</url>
+  </issueManagement>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-ant</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-astbuilder</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-bsf</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-cli-commons</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-cli-picocli</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-console</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-datetime</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-dateutil</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-docgenerator</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-groovydoc</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-groovysh</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-jaxb</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-jmx</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-json</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-jsr223</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-macro</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-nio</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-servlet</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-sql</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-swing</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-templates</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-test</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-test-junit5</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-testng</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-xml</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-yaml</artifactId>
+        <version>3.0.19</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+</project>

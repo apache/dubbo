@@ -1,0 +1,65 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>jar</packaging>
+    <groupId>org.checkerframework</groupId>
+    <artifactId>checker-qual</artifactId>
+     <version>3.8.0</version>
+
+    <name>Checker Qual</name>
+    <url>https://checkerframework.org</url>
+    <description>
+        Checker Qual is the set of annotations (qualifiers) and supporting classes
+        used by the Checker Framework to type check Java source code.
+
+        Please
+        see artifact:
+        org.checkerframework:checker
+    </description>
+
+    <licenses>
+        <license>
+            <name>The MIT License</name>
+            <url>http://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/typetools/checker-framework.git</url>
+        <connection>https://github.com/typetools/checker-framework.git</connection>
+    </scm>
+
+    <developers>
+
+        <!-- These are the lead developers, not all the contributors. -->
+
+        <developer>
+            <id>mernst</id>
+            <name>Michael Ernst</name>
+            <email>mernst@cs.washington.edu</email>
+            <url>https://homes.cs.washington.edu/~mernst/</url>
+            <organization>University of Washington</organization>
+            <organizationUrl>https://www.cs.washington.edu/</organizationUrl>
+        </developer>
+
+        <developer>
+            <id>wmdietl</id>
+            <name>Werner M. Dietl</name>
+            <email>wdietl@uwaterloo.ca</email>
+            <organization>University of Waterloo</organization>
+            <organizationUrl>http://uwaterloo.ca/</organizationUrl>
+        </developer>
+
+        <developer>
+            <id>smillst</id>
+            <name>Suzanne Millstein</name>
+            <email>smillst@cs.washington.edu</email>
+            <organization>University of Washington</organization>
+            <organizationUrl>https://www.cs.washington.edu/research/plse/</organizationUrl>
+        </developer>
+
+    </developers>
+
+</project>

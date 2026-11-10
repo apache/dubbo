@@ -1,0 +1,443 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.codehaus.plexus</groupId>
+  <artifactId>plexus-utils</artifactId>
+  <version>4.0.2</version>
+  <name>Plexus Common Utilities</name>
+  <description>A collection of various utility classes to ease working with strings, files, command lines and
+    more.</description>
+  <url>https://codehaus-plexus.github.io/plexus-utils/</url>
+  <inceptionYear>2001</inceptionYear>
+  <organization>
+    <name>Codehaus Plexus</name>
+    <url>https://codehaus-plexus.github.io/</url>
+  </organization>
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>jvanzyl</id>
+      <name>Jason van Zyl</name>
+      <email>jason@maven.org</email>
+      <roles>
+        <role>Developer</role>
+        <role>Release Manager</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>kaz</id>
+      <name>Pete Kazmier</name>
+      <email></email>
+      <organization></organization>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>jtaylor</id>
+      <name>James Taylor</name>
+      <email>james@jamestaylor.org</email>
+      <organization></organization>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>dandiep</id>
+      <name>Dan Diephouse</name>
+      <email>dan@envoisolutions.com</email>
+      <organization>Envoi solutions</organization>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>kasper</id>
+      <name>Kasper Nielsen</name>
+      <email>apache@kav.dk</email>
+      <organization></organization>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>bwalding</id>
+      <name>Ben Walding</name>
+      <email>bwalding@codehaus.org</email>
+      <organization>Walding Consulting Services</organization>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>mhw</id>
+      <name>Mark Wilkinson</name>
+      <email>mhw@kremvax.net</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>michal</id>
+      <name>Michal Maczka</name>
+      <email>mmaczka@interia.pl</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>evenisse</id>
+      <name>Emmanuel Venisse</name>
+      <email>evenisse@codehaus.org</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>trygvis</id>
+      <name>Trygve Laugstøl</name>
+      <email>trygvis@codehaus.org</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>kenney</id>
+      <name>Kenney Westerhof</name>
+      <email>kenney@codehaus.org</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>carlos</id>
+      <name>Carlos Sanchez</name>
+      <email>carlos@codehaus.org</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>brett</id>
+      <name>Brett Porter</name>
+      <email>brett@codehaus.org</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>jdcasey</id>
+      <name>John Casey</name>
+      <email>jdcasey@codehaus.org</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>handyande</id>
+      <name>Andrew Williams</name>
+      <email>andy@handyande.co.uk</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>rahul</id>
+      <name>Rahul Thakur</name>
+      <email>rahul.thakur.xdev@gmail.com</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>joakime</id>
+      <name>Joakim Erdfelt</name>
+      <email>joakim@erdfelt.com</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>olamy</id>
+      <name>Olivier Lamy</name>
+      <email>olamy@codehaus.org</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>hboutemy</id>
+      <name>Hervé Boutemy</name>
+      <email>hboutemy@apache.org</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>oleg</id>
+      <name>Oleg Gusakov</name>
+      <email>olegy@codehaus.org</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>vsiveton</id>
+      <name>Vincent Siveton</name>
+      <email>vsiveton@codehaus.org</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>krosenvold</id>
+      <name>Kristian Rosenvold</name>
+      <email>krosenvold@apache.org</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>agudian</id>
+      <name>Andreas Gudian</name>
+      <email>agudian@apache.org</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>khmarbaise</id>
+      <name>Karl Heinz Marbaise</name>
+      <email>khmarbaise@apache.org</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>michael-o</id>
+      <name>Michael Osipov</name>
+      <email>1983-01-06@gmx.net</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>belingueres</id>
+      <name>Gabriel Belingueres</name>
+      <email>belingueres@gmail.com</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>kwin</id>
+      <name>Konrad Windszus</name>
+      <email>kwin@apache.org</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>sjaranowski</id>
+      <name>Slawomir Jaranowski</name>
+      <email>sjaranowski@apache.org</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>slachiewicz</id>
+      <name>Sylwester Lachiewicz</name>
+      <email>slachiewicz@apache.org</email>
+      <organization>ASF</organization>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>gnodet</id>
+      <name>Guillaume Nodet</name>
+      <email>gnodet@apache.org</email>
+      <organization>ASF</organization>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+  </developers>
+  <mailingLists>
+    <mailingList>
+      <name>Plexus and MojoHaus Development List</name>
+      <subscribe>mojohaus-dev+subscribe@googlegroups.com</subscribe>
+      <unsubscribe>mojohaus-dev+unsubscribe@googlegroups.com</unsubscribe>
+      <post>mojohaus-dev@googlegroups.com</post>
+      <archive>https://groups.google.com/forum/#!forum/mojohaus-dev</archive>
+    </mailingList>
+  </mailingLists>
+  <scm>
+    <connection>scm:git:https://github.com/codehaus-plexus/plexus-utils.git</connection>
+    <developerConnection>scm:git:https://github.com/codehaus-plexus/plexus-utils.git</developerConnection>
+    <tag>plexus-utils-4.0.2</tag>
+    <url>https://github.com/codehaus-plexus/plexus-utils/tree/plexus-utils-4.0.2/</url>
+  </scm>
+  <issueManagement>
+    <system>github</system>
+    <url>https://github.com/codehaus-plexus/plexus-utils/issues</url>
+  </issueManagement>
+  <distributionManagement>
+    <repository>
+      <id>plexus-releases</id>
+      <name>Plexus Release Repository</name>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+    <snapshotRepository>
+      <id>plexus-snapshots</id>
+      <name>Plexus Snapshot Repository</name>
+      <url>https://oss.sonatype.org/content/repositories/plexus-snapshots</url>
+    </snapshotRepository>
+    <site>
+      <id>github:gh-pages</id>
+      <url>scm:git:https://github.com/codehaus-plexus/plexus-utils.git</url>
+    </site>
+  </distributionManagement>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.maven.plugin-tools</groupId>
+        <artifactId>maven-plugin-annotations</artifactId>
+        <version>3.13.0</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>5.10.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>5.10.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>5.10.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-migrationsupport</artifactId>
+        <version>5.10.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-params</artifactId>
+        <version>5.10.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.platform</groupId>
+        <artifactId>junit-platform-commons</artifactId>
+        <version>1.10.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.platform</groupId>
+        <artifactId>junit-platform-console</artifactId>
+        <version>1.10.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.platform</groupId>
+        <artifactId>junit-platform-engine</artifactId>
+        <version>1.10.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.platform</groupId>
+        <artifactId>junit-platform-jfr</artifactId>
+        <version>1.10.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.platform</groupId>
+        <artifactId>junit-platform-launcher</artifactId>
+        <version>1.10.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.platform</groupId>
+        <artifactId>junit-platform-reporting</artifactId>
+        <version>1.10.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.platform</groupId>
+        <artifactId>junit-platform-runner</artifactId>
+        <version>1.10.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.platform</groupId>
+        <artifactId>junit-platform-suite</artifactId>
+        <version>1.10.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.platform</groupId>
+        <artifactId>junit-platform-suite-api</artifactId>
+        <version>1.10.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.platform</groupId>
+        <artifactId>junit-platform-suite-commons</artifactId>
+        <version>1.10.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.platform</groupId>
+        <artifactId>junit-platform-suite-engine</artifactId>
+        <version>1.10.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.platform</groupId>
+        <artifactId>junit-platform-testkit</artifactId>
+        <version>1.10.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.vintage</groupId>
+        <artifactId>junit-vintage-engine</artifactId>
+        <version>5.10.2</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-xml</artifactId>
+      <version>3.0.1</version>
+      <scope>compile</scope>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>5.10.2</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <profiles>
+    <profile>
+      <id>jdk9+</id>
+      <activation>
+        <jdk>[9,)</jdk>
+      </activation>
+    </profile>
+    <profile>
+      <id>jdk10+</id>
+      <activation>
+        <jdk>[10,)</jdk>
+      </activation>
+    </profile>
+    <profile>
+      <id>jdk11+</id>
+      <activation>
+        <jdk>[11,)</jdk>
+      </activation>
+    </profile>
+  </profiles>
+</project>

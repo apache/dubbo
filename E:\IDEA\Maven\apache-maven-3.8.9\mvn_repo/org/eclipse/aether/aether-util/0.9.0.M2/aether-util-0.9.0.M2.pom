@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ ~ Copyright (c) 2010, 2012 Sonatype, Inc.
+ ~ All rights reserved. This program and the accompanying materials
+ ~ are made available under the terms of the Eclipse Public License v1.0
+ ~ which accompanies this distribution, and is available at
+ ~ http://www.eclipse.org/legal/epl-v10.html
+ ~
+ ~ Contributors:
+ ~    Sonatype, Inc. - initial API and implementation
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.eclipse.aether</groupId>
+    <artifactId>aether</artifactId>
+    <version>0.9.0.M2</version>
+  </parent>
+
+  <artifactId>aether-util</artifactId>
+
+  <name>Aether Utilities</name>
+  <description>
+    A collection of utility classes to ease usage of the repository system.
+  </description>
+
+  <properties>
+    <bundle.symbolicName>org.eclipse.aether.util</bundle.symbolicName>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-test-util</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>animal-sniffer-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>clirr-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+</project>

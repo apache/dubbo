@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>net.java</groupId>
+        <artifactId>jvnet-parent</artifactId>
+        <version>3</version>
+    </parent>
+
+    <groupId>javax.servlet</groupId>
+    <artifactId>javax.servlet-api</artifactId>
+    <packaging>jar</packaging>
+    <version>3.1.0</version>
+
+    <properties>
+        <spec.version>3.1</spec.version>
+        <extension.name>javax.servlet</extension.name>
+        <bundle.symbolicName>javax.servlet-api</bundle.symbolicName>
+        <bundle.version>3.1.0</bundle.version>
+        <window.title>Java Servlet 3.1</window.title>
+        <doc.title>Java Servlet 3.1 API Specification</doc.title>
+        <vendor.name>Oracle Corporation</vendor.name>
+        <implementation.vendor.id>org.glassfish</implementation.vendor.id>
+        <findbugs.version>2.3.1</findbugs.version>
+        <findbugs.exclude>exclude.xml</findbugs.exclude>
+        <findbugs.threshold>Low</findbugs.threshold>
+        <copyright-plugin.version>1.33</copyright-plugin.version>
+    </properties>
+    <name>Java Servlet API</name>
+    
+    <url>http://servlet-spec.java.net</url>
+
+    <developers>
+        <developer>
+            <id>mode</id>
+            <name>Rajiv Mordani</name>
+            <url>http://weblogs.java.net/blog/mode</url>
+            <organization>Oracle</organization>
+            <roles>
+                <role>lead</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>swchan2</id>
+            <name>Shing Wai Chan</name>
+            <url>http://weblogs.java.net/blog/swchan2</url>
+            <organization>Oracle</organization>
+            <roles>
+                <role>lead</role>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <organization>
+        <name>GlassFish Community</name>
+        <url>https://glassfish.dev.java.net</url>
+    </organization>
+    <licenses>
+        <license>
+            <name>CDDL + GPLv2 with classpath exception</name>
+            <url>https://glassfish.dev.java.net/nonav/public/CDDL+GPL.html</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+    <issueManagement>
+        <system>jira</system>
+        <url>http://java.net/jira/browse/SERVLET_SPEC</url>
+    </issueManagement>
+    <mailingLists>
+        <mailingList>
+            <name>Servlet Developer</name>
+            <archive>users@servlet-spec.java.net</archive>
+        </mailingList>
+    </mailingLists>
+    <scm>
+        <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/javax.servlet-api-3.1.0</connection>
+        <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/javax.servlet-api-3.1.0</developerConnection>
+        <url>http://java.net/projects/glassfish/sources/svn/show/tags/javax.servlet-api-3.1.0</url>
+    </scm>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.0.2</version>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                    <compilerArgument>-Xlint:unchecked</compilerArgument>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>1.4.3</version>
+                <configuration>
+                    <supportedProjectTypes>
+                        <supportedProjectType>jar</supportedProjectType>
+                    </supportedProjectTypes>
+                    <instructions>
+                        <Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
+                        <Bundle-Description>
+                            Java(TM) Servlet ${spec.version} API Design Specification
+                        </Bundle-Description>
+                        <Bundle-Version>${bundle.version}</Bundle-Version>
+                        <Extension-Name>${extension.name}</Extension-Name>
+                        <Specification-Version>${spec.version}</Specification-Version>
+                        <Specification-Vendor>${vendor.name}</Specification-Vendor>
+                        <Implementation-Version>${project.version}</Implementation-Version>
+                        <Implementation-Vendor>${project.organization.name}</Implementation-Vendor>
+                        <Implementation-Vendor-Id>${implementation.vendor.id}</Implementation-Vendor-Id>
+                    </instructions>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
+                    <excludes>
+                        <exclude>**/*.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-remote-resources-plugin</artifactId>
+                <version>1.2.1</version>
+                <executions>
+                  <execution>
+                    <goals>
+                      <goal>process</goal>
+                    </goals>
+                    <configuration>
+                      <resourceBundles>
+                        <resourceBundle>org.glassfish:legal:1.1</resourceBundle>
+                      </resourceBundles>
+                    </configuration>
+                  </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.1</version>
+                <configuration>
+                    <includePom>true</includePom>
+                </configuration>
+                <executions>
+                    <execution>
+                       <id>attach-sources</id>
+                       <goals>
+                           <goal>jar-no-fork</goal> 
+                       </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.8</version>
+                <configuration>
+                    <sourcepath>src</sourcepath>
+                    <doctitle>${doc.title}</doctitle>
+                    <windowtitle>${window.title}</windowtitle>
+                    <groups>
+                        <group>
+                            <title>Servlet API Documentation</title>
+                            <packages>javax.servlet</packages>
+                        </group>
+                    </groups>
+                    <bottom>
+<![CDATA[Copyright &#169; 1999-2013,
+    <a href="http://www.oracle.com">Oracle</a>
+    and/or its affiliates. All Rights Reserved.
+    Use is subject to
+    <a href="{@docRoot}/doc-files/speclicense.html" target="_top">license terms</a>.
+    Portions Copyright &#169; 1999-2002 The Apache Software Foundation.
+]]>
+                    </bottom>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>javadoc</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>     
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>findbugs-maven-plugin</artifactId>
+                <version>${findbugs.version}</version>
+                <configuration>
+                    <threshold>${findbugs.threshold}</threshold>
+                    <excludeFilterFile>${findbugs.exclude}</excludeFilterFile>
+                    <findbugsXmlOutput>true</findbugsXmlOutput>
+                    <findbugsXmlWithMessages>true</findbugsXmlWithMessages>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <configuration>
+                    <mavenExecutorId>forked-path</mavenExecutorId>
+                    <useReleaseProfile>false</useReleaseProfile>
+                    <arguments>${release.arguments}</arguments>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.glassfish.copyright</groupId>
+                <artifactId>glassfish-copyright-maven-plugin</artifactId>
+                <version>${copyright-plugin.version}</version>
+                <configuration>
+                    <excludeFile>
+                        ${basedir}/copyright-exclude
+                    </excludeFile>
+                </configuration>
+            </plugin>
+        </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                    <include>**/*.html</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>META-INF/README</exclude>
+                </excludes>
+            </resource>
+        </resources>
+    </build>
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>findbugs-maven-plugin</artifactId>
+                <version>${findbugs.version}</version>
+                <configuration>
+                    <threshold>${findbugs.threshold}</threshold>
+                    <excludeFilterFile>${findbugs.exclude}</excludeFilterFile>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
+    <!-- for downloading org.glassfish:legal:1.1 resource bundle      -->
+    <!-- referenced in maven-remote-resources-plugin.  Will           -->
+    <!-- remove the repositories element once org.glassfish:legal:1.1 -->
+    <!-- is available in the central repo.                                      -->
+    <repositories>
+        <repository>
+            <id>glassfish-repository</id>
+            <url>http://download.java.net/maven/glassfish</url>
+            <snapshots>
+                <updatePolicy>never</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
+</project>

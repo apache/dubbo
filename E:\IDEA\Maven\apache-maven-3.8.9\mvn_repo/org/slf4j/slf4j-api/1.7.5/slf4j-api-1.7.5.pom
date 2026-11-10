@@ -1,0 +1,89 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <parent>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-parent</artifactId>
+    <version>1.7.5</version>
+  </parent>
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.slf4j</groupId>
+  <artifactId>slf4j-api</artifactId>
+  <packaging>jar</packaging>
+  <name>SLF4J API Module</name>
+  <description>The slf4j API</description>
+
+  <url>http://www.slf4j.org</url>
+
+  <dependencies>
+
+  </dependencies> 
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <forkMode>once</forkMode>
+          <reportFormat>plain</reportFormat>
+          <trimStackTrace>false</trimStackTrace>
+          <excludes>
+            <exclude>**/AllTest.java</exclude>
+            <exclude>**/PackageTest.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestEntries>
+              <Bundle-Version>${parsedVersion.osgiVersion}</Bundle-Version>
+              <Bundle-Description>${project.description}</Bundle-Description>
+              <Implementation-Version>${project.version}</Implementation-Version>
+            </manifestEntries>
+            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+          </archive>
+        </configuration>
+        <executions>
+          <execution>
+            <id>bundle-test-jar</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>process-classes</phase>
+            <goals>
+             <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <tasks>
+            <echo>Removing slf4j-api's dummy StaticLoggerBinder and StaticMarkerBinder</echo>
+            <delete dir="target/classes/org/slf4j/impl"/>
+          </tasks>
+        </configuration>
+      </plugin>
+
+    </plugins>
+
+  </build>
+
+</project>

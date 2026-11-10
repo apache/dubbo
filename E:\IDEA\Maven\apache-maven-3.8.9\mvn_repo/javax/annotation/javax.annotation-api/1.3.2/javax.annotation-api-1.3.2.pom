@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2012-2017 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://oss.oracle.com/licenses/CDDL+GPL-1.1
+    or LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>net.java</groupId>
+        <artifactId>jvnet-parent</artifactId>
+        <version>3</version>
+    </parent>
+
+    <groupId>javax.annotation</groupId>
+    <artifactId>javax.annotation-api</artifactId>
+    <version>1.3.2</version>
+    
+    <properties>
+        <non.final>false</non.final>
+        <spec.version>1.3</spec.version>
+        <extension.name>javax.annotation</extension.name>
+        <bundle.symbolicName>javax.annotation-api</bundle.symbolicName>
+        <vendor.name>Oracle Corporation</vendor.name>
+        <implementation.vendor.id>org.glassfish</implementation.vendor.id>
+        <findbugs.version>2.3.1</findbugs.version>
+        <findbugs.exclude>exclude.xml</findbugs.exclude>
+        <findbugs.threshold>Low</findbugs.threshold>
+    </properties>
+    <name>${extension.name} API</name>
+    <description>Common Annotations for the JavaTM Platform API</description>
+
+    <url>http://jcp.org/en/jsr/detail?id=250</url>
+
+    <developers>
+         <developer>
+            <id>ldemichiel</id>
+            <name>Linda De Michiel</name>
+            <organization>Oracle Corp.</organization>
+            <roles>
+                <role>lead</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <organization>
+        <name>GlassFish Community</name>
+        <url>https://javaee.github.io/glassfish</url>
+    </organization>
+    <licenses>
+        <license>
+            <name>CDDL + GPLv2 with classpath exception</name>
+            <url>https://github.com/javaee/javax.annotation/blob/master/LICENSE</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/javaee/javax.annotation/issues</url>
+    </issueManagement>
+    <mailingLists>
+        <mailingList>
+            <name>GlassFish Developer</name>
+            <archive>javaee-spec@javaee.groups.io</archive>
+        </mailingList>
+    </mailingLists>
+    <scm>
+        <connection>scm:git:https://github.com/javaee/javax.annotation.git</connection>
+        <developerConnection>scm:git:git@github.com:javaee/javax.annotation.git</developerConnection>
+        <url>https://github.com/javaee/javax.annotation</url>
+      <tag>1.3.2</tag>
+  </scm>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                    <include>**/*.html</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>META-INF/README</exclude>
+                </excludes>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.5.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <compilerArgument>-Xlint:unchecked</compilerArgument>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.glassfish.build</groupId>
+                <artifactId>spec-version-maven-plugin</artifactId>
+                <version>1.2</version>
+                <configuration>
+                    <spec>
+                        <nonFinal>${non.final}</nonFinal>
+                        <jarType>api</jarType>
+                        <specBuild>${spec.build}</specBuild>
+                        <specVersion>${spec.version}</specVersion>
+                        <newSpecVersion>${new.spec.version}</newSpecVersion>
+                        <specImplVersion>${project.version}</specImplVersion>
+                        <apiPackage>${extension.name}</apiPackage>
+                    </spec>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>set-spec-properties</goal>
+                            <goal>check-module</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>1.4.3</version>
+                <configuration>
+                    <supportedProjectTypes>
+                        <supportedProjectType>jar</supportedProjectType>
+                    </supportedProjectTypes>
+                    <instructions>
+                        <Bundle-Version>${spec.bundle.version}</Bundle-Version>
+                        <Bundle-SymbolicName>${spec.bundle.symbolic-name}</Bundle-SymbolicName>
+                        <Extension-Name>${spec.extension.name}</Extension-Name>
+                        <Implementation-Version>${spec.implementation.version}</Implementation-Version>
+                        <Specification-Version>${spec.specification.version}</Specification-Version>
+                        <Bundle-Description>
+                            Java(TM) Common Annotations ${spec.version} API Design Specification
+                        </Bundle-Description>
+                        <Specification-Vendor>${vendor.name}</Specification-Vendor>
+                        <Implementation-Vendor>${project.organization.name}</Implementation-Vendor>
+                        <Implementation-Vendor-Id>${implementation.vendor.id}</Implementation-Vendor-Id>
+                    </instructions>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                        <manifestEntries>
+                            <!-- for JDK 9 -->
+                            <Automatic-Module-Name>
+                                java.annotation
+                            </Automatic-Module-Name>
+                        </manifestEntries>
+                    </archive>
+                    <excludes>
+                        <exclude>**/*.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-remote-resources-plugin</artifactId>
+                <version>1.2.1</version>
+                <executions>
+                  <execution>
+                    <goals>
+                      <goal>process</goal>
+                    </goals>
+                    <configuration>
+                      <resourceBundles>
+                        <resourceBundle>org.glassfish:legal:1.1</resourceBundle>
+                      </resourceBundles>
+                    </configuration>
+                  </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.1</version>
+                <configuration>
+                    <includePom>true</includePom>
+                </configuration>
+                <executions>
+                    <execution>
+                       <id>attach-sources</id>
+                       <goals>
+                           <goal>jar-no-fork</goal> 
+                       </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.8</version>
+                <executions>
+		    <execution>
+                        <id>attach-javadocs</id>
+	                <goals>
+                            <goal>jar</goal>
+                        </goals>
+		    </execution>
+                    <execution>
+                        <phase>javadoc</phase>
+                        <goals>
+                            <goal>javadoc</goal>
+                        </goals>
+                        <configuration>
+                            <groups>
+                                <group>
+                                    <title>Common Annotations API Documentation</title>
+                                    <packages>javax.annotation</packages>
+                                </group>
+                            </groups>
+                            <bottom>
+<![CDATA[Copyright &#169; 1999-2017,
+    <a href="http://www.oracle.com">Oracle</a>
+    and/or its affiliates. All Rights Reserved.
+    Use is subject to
+    <a href="{@docRoot}/doc-files/speclicense.html" target="_top">license terms</a>.
+]]>
+                            </bottom>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>findbugs-maven-plugin</artifactId>
+                <version>${findbugs.version}</version>
+                <configuration>
+                    <threshold>${findbugs.threshold}</threshold>
+                    <excludeFilterFile>${findbugs.exclude}</excludeFilterFile>
+                    <findbugsXmlOutput>true</findbugsXmlOutput>
+                    <findbugsXmlWithMessages>true</findbugsXmlWithMessages>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+                <configuration>
+                    <mavenExecutorId>forked-path</mavenExecutorId>
+                    <useReleaseProfile>false</useReleaseProfile>
+                    <arguments>${release.arguments}</arguments>
+                    <tagNameFormat>@{project.version}</tagNameFormat>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <reporting>
+                        <plugins>
+                            <plugin>
+                                <groupId>org.codehaus.mojo</groupId>
+                                <artifactId>findbugs-maven-plugin</artifactId>
+                                <version>${findbugs.version}</version>
+                                <configuration>
+                                    <threshold>${findbugs.threshold}</threshold>
+                                    <excludeFilterFile>${findbugs.exclude}</excludeFilterFile>
+                                </configuration>
+                            </plugin>
+                        </plugins>
+                    </reporting>
+                </configuration>
+            </plugin>
+	    <plugin>
+                 <groupId>org.apache.maven.plugins</groupId>
+                 <artifactId>maven-gpg-plugin</artifactId>
+                     <executions>
+                         <execution>
+                             <id>sign-artifacts</id>
+		             <phase>verify</phase>
+                             <goals>
+                                 <goal>sign</goal>
+                             </goals>
+                         </execution>
+                     </executions>
+	</plugin>
+        </plugins>
+    </build>
+</project>

@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <!-- This module was also published with a richer model, Gradle metadata,  -->
+  <!-- which should be used instead. Do not delete the following line which  -->
+  <!-- is to indicate to Gradle or any Gradle module metadata file consumer  -->
+  <!-- that they should prefer consuming it instead. -->
+  <!-- do_not_remove: published-with-gradle-metadata -->
+  <modelVersion>4.0.0</modelVersion> 
+  <parent>
+    <groupId>com.fasterxml.jackson</groupId>
+    <!-- this is one of few Jackson modules that depends on parent and NOT jackson-bom -->
+    <artifactId>jackson-parent</artifactId>
+    <version>2.13</version>
+  </parent>
+
+  <groupId>com.fasterxml.jackson.core</groupId>
+  <artifactId>jackson-annotations</artifactId>
+  <name>Jackson-annotations</name>
+  <version>2.13.5</version>
+  <packaging>bundle</packaging>
+  <description>Core annotations used for value types, used by Jackson data binding package.
+  </description>
+  <inceptionYear>2008</inceptionYear>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <url>http://github.com/FasterXML/jackson</url>
+  <scm>
+    <connection>scm:git:git@github.com:FasterXML/jackson-annotations.git</connection>
+    <developerConnection>scm:git:git@github.com:FasterXML/jackson-annotations.git</developerConnection>
+    <url>http://github.com/FasterXML/jackson-annotations</url>
+    <tag>jackson-annotations-2.13.5</tag>
+  </scm>
+
+  <properties>
+    <!-- 04-Mar-2019, tatu: Retain Java6/JDK1.6 compatibility for annotations for Jackson 2.x,
+             but use Moditect to get JDK9+ module info support; need newer bundle plugin as well
+      -->
+    <javac.src.version>1.6</javac.src.version>
+    <javac.target.version>1.6</javac.target.version>
+
+    <maven.compiler.source>1.6</maven.compiler.source>
+    <maven.compiler.target>1.6</maven.compiler.target>
+
+    <osgi.export>com.fasterxml.jackson.annotation.*;version=${project.version}</osgi.export>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${version.junit}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <!-- Alas, need to include snapshot reference since otherwise can not find
+       snapshot of parent... -->
+  <repositories>
+    <repository>
+      <id>sonatype-nexus-snapshots</id>
+      <name>Sonatype Nexus Snapshots</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <releases><enabled>false</enabled></releases>
+      <snapshots><enabled>true</enabled></snapshots>
+    </repository>
+  </repositories>
+  
+  <build>
+    <plugins>
+      <!-- First: no replacer plugin (no Packaversion.java.in) for this package -->
+
+      <plugin>
+        <!-- 08-Mar-2019, tatu: Would get these settings from `jackson-bom` except we 
+              do not extend it so...
+          -->
+        <groupId>org.moditect</groupId>
+        <artifactId>moditect-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-module-infos</id>
+            <phase>package</phase>
+            <goals>
+              <goal>add-module-info</goal>
+            </goals>
+            <configuration>
+              <overwriteExistingFiles>true</overwriteExistingFiles>
+              <module>
+                <moduleInfoFile>src/moditect/module-info.java</moduleInfoFile>
+              </module>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- 08-Nov-2019, tatu: Copied from
+           https://github.com/stephenc/git-timestamp-maven-plugin/blob/master/pom.xml#L327-L337
+         -->
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <version>1.6.8</version>
+        <extensions>true</extensions>
+        <configuration>
+          <serverId>sonatype-nexus-staging</serverId>
+          <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+          <stagingProfileId>b34f19b9cc6224</stagingProfileId>
+        </configuration>
+      </plugin>
+
+      <!-- 11-Jun-2020, tatu: [annotations#173] add gradle module metadata
+        -->
+      <plugin>
+        <groupId>de.jjohannes</groupId>
+        <artifactId>gradle-module-metadata-maven-plugin</artifactId>
+        <version>0.2.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>gmm</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <platformDependencies>
+            <dependency>
+              <groupId>com.fasterxml.jackson</groupId>
+              <artifactId>jackson-bom</artifactId>
+              <version>${project.version}</version>
+            </dependency>
+          </platformDependencies>
+        </configuration>
+      </plugin>
+
+      <!-- 20-Oct-2020, tatu: [annotations#178] copy full LICENSE from main dir
+        -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-resource</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>add-resource</goal>
+            </goals>
+            <configuration>
+              <resources>
+                <resource>
+                  <directory>${project.basedir}</directory>
+                  <targetPath>META-INF</targetPath>
+                  <includes>
+                    <include>LICENSE</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+    </plugins>
+  </build>
+
+</project>

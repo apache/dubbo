@@ -1,0 +1,420 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-plugins</artifactId>
+    <version>39</version>
+    <relativePath />
+  </parent>
+
+  <artifactId>maven-assembly-plugin</artifactId>
+  <version>3.6.0</version>
+  <packaging>maven-plugin</packaging>
+
+  <name>Apache Maven Assembly Plugin</name>
+  <description>A Maven plugin to create archives of your project's sources, classes, dependencies etc. from flexible assembly descriptors.</description>
+
+  <contributors>
+    <contributor>
+      <name>Stephen Colebourne</name>
+    </contributor>
+    <contributor>
+      <name>Tony Jewell</name>
+    </contributor>
+  </contributors>
+
+  <prerequisites>
+    <maven>${mavenVersion}</maven>
+  </prerequisites>
+
+  <scm>
+    <connection>scm:git:https://gitbox.apache.org/repos/asf/maven-assembly-plugin.git</connection>
+    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-assembly-plugin.git</developerConnection>
+    <tag>maven-assembly-plugin-3.6.0</tag>
+    <url>https://github.com/apache/maven-assembly-plugin/tree/${project.scm.tag}</url>
+  </scm>
+  <issueManagement>
+    <system>jira</system>
+    <url>https://issues.apache.org/jira/browse/MASSEMBLY</url>
+  </issueManagement>
+  <ciManagement>
+    <system>Jenkins</system>
+    <url>https://ci-maven.apache.org/job/Maven/job/maven-box/job/maven-assembly-plugin/</url>
+  </ciManagement>
+  <distributionManagement>
+    <site>
+      <id>apache.website</id>
+      <url>scm:svn:https://svn.apache.org/repos/asf/maven/website/components/${maven.site.path}</url>
+    </site>
+  </distributionManagement>
+
+  <properties>
+    <javaVersion>8</javaVersion>
+    <mdoVersion>2.2.0</mdoVersion>
+    <mavenVersion>3.2.5</mavenVersion>
+    <slf4jVersion>1.7.5</slf4jVersion>
+    <mavenFilteringVersion>3.3.1</mavenFilteringVersion>
+    <mavenArchiverVersion>3.6.0</mavenArchiverVersion>
+
+    <surefire.version>3.0.0</surefire.version>
+    <testOutputToFile>true</testOutputToFile>
+    <project.build.outputTimestamp>2023-05-11T20:35:37Z</project.build.outputTimestamp>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-api</artifactId>
+      <version>${mavenVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-core</artifactId>
+      <version>${mavenVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-artifact</artifactId>
+      <version>${mavenVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-model</artifactId>
+      <version>${mavenVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-api</artifactId>
+      <!-- the same version as in Maven 3.2.5 -->
+      <version>1.0.0.v20140518</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4jVersion}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.maven.plugin-tools</groupId>
+      <artifactId>maven-plugin-annotations</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.inject</groupId>
+      <artifactId>javax.inject</artifactId>
+      <version>1</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.sisu</groupId>
+      <artifactId>org.eclipse.sisu.plexus</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-common-artifact-filters</artifactId>
+      <version>3.3.2</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-interpolation</artifactId>
+      <version>1.26</version>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.11.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-filtering</artifactId>
+      <version>${mavenFilteringVersion}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-io</artifactId>
+      <version>3.4.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-archiver</artifactId>
+      <version>4.7.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-archiver</artifactId>
+      <version>${mavenArchiverVersion}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
+      <version>3.5.1</version>
+    </dependency>
+
+    <!-- Test -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <!-- exclude old version with different artifactId -->
+          <groupId>org.hamcrest</groupId>
+          <artifactId>hamcrest-core</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest</artifactId>
+      <version>2.2</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>${slf4jVersion}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>4.6.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jdom</groupId>
+      <artifactId>jdom2</artifactId>
+      <version>2.0.6.1</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- need this because JDOM incorrectly declares its own dependencies -->
+    <dependency>
+      <groupId>jaxen</groupId>
+      <artifactId>jaxen</artifactId>
+      <version>2.0.0</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <filtering>true</filtering>
+        <directory>src/main/resources</directory>
+      </resource>
+      <resource>
+        <directory>${project.build.directory}/generated-resources/plexus</directory>
+      </resource>
+    </resources>
+
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <configuration>
+            <escapeString>\</escapeString>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <redirectTestOutputToFile>${testOutputToFile}</redirectTestOutputToFile>
+            <systemPropertyVariables>
+              <!-- NOTE: Ensure the tmp dir configured for Surefire exists or some JREs (e.g. 1.5) will fail to create temp files -->
+              <java.io.tmpdir>${project.build.testOutputDirectory}</java.io.tmpdir>
+            </systemPropertyVariables>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.rat</groupId>
+          <artifactId>apache-rat-plugin</artifactId>
+          <configuration>
+            <excludes combine.children="append">
+              <!--
+                These files contain real repository artifacts.
+              -->
+              <exclude>src/it/projects/basic-features/outputFileNameMapping-withArtifactBaseVersion/repository/org/codehaus/plexus/plexus-utils/**</exclude>
+              <exclude>src/functional-tests/remote-repo/assembly/dependency-artifact/**</exclude>
+              <!-- These files are only resources for integration tests. -->
+              <exclude>src/it/projects/repositories/repo-with-snapshot-parents/child/remote-repository/org/codehaus/plexus/plexus-utils/1.4.3-SNAPSHOT/plexus-utils-1.4.3-SNAPSHOT.pom</exclude>
+              <exclude>src/it/projects/container-descriptors/metaInf-services-aggregation/**/*</exclude>
+              <exclude>src/it/projects/container-descriptors/metaInf-spring-aggregation/**/*</exclude>
+              <!-- The following is used to exclude only txt files which don't have a license header -->
+              <exclude>src/it/**/*.txt</exclude>
+              <!-- The following is used to exclude files with the extension *.file -->
+              <exclude>src/it/**/*.file</exclude>
+              <exclude>src/it/projects/filtering-feature/filters-defined-in-build/src/main/config/**</exclude>
+              <exclude>src/it/projects/bugs/massembly-731/**</exclude>
+              <exclude>.java-version</exclude>
+              <exclude>.asf.yaml</exclude>
+            </excludes>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-plugin-report-plugin</artifactId>
+          <configuration>
+            <requirementsHistories>
+              <requirementsHistory>
+                <version>3.5.0</version>
+                <maven>3.2.5</maven>
+                <jdk>1.8</jdk>
+              </requirementsHistory>
+              <requirementsHistory>
+                <version>3.3.0</version>
+                <maven>3.0</maven>
+                <jdk>1.7</jdk>
+              </requirementsHistory>
+              <requirementsHistory>
+                <version>3.0.0</version>
+                <maven>2.2.1</maven>
+                <jdk>1.6</jdk>
+              </requirementsHistory>
+              <requirementsHistory>
+                <version>2.6</version>
+                <maven>2.2.1</maven>
+                <jdk>1.6</jdk>
+              </requirementsHistory>
+              <requirementsHistory>
+                <version>2.5.5</version>
+                <maven>2.2.1</maven>
+                <jdk>1.5</jdk>
+              </requirementsHistory>
+            </requirementsHistories>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>org.eclipse.sisu</groupId>
+        <artifactId>sisu-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.modello</groupId>
+        <artifactId>modello-maven-plugin</artifactId>
+        <configuration>
+          <version>${mdoVersion}</version>
+          <models>
+            <model>src/main/mdo/assembly.mdo</model>
+            <model>src/main/mdo/assembly-component.mdo</model>
+          </models>
+        </configuration>
+        <executions>
+          <execution>
+            <id>mdo</id>
+            <goals>
+              <goal>xpp3-reader</goal>
+              <goal>xpp3-writer</goal>
+              <goal>java</goal>
+              <goal>xsd</goal>
+            </goals>
+            <phase>generate-sources</phase>
+          </execution>
+          <execution>
+            <id>mdo-site</id>
+            <goals>
+              <goal>xdoc</goal>
+              <goal>xsd</goal>
+            </goals>
+            <phase>pre-site</phase>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>run-its</id>
+      <properties>
+        <test.remote.repo.url>file://${project.build.testOutputDirectory}/remote-repository</test.remote.repo.url>
+        <testVersion>${project.version}</testVersion>
+      </properties>
+
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-invoker-plugin</artifactId>
+            <version>3.5.1</version>
+            <configuration>
+              <properties>
+                <testVersion>${testVersion}</testVersion>
+              </properties>
+              <showVersion>true</showVersion>
+            </configuration>
+            <dependencies>
+              <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-compress</artifactId>
+                <version>1.23.0</version>
+              </dependency>
+              <dependency>
+                <groupId>com.github.luben</groupId>
+                <artifactId>zstd-jni</artifactId>
+                <version>1.5.5-2</version>
+              </dependency>
+            </dependencies>
+            <executions>
+              <execution>
+                <id>integration-test</id>
+                <configuration>
+                  <setupIncludes>
+                    <setupInclude>it-project-parent/pom.xml</setupInclude>
+                  </setupIncludes>
+                  <pomIncludes>
+                    <pomInclude>projects/*/*/pom.xml</pomInclude>
+                    <pomInclude>projects/descriptor-refs/*/*/pom.xml</pomInclude>
+                    <pomInclude>projects/multimodule/multimodule-siblingParent/parent/pom.xml</pomInclude>
+                    <pomInclude>projects/reproducible/pom.xml</pomInclude>
+                  </pomIncludes>
+                  <pomExcludes>
+                    <pomExclude>projects/dependency-sets/depSet-transFromProfile/pom.xml</pomExclude>
+                  </pomExcludes>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

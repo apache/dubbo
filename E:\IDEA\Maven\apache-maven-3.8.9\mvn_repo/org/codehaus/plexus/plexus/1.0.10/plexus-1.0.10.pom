@@ -1,0 +1,273 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.codehaus.plexus</groupId>
+  <artifactId>plexus</artifactId>
+  <packaging>pom</packaging>
+  <name>Plexus</name>
+  <version>1.0.10</version>
+  <ciManagement>
+    <notifiers>
+      <notifier>
+        <type>mail</type>
+        <configuration>
+          <address>dev@plexus.codehaus.org</address>
+        </configuration>
+      </notifier>
+      <notifier>
+        <type>irc</type>
+        <configuration>
+          <host>irc.codehaus.org</host>
+          <port>6667</port>
+          <channel>#plexus</channel>
+        </configuration>
+      </notifier>      
+    </notifiers>
+  </ciManagement>
+  <inceptionYear>2001</inceptionYear>
+  <mailingLists>
+    <mailingList>
+      <name>Plexus User List</name>
+      <subscribe>http://xircles.codehaus.org/manage_email/user%40plexus.codehaus.org</subscribe>
+      <unsubscribe>http://xircles.codehaus.org/manage_email/user%40plexus.codehaus.org</unsubscribe>
+      <archive>http://archive.plexus.codehaus.org/user</archive>
+    </mailingList>
+    <mailingList>
+      <name>Plexus Developer List</name>
+      <subscribe>http://xircles.codehaus.org/manage_email/dev%40plexus.codehaus.org</subscribe>
+      <unsubscribe>http://xircles.codehaus.org/manage_email/dev%40plexus.codehaus.org</unsubscribe>
+      <archive>http://archive.plexus.codehaus.org/dev</archive>
+    </mailingList>
+    <mailingList>
+      <name>Plexus Announce List</name>
+      <subscribe>http://xircles.codehaus.org/manage_email/announce%40plexus.codehaus.org</subscribe>
+      <unsubscribe>http://xircles.codehaus.org/manage_email/announce%40plexus.codehaus.org</unsubscribe>
+      <archive>http://archive.plexus.codehaus.org/announce</archive>
+    </mailingList>
+    <mailingList>
+      <name>Plexus Commit List</name>
+      <subscribe>http://xircles.codehaus.org/manage_email/scm%40plexus.codehaus.org</subscribe>
+      <unsubscribe>http://xircles.codehaus.org/manage_email/scm%40plexus.codehaus.org</unsubscribe>
+      <archive>http://archive.plexus.codehaus.org/scm</archive>
+    </mailingList>
+  </mailingLists>
+  <issueManagement>
+    <system>JIRA</system>
+    <url>http://jira.codehaus.org/browse/PLX</url>
+  </issueManagement>
+
+  <distributionManagement>
+    <repository>
+      <id>codehaus.org</id>
+      <name>Plexus Central Repository</name>
+      <url>dav:https://dav.codehaus.org/repository/plexus</url>
+    </repository>
+    <snapshotRepository>
+      <id>codehaus.org</id>
+      <name>Plexus Central Development Repository</name>
+      <url>dav:https://dav.codehaus.org/snapshots.repository/plexus</url>
+    </snapshotRepository>
+    <site>
+      <id>codehaus.org</id>
+      <url>dav:https://dav.codehaus.org/plexus</url>
+    </site>
+  </distributionManagement>
+  <repositories>
+    <repository>
+      <id>codehaus.snapshots</id>
+      <name>Codehaus Snapshot Development Repository</name>
+      <url>http://snapshots.repository.codehaus.org</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+    </repository>
+  </repositories>
+
+  <developers>
+    <developer>
+      <id>jvanzyl</id>
+      <name>Jason van Zyl</name>
+      <email>jason@maven.org</email>
+      <roles>
+        <role>Developer</role>
+        <role>Release Manager</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>kaz</id>
+      <name>Pete Kazmier</name>
+      <email />
+      <organization />
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>jtaylor</id>
+      <name>James Taylor</name>
+      <email>james@jamestaylor.org</email>
+      <organization />
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>dandiep</id>
+      <name>Dan Diephouse</name>
+      <email>dan@envoisolutions.com</email>
+      <organization>Envoi solutions</organization>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>kasper</id>
+      <name>Kasper Nielsen</name>
+      <email>apache@kav.dk</email>
+      <organization />
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>bwalding</id>
+      <name>Ben Walding</name>
+      <email>bwalding@codehaus.org</email>
+      <organization>Walding Consulting Services</organization>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>mhw</id>
+      <name>Mark Wilkinson</name>
+      <email>mhw@kremvax.net</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>michal</id>
+      <name>Michal Maczka</name>
+      <email>mmaczka@interia.pl</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>evenisse</id>
+      <name>Emmanuel Venisse</name>
+      <email>evenisse@codehaus.org</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Trygve Laugstol</name>
+      <id>trygvis</id>
+      <email>trygvis@codehaus.org</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Kenney Westerhof</name>
+      <id>kenney</id>
+      <email>kenney@codehaus.org</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Carlos Sanchez</name>
+      <id>carlos</id>
+      <email>carlos@codehaus.org</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Brett Porter</name>
+      <id>brett</id>
+      <email>brett@codehaus.org</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>John Casey</name>
+      <id>jdcasey</id>
+      <email>jdcasey@codehaus.org</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Andrew Williams</name>
+      <id>handyande</id>
+      <email>andy@handyande.co.uk</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Rahul Thakur</name>
+      <id>rahul</id>
+      <email>rahul.thakur.xdev@gmail.com</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Joakim Erdfelt</name>
+      <id>joakime</id>
+      <email>joakim@erdfelt.com</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Olivier Lamy</name>
+      <id>olamy</id>
+      <email>olamy@codehaus.org</email>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+  </developers>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <scm>
+    <connection>scm:svn:http://svn.codehaus.org/plexus/pom/tags/plexus-1.0.10</connection>
+    <developerConnection>scm:svn:https://svn.codehaus.org/plexus/pom/tags/plexus-1.0.10</developerConnection>
+    <url>http://fisheye.codehaus.org/browse/plexus/pom/tags/plexus-1.0.10</url>
+  </scm>
+  <organization>
+    <name>Codehaus</name>
+    <url>http://www.codehaus.org/</url>
+  </organization>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.4</source>
+          <target>1.4</target>
+        </configuration>
+      </plugin>
+    </plugins>
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-webdav</artifactId>
+        <version>1.0-beta-2</version>
+      </extension>
+    </extensions>
+  </build>
+</project>
