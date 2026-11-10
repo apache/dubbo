@@ -39,7 +39,7 @@ public class Gzip implements Compressor, DeCompressor {
     private final int maxMessageSize;
 
     public Gzip() {
-        Configuration conf = ConfigurationUtils.getEnvConfiguration(ApplicationModel.defaultModel());
+        Configuration conf = ConfigurationUtils.getGlobalConfiguration(ApplicationModel.defaultModel());
         this.maxMessageSize = conf.getInteger(Constants.H2_SETTINGS_MAX_MESSAGE_SIZE, 50 * 1024 * 1024);
     }
 

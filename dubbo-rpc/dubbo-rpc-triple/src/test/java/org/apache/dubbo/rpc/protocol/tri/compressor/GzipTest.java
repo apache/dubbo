@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.compressor;
 
+import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -57,5 +59,21 @@ class GzipTest {
 
         byte[] decompressedByteArr = deCompressor.decompress(compressedByteArr);
         Assertions.assertEquals(new String(decompressedByteArr), TEST_STR);
+    }
+
+    @Test
+    void decompressionHonorsConfiguredMaxMessageSize() {
+        System.setProperty(Constants.H2_SETTINGS_MAX_MESSAGE_SIZE, "1024");
+        try {
+            Gzip gzip = new Gzip();
+            byte[] compressedByteArr = gzip.compress(TEST_STR.getBytes());
+
+            IllegalStateException exception =
+                    Assertions.assertThrows(IllegalStateException.class, () -> gzip.decompress(compressedByteArr));
+            Assertions.assertTrue(
+                    exception.getCause().getMessage().endsWith("exceeds the maximum configured message size 1024"));
+        } finally {
+            System.clearProperty(Constants.H2_SETTINGS_MAX_MESSAGE_SIZE);
+        }
     }
 }
