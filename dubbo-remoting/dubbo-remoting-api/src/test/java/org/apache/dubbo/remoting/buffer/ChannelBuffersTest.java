@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.buffer;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 import org.junit.jupiter.api.Assertions;
@@ -75,7 +76,8 @@ class ChannelBuffersTest {
         channelBuffer = ChannelBuffers.wrappedBuffer(byteBuffer);
         Assertions.assertTrue(channelBuffer instanceof ByteBufferBackedChannelBuffer);
 
-        byteBuffer.position(byteBuffer.limit());
+        // be compatible with jdk8 by casting byteBuffer's type to its parent class - `java.nio.Buffer`.
+        ((Buffer) byteBuffer).position(byteBuffer.limit());
         channelBuffer = ChannelBuffers.wrappedBuffer(byteBuffer);
         Assertions.assertEquals(channelBuffer, EMPTY_BUFFER);
     }
