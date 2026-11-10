@@ -71,6 +71,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RECONNECT_TASK_PERIOD;
 import static org.apache.dubbo.common.constants.CommonConstants.RECONNECT_TASK_TRY_COUNT;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTER_IP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_NO_VALID_PROVIDER;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.rpc.cluster.Constants.CONSUMER_URL_KEY;
@@ -183,6 +184,8 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 // reserve parameters if url is already a consumer url
                 consumerUrlFrom = consumerUrlFrom.clearParameters();
             }
+            //group parameter should not be inherited
+            consumerUrlFrom = consumerUrlFrom.removeParameter(GROUP_KEY);
             this.consumerUrl = consumerUrlFrom.addParameters(queryMap);
         }
 
