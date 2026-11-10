@@ -25,6 +25,7 @@ import org.apache.dubbo.remoting.http12.h2.CancelStreamException;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
+import org.apache.dubbo.remoting.http12.h2.Http2InputMessageFrame;
 import org.apache.dubbo.remoting.http12.h2.Http2ServerChannelObserver;
 import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
 import org.apache.dubbo.remoting.http12.message.DefaultListeningDecoder;
@@ -48,7 +49,12 @@ import org.apache.dubbo.rpc.protocol.tri.h12.ServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.ServerStreamServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.UnaryServerCallListener;
 
+import java.io.FilterInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_RESPONSE;
 
@@ -62,6 +68,13 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     private final StreamingDecoder streamingDecoder;
     private Http2ServerChannelObserver responseObserver;
     private ServerCallListener serverCallListener;
+
+    // DATA may be discarded by the executor before it reaches the decoder. Keep ownership
+    // until the message listener accepts the body, or the transport terminates.
+    private final Set<PendingInput> pendingInputs = ConcurrentHashMap.newKeySet();
+    private final Object inputLock = new Object();
+    private boolean inputClosed;
+    private int processingInputs;
 
     public GenericHttp2ServerTransportListener(
             H2StreamChannel h2StreamChannel, URL url, FrameworkModel frameworkModel) {
@@ -187,6 +200,56 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     }
 
     @Override
+    protected Http2InputMessage onDataReceived(Http2InputMessage message) {
+        PendingInput input = newPendingInput(message);
+        synchronized (inputLock) {
+            pendingInputs.add(input);
+            if (inputClosed && processingInputs == 0) {
+                closeInput(input);
+            }
+        }
+        return new Http2InputMessageFrame(message.id(), input, message.isEndStream());
+    }
+
+    protected PendingInput newPendingInput(Http2InputMessage message) {
+        return new PendingInput(message);
+    }
+
+    @Override
+    protected void doOnData(Http2InputMessage message) {
+        PendingInput input = (PendingInput) message.getBody();
+        synchronized (inputLock) {
+            if (inputClosed || input.closed.get()) {
+                closeInput(input);
+                return;
+            }
+            processingInputs++;
+        }
+        try {
+            super.doOnData(message);
+        } finally {
+            synchronized (inputLock) {
+                if (--processingInputs == 0 && inputClosed) {
+                    closePendingInputs();
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void onDataMessage(Http2InputMessage message, HttpMessageListener listener) {
+        synchronized (inputLock) {
+            if (inputClosed) {
+                return;
+            }
+            // The decoder owns accepted input, including any bytes buffered for later requests.
+            // Only inputs that have not crossed this boundary belong to the transport registry.
+            pendingInputs.remove((PendingInput) message.getBody());
+        }
+        super.onDataMessage(message, listener);
+    }
+
+    @Override
     protected void onDataCompletion(Http2InputMessage message) {
         if (message.isEndStream()) {
             getStreamingDecoder().close();
@@ -213,6 +276,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
 
     @Override
     public void cancelByRemote(long errorCode) {
+        closeInputs();
         responseObserver.cancel(CancelStreamException.fromRemote(errorCode));
         if (serverCallListener != null) {
             serverCallListener.onCancel(errorCode);
@@ -229,7 +293,52 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
 
     @Override
     public void close() {
+        closeInputs();
         responseObserver.close();
+    }
+
+    private void closeInputs() {
+        synchronized (inputLock) {
+            inputClosed = true;
+            if (processingInputs == 0) {
+                closePendingInputs();
+            }
+        }
+    }
+
+    private void closePendingInputs() {
+        // An already-started callback may still be preparing its DATA message. Defer
+        // pre-delivery cleanup until it returns; accepted input belongs to the decoder.
+        for (PendingInput input : pendingInputs) {
+            closeInput(input);
+        }
+    }
+
+    private void closeInput(PendingInput input) {
+        try {
+            input.close();
+        } catch (IOException e) {
+            LOGGER.warn(PROTOCOL_FAILED_RESPONSE, "", "", "Failed to close request body", e);
+        }
+    }
+
+    protected class PendingInput extends FilterInputStream {
+
+        private final AtomicBoolean closed = new AtomicBoolean();
+        private final Http2InputMessage message;
+
+        protected PendingInput(Http2InputMessage message) {
+            super(message.getBody());
+            this.message = message;
+        }
+
+        @Override
+        public void close() throws IOException {
+            if (closed.compareAndSet(false, true)) {
+                pendingInputs.remove(this);
+                message.close();
+            }
+        }
     }
 
     @Override

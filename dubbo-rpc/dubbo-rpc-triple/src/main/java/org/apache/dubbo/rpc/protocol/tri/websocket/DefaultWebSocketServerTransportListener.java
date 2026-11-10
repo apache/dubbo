@@ -99,6 +99,25 @@ public class DefaultWebSocketServerTransportListener extends GenericHttp2ServerT
         super.onDataCompletion(message);
     }
 
+    @Override
+    protected PendingInput newPendingInput(Http2InputMessage message) {
+        return message.getBody() instanceof org.apache.dubbo.remoting.websocket.FinalFragment
+                ? new PendingFragmentInput(message)
+                : super.newPendingInput(message);
+    }
+
+    private final class PendingFragmentInput extends PendingInput
+            implements org.apache.dubbo.remoting.websocket.FinalFragment {
+        private PendingFragmentInput(Http2InputMessage message) {
+            super(message);
+        }
+
+        @Override
+        public boolean isFinalFragment() {
+            return ((org.apache.dubbo.remoting.websocket.FinalFragment) in).isFinalFragment();
+        }
+    }
+
     private void customizeWebSocketStatus(HttpHeaders httpHeaders, Throwable throwable) {
         if (throwable != null) {
             httpHeaders.set(WebSocketHeaderNames.WEBSOCKET_MESSAGE.getName(), throwable.getMessage());
