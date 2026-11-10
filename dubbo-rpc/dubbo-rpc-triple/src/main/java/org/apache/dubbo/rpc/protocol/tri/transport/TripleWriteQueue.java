@@ -58,19 +58,25 @@ public class TripleWriteQueue extends BatchExecutorQueue<QueuedCommand> {
         try {
             Channel channel = item.channel();
             item.run(channel);
-        } catch (CompletionException e) {
-            item.promise().tryFailure(e.getCause());
+        } catch (Throwable t) {
+            fail(item, t);
         }
     }
 
     @Override
     protected void flush(QueuedCommand item) {
+        Channel channel = item.channel();
         try {
-            Channel channel = item.channel();
             item.run(channel);
+        } catch (Throwable t) {
+            fail(item, t);
+        } finally {
             channel.flush();
-        } catch (CompletionException e) {
-            item.promise().tryFailure(e.getCause());
         }
+    }
+
+    private static void fail(QueuedCommand item, Throwable t) {
+        Throwable cause = (t instanceof CompletionException && t.getCause() != null) ? t.getCause() : t;
+        item.promise().tryFailure(cause);
     }
 }
