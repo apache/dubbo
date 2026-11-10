@@ -48,6 +48,7 @@ import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -158,21 +159,33 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
     protected void initializeAltSvc(URL url) {}
 
     @Override
-    public final void onData(MESSAGE message) {
+    public final void onData(MESSAGE input) {
+        MESSAGE message = onDataReceived(input);
         if (executor == null) {
             onDataFinally(message);
             return;
         }
-        executor.execute(() -> {
-            try {
-                doOnData(message);
-            } catch (Throwable t) {
-                logError(t);
-                onError(message, t);
-            } finally {
-                onDataFinally(message);
-            }
-        });
+        try {
+            executor.execute(() -> {
+                try {
+                    doOnData(message);
+                } catch (Throwable t) {
+                    logError(t);
+                    onError(message, t);
+                } finally {
+                    onDataFinally(message);
+                }
+            });
+        } catch (RejectedExecutionException e) {
+            onError(message, e);
+        }
+    }
+
+    /**
+     * Prepare ownership of DATA before submission, including submissions that never execute.
+     */
+    protected MESSAGE onDataReceived(MESSAGE message) {
+        return message;
     }
 
     protected void doOnData(MESSAGE message) {
@@ -180,8 +193,12 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
             return;
         }
         onPrepareData(message);
-        httpMessageListener.onMessage(message.getBody());
+        onDataMessage(message, httpMessageListener);
         onDataCompletion(message);
+    }
+
+    protected void onDataMessage(MESSAGE message, HttpMessageListener listener) {
+        listener.onMessage(message.getBody());
     }
 
     protected void onPrepareData(MESSAGE message) {
