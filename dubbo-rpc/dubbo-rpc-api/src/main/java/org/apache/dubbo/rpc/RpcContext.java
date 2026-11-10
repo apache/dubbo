@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc;
 import org.apache.dubbo.common.Experimental;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
-import org.apache.dubbo.common.utils.StringUtils;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
@@ -533,11 +532,16 @@ public class RpcContext {
      * @return attachment
      */
     public String getAttachment(String key) {
-        String client = CLIENT_ATTACHMENT.get().getAttachment(key);
-        if (StringUtils.isEmpty(client)) {
-            return SERVER_ATTACHMENT.get().getAttachment(key);
+        Object value = CLIENT_ATTACHMENT.get().getObjectAttachment(key);
+        if (value == null) {
+            value = SERVER_ATTACHMENT.get().getObjectAttachment(key);
         }
-        return client;
+
+        if (value != null && !(value instanceof String)) {
+            return String.valueOf(value);
+        }
+
+        return (String) value;
     }
 
     /**
@@ -574,6 +578,7 @@ public class RpcContext {
     public RpcContext setObjectAttachment(String key, Object value) {
         // TODO compatible with previous
         CLIENT_ATTACHMENT.get().setObjectAttachment(key, value);
+
         return this;
     }
 
