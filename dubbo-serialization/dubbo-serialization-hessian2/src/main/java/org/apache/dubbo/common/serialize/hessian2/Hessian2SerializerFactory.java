@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 
 import com.alibaba.com.caucho.hessian.io.Deserializer;
+import com.alibaba.com.caucho.hessian.io.HessianProtocolException;
 import com.alibaba.com.caucho.hessian.io.InputStreamDeserializer;
 import com.alibaba.com.caucho.hessian.io.JavaDeserializer;
 import com.alibaba.com.caucho.hessian.io.JavaSerializer;
@@ -48,17 +49,20 @@ public class Hessian2SerializerFactory extends SerializerFactory {
     }
 
     @Override
+    public Serializer getSerializer(Class cl) throws HessianProtocolException {
+        // SerializerFactory handles writeReplace before getDefaultSerializer(), so enforce Dubbo's
+        // Serializable requirement here without expanding strict allow-list checks to JDK replacements.
+        if (JavaSerializer.getWriteReplace(cl) != null) {
+            checkSerializable(cl);
+        }
+        return super.getSerializer(cl);
+    }
+
+    @Override
     protected Serializer getDefaultSerializer(Class cl) {
         if (_defaultSerializer != null) return _defaultSerializer;
 
-        try {
-            // pre-check if class is allow
-            defaultSerializeClassChecker.loadClass(getClassLoader(), cl.getName());
-        } catch (ClassNotFoundException e) {
-            // ignore
-        }
-
-        checkSerializable(cl);
+        checkClass(cl);
 
         if (isEnableUnsafeSerializer() && JavaSerializer.getWriteReplace(cl) == null) {
             return UnsafeSerializer.create(cl);
@@ -71,14 +75,7 @@ public class Hessian2SerializerFactory extends SerializerFactory {
             return InputStreamDeserializer.DESER;
         }
 
-        try {
-            // pre-check if class is allow
-            defaultSerializeClassChecker.loadClass(getClassLoader(), cl.getName());
-        } catch (ClassNotFoundException e) {
-            // ignore
-        }
-
-        checkSerializable(cl);
+        checkClass(cl);
 
         if (RecordUtil.isRecord(cl)) {
             return new RecordDeserializer(cl, getFieldDeserializerFactory());
@@ -87,6 +84,17 @@ public class Hessian2SerializerFactory extends SerializerFactory {
                 return new UnsafeDeserializer(cl, getFieldDeserializerFactory());
             } else return new JavaDeserializer(cl, getFieldDeserializerFactory());
         }
+    }
+
+    private void checkClass(Class<?> cl) {
+        try {
+            // pre-check if class is allow
+            defaultSerializeClassChecker.loadClass(getClassLoader(), cl.getName());
+        } catch (ClassNotFoundException e) {
+            // ignore
+        }
+
+        checkSerializable(cl);
     }
 
     private void checkSerializable(Class<?> cl) {
