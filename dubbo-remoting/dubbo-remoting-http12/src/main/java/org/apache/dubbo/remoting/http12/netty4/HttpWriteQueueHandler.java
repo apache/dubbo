@@ -29,7 +29,9 @@ public class HttpWriteQueueHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
         EventLoop eventLoop = ctx.channel().eventLoop();
-        this.writeQueue = new HttpWriteQueue(eventLoop);
+        // Flush the owning channel even when the last command targets a closed HTTP/2 stream.
+        // Start at the pipeline tail so flush consolidation handlers still apply.
+        this.writeQueue = new HttpWriteQueue(eventLoop, ctx.channel()::flush);
     }
 
     @Override

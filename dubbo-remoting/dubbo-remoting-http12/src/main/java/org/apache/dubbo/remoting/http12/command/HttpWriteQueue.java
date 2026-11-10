@@ -25,8 +25,15 @@ public class HttpWriteQueue extends BatchExecutorQueue<HttpChannelQueueCommand> 
 
     private final Executor executor;
 
+    private final Runnable batchFlush;
+
     public HttpWriteQueue(Executor executor) {
+        this(executor, null);
+    }
+
+    public HttpWriteQueue(Executor executor, Runnable batchFlush) {
         this.executor = executor;
+        this.batchFlush = batchFlush;
     }
 
     public CompletableFuture<Void> enqueue(HttpChannelQueueCommand cmd) {
@@ -42,6 +49,10 @@ public class HttpWriteQueue extends BatchExecutorQueue<HttpChannelQueueCommand> 
     @Override
     protected void flush(HttpChannelQueueCommand item) {
         item.run();
-        item.getHttpChannel().flush();
+        if (batchFlush != null) {
+            batchFlush.run();
+        } else {
+            item.getHttpChannel().flush();
+        }
     }
 }
