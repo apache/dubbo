@@ -116,7 +116,9 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
     }
 
     public Object setProperty(Object propertyName, Object propertyValue) {
-        notNull(propertyName, "Property name is null");
+        if (!isMapType()) {
+            notNull(propertyName, "Property name is null");
+        }
         return properties.put(propertyName, propertyValue);
     }
 
