@@ -46,6 +46,14 @@ public class AdaptiveMetrics {
     private final AtomicLong errorReq = new AtomicLong();
     private double ewma = 0;
 
+    // Coalescing freshness signal: set by setProviderMetrics(), cleared by getLoad().
+    // Indicates whether new provider metrics have arrived since the last getLoad() call.
+    // volatile for cross-thread visibility (setProviderMetrics runs in async executor,
+    // getLoad runs in caller thread). Not an event counter — intermediate updates are
+    // coalesced, which is acceptable because lastLatency and ewma are already updated
+    // to the latest values in setProviderMetrics().
+    private volatile boolean providerUpdated = false;
+
     public double getLoad(String idKey, int weight, int timeout) {
         AdaptiveMetrics metrics = getStatus(idKey);
 
@@ -57,11 +65,13 @@ public class AdaptiveMetrics {
         if (metrics.currentTime > 0) {
             long multiple = (System.currentTimeMillis() - metrics.currentTime) / timeout + 1;
             if (multiple > 0) {
-                if (metrics.currentProviderTime == metrics.currentTime) {
-                    // penalty value
-                    metrics.lastLatency = timeout * 2L;
+                if (metrics.providerUpdated) {
+                    // Fresh metrics arrived — use real lastLatency (already set by setProviderMetrics)
+                    metrics.providerUpdated = false;
                 } else {
-                    metrics.lastLatency = metrics.lastLatency >> multiple;
+                    // No fresh metrics — decay with floor to prevent collapse to zero
+                    long floor = Math.max(1L, timeout / 100L);
+                    metrics.lastLatency = Math.max(floor, metrics.lastLatency >> multiple);
                 }
                 metrics.ewma = metrics.beta * metrics.ewma + (1 - metrics.beta) * metrics.lastLatency;
                 metrics.currentTime = System.currentTimeMillis();
@@ -123,5 +133,6 @@ public class AdaptiveMetrics {
         metrics.beta = 0.5;
         // Vt =  β * Vt-1 + (1 -  β ) * θt
         metrics.ewma = metrics.beta * metrics.ewma + (1 - metrics.beta) * metrics.lastLatency;
+        metrics.providerUpdated = true;
     }
 }
