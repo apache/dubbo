@@ -33,6 +33,31 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class HttpWriteQueueTest {
 
+    @org.junit.jupiter.api.Test
+    void defaultConstructorFlushesCommandChannelAfterWrite() {
+        List<String> events = new ArrayList<>();
+        org.apache.dubbo.remoting.http12.HttpChannel channel =
+                org.mockito.Mockito.mock(org.apache.dubbo.remoting.http12.HttpChannel.class);
+        org.mockito.Mockito.doAnswer(call -> {
+                    events.add("flush");
+                    return null;
+                })
+                .when(channel)
+                .flush();
+        HttpChannelQueueCommand command = new HttpChannelQueueCommand() {
+            @Override
+            public void run() {
+                events.add("write");
+                complete(null);
+            }
+        };
+        command.setHttpChannel(() -> channel);
+        HttpWriteQueue queue = new HttpWriteQueue(Runnable::run);
+        queue.enqueue(command).join();
+        assertEquals(java.util.Arrays.asList("write", "flush"), events);
+        org.mockito.Mockito.verify(channel).flush();
+    }
+
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 129, 130, 259})
     void flushesEachChunkAfterRunningCommandsInOrder(int count) {
