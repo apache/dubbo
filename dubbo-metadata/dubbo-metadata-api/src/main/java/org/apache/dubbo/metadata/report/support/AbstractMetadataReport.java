@@ -156,6 +156,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         this.reportDefinition = reportServerURL.getParameter(REPORT_DEFINITION_KEY, true);
     }
 
+    @Override
     public URL getUrl() {
         return reportURL;
     }
@@ -604,5 +605,10 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     @Deprecated
     protected MetadataReportRetry getMetadataReportRetry() {
         return metadataReportRetry;
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return true;
     }
 }

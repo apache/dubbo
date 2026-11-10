@@ -57,4 +57,9 @@ public class MockServiceDiscovery extends AbstractServiceDiscovery {
     public MetaCacheManager getMetaCacheManager() {
         return metaCacheManager;
     }
+
+    @Override
+    public boolean isAvailable() {
+        return true;
+    }
 }

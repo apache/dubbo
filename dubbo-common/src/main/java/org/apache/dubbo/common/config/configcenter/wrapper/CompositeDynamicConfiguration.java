@@ -120,4 +120,9 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
         }
         return value;
     }
+
+    @Override
+    public boolean isAvailable() {
+        return !configurations.isEmpty() && configurations.stream().anyMatch(DynamicConfiguration::isAvailable);
+    }
 }
