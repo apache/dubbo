@@ -17,7 +17,6 @@
 package org.apache.dubbo.registry.nacos.util;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.nacos.MockNamingService;
 import org.apache.dubbo.registry.nacos.NacosNamingServiceWrapper;
@@ -32,6 +31,7 @@ import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -46,7 +46,6 @@ import static org.mockito.Mockito.mock;
  * Test for NacosNamingServiceUtils
  */
 class NacosNamingServiceUtilsTest {
-    private static MetadataReport metadataReport = Mockito.mock(MetadataReport.class);
 
     @Test
     void testToInstance() {
@@ -65,15 +64,15 @@ class NacosNamingServiceUtilsTest {
         instance.setWeight(2);
         instance.setHealthy(Boolean.TRUE);
         instance.setEnabled(Boolean.TRUE);
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put("netType", "external");
         map.put("version", "2.0");
         instance.setMetadata(map);
 
         ServiceInstance serviceInstance = NacosNamingServiceUtils.toServiceInstance(registryUrl, instance);
         Assertions.assertNotNull(serviceInstance);
-        Assertions.assertEquals(serviceInstance.isEnabled(), Boolean.TRUE);
-        Assertions.assertEquals(serviceInstance.getServiceName(), "serviceName");
+        Assertions.assertEquals(Boolean.TRUE, serviceInstance.isEnabled());
+        Assertions.assertEquals("serviceName", serviceInstance.getServiceName());
     }
 
     @Test
@@ -84,7 +83,7 @@ class NacosNamingServiceUtilsTest {
     }
 
     @Test
-    void testRetryCreate() throws NacosException {
+    void testRetryCreate() {
         try (MockedStatic<NacosFactory> nacosFactoryMockedStatic = Mockito.mockStatic(NacosFactory.class)) {
             AtomicInteger atomicInteger = new AtomicInteger(0);
             NamingService mock = new MockNamingService() {
@@ -102,6 +101,8 @@ class NacosNamingServiceUtilsTest {
                     .addParameter("nacos.retry-wait", 10);
             Assertions.assertThrows(
                     IllegalStateException.class, () -> NacosNamingServiceUtils.createNamingService(url));
+
+            NacosNamingServiceUtils.clearCacheForTest();
 
             try {
                 NacosNamingServiceUtils.createNamingService(url);
@@ -170,6 +171,45 @@ class NacosNamingServiceUtilsTest {
             } catch (Throwable t) {
                 Assertions.fail(t);
             }
+        }
+    }
+
+    @AfterEach
+    void tearDown() {
+        NacosNamingServiceUtils.clearCacheForTest();
+    }
+
+    @Test
+    void testConnectionReuseAndRefCounting() {
+        try (MockedStatic<NacosFactory> nacosFactoryMockedStatic = Mockito.mockStatic(NacosFactory.class)) {
+
+            NamingService mockNamingService = Mockito.spy(new MockNamingService() {
+                @Override
+                public String getServerStatus() {
+                    return UP;
+                }
+            });
+
+            nacosFactoryMockedStatic
+                    .when(() -> NacosFactory.createNamingService((Properties) any()))
+                    .thenReturn(mockNamingService);
+
+            URL urlGroupA = URL.valueOf("nacos://127.0.0.1:8848?serverAddr=127.0.0.1:8848&nacos.check=false")
+                    .addParameter("group", "group-A");
+            URL urlGroupB = URL.valueOf("nacos://127.0.0.1:8848?serverAddr=127.0.0.1:8848&nacos.check=false")
+                    .addParameter("group", "group-B");
+
+            NacosNamingServiceWrapper wrapperA = NacosNamingServiceUtils.createNamingService(urlGroupA);
+            NacosNamingServiceWrapper wrapperB = NacosNamingServiceUtils.createNamingService(urlGroupB);
+
+            Assertions.assertSame(wrapperA, wrapperB);
+            Assertions.assertEquals(1, NacosNamingServiceUtils.getCacheSizeForTest());
+
+            NacosNamingServiceUtils.releaseNamingService(urlGroupA);
+            Assertions.assertEquals(1, NacosNamingServiceUtils.getCacheSizeForTest());
+
+            NacosNamingServiceUtils.releaseNamingService(urlGroupB);
+            Assertions.assertEquals(0, NacosNamingServiceUtils.getCacheSizeForTest());
         }
     }
 }
