@@ -44,6 +44,8 @@ import java.util.Collection;
 import java.util.concurrent.ExecutorService;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.modelcontextprotocol.json.McpJsonMapper;
+import io.modelcontextprotocol.json.jackson2.JacksonMcpJsonMapper;
 import io.modelcontextprotocol.server.McpAsyncServer;
 import io.modelcontextprotocol.server.McpServer;
 import io.modelcontextprotocol.spec.McpSchema;
@@ -54,6 +56,9 @@ public class McpApplicationDeployListener implements ApplicationDeployListener {
 
     private static final ErrorTypeAwareLogger logger =
             LoggerFactory.getErrorTypeAwareLogger(McpApplicationDeployListener.class);
+
+    private static final McpJsonMapper MCP_JSON_MAPPER = createMcpJsonMapper();
+
     private DubboServiceToolRegistry toolRegistry;
 
     private boolean mcpEnable = true;
@@ -106,12 +111,12 @@ public class McpApplicationDeployListener implements ApplicationDeployListener {
                     globalConf.getInt(McpConstant.SETTINGS_MCP_SESSION_TIMEOUT, McpConstant.DEFAULT_SESSION_TIMEOUT);
             if ("streamable".equals(protocol)) {
                 dubboMcpStreamableTransportProvider =
-                        new DubboMcpStreamableTransportProvider(new ObjectMapper(), sessionTimeout);
+                        new DubboMcpStreamableTransportProvider(MCP_JSON_MAPPER, sessionTimeout);
                 mcpAsyncServer = McpServer.async(getDubboMcpStreamableTransportProvider())
                         .capabilities(serverCapabilities)
                         .build();
             } else if ("sse".equals(protocol)) {
-                dubboMcpSseTransportProvider = new DubboMcpSseTransportProvider(new ObjectMapper(), sessionTimeout);
+                dubboMcpSseTransportProvider = new DubboMcpSseTransportProvider(MCP_JSON_MAPPER, sessionTimeout);
                 mcpAsyncServer = McpServer.async(getDubboMcpSseTransportProvider())
                         .capabilities(serverCapabilities)
                         .build();
@@ -244,5 +249,11 @@ public class McpApplicationDeployListener implements ApplicationDeployListener {
             }
         }
         return NetUtils.getAvailablePort();
+    }
+
+    private static McpJsonMapper createMcpJsonMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setSerializationInclusion(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL);
+        return new JacksonMcpJsonMapper(objectMapper);
     }
 }

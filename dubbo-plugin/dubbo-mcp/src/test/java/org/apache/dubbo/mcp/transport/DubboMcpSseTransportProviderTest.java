@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.RpcServiceContext;
 import java.io.ByteArrayInputStream;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.modelcontextprotocol.json.jackson2.JacksonMcpJsonMapper;
 import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpServerSession;
 import org.junit.jupiter.api.AfterEach;
@@ -37,7 +38,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -76,7 +76,6 @@ class DubboMcpSseTransportProviderTest {
 
     private MockedStatic<RpcContext> rpcContextMockedStatic;
 
-    @InjectMocks
     private DubboMcpSseTransportProvider transportProvider;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -87,7 +86,7 @@ class DubboMcpSseTransportProviderTest {
         rpcContextMockedStatic.when(RpcContext::getServiceContext).thenReturn(rpcServiceContext);
         when(rpcServiceContext.getRequest(HttpRequest.class)).thenReturn(httpRequest);
         when(rpcServiceContext.getResponse(HttpResponse.class)).thenReturn(httpResponse);
-        transportProvider = new DubboMcpSseTransportProvider(objectMapper);
+        transportProvider = new DubboMcpSseTransportProvider(new JacksonMcpJsonMapper(objectMapper));
         transportProvider.setSessionFactory(sessionFactory);
     }
 
