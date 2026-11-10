@@ -33,10 +33,12 @@
     <bean id="demoServiceImpl" class="org.apache.dubbo.test.common.impl.DemoServiceImpl"/>
     <bean id="greetingServiceImpl" class="org.apache.dubbo.test.common.impl.GreetingServiceImpl"/>
     <bean id="restDemoServiceImpl" class="org.apache.dubbo.test.common.impl.RestDemoServiceImpl"/>
+    <bean id="asyncContextServiceImpl" class="org.apache.dubbo.test.common.impl.AsyncContextServiceImpl"/>
 
     <dubbo:service interface="org.apache.dubbo.test.common.api.DemoService" timeout="3000" ref="demoServiceImpl" protocol="dubbo"/>
     <dubbo:service version="1.0.0" group="greeting" timeout="5000" interface="org.apache.dubbo.test.common.api.GreetingService"
                    ref="greetingServiceImpl" protocol="dubbo"/>
     <dubbo:service version="1.0.0" timeout="5000" interface="org.apache.dubbo.test.common.api.RestDemoService"
                    ref="restDemoServiceImpl" protocol="tri"/>
+    <dubbo:service version="1.0.0" interface="org.apache.dubbo.test.common.api.AsyncContextService" timeout="3000" ref="asyncContextServiceImpl" protocol="dubbo"/>
 </beans>
