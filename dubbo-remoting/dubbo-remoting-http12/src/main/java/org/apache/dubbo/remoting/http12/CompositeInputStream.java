@@ -31,7 +31,9 @@ public class CompositeInputStream extends InputStream {
 
     private int readIndex = 0;
 
-    public void addInputStream(InputStream inputStream) {
+    private boolean closed = false;
+
+    public synchronized void addInputStream(InputStream inputStream) {
         inputStreams.offer(inputStream);
         try {
             totalAvailable += inputStream.available();
@@ -41,15 +43,23 @@ public class CompositeInputStream extends InputStream {
     }
 
     @Override
-    public int read() throws IOException {
+    public synchronized int read() throws IOException {
         InputStream inputStream;
         while ((inputStream = inputStreams.peek()) != null) {
-            int available = inputStream.available();
-            if (available == 0) {
-                releaseHeadStream();
-                continue;
+            int read;
+            try {
+                if (inputStream.available() == 0) {
+                    releaseHeadStream();
+                    continue;
+                }
+                read = inputStream.read();
+            } catch (IOException e) {
+                if (closed) {
+                    // close() raced with this read: report end of stream instead of the raw exception
+                    return -1;
+                }
+                throw e;
             }
-            int read = inputStream.read();
             if (read != -1) {
                 ++readIndex;
                 releaseIfNecessary(inputStream);
@@ -61,7 +71,7 @@ public class CompositeInputStream extends InputStream {
     }
 
     @Override
-    public int read(byte[] b, int off, int len) throws IOException {
+    public synchronized int read(byte[] b, int off, int len) throws IOException {
         if (b == null) {
             throw new NullPointerException();
         } else if (off < 0 || len < 0 || len > b.length - off) {
@@ -73,13 +83,21 @@ public class CompositeInputStream extends InputStream {
         int total = 0;
         InputStream inputStream;
         while ((inputStream = inputStreams.peek()) != null) {
-            int available = inputStream.available();
-            if (available == 0) {
-                releaseHeadStream();
-                continue;
+            int read;
+            try {
+                int available = inputStream.available();
+                if (available == 0) {
+                    releaseHeadStream();
+                    continue;
+                }
+                read = inputStream.read(b, off + total, Math.min(len - total, available));
+            } catch (IOException e) {
+                if (closed) {
+                    // close() raced with this read: return what was already read, or end of stream
+                    break;
+                }
+                throw e;
             }
-
-            int read = inputStream.read(b, off + total, Math.min(len - total, available));
             if (read != -1) {
                 total += read;
                 readIndex += read;
@@ -97,12 +115,13 @@ public class CompositeInputStream extends InputStream {
     }
 
     @Override
-    public int available() {
-        return totalAvailable - readIndex;
+    public synchronized int available() {
+        return closed ? 0 : totalAvailable - readIndex;
     }
 
     @Override
-    public void close() throws IOException {
+    public synchronized void close() throws IOException {
+        closed = true;
         IOException firstException = null;
         InputStream inputStream;
         while ((inputStream = inputStreams.poll()) != null) {
@@ -133,7 +152,15 @@ public class CompositeInputStream extends InputStream {
     }
 
     private void releaseIfNecessary(InputStream inputStream) throws IOException {
-        int available = inputStream.available();
+        int available;
+        try {
+            available = inputStream.available();
+        } catch (IOException e) {
+            if (closed) {
+                return;
+            }
+            throw e;
+        }
         if (available == 0) {
             releaseHeadStream();
         }
