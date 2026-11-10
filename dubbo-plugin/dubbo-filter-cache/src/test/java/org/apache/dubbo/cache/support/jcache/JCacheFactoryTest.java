@@ -23,6 +23,10 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcInvocation;
 
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -30,6 +34,18 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 class JCacheFactoryTest extends AbstractCacheFactoryTest {
+
+    static HazelcastInstance hzInstance;
+
+    @BeforeAll
+    public static void initialize() {
+        hzInstance = Hazelcast.newHazelcastInstance();
+    }
+
+    @AfterAll
+    public static void tearDown() {
+        hzInstance.shutdown();
+    }
 
     @Test
     void testJCacheFactory() {
