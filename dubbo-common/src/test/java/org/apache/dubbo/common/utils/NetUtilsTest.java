@@ -347,6 +347,22 @@ class NetUtilsTest {
     }
 
     @Test
+    void testMatchIpExpressionDeprecatedTwoArgsWithIpPort() throws UnknownHostException {
+        // The deprecated 2-arg matchIpExpression should correctly parse host and port from
+        // an "ip:port" address string. Normal addresses like "192.168.1.63:90" should
+        // split into host="192.168.1.63" and port=90.
+        // With contains(":") this works; with endsWith(":") it does not.
+
+        // Pattern with port: host must match AND port must match
+        assertTrue(NetUtils.matchIpExpression("192.168.1.63:90", "192.168.1.63:90"));
+        assertFalse(NetUtils.matchIpExpression("192.168.1.63:90", "192.168.1.63:80"));
+
+        // Pattern without port: only host must match
+        assertTrue(NetUtils.matchIpExpression("192.168.1.*", "192.168.1.63:90"));
+        assertTrue(NetUtils.matchIpExpression("192.168.1.192/26", "192.168.1.199:8080"));
+    }
+
+    @Test
     void testMatchIpv6WithIpPort() throws UnknownHostException {
         assertTrue(NetUtils.matchIpRange("[234e:0:4567::3d:ee]", "234e:0:4567::3d:ee", 8090));
         assertTrue(NetUtils.matchIpRange("[234e:0:4567:0:0:0:3d:ee]", "234e:0:4567::3d:ee", 8090));
