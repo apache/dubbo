@@ -22,6 +22,8 @@ import org.apache.dubbo.test.check.exception.DubboTestException;
 import org.apache.dubbo.test.check.registrycenter.Processor;
 import org.apache.dubbo.test.check.registrycenter.context.ZookeeperWindowsContext;
 
+import java.io.IOException;
+import java.net.Socket;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
@@ -36,6 +38,16 @@ import org.apache.commons.exec.Executor;
 public class StartZookeeperWindowsProcessor extends ZookeeperWindowsProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(StartZookeeperWindowsProcessor.class);
+
+    /**
+     * Maximum time to wait for each zookeeper instance to accept connections.
+     */
+    private static final long READY_TIMEOUT_MILLIS = 30_000;
+
+    /**
+     * Delay between successive readiness checks.
+     */
+    private static final long POLL_INTERVAL_MILLIS = 200;
 
     /**
      * The {@link Processor} to find the pid of zookeeper instance.
@@ -70,15 +82,53 @@ public class StartZookeeperWindowsProcessor extends ZookeeperWindowsProcessor {
                     .toString());
             context.getExecutorService().submit(() -> executor.execute(cmdLine));
         }
-        try {
-            // TODO: Help me to optimize the ugly sleep.
-            // sleep to wait all of zookeeper instances are started successfully.
-            // The best way is to check the output log with the specified keywords,
-            // however, there maybe keep waiting for check when any exception occurred,
-            // because the output stream will be blocked to wait for continuous data without any break
-            TimeUnit.SECONDS.sleep(3);
-        } catch (InterruptedException e) {
-            // ignored
+        // Actively wait for each zookeeper instance to start accepting connections,
+        // instead of blindly sleeping for a fixed duration. This fails fast when a
+        // port never comes up, and doesn't waste time once a port is already ready.
+        waitForZookeeperReady(context.getClientPorts());
+    }
+
+    /**
+     * Blocks until every given zookeeper client port is accepting connections, or throws
+     * if any of them fails to become ready within {@link #READY_TIMEOUT_MILLIS}.
+     */
+    private void waitForZookeeperReady(int[] clientPorts) throws DubboTestException {
+        for (int clientPort : clientPorts) {
+            long deadline = System.currentTimeMillis() + READY_TIMEOUT_MILLIS;
+            boolean ready = false;
+
+            while (System.currentTimeMillis() < deadline) {
+                if (isPortOpen(clientPort)) {
+                    ready = true;
+                    break;
+                }
+
+                try {
+                    TimeUnit.MILLISECONDS.sleep(POLL_INTERVAL_MILLIS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new DubboTestException("Interrupted while waiting for zookeeper to start", e);
+                }
+            }
+
+            if (!ready) {
+                throw new DubboTestException(String.format(
+                        "Zookeeper on port %d did not become ready within %d milliseconds",
+                        clientPort, READY_TIMEOUT_MILLIS));
+            }
+            logger.info(String.format("The zookeeper-%d is ready.", clientPort));
+        }
+    }
+
+    /**
+     * Returns true if a TCP connection to 127.0.0.1:port can be opened, meaning
+     * something (expected to be zookeeper) is already listening there.
+     */
+    private boolean isPortOpen(int port) {
+        try (Socket socket = new Socket("127.0.0.1", port)) {
+            return true;
+        } catch (IOException e) {
+            return false;
         }
     }
 }
