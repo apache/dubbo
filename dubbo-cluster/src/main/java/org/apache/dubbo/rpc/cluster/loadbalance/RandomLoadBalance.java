@@ -67,15 +67,20 @@ public class RandomLoadBalance extends AbstractLoadBalance {
         int[] weights = new int[length];
         // The sum of weights
         int totalWeight = 0;
-        for (int i = 0; i < length; i++) {
-            int weight = getWeight(invokers.get(i), invocation);
+        // The invokers may be a BitList, whose get(index) is O(index) because it walks the bitset from the
+        // beginning on every call. Iterating by index would make this loop O(N^2), so iterate the list
+        // directly, which is O(N) for both BitList and ordinary lists.
+        int index = 0;
+        for (Invoker<T> invoker : invokers) {
+            int weight = getWeight(invoker, invocation);
             // Sum
             totalWeight += weight;
             // save for later use
-            weights[i] = totalWeight;
-            if (sameWeight && totalWeight != weight * (i + 1)) {
+            weights[index] = totalWeight;
+            if (sameWeight && totalWeight != weight * (index + 1)) {
                 sameWeight = false;
             }
+            index++;
         }
         if (totalWeight > 0 && !sameWeight) {
             // If (not every invoker has the same weight & at least one invoker's weight>0), select randomly based on
