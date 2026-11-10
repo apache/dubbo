@@ -46,6 +46,7 @@ import static org.apache.dubbo.rpc.Constants.ACTIVES_KEY;
 public class ActiveLimitFilter implements Filter, Filter.Listener {
 
     private static final String ACTIVE_LIMIT_FILTER_START_TIME = "active_limit_filter_start_time";
+    private static final String ACTIVE_LIMIT_FILTER_COUNTED = "active_limit_filter_counted";
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -79,6 +80,7 @@ public class ActiveLimitFilter implements Filter, Filter.Listener {
                 }
             }
         }
+        invocation.put(ACTIVE_LIMIT_FILTER_COUNTED, true);
 
         invocation.put(ACTIVE_LIMIT_FILTER_START_TIME, System.currentTimeMillis());
 
@@ -103,7 +105,11 @@ public class ActiveLimitFilter implements Filter, Filter.Listener {
 
         if (t instanceof RpcException) {
             RpcException rpcException = (RpcException) t;
-            if (rpcException.isLimitExceed()) {
+            if (rpcException.isLimitExceed() && invocation.get(ACTIVE_LIMIT_FILTER_COUNTED) == null) {
+                // This filter itself rejected the invocation before beginCount
+                // succeeded, so there is nothing to release. A LIMIT_EXCEEDED
+                // thrown by a downstream invoker must still release the count
+                // taken in invoke(), otherwise the concurrent slots leak (#16455).
                 return;
             }
         }
