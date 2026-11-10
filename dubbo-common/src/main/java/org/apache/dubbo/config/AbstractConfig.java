@@ -59,6 +59,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -272,26 +273,27 @@ public abstract class AbstractConfig implements Serializable {
 
     protected static String extractPropertyName(String setter) {
         String propertyName = setter.substring("set".length());
-        propertyName = propertyName.substring(0, 1).toLowerCase() + propertyName.substring(1);
+        propertyName = propertyName.substring(0, 1).toLowerCase(Locale.ROOT) + propertyName.substring(1);
         return propertyName;
     }
 
     private static String calculatePropertyToGetter(String name) {
-        return "get" + name.substring(0, 1).toUpperCase() + name.substring(1);
+        return "get" + name.substring(0, 1).toUpperCase(Locale.ROOT) + name.substring(1);
     }
 
     private static String calculatePropertyToSetter(String name) {
-        return "set" + name.substring(0, 1).toUpperCase() + name.substring(1);
+        return "set" + name.substring(0, 1).toUpperCase(Locale.ROOT) + name.substring(1);
     }
 
     private static String calculatePropertyFromGetter(String name) {
         int i = name.startsWith("get") ? 3 : 2;
-        return StringUtils.camelToSplitName(name.substring(i, i + 1).toLowerCase() + name.substring(i + 1), ".");
+        return StringUtils.camelToSplitName(
+                name.substring(i, i + 1).toLowerCase(Locale.ROOT) + name.substring(i + 1), ".");
     }
 
     private static String calculateAttributeFromGetter(String getter) {
         int i = getter.startsWith("get") ? 3 : 2;
-        return getter.substring(i, i + 1).toLowerCase() + getter.substring(i + 1);
+        return getter.substring(i, i + 1).toLowerCase(Locale.ROOT) + getter.substring(i + 1);
     }
 
     private static void invokeSetParameters(Class c, Object o, Map map) {
@@ -979,7 +981,8 @@ public abstract class AbstractConfig implements Serializable {
 
     private boolean isIgnoredAttribute(Class<?> clazz, String propertyName) {
         Method getter = null;
-        String capitalizePropertyName = propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
+        String capitalizePropertyName =
+                propertyName.substring(0, 1).toUpperCase(Locale.ROOT) + propertyName.substring(1);
         try {
             getter = clazz.getMethod("get" + capitalizePropertyName);
         } catch (NoSuchMethodException e) {

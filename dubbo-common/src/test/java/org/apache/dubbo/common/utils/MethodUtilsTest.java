@@ -16,7 +16,10 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.rpc.model.person.BigPerson;
+
 import java.lang.reflect.Method;
+import java.util.Locale;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -116,6 +119,19 @@ class MethodUtilsTest {
         Assertions.assertEquals("fieldName1", MethodUtils.extractFieldName(m5));
         Assertions.assertEquals("fieldName2", MethodUtils.extractFieldName(m6));
         Assertions.assertEquals("fieldName3", MethodUtils.extractFieldName(m7));
+    }
+
+    // In the Turkish locale "I".toLowerCase() is the dotless "ı".
+    @Test
+    void testExtractFieldNameUnderTurkishLocale() throws Exception {
+        Locale defaultLocale = Locale.getDefault();
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+        try {
+            Method getter = BigPerson.class.getMethod("getInfoProfile");
+            Assertions.assertEquals("infoProfile", MethodUtils.extractFieldName(getter));
+        } finally {
+            Locale.setDefault(defaultLocale);
+        }
     }
 
     public class MethodFieldTestClazz {

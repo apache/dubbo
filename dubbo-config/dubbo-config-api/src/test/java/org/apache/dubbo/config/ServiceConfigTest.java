@@ -37,7 +37,9 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.service.GenericService;
 
+import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -62,6 +64,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_BIND;
 import static org.apache.dubbo.config.Constants.SHUTDOWN_TIMEOUT_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
@@ -764,6 +767,22 @@ class ServiceConfigTest {
         verify(scheduledExecutorService, times(0)).schedule((Runnable) any(), anyLong(), any());
 
         scheduledExecutorService.shutdown();
+    }
+
+    // In the Turkish locale "tri".toUpperCase() is "TRİ", so TRI_DUBBO_PORT_TO_BIND was never looked up.
+    @Test
+    void testGetValueFromConfigUnderTurkishLocale() throws Exception {
+        Method getValueFromConfig =
+                ServiceConfig.class.getDeclaredMethod("getValueFromConfig", ProtocolConfig.class, String.class);
+        getValueFromConfig.setAccessible(true);
+        Locale defaultLocale = Locale.getDefault();
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+        try {
+            SysProps.setProperty("TRI_" + DUBBO_PORT_TO_BIND, "50051");
+            assertEquals("50051", getValueFromConfig.invoke(null, new ProtocolConfig("tri"), DUBBO_PORT_TO_BIND));
+        } finally {
+            Locale.setDefault(defaultLocale);
+        }
     }
 
     @Test

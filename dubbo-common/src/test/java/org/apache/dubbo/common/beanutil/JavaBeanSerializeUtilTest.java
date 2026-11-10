@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -54,6 +55,23 @@ class JavaBeanSerializeUtilTest {
         JavaBeanDescriptor descriptor;
         descriptor = JavaBeanSerializeUtil.serialize(null);
         Assertions.assertNull(descriptor);
+    }
+
+    // In the Turkish locale "i".toUpperCase() is the dotted "İ", so "setİnfoProfile" was looked up.
+    @Test
+    void testDeserializeBeanUnderTurkishLocale() {
+        PersonInfo personInfo = new PersonInfo();
+        personInfo.setName("dubbo");
+        JavaBeanDescriptor descriptor = new JavaBeanDescriptor(BigPerson.class.getName(), JavaBeanDescriptor.TYPE_BEAN);
+        descriptor.setProperty("infoProfile", personInfo);
+        Locale defaultLocale = Locale.getDefault();
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+        try {
+            BigPerson person = (BigPerson) JavaBeanSerializeUtil.deserialize(descriptor);
+            Assertions.assertSame(personInfo, person.getInfoProfile());
+        } finally {
+            Locale.setDefault(defaultLocale);
+        }
     }
 
     @Test

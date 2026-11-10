@@ -50,6 +50,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -121,7 +122,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         String configModeStr = (String) configuration.getProperty(ConfigKeys.DUBBO_CONFIG_MODE);
         try {
             if (StringUtils.hasText(configModeStr)) {
-                this.configMode = ConfigMode.valueOf(configModeStr.toUpperCase());
+                this.configMode = ConfigMode.valueOf(configModeStr.toUpperCase(Locale.ROOT));
             }
         } catch (Exception e) {
             String msg = "Illegal '" + ConfigKeys.DUBBO_CONFIG_MODE + "' config value [" + configModeStr
