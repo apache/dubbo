@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.remoting.Constants.HEARTBEAT_CHECK_TICK;
+import static org.awaitility.Awaitility.await;
 
 class ReconnectTimerTaskTest {
 
@@ -37,12 +38,13 @@ class ReconnectTimerTaskTest {
     private MockChannel channel;
 
     private ReconnectTimerTask reconnectTimerTask;
+
     private HashedWheelTimer reconnectTimer;
     private boolean isConnected = false;
 
     @BeforeEach
     public void setup() throws Exception {
-        long tickDuration = 1000;
+        long tickDuration = 30;
         reconnectTimer = new HashedWheelTimer(tickDuration / HEARTBEAT_CHECK_TICK, TimeUnit.MILLISECONDS);
         channel = new MockChannel() {
             @Override
@@ -71,13 +73,19 @@ class ReconnectTimerTaskTest {
         long now = System.currentTimeMillis();
 
         url = url.addParameter(DUBBO_VERSION_KEY, "2.1.1");
-        channel.setAttribute(HeartbeatHandler.KEY_READ_TIMESTAMP, now - 1000);
-        channel.setAttribute(HeartbeatHandler.KEY_WRITE_TIMESTAMP, now - 1000);
+        channel.setAttribute(HeartbeatHandler.KEY_READ_TIMESTAMP, now - 2000);
+        channel.setAttribute(HeartbeatHandler.KEY_WRITE_TIMESTAMP, now - 2000);
 
-        Thread.sleep(2000L);
-        Assertions.assertTrue(channel.getReconnectCount() > 0);
+        await().atMost(2, TimeUnit.SECONDS)
+                .pollInterval(10, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> Assertions.assertTrue(channel.getReconnectCount() > 0));
+
         isConnected = true;
-        Thread.sleep(2000L);
-        Assertions.assertTrue(channel.getReconnectCount() > 1);
+        channel.setAttribute(HeartbeatHandler.KEY_READ_TIMESTAMP, now - 2000);
+        channel.setAttribute(HeartbeatHandler.KEY_WRITE_TIMESTAMP, now - 2000);
+
+        await().atMost(2, TimeUnit.SECONDS)
+                .pollInterval(10, TimeUnit.MILLISECONDS)
+                .untilAsserted(() -> Assertions.assertTrue(channel.getReconnectCount() > 1));
     }
 }
