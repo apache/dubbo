@@ -21,6 +21,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicInteger;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.LoaderClassPath;
@@ -45,6 +46,12 @@ class SerializeSecurityConfiguratorSealedTest {
 
     private static final int CLASS_FILE_JAVA_17 = 61;
 
+    /**
+     * The fixture is defined into the class loader of this test, so every call needs fresh names:
+     * defining the same name twice in one JVM fails with a {@link LinkageError}.
+     */
+    private static final AtomicInteger FIXTURE_COUNTER = new AtomicInteger();
+
     /** Ordinary interface and implementation — the control for the sealed case. */
     public interface OpenParent extends Serializable {}
 
@@ -54,9 +61,10 @@ class SerializeSecurityConfiguratorSealedTest {
     @EnabledForJreRange(min = JRE.JAVA_17)
     void testSealedSubclassesAreAutoTrusted() throws Exception {
         String pkg = getClass().getPackage().getName();
-        String parentName = pkg + ".GeneratedSealedParent";
-        String firstChildName = pkg + ".GeneratedSealedChildOne";
-        String secondChildName = pkg + ".GeneratedSealedChildTwo";
+        int fixture = FIXTURE_COUNTER.incrementAndGet();
+        String parentName = pkg + ".GeneratedSealedParent" + fixture;
+        String firstChildName = pkg + ".GeneratedSealedChildOne" + fixture;
+        String secondChildName = pkg + ".GeneratedSealedChildTwo" + fixture;
 
         ClassPool pool = new ClassPool(true);
         pool.appendClassPath(new LoaderClassPath(getClass().getClassLoader()));

@@ -373,8 +373,9 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
     }
 
     /**
-     * Returns the subtypes a sealed class permits, or an empty array when the class is not sealed,
-     * the runtime predates sealed classes, or the attribute cannot be read.
+     * Returns the subtypes a sealed class permits, or an empty array when the class is not sealed or
+     * the runtime predates sealed classes. A permitted subtype that cannot be resolved is left out
+     * of the result by {@code getPermittedSubclasses} itself, so it simply stays untrusted.
      *
      * <p>Note that a Kotlin {@code sealed} declaration only carries the JVM {@code
      * PermittedSubclasses} attribute when compiled with {@code -jvm-target 17} or above; below that
@@ -387,8 +388,13 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
         try {
             Class<?>[] permittedSubclasses = (Class<?>[]) GET_PERMITTED_SUBCLASSES.invoke(clazz);
             return permittedSubclasses == null ? EMPTY_CLASS_ARRAY : permittedSubclasses;
-        } catch (Throwable t) {
-            // A permitted subtype that cannot be resolved must not stop the rest of the walk.
+        } catch (ReflectiveOperationException e) {
+            // Reachable when a security manager denies access to a permitted subtype's package.
+            // Those subtypes then stay untrusted, as they were before this traversal existed.
+            LOGGER.debug(
+                    "Failed to read the permitted subclasses of " + clazz.getName()
+                            + ", its subtypes will not be auto-trusted: ",
+                    e);
             return EMPTY_CLASS_ARRAY;
         }
     }
