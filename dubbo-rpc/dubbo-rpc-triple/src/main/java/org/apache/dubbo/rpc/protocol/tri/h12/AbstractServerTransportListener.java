@@ -48,6 +48,7 @@ import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -163,16 +164,22 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
             onDataFinally(message);
             return;
         }
-        executor.execute(() -> {
-            try {
-                doOnData(message);
-            } catch (Throwable t) {
-                logError(t);
-                onError(message, t);
-            } finally {
-                onDataFinally(message);
-            }
-        });
+        try {
+            executor.execute(() -> {
+                try {
+                    doOnData(message);
+                } catch (Throwable t) {
+                    logError(t);
+                    onError(message, t);
+                } finally {
+                    onDataFinally(message);
+                }
+            });
+        } catch (RejectedExecutionException e) {
+            // Executor rejected the task (saturated backing executor).
+            // Release the message body immediately to avoid leaking the inbound DATA body.
+            onDataFinally(message);
+        }
     }
 
     protected void doOnData(MESSAGE message) {
