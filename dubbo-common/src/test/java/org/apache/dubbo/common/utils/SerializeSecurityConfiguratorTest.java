@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.junit.jupiter.api.Test;
-
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
+
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
