@@ -29,7 +29,7 @@ public class HttpWriteQueueHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
         EventLoop eventLoop = ctx.channel().eventLoop();
-        this.writeQueue = new HttpWriteQueue(eventLoop);
+        this.writeQueue = new HttpWriteQueue(eventLoop, () -> ctx.channel().flush());
     }
 
     @Override
