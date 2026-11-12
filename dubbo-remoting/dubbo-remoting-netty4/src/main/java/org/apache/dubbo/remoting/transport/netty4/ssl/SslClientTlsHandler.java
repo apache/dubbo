@@ -24,6 +24,8 @@ import org.apache.dubbo.remoting.Constants;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLSession;
 
+import java.net.InetSocketAddress;
+
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.ssl.SslContext;
@@ -38,18 +40,26 @@ public class SslClientTlsHandler extends ChannelInboundHandlerAdapter {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SslClientTlsHandler.class);
     private static final AttributeKey<SSLSession> SSL_SESSION_KEY = AttributeKey.valueOf(Constants.SSL_SESSION_KEY);
     private final SslContext sslContext;
+    private final InetSocketAddress peerAddress;
 
     public SslClientTlsHandler(URL url) {
-        this(SslContexts.buildClientSslContext(url));
+        this(SslContexts.buildClientSslContext(url), url.toInetSocketAddress());
     }
 
     public SslClientTlsHandler(SslContext sslContext) {
+        this(sslContext, null);
+    }
+
+    public SslClientTlsHandler(SslContext sslContext, InetSocketAddress peerAddress) {
         this.sslContext = sslContext;
+        this.peerAddress = peerAddress;
     }
 
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) {
-        SSLEngine sslEngine = sslContext.newEngine(ctx.alloc());
+        SSLEngine sslEngine = peerAddress == null
+                ? sslContext.newEngine(ctx.alloc())
+                : sslContext.newEngine(ctx.alloc(), peerAddress.getHostString(), peerAddress.getPort());
         ctx.pipeline().addAfter(ctx.name(), null, new SslHandler(sslEngine, false));
     }
 
