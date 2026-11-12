@@ -590,9 +590,16 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                 handleH2TransportError(TriRpcStatus.INTERNAL.withDescription("headers not received before payload"));
                 return;
             }
-            // Use ByteBufInputStream to adapt ByteBuf to InputStream
-            // The second parameter 'true' means release ByteBuf after reading
-            deframer.decode(new ByteBufInputStream(data, true));
+            // Use try-with-resources to ensure ByteBufInputStream is always closed,
+            // which releases the underlying ByteBuf, even if deframer.decode() throws.
+            // The second parameter 'true' means release ByteBuf when the stream is closed.
+            try (ByteBufInputStream inputStream = new ByteBufInputStream(data, true)) {
+                deframer.decode(inputStream);
+            } catch (Throwable t) {
+                // Ensure data is released if deframer.decode() throws before InputStream is fully consumed
+                ReferenceCountUtil.release(data);
+                LOGGER.error(PROTOCOL_FAILED_RESPONSE, "", "", "Failed to decode triple response data", t);
+            }
         }
 
         @Override
