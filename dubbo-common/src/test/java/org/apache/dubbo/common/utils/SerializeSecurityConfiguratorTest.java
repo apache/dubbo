@@ -65,7 +65,7 @@ class SerializeSecurityConfiguratorTest {
         Type stringListType = new ParameterizedType() {
             @Override
             public Type[] getActualTypeArguments() {
-                return new Type[]{String.class};
+                return new Type[] {String.class};
             }
 
             @Override
