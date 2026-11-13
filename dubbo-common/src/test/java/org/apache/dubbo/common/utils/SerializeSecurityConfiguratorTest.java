@@ -19,9 +19,7 @@ package org.apache.dubbo.common.utils;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
@@ -55,7 +53,8 @@ class SerializeSecurityConfiguratorTest {
 
     @Test
     void testSafeCheckClass_OtherPackage() {
-        assertTrue(SerializeSecurityConfigurator.safeCheckClass(SerializeSecurityConfigurator.class));
+        Class<?> clazz = SerializeSecurityConfigurator.class;
+        assertTrue(SerializeSecurityConfigurator.safeCheckClass(clazz));
     }
 
     @Test
