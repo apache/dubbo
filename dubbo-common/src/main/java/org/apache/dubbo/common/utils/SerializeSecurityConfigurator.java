@@ -215,50 +215,114 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
             return;
         }
 
-        if (!checkClass(clazz)) {
+        if (!safeCheckClass(clazz)) {
             return;
         }
 
         addToAllow(clazz);
 
-        Method[] methodsToExport = clazz.getMethods();
+        Method[] methodsToExport;
+        try {
+            methodsToExport = clazz.getMethods();
+        } catch (Throwable t) {
+            LOGGER.warn(
+                    COMMON_IO_EXCEPTION,
+                    "Failed to get methods of class " + clazz.getName() + ", skipping method scanning",
+                    t);
+            return;
+        }
 
         for (Method method : methodsToExport) {
-            Class<?>[] parameterTypes = method.getParameterTypes();
+            Class<?>[] parameterTypes;
+            try {
+                parameterTypes = method.getParameterTypes();
+            } catch (Throwable t) {
+                LOGGER.warn(
+                        COMMON_IO_EXCEPTION,
+                        "Failed to get parameter types of method " + method.getName()
+                                + " in class " + clazz.getName() + ", skipping method",
+                        t);
+                continue;
+            }
             for (Class<?> parameterType : parameterTypes) {
-                checkClass(parameterType);
+                safeCheckClass(parameterType);
             }
 
-            Type[] genericParameterTypes = method.getGenericParameterTypes();
+            Type[] genericParameterTypes;
+            try {
+                genericParameterTypes = method.getGenericParameterTypes();
+            } catch (Throwable t) {
+                LOGGER.warn(
+                        COMMON_IO_EXCEPTION,
+                        "Failed to get generic parameter types of method " + method.getName()
+                                + " in class " + clazz.getName() + ", skipping method",
+                        t);
+                continue;
+            }
             for (Type genericParameterType : genericParameterTypes) {
-                checkType(genericParameterType);
+                safeCheckType(genericParameterType);
             }
 
-            Class<?> returnType = method.getReturnType();
-            checkClass(returnType);
+            Class<?> returnType;
+            try {
+                returnType = method.getReturnType();
+            } catch (Throwable t) {
+                LOGGER.warn(
+                        COMMON_IO_EXCEPTION,
+                        "Failed to get return type of method " + method.getName()
+                                + " in class " + clazz.getName() + ", skipping method",
+                        t);
+                continue;
+            }
+            safeCheckClass(returnType);
 
-            Type genericReturnType = method.getGenericReturnType();
-            checkType(genericReturnType);
+            Type genericReturnType;
+            try {
+                genericReturnType = method.getGenericReturnType();
+            } catch (Throwable t) {
+                LOGGER.warn(
+                        COMMON_IO_EXCEPTION,
+                        "Failed to get generic return type of method " + method.getName()
+                                + " in class " + clazz.getName() + ", skipping method",
+                        t);
+                continue;
+            }
+            safeCheckType(genericReturnType);
 
-            Class<?>[] exceptionTypes = method.getExceptionTypes();
+            Class<?>[] exceptionTypes;
+            try {
+                exceptionTypes = method.getExceptionTypes();
+            } catch (Throwable t) {
+                LOGGER.warn(
+                        COMMON_IO_EXCEPTION,
+                        "Failed to get exception types of method " + method.getName()
+                                + " in class " + clazz.getName() + ", skipping method",
+                        t);
+                continue;
+            }
             for (Class<?> exceptionType : exceptionTypes) {
-                checkClass(exceptionType);
+                safeCheckClass(exceptionType);
             }
 
-            Type[] genericExceptionTypes = method.getGenericExceptionTypes();
+            Type[] genericExceptionTypes;
+            try {
+                genericExceptionTypes = method.getGenericExceptionTypes();
+            } catch (Throwable t) {
+                LOGGER.warn(
+                        COMMON_IO_EXCEPTION,
+                        "Failed to get generic exception types of method " + method.getName()
+                                + " in class " + clazz.getName() + ", skipping method",
+                        t);
+                continue;
+            }
             for (Type genericExceptionType : genericExceptionTypes) {
-                checkType(genericExceptionType);
+                safeCheckType(genericExceptionType);
             }
         }
     }
 
-    private void checkType(Type type) {
+    private void safeCheckType(Type type) {
         if (type == null) {
-            return;
-        }
-
-        if (type instanceof Class) {
-            checkClass((Class<?>) type);
             return;
         }
 
@@ -266,32 +330,44 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
             return;
         }
 
-        if (type instanceof ParameterizedType) {
-            ParameterizedType parameterizedType = (ParameterizedType) type;
-            checkClass((Class<?>) parameterizedType.getRawType());
-            for (Type actualTypeArgument : parameterizedType.getActualTypeArguments()) {
-                checkType(actualTypeArgument);
+        try {
+            if (type instanceof Class) {
+                safeCheckClass((Class<?>) type);
+                return;
             }
-        } else if (type instanceof GenericArrayType) {
-            GenericArrayType genericArrayType = (GenericArrayType) type;
-            checkType(genericArrayType.getGenericComponentType());
-        } else if (type instanceof TypeVariable) {
-            TypeVariable typeVariable = (TypeVariable) type;
-            for (Type bound : typeVariable.getBounds()) {
-                checkType(bound);
+
+            if (type instanceof ParameterizedType) {
+                ParameterizedType parameterizedType = (ParameterizedType) type;
+                safeCheckClass((Class<?>) parameterizedType.getRawType());
+                for (Type actualTypeArgument : parameterizedType.getActualTypeArguments()) {
+                    safeCheckType(actualTypeArgument);
+                }
+            } else if (type instanceof GenericArrayType) {
+                GenericArrayType genericArrayType = (GenericArrayType) type;
+                safeCheckType(genericArrayType.getGenericComponentType());
+            } else if (type instanceof TypeVariable) {
+                TypeVariable typeVariable = (TypeVariable) type;
+                for (Type bound : typeVariable.getBounds()) {
+                    safeCheckType(bound);
+                }
+            } else if (type instanceof WildcardType) {
+                WildcardType wildcardType = (WildcardType) type;
+                for (Type bound : wildcardType.getUpperBounds()) {
+                    safeCheckType(bound);
+                }
+                for (Type bound : wildcardType.getLowerBounds()) {
+                    safeCheckType(bound);
+                }
             }
-        } else if (type instanceof WildcardType) {
-            WildcardType wildcardType = (WildcardType) type;
-            for (Type bound : wildcardType.getUpperBounds()) {
-                checkType(bound);
-            }
-            for (Type bound : wildcardType.getLowerBounds()) {
-                checkType(bound);
-            }
+        } catch (Throwable t) {
+            LOGGER.warn(
+                    COMMON_IO_EXCEPTION,
+                    "Failed to process type " + type.getTypeName() + ", skipping type",
+                    t);
         }
     }
 
-    private boolean checkClass(Class<?> clazz) {
+    private boolean safeCheckClass(Class<?> clazz) {
         if (clazz == null) {
             return false;
         }
@@ -314,35 +390,105 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
             return true;
         }
 
-        Class<?>[] interfaces = clazz.getInterfaces();
+        Class<?>[] interfaces;
+        try {
+            interfaces = clazz.getInterfaces();
+        } catch (Throwable t) {
+            LOGGER.warn(
+                    COMMON_IO_EXCEPTION,
+                    "Failed to get interfaces of class " + clazz.getName() + ", skipping interfaces",
+                    t);
+            interfaces = new Class<?>[0];
+        }
         for (Class<?> interfaceClass : interfaces) {
-            checkClass(interfaceClass);
+            safeCheckClass(interfaceClass);
         }
 
-        for (Type genericInterface : clazz.getGenericInterfaces()) {
-            checkType(genericInterface);
+        Type[] genericInterfaces;
+        try {
+            genericInterfaces = clazz.getGenericInterfaces();
+        } catch (Throwable t) {
+            LOGGER.warn(
+                    COMMON_IO_EXCEPTION,
+                    "Failed to get generic interfaces of class " + clazz.getName()
+                            + ", skipping generic interfaces",
+                    t);
+            genericInterfaces = new Type[0];
+        }
+        for (Type genericInterface : genericInterfaces) {
+            safeCheckType(genericInterface);
         }
 
-        Class<?> superclass = clazz.getSuperclass();
+        Class<?> superclass;
+        try {
+            superclass = clazz.getSuperclass();
+        } catch (Throwable t) {
+            LOGGER.warn(
+                    COMMON_IO_EXCEPTION,
+                    "Failed to get superclass of class " + clazz.getName() + ", skipping superclass",
+                    t);
+            superclass = null;
+        }
         if (superclass != null) {
-            checkClass(superclass);
+            safeCheckClass(superclass);
         }
 
-        Type genericSuperclass = clazz.getGenericSuperclass();
+        Type genericSuperclass;
+        try {
+            genericSuperclass = clazz.getGenericSuperclass();
+        } catch (Throwable t) {
+            LOGGER.warn(
+                    COMMON_IO_EXCEPTION,
+                    "Failed to get generic superclass of class " + clazz.getName()
+                            + ", skipping generic superclass",
+                    t);
+            genericSuperclass = null;
+        }
         if (genericSuperclass != null) {
-            checkType(genericSuperclass);
+            safeCheckType(genericSuperclass);
         }
 
-        Field[] fields = clazz.getDeclaredFields();
+        Field[] fields;
+        try {
+            fields = clazz.getDeclaredFields();
+        } catch (Throwable t) {
+            LOGGER.warn(
+                    COMMON_IO_EXCEPTION,
+                    "Failed to get declared fields of class " + clazz.getName() + ", skipping fields",
+                    t);
+            fields = new Field[0];
+        }
 
         for (Field field : fields) {
             if (Modifier.isTransient(field.getModifiers())) {
                 continue;
             }
 
-            Class<?> fieldClass = field.getType();
-            checkClass(fieldClass);
-            checkType(field.getGenericType());
+            Class<?> fieldClass;
+            try {
+                fieldClass = field.getType();
+            } catch (Throwable t) {
+                LOGGER.warn(
+                        COMMON_IO_EXCEPTION,
+                        "Failed to get field type of field " + field.getName()
+                                + " in class " + clazz.getName() + ", skipping field",
+                        t);
+                continue;
+            }
+            safeCheckClass(fieldClass);
+
+            Type genericType;
+            try {
+                genericType = field.getGenericType();
+            } catch (Throwable t) {
+                LOGGER.warn(
+                        COMMON_IO_EXCEPTION,
+                        "Failed to get generic type of field " + field.getName()
+                                + " in class " + clazz.getName() + ", skipping field generic type",
+                        t);
+                continue;
+            }
+            safeCheckType(genericType);
         }
 
         return true;

@@ -24,9 +24,15 @@ import java.util.concurrent.Executor;
 public class HttpWriteQueue extends BatchExecutorQueue<HttpChannelQueueCommand> {
 
     private final Executor executor;
+    private final Runnable flushCallback;
 
     public HttpWriteQueue(Executor executor) {
+        this(executor, null);
+    }
+
+    public HttpWriteQueue(Executor executor, Runnable flushCallback) {
         this.executor = executor;
+        this.flushCallback = flushCallback;
     }
 
     public CompletableFuture<Void> enqueue(HttpChannelQueueCommand cmd) {
@@ -42,6 +48,10 @@ public class HttpWriteQueue extends BatchExecutorQueue<HttpChannelQueueCommand> 
     @Override
     protected void flush(HttpChannelQueueCommand item) {
         item.run();
-        item.getHttpChannel().flush();
+        if (flushCallback != null) {
+            flushCallback.run();
+        } else {
+            item.getHttpChannel().flush();
+        }
     }
 }
