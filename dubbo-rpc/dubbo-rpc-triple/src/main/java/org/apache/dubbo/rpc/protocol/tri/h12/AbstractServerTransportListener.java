@@ -177,7 +177,11 @@ public abstract class AbstractServerTransportListener<HEADER extends RequestMeta
                 }
             });
         } catch (RejectedExecutionException e) {
-            onError(message, e);
+            try {
+                onError(message, e);
+            } finally {
+                onDataFinally(message);
+            }
         }
     }
 

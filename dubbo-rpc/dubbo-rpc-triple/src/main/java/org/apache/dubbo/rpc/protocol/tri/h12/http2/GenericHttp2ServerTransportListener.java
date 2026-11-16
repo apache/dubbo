@@ -52,6 +52,9 @@ import org.apache.dubbo.rpc.protocol.tri.h12.UnaryServerCallListener;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -202,12 +205,12 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     @Override
     protected Http2InputMessage onDataReceived(Http2InputMessage message) {
         PendingInput input = newPendingInput(message);
+        List<PendingInput> toClose;
         synchronized (inputLock) {
             pendingInputs.add(input);
-            if (inputClosed && processingInputs == 0) {
-                closeInput(input);
-            }
+            toClose = takeClosedInputs();
         }
+        closePendingInputs(toClose);
         return new Http2InputMessageFrame(message.id(), input, message.isEndStream());
     }
 
@@ -218,21 +221,27 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     @Override
     protected void doOnData(Http2InputMessage message) {
         PendingInput input = (PendingInput) message.getBody();
+        boolean process;
+        List<PendingInput> toClose;
         synchronized (inputLock) {
-            if (inputClosed || input.closed.get()) {
-                closeInput(input);
-                return;
+            process = !inputClosed && !input.closed.get();
+            if (process) {
+                processingInputs++;
             }
-            processingInputs++;
+            toClose = takeClosedInputs();
+        }
+        closePendingInputs(toClose);
+        if (!process) {
+            return;
         }
         try {
             super.doOnData(message);
         } finally {
             synchronized (inputLock) {
-                if (--processingInputs == 0 && inputClosed) {
-                    closePendingInputs();
-                }
+                processingInputs--;
+                toClose = takeClosedInputs();
             }
+            closePendingInputs(toClose);
         }
     }
 
@@ -298,18 +307,27 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     }
 
     private void closeInputs() {
+        List<PendingInput> toClose;
         synchronized (inputLock) {
             inputClosed = true;
-            if (processingInputs == 0) {
-                closePendingInputs();
-            }
+            toClose = takeClosedInputs();
         }
+        closePendingInputs(toClose);
     }
 
-    private void closePendingInputs() {
-        // An already-started callback may still be preparing its DATA message. Defer
-        // pre-delivery cleanup until it returns; accepted input belongs to the decoder.
-        for (PendingInput input : pendingInputs) {
+    // Called under inputLock. Never close user-supplied input while holding that lock.
+    private List<PendingInput> takeClosedInputs() {
+        if (!inputClosed || processingInputs != 0) {
+            return Collections.emptyList();
+        }
+        List<PendingInput> inputs = new ArrayList<>(pendingInputs);
+        pendingInputs.clear();
+        return inputs;
+    }
+
+    private void closePendingInputs(List<PendingInput> inputs) {
+        // Preserve the existing deferral until all started DATA callbacks leave their handoff.
+        for (PendingInput input : inputs) {
             closeInput(input);
         }
     }
@@ -317,7 +335,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     private void closeInput(PendingInput input) {
         try {
             input.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOGGER.warn(PROTOCOL_FAILED_RESPONSE, "", "", "Failed to close request body", e);
         }
     }

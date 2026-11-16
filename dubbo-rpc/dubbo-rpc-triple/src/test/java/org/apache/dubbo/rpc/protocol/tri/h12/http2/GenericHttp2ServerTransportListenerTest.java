@@ -95,6 +95,7 @@ class GenericHttp2ServerTransportListenerTest {
                 // Rejection propagation is independent of body ownership.
             }
             assertReleasedOnce();
+            assertEquals(1, listener.dataFinalizations);
             listener.close();
             assertReleasedOnce();
         } finally {
@@ -402,6 +403,73 @@ class GenericHttp2ServerTransportListenerTest {
         assertEquals(1, closes.get());
     }
 
+    @Test
+    void listenerFailureBeforeConsumptionReleasesInputOnce() {
+        initialize(Runnable::run);
+        listener.deliveryFailure = new IllegalStateException("test delivery failure");
+        input = new CountingInput();
+        listener.onData(new Http2InputMessageFrame(input, false));
+        assertReleasedOnce();
+        assertEquals(1, listener.dataFinalizations);
+        listener.close();
+        assertReleasedOnce();
+    }
+
+    @Test
+    void closeCallbackCanWaitForConcurrentLateData() throws Exception {
+        initialize(Runnable::run);
+        Queue<Runnable> queue = new ArrayDeque<>();
+        listener.dataExecutor = queue::add;
+        input = new CountingInput();
+        listener.onData(new Http2InputMessageFrame(input, false));
+        CountingInput late = new CountingInput();
+        java.util.concurrent.ExecutorService pool = java.util.concurrent.Executors.newSingleThreadExecutor();
+        try {
+            input.afterClose = () -> {
+                try {
+                    pool.submit(() -> listener.onData(new Http2InputMessageFrame(late, false)))
+                            .get(2, TimeUnit.SECONDS);
+                } catch (Exception e) {
+                    throw new AssertionError("input close must not hold lifecycle lock", e);
+                }
+            };
+            listener.close();
+            assertReleasedOnce();
+            assertEquals(0, late.buffer.refCnt());
+            assertEquals(1, late.closes);
+        } finally {
+            pool.shutdownNow();
+            assertTrue(pool.awaitTermination(5, TimeUnit.SECONDS));
+            if (late.buffer.refCnt() > 0) late.close();
+        }
+    }
+
+    @Test
+    void runtimeCloseFailureDoesNotAbandonOtherPendingBodies() throws IOException {
+        initialize(Runnable::run);
+        listener.dataExecutor = task -> {};
+        input = new CountingInput();
+        CountingInput other = new CountingInput();
+        input.afterClose = () -> {
+            throw new IllegalStateException("first close failure");
+        };
+        other.afterClose = () -> {
+            throw new IllegalStateException("other close failure");
+        };
+        listener.onData(new Http2InputMessageFrame(input, false));
+        listener.onData(new Http2InputMessageFrame(other, false));
+        try {
+            assertDoesNotThrow(listener::close);
+            assertReleasedOnce();
+            assertEquals(0, other.buffer.refCnt());
+            assertEquals(1, other.closes);
+            assertDoesNotThrow(listener::close);
+        } finally {
+            other.afterClose = null;
+            if (other.buffer.refCnt() > 0) other.close();
+        }
+    }
+
     private void initialize(Executor executor) {
         listener = new TestListener(framework, executor);
         listener.onMetadata(mock(Http2Header.class));
@@ -415,6 +483,7 @@ class GenericHttp2ServerTransportListenerTest {
     private static class CountingInput extends ByteBufInputStream {
         private final ByteBuf buffer;
         private int closes;
+        private Runnable afterClose;
         private CountDownLatch readStarted;
         private CountDownLatch resumeRead;
 
@@ -445,6 +514,7 @@ class GenericHttp2ServerTransportListenerTest {
         public void close() throws IOException {
             closes++;
             super.close();
+            if (afterClose != null) afterClose.run();
         }
     }
 
@@ -469,6 +539,8 @@ class GenericHttp2ServerTransportListenerTest {
         private CountDownLatch resumeDelivery;
         private long frameId;
         private boolean endStream;
+        private int dataFinalizations;
+        private RuntimeException deliveryFailure;
 
         TestListener(FrameworkModel framework, Executor executor) {
             super(mock(H2StreamChannel.class), URL.valueOf("tri://127.0.0.1:50051"), framework);
@@ -513,6 +585,7 @@ class GenericHttp2ServerTransportListenerTest {
                         throw new AssertionError(e);
                     }
                 }
+                if (deliveryFailure != null) throw deliveryFailure;
                 getStreamingDecoder().decode(message);
             };
         }
@@ -547,6 +620,11 @@ class GenericHttp2ServerTransportListenerTest {
         @Override
         protected Http2ServerChannelObserver newResponseObserver(H2StreamChannel channel) {
             return new Http2ServerChannelObserver(channel);
+        }
+
+        @Override
+        protected void onDataFinally(Http2InputMessage message) {
+            dataFinalizations++;
         }
 
         @Override

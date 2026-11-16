@@ -23,6 +23,7 @@ import org.apache.dubbo.remoting.http12.h2.Http2Header;
 import org.apache.dubbo.remoting.http12.h2.Http2InputMessage;
 import org.apache.dubbo.remoting.http12.h2.Http2ServerChannelObserver;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
+import org.apache.dubbo.remoting.websocket.FinalFragment;
 import org.apache.dubbo.remoting.websocket.FinalFragmentStreamingDecoder;
 import org.apache.dubbo.remoting.websocket.WebSocketHeaderNames;
 import org.apache.dubbo.remoting.websocket.WebSocketTransportListener;
@@ -101,20 +102,19 @@ public class DefaultWebSocketServerTransportListener extends GenericHttp2ServerT
 
     @Override
     protected PendingInput newPendingInput(Http2InputMessage message) {
-        return message.getBody() instanceof org.apache.dubbo.remoting.websocket.FinalFragment
+        return message.getBody() instanceof FinalFragment
                 ? new PendingFragmentInput(message)
                 : super.newPendingInput(message);
     }
 
-    private final class PendingFragmentInput extends PendingInput
-            implements org.apache.dubbo.remoting.websocket.FinalFragment {
+    private final class PendingFragmentInput extends PendingInput implements FinalFragment {
         private PendingFragmentInput(Http2InputMessage message) {
             super(message);
         }
 
         @Override
         public boolean isFinalFragment() {
-            return ((org.apache.dubbo.remoting.websocket.FinalFragment) in).isFinalFragment();
+            return ((FinalFragment) in).isFinalFragment();
         }
     }
 
