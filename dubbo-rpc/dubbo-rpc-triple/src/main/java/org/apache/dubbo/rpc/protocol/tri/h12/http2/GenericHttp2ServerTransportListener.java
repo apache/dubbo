@@ -52,32 +52,45 @@ import org.apache.dubbo.rpc.protocol.tri.h12.UnaryServerCallListener;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_RESPONSE;
 
+/**
+ * Tracks DATA ownership across executor submission, including silently discarded tasks.
+ *
+ * <p>Each input moves from QUEUED to DELIVERING when its task starts, then to HANDED_OFF
+ * before invoking the message listener. Transport termination may close only QUEUED inputs;
+ * a started callback closes its own DELIVERING input in finally if handoff did not occur.
+ * After handoff, buffered input belongs to the decoder, including while later callbacks read it.
+ * Every close path claims CLOSED before closing the original message, so release occurs once.
+ *
+ * <p>The registry finds tasks that never run. The volatile terminal flag seals new registrations;
+ * checking it after registration also covers DATA racing with the terminal drain. Per-input CAS
+ * separates queued cleanup from an unrelated delivering callback, without a shared lifecycle lock.
+ * A callback that passed its terminal check may race with closure before handoff. Handoff retains
+ * the existing decoder lifecycle; it does not add synchronization with decoder termination.
+ */
 public class GenericHttp2ServerTransportListener extends AbstractServerTransportListener<Http2Header, Http2InputMessage>
         implements Http2TransportListener {
 
     private static final ErrorTypeAwareLogger LOGGER =
             LoggerFactory.getErrorTypeAwareLogger(GenericHttp2ServerTransportListener.class);
 
+    private static final int QUEUED = 0;
+    private static final int DELIVERING = 1;
+    private static final int HANDED_OFF = 2;
+    private static final int CLOSED = 3;
+
     private final H2StreamChannel h2StreamChannel;
     private final StreamingDecoder streamingDecoder;
     private Http2ServerChannelObserver responseObserver;
     private ServerCallListener serverCallListener;
 
-    // DATA may be discarded by the executor before it reaches the decoder. Keep ownership
-    // until the message listener accepts the body, or the transport terminates.
     private final Set<PendingInput> pendingInputs = ConcurrentHashMap.newKeySet();
-    private final Object inputLock = new Object();
-    private boolean inputClosed;
-    private int processingInputs;
+    private volatile boolean inputClosed;
 
     public GenericHttp2ServerTransportListener(
             H2StreamChannel h2StreamChannel, URL url, FrameworkModel frameworkModel) {
@@ -205,12 +218,10 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     @Override
     protected Http2InputMessage onDataReceived(Http2InputMessage message) {
         PendingInput input = newPendingInput(message);
-        List<PendingInput> toClose;
-        synchronized (inputLock) {
-            pendingInputs.add(input);
-            toClose = takeClosedInputs();
+        pendingInputs.add(input);
+        if (inputClosed) {
+            closeInput(input, QUEUED);
         }
-        closePendingInputs(toClose);
         return new Http2InputMessageFrame(message.id(), input, message.isEndStream());
     }
 
@@ -221,40 +232,25 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     @Override
     protected void doOnData(Http2InputMessage message) {
         PendingInput input = (PendingInput) message.getBody();
-        boolean process;
-        List<PendingInput> toClose;
-        synchronized (inputLock) {
-            process = !inputClosed && !input.closed.get();
-            if (process) {
-                processingInputs++;
-            }
-            toClose = takeClosedInputs();
-        }
-        closePendingInputs(toClose);
-        if (!process) {
+        if (!input.state.compareAndSet(QUEUED, DELIVERING)) {
             return;
         }
         try {
-            super.doOnData(message);
-        } finally {
-            synchronized (inputLock) {
-                processingInputs--;
-                toClose = takeClosedInputs();
+            if (!inputClosed) {
+                super.doOnData(message);
             }
-            closePendingInputs(toClose);
+        } finally {
+            closeInput(input, DELIVERING);
         }
     }
 
     @Override
     protected void onDataMessage(Http2InputMessage message, HttpMessageListener listener) {
-        synchronized (inputLock) {
-            if (inputClosed) {
-                return;
-            }
-            // The decoder owns accepted input, including any bytes buffered for later requests.
-            // Only inputs that have not crossed this boundary belong to the transport registry.
-            pendingInputs.remove((PendingInput) message.getBody());
+        PendingInput input = (PendingInput) message.getBody();
+        if (inputClosed || !input.state.compareAndSet(DELIVERING, HANDED_OFF)) {
+            return;
         }
+        pendingInputs.remove(input);
         super.onDataMessage(message, listener);
     }
 
@@ -307,34 +303,15 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     }
 
     private void closeInputs() {
-        List<PendingInput> toClose;
-        synchronized (inputLock) {
-            inputClosed = true;
-            toClose = takeClosedInputs();
-        }
-        closePendingInputs(toClose);
-    }
-
-    // Called under inputLock. Never close user-supplied input while holding that lock.
-    private List<PendingInput> takeClosedInputs() {
-        if (!inputClosed || processingInputs != 0) {
-            return Collections.emptyList();
-        }
-        List<PendingInput> inputs = new ArrayList<>(pendingInputs);
-        pendingInputs.clear();
-        return inputs;
-    }
-
-    private void closePendingInputs(List<PendingInput> inputs) {
-        // Preserve the existing deferral until all started DATA callbacks leave their handoff.
-        for (PendingInput input : inputs) {
-            closeInput(input);
+        inputClosed = true;
+        for (PendingInput input : pendingInputs) {
+            closeInput(input, QUEUED);
         }
     }
 
-    private void closeInput(PendingInput input) {
+    private void closeInput(PendingInput input, int expectedState) {
         try {
-            input.close();
+            input.close(expectedState);
         } catch (Exception e) {
             LOGGER.warn(PROTOCOL_FAILED_RESPONSE, "", "", "Failed to close request body", e);
         }
@@ -342,7 +319,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
 
     protected class PendingInput extends FilterInputStream {
 
-        private final AtomicBoolean closed = new AtomicBoolean();
+        private final AtomicInteger state = new AtomicInteger(QUEUED);
         private final Http2InputMessage message;
 
         protected PendingInput(Http2InputMessage message) {
@@ -352,10 +329,20 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
 
         @Override
         public void close() throws IOException {
-            if (closed.compareAndSet(false, true)) {
-                pendingInputs.remove(this);
-                message.close();
+            if (state.getAndSet(CLOSED) != CLOSED) {
+                closeMessage();
             }
+        }
+
+        private void close(int expectedState) throws IOException {
+            if (state.compareAndSet(expectedState, CLOSED)) {
+                closeMessage();
+            }
+        }
+
+        private void closeMessage() throws IOException {
+            pendingInputs.remove(this);
+            message.close();
         }
     }
 

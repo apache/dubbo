@@ -35,6 +35,9 @@ import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -45,6 +48,8 @@ import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -470,6 +475,98 @@ class GenericHttp2ServerTransportListenerTest {
         }
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void terminalCloseReleasesQueuedBodyWhileAnotherInputIsPreparing(boolean remoteCancel) throws Exception {
+        ThreadPoolExecutor pool = new ThreadPoolExecutor(1, 1, 0, TimeUnit.SECONDS, new ArrayBlockingQueue<>(1));
+        CountDownLatch resume = new CountDownLatch(1);
+        CountingInput queued = new CountingInput();
+        try {
+            initialize(Runnable::run);
+            listener.dataExecutor = new SerializingExecutor(pool);
+            listener.dataPrepared = new CountDownLatch(1);
+            listener.resumeData = resume;
+            input = new CountingInput();
+            listener.onData(new Http2InputMessageFrame(input, false));
+            assertTrue(listener.dataPrepared.await(5, TimeUnit.SECONDS));
+            listener.onData(new Http2InputMessageFrame(queued, false));
+            if (remoteCancel) {
+                listener.cancelByRemote(8);
+            } else {
+                listener.close();
+            }
+            // Only the started callback needs deferral; unrelated queued DATA can be freed now.
+            assertEquals(0, queued.buffer.refCnt());
+            assertEquals(1, queued.closes);
+            assertEquals(1, input.buffer.refCnt());
+            assertEquals(0, input.closes);
+            resume.countDown();
+            pool.shutdown();
+            assertTrue(pool.awaitTermination(5, TimeUnit.SECONDS));
+            assertReleasedOnce();
+            assertEquals(1, queued.closes);
+            assertNull(listener.decoded);
+        } finally {
+            resume.countDown();
+            pool.shutdownNow();
+            assertTrue(pool.awaitTermination(5, TimeUnit.SECONDS));
+            listener.close();
+            if (queued.buffer.refCnt() > 0) queued.close();
+        }
+    }
+
+    @Test
+    void rejectionErrorHandlerFailureStillFinalizesData() {
+        initialize(Runnable::run);
+        listener.dataExecutor = task -> {
+            throw new RejectedExecutionException("test rejection");
+        };
+        IllegalStateException failure = new IllegalStateException("test error handler failure");
+        listener.errorFailure = failure;
+        input = new CountingInput();
+        assertSame(
+                failure,
+                assertThrows(
+                        IllegalStateException.class, () -> listener.onData(new Http2InputMessageFrame(input, false))));
+        assertReleasedOnce();
+        assertEquals(1, listener.dataFinalizations);
+    }
+
+    @Test
+    void preparationFailureClosesUndeliveredBodyExactlyOnce() {
+        initialize(Runnable::run);
+        listener.prepareFailure = new IllegalStateException("test preparation failure");
+        input = new CountingInput();
+        listener.onData(new Http2InputMessageFrame(input, false));
+        assertReleasedOnce();
+        assertNull(listener.decoded);
+        listener.close();
+        assertReleasedOnce();
+    }
+
+    @Test
+    void dataRacingWithCloseBeforeRegistrationIsReleased() throws Exception {
+        ExecutorService pool = Executors.newSingleThreadExecutor();
+        CountDownLatch resume = new CountDownLatch(1);
+        try {
+            initialize(Runnable::run);
+            listener.inputCreated = new CountDownLatch(1);
+            listener.resumeInput = resume;
+            input = new CountingInput();
+            Future<?> delivery = pool.submit(() -> listener.onData(new Http2InputMessageFrame(input, false)));
+            assertTrue(listener.inputCreated.await(5, TimeUnit.SECONDS));
+            listener.close();
+            resume.countDown();
+            delivery.get(5, TimeUnit.SECONDS);
+            assertReleasedOnce();
+            assertNull(listener.decoded);
+        } finally {
+            resume.countDown();
+            pool.shutdownNow();
+            assertTrue(pool.awaitTermination(5, TimeUnit.SECONDS));
+        }
+    }
+
     private void initialize(Executor executor) {
         listener = new TestListener(framework, executor);
         listener.onMetadata(mock(Http2Header.class));
@@ -541,6 +638,10 @@ class GenericHttp2ServerTransportListenerTest {
         private boolean endStream;
         private int dataFinalizations;
         private RuntimeException deliveryFailure;
+        private RuntimeException errorFailure;
+        private RuntimeException prepareFailure;
+        private CountDownLatch inputCreated;
+        private CountDownLatch resumeInput;
 
         TestListener(FrameworkModel framework, Executor executor) {
             super(mock(H2StreamChannel.class), URL.valueOf("tri://127.0.0.1:50051"), framework);
@@ -559,6 +660,21 @@ class GenericHttp2ServerTransportListenerTest {
         }
 
         @Override
+        protected PendingInput newPendingInput(Http2InputMessage message) {
+            PendingInput pending = super.newPendingInput(message);
+            if (inputCreated != null) {
+                inputCreated.countDown();
+                try {
+                    assertTrue(resumeInput.await(5, TimeUnit.SECONDS));
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new AssertionError(e);
+                }
+            }
+            return pending;
+        }
+
+        @Override
         protected void onPrepareData(Http2InputMessage message) {
             frameId = message.id();
             endStream = message.isEndStream();
@@ -571,6 +687,7 @@ class GenericHttp2ServerTransportListenerTest {
                     throw new AssertionError(e);
                 }
             }
+            if (prepareFailure != null) throw prepareFailure;
         }
 
         @Override
@@ -628,6 +745,8 @@ class GenericHttp2ServerTransportListenerTest {
         }
 
         @Override
-        protected void onError(Throwable throwable) {}
+        protected void onError(Throwable throwable) {
+            if (errorFailure != null) throw errorFailure;
+        }
     }
 }
