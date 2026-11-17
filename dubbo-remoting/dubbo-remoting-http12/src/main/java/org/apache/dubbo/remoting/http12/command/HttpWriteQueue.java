@@ -50,6 +50,8 @@ public class HttpWriteQueue extends BatchExecutorQueue<HttpChannelQueueCommand> 
     protected void flush(HttpChannelQueueCommand item) {
         item.run();
         if (batchFlush != null) {
+            // Flush the channel that owns the queue: the last command may target a closed
+            // HTTP/2 stream, whose flush would leave earlier sibling writes buffered.
             batchFlush.run();
         } else {
             item.getHttpChannel().flush();
