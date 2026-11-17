@@ -81,9 +81,10 @@ public final class CompositeExceptionHandler implements ExceptionHandler<Throwab
         headers.set(GrpcHeaderNames.GRPC_STATUS.getName(), String.valueOf(status.code.code));
         headers.set(
                 GrpcHeaderNames.GRPC_MESSAGE.getName(),
-                TripleProtocol.VERBOSE_ENABLED
-                        ? ExceptionUtils.buildVerboseMessage(throwable)
-                        : throwable.getMessage());
+                TriRpcStatus.encodeMessage(
+                        TripleProtocol.VERBOSE_ENABLED
+                                ? ExceptionUtils.buildVerboseMessage(throwable)
+                                : throwable.getMessage()));
 
         return true;
     }
