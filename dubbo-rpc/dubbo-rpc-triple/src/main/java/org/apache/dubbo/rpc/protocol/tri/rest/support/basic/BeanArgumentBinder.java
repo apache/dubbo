@@ -151,7 +151,7 @@ final class BeanArgumentBinder {
     /**
      * See
      * <p>
-     * <a href="https://docs.spring.io/spring-framework/reference/core/validation/beans-beans.html#beans-binding">Spring beans-binding</a>
+     * <a href="https://docs.spring.io/spring-framework/reference/core/validation/data-binding.html#data-binding-property-binding">Spring property binding</a>
      */
     private static Pair<String, String> parseKeyParam(String name) {
         int len = name.length();
