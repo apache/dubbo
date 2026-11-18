@@ -67,6 +67,8 @@ header:
     - 'Jenkinsfile'
     - '**/vendor/**'
     - '**/src/test/resources/certs/**'
+    - 'dubbo-remoting/dubbo-remoting-netty4/src/test/resources/tls-hostname/*.pem'
+    - 'dubbo-remoting/dubbo-remoting-netty4/src/test/resources/tls-hostname/*.key'
     - '**/src/test/resources/definition/**'
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java'
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java'
