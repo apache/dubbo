@@ -298,7 +298,7 @@ public class LengthFieldStreamingDecoder implements StreamingDecoder {
         private int markedRemaining;
 
         public BoundedInputStream(InputStream source, int limit) {
-            super(source, limit);
+            super(source, Math.max(1, limit));
             this.limit = limit;
             this.remaining = limit;
             this.markedRemaining = limit;
