@@ -64,16 +64,20 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
 
     public BitList(List<E> originList, boolean empty) {
         if (originList instanceof BitList) {
-            this.originList = ((BitList<E>) originList).getOriginList();
-            this.tailList = ((BitList<E>) originList).getTailList();
+            // Copy the source's view (origin list, live indexes and tail list) instead of
+            // assuming that the first size() elements of its origin list are still present.
+            BitList<E> source = (BitList<E>) originList;
+            synchronized (source) {
+                this.originList = source.originList;
+                this.rootSet = empty ? new BitSet() : (BitSet) source.rootSet.clone();
+                this.tailList = empty || source.tailList == null ? null : new LinkedList<>(source.tailList);
+            }
         } else {
             this.originList = originList;
-        }
-        this.rootSet = new BitSet();
-        if (!empty) {
-            this.rootSet.set(0, originList.size());
-        } else {
-            this.tailList = null;
+            this.rootSet = new BitSet();
+            if (!empty) {
+                this.rootSet.set(0, originList.size());
+            }
         }
     }
 
@@ -261,9 +265,21 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
         }
     }
 
+    /**
+     * Returns the index in {@code originList} of the element at the given position of this list,
+     * i.e. the position of the {@code (index + 1)}-th set bit of {@code rootSet}.
+     * {@code index} must be in {@code [0, rootSet.cardinality())}.
+     */
+    private int bitIndexOf(int index) {
+        int bitIndex = -1;
+        for (int i = 0; i <= index; i++) {
+            bitIndex = rootSet.nextSetBit(bitIndex + 1);
+        }
+        return bitIndex;
+    }
+
     @Override
     public synchronized E get(int index) {
-        int bitIndex = -1;
         if (index < 0) {
             throw new IndexOutOfBoundsException();
         }
@@ -274,16 +290,15 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
                 throw new IndexOutOfBoundsException();
             }
         } else {
-            for (int i = 0; i <= index; i++) {
-                bitIndex = rootSet.nextSetBit(bitIndex + 1);
-            }
-            return originList.get(bitIndex);
+            return originList.get(bitIndexOf(index));
         }
     }
 
     @Override
     public synchronized E remove(int index) {
-        int bitIndex = -1;
+        if (index < 0) {
+            throw new IndexOutOfBoundsException();
+        }
         if (index >= rootSet.cardinality()) {
             if (CollectionUtils.isNotEmpty(tailList)) {
                 return tailList.remove(index - rootSet.cardinality());
@@ -291,9 +306,7 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
                 throw new IndexOutOfBoundsException();
             }
         } else {
-            for (int i = 0; i <= index; i++) {
-                bitIndex = rootSet.nextSetBit(bitIndex + 1);
-            }
+            int bitIndex = bitIndexOf(index);
             rootSet.set(bitIndex, false);
             return originList.get(bitIndex);
         }
@@ -370,26 +383,27 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
 
     @Override
     public synchronized BitList<E> subList(int fromIndex, int toIndex) {
-        BitSet resultSet = (BitSet) rootSet.clone();
-        List<E> copiedTailList = tailList == null ? null : new LinkedList<>(tailList);
-        if (toIndex < size()) {
-            if (toIndex < rootSet.cardinality()) {
-                copiedTailList = null;
-                resultSet.set(toIndex, resultSet.length(), false);
-            } else {
-                copiedTailList =
-                        copiedTailList == null ? null : copiedTailList.subList(0, toIndex - rootSet.cardinality());
-            }
+        int size = size();
+        if (fromIndex < 0 || toIndex > size || fromIndex > toIndex) {
+            throw new IndexOutOfBoundsException(
+                    "fromIndex: " + fromIndex + ", toIndex: " + toIndex + ", size: " + size);
         }
-        if (fromIndex > 0) {
-            if (fromIndex < rootSet.cardinality()) {
-                resultSet.set(0, fromIndex, false);
-            } else {
-                resultSet.clear();
-                copiedTailList = copiedTailList == null
-                        ? null
-                        : copiedTailList.subList(fromIndex - rootSet.cardinality(), copiedTailList.size());
-            }
+        // fromIndex and toIndex are positions in this list, not indexes of originList:
+        // translate them through rootSet, which may contain cleared bits.
+        int cardinality = rootSet.cardinality();
+        BitSet resultSet = (BitSet) rootSet.clone();
+        if (toIndex < cardinality) {
+            resultSet.clear(bitIndexOf(toIndex), resultSet.length());
+        }
+        if (fromIndex < cardinality) {
+            resultSet.clear(0, bitIndexOf(fromIndex));
+        } else {
+            resultSet.clear();
+        }
+        List<E> copiedTailList = null;
+        if (toIndex > cardinality) {
+            copiedTailList =
+                    new LinkedList<>(tailList.subList(Math.max(fromIndex - cardinality, 0), toIndex - cardinality));
         }
         return new BitList<>(originList, resultSet, copiedTailList);
     }
@@ -401,25 +415,25 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
         private int curBitIndex = -1;
         private boolean isInTailList = false;
         private int lastReturnedIndex = -1;
+        // index in originList of the element last returned, -1 if it came from tailList
+        private int lastReturnedBitIndex = -1;
+        // whether the element last returned came from next() (true) or previous() (false)
+        private boolean lastReturnedByNext;
 
         public BitListIterator(BitList<E> bitList, int index) {
             this.bitList = bitList;
+            int cardinality = bitList.rootSet.cardinality();
+            int tailSize = bitList.hasMoreElementInTailList() ? bitList.tailList.size() : 0;
+            if (index < 0 || index > cardinality + tailSize) {
+                throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + (cardinality + tailSize));
+            }
             this.index = index - 1;
-            for (int i = 0; i < index; i++) {
-                if (!isInTailList) {
-                    curBitIndex = bitList.rootSet.nextSetBit(curBitIndex + 1);
-                    if (curBitIndex == -1) {
-                        if (CollectionUtils.isNotEmpty(bitList.tailList)) {
-                            isInTailList = true;
-                            tailListIterator = bitList.tailList.listIterator();
-                            tailListIterator.next();
-                        } else {
-                            break;
-                        }
-                    }
-                } else {
-                    tailListIterator.next();
-                }
+            if (index <= cardinality) {
+                // the cursor is right after the index-th element of originList that is still present
+                curBitIndex = index == 0 ? -1 : bitList.bitIndexOf(index - 1);
+            } else {
+                isInTailList = true;
+                tailListIterator = bitList.tailList.listIterator(index - cardinality);
             }
         }
 
@@ -439,31 +453,31 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
 
         @Override
         public synchronized E next() {
+            E next;
             if (isInTailList) {
-                if (tailListIterator.hasNext()) {
-                    index += 1;
-                    lastReturnedIndex = index;
-                }
-                return tailListIterator.next();
+                next = tailListIterator.next();
+                lastReturnedBitIndex = -1;
             } else {
                 int nextBitIndex = bitList.rootSet.nextSetBit(curBitIndex + 1);
                 if (nextBitIndex == -1) {
                     if (bitList.hasMoreElementInTailList()) {
                         tailListIterator = bitList.tailList.listIterator();
                         isInTailList = true;
-                        index += 1;
-                        lastReturnedIndex = index;
-                        return tailListIterator.next();
+                        next = tailListIterator.next();
+                        lastReturnedBitIndex = -1;
                     } else {
                         throw new NoSuchElementException();
                     }
                 } else {
-                    index += 1;
-                    lastReturnedIndex = index;
                     curBitIndex = nextBitIndex;
-                    return bitList.originList.get(nextBitIndex);
+                    lastReturnedBitIndex = nextBitIndex;
+                    next = bitList.originList.get(nextBitIndex);
                 }
             }
+            index += 1;
+            lastReturnedIndex = index;
+            lastReturnedByNext = true;
+            return next;
         }
 
         @Override
@@ -482,39 +496,30 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
 
         @Override
         public synchronized E previous() {
-            if (isInTailList) {
-                boolean hasPreviousInTailList = tailListIterator.hasPrevious();
-                if (hasPreviousInTailList) {
-                    lastReturnedIndex = index;
-                    index -= 1;
-                    return tailListIterator.previous();
-                } else {
-                    int lastIndexInBit = bitList.rootSet.previousSetBit(bitList.rootSet.size());
-                    if (lastIndexInBit == -1) {
-                        throw new NoSuchElementException();
-                    } else {
-                        isInTailList = false;
-                        curBitIndex = bitList.rootSet.previousSetBit(lastIndexInBit - 1);
-                        lastReturnedIndex = index;
-                        index -= 1;
-                        return bitList.originList.get(lastIndexInBit);
-                    }
-                }
+            E previous;
+            if (isInTailList && tailListIterator.hasPrevious()) {
+                previous = tailListIterator.previous();
+                lastReturnedBitIndex = -1;
             } else {
-                if (curBitIndex == -1) {
+                int previousBitIndex =
+                        isInTailList ? bitList.rootSet.previousSetBit(bitList.rootSet.size()) : curBitIndex;
+                if (previousBitIndex == -1) {
                     throw new NoSuchElementException();
                 }
-                int nextBitIndex = curBitIndex;
-                curBitIndex = bitList.rootSet.previousSetBit(curBitIndex - 1);
-                lastReturnedIndex = index;
-                index -= 1;
-                return bitList.originList.get(nextBitIndex);
+                isInTailList = false;
+                curBitIndex = bitList.rootSet.previousSetBit(previousBitIndex - 1);
+                lastReturnedBitIndex = previousBitIndex;
+                previous = bitList.originList.get(previousBitIndex);
             }
+            lastReturnedIndex = index;
+            index -= 1;
+            lastReturnedByNext = false;
+            return previous;
         }
 
         @Override
         public synchronized int nextIndex() {
-            return hasNext() ? index + 1 : index;
+            return index + 1;
         }
 
         @Override
@@ -526,20 +531,21 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
         public synchronized void remove() {
             if (lastReturnedIndex == -1) {
                 throw new IllegalStateException();
+            }
+            if (lastReturnedBitIndex == -1) {
+                tailListIterator.remove();
             } else {
-                if (lastReturnedIndex >= bitList.rootSet.cardinality()) {
-                    tailListIterator.remove();
-                } else {
-                    int bitIndex = -1;
-                    for (int i = 0; i <= lastReturnedIndex; i++) {
-                        bitIndex = bitList.rootSet.nextSetBit(bitIndex + 1);
-                    }
-                    bitList.rootSet.set(bitIndex, false);
+                bitList.rootSet.clear(lastReturnedBitIndex);
+                if (lastReturnedBitIndex == curBitIndex) {
+                    // removed the element right before the cursor, step the cursor back over it
+                    curBitIndex = bitList.rootSet.previousSetBit(curBitIndex - 1);
                 }
             }
-            if (lastReturnedIndex <= index) {
+            if (lastReturnedByNext) {
                 index -= 1;
             }
+            lastReturnedIndex = -1;
+            lastReturnedBitIndex = -1;
         }
 
         @Override
