@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc;
 import org.apache.dubbo.common.Experimental;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
@@ -527,21 +528,29 @@ public class RpcContext {
 
     /**
      * also see {@link #getObjectAttachment(String)}.
+     * <p/>
+     * This is the legacy String-based view of the attachments. When the value has been set with
+     * {@link #setObjectAttachment(String, Object)} and is not a {@link String}, its
+     * {@code String.valueOf(value)} representation is returned, so that code written against the legacy
+     * API can still read attachments published by code that uses the object-based API.
+     * Use {@link #getObjectAttachment(String)} to get the original value with its original type.
      *
-     * @param key
-     * @return attachment
+     * @param key attachment key
+     * @return attachment, or {@code null} if the attachment is absent
      */
     public String getAttachment(String key) {
-        Object value = CLIENT_ATTACHMENT.get().getObjectAttachment(key);
-        if (value == null) {
-            value = SERVER_ATTACHMENT.get().getObjectAttachment(key);
+        String client = toLegacyString(CLIENT_ATTACHMENT.get().getObjectAttachment(key));
+        if (StringUtils.isEmpty(client)) {
+            return toLegacyString(SERVER_ATTACHMENT.get().getObjectAttachment(key));
         }
+        return client;
+    }
 
-        if (value != null && !(value instanceof String)) {
-            return String.valueOf(value);
+    private static String toLegacyString(Object value) {
+        if (value == null || value instanceof String) {
+            return (String) value;
         }
-
-        return (String) value;
+        return String.valueOf(value);
     }
 
     /**
@@ -576,9 +585,7 @@ public class RpcContext {
 
     @Experimental("Experiment api for supporting Object transmission")
     public RpcContext setObjectAttachment(String key, Object value) {
-        // TODO compatible with previous
         CLIENT_ATTACHMENT.get().setObjectAttachment(key, value);
-
         return this;
     }
 

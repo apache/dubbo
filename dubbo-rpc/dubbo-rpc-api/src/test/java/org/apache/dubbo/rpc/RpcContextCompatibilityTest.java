@@ -18,35 +18,72 @@ package org.apache.dubbo.rpc;
 
 import java.util.Map;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class RpcContextCompatibilityTest {
 
+    @AfterEach
+    void tearDown() {
+        RpcContext.removeServiceContext();
+        RpcContext.removeClientAttachment();
+        RpcContext.removeServerAttachment();
+    }
+
     @Test
-    void testAttachmentCompatibility() {
+    void testLegacyGetAttachmentRendersObjectAttachment() {
         RpcContext context = RpcContext.getServiceContext();
+        context.setObjectAttachment("test_long_key", 12345L);
+        context.setObjectAttachment("test_string_key", "text");
 
-        String key = "test_long_key";
-        Long value = 12345L;
-        context.setObjectAttachment(key, value);
+        // the object-based API still returns the original value with its original type
+        Assertions.assertEquals(12345L, context.getObjectAttachment("test_long_key"));
 
-        Assertions.assertEquals(value, context.getObjectAttachment(key));
+        // the legacy String-based API renders it instead of returning null
+        Assertions.assertEquals("12345", context.getAttachment("test_long_key"));
+        Assertions.assertEquals("text", context.getAttachment("test_string_key"));
+        Assertions.assertNull(context.getAttachment("absent_key"));
+    }
 
-        Object legacyValue = context.getAttachment(key);
-        Assertions.assertEquals("12345", legacyValue, "Legacy API should return String representation");
+    @Test
+    void testLegacyGetAttachmentKeepsClientPrecedence() {
+        RpcContext.getServerAttachment().setObjectAttachment("key", "server_value");
+        RpcContext.getClientAttachment().setObjectAttachment("key", 42);
 
-        Map<String, String> allAttachments = context.getAttachments();
+        // before the fix the non-String client value was skipped and the server value leaked through
+        Assertions.assertEquals("42", RpcContext.getContext().getAttachment("key"));
+    }
 
-        Assertions.assertDoesNotThrow(
-                () -> {
-                    for (Map.Entry<String, String> entry : allAttachments.entrySet()) {
-                        String k = entry.getKey();
+    @Test
+    void testLegacyGetAttachmentFallsBackToServerAttachment() {
+        RpcContext.getServerAttachment().setObjectAttachment("key", 456);
 
-                        String v = entry.getValue();
-                        Assertions.assertNotNull(v);
-                    }
-                },
-                "Iterating legacy attachments should not throw ClassCastException");
+        Assertions.assertEquals("456", RpcContext.getContext().getAttachment("key"));
+        Assertions.assertEquals("456", RpcContext.getServiceContext().getAttachment("key"));
+    }
+
+    @Test
+    void testTypedAttachmentAccessorsAreUnchanged() {
+        // RpcContextAttachment keeps the strict String-only contract on purpose
+        RpcContext.getClientAttachment().setObjectAttachment("key", 1);
+
+        Assertions.assertNull(RpcContext.getClientAttachment().getAttachment("key"));
+        Assertions.assertEquals(1, RpcContext.getClientAttachment().getObjectAttachment("key"));
+    }
+
+    @Test
+    void testLegacyAttachmentsMapIsStillIterable() {
+        RpcContext context = RpcContext.getServiceContext();
+        context.setObjectAttachment("test_long_key", 12345L);
+
+        Map<String, String> attachments = context.getAttachments();
+
+        Assertions.assertDoesNotThrow(() -> {
+            for (Map.Entry<String, String> entry : attachments.entrySet()) {
+                Assertions.assertNotNull(entry.getKey());
+                Assertions.assertNotNull(entry.getValue());
+            }
+        });
     }
 }
