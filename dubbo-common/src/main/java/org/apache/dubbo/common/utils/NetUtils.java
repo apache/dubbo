@@ -722,12 +722,14 @@ public final class NetUtils {
     }
 
     /**
-     * Check if address matches with specified pattern, currently only supports ipv4, use {@link this#matchIpExpression(String, String, int)} for ipv6 addresses.
+     * Check if address matches with specified pattern.
      *
      * @param pattern cird pattern
-     * @param address 'ip:port'
+     * @param address address
      * @return true if address matches with the pattern
+     * @deprecated use {@link #matchIpExpression(String, String, int)} with separated host and port instead.
      */
+    @Deprecated
     public static boolean matchIpExpression(String pattern, String address) throws UnknownHostException {
         if (address == null) {
             return false;

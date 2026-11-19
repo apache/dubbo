@@ -18,6 +18,8 @@ package org.apache.dubbo.metadata.report.identifier;
 
 import org.apache.dubbo.metadata.MetadataConstants;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -41,8 +43,8 @@ class MetadataIdentifierTest {
                 providerMetadataIdentifier.getUniqueKey(KeyTypeEnum.PATH),
                 "metadata" + PATH_SEPARATOR + interfaceName + PATH_SEPARATOR
                         + (version == null ? "" : (version + PATH_SEPARATOR))
-                        + (group == null ? "" : (group + PATH_SEPARATOR)) + PROVIDER_SIDE
-                        + PATH_SEPARATOR + application);
+                        + (group == null ? "" : (group + PATH_SEPARATOR)) + PROVIDER_SIDE + PATH_SEPARATOR
+                        + application);
         Assertions.assertEquals(
                 providerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY),
                 interfaceName
@@ -54,5 +56,14 @@ class MetadataIdentifierTest {
                         + PROVIDER_SIDE
                         + MetadataConstants.KEY_SEPARATOR
                         + application);
+    }
+
+    @Test
+    void testPutDuplicateIdentifier() {
+        ConcurrentHashMap<MetadataIdentifier, Object> map = new ConcurrentHashMap<>();
+        map.put(new MetadataIdentifier("com.ServiceInterface", "1.0.0", "gray", "consumer", "testApp"), new Object());
+        map.put(new MetadataIdentifier("com.ServiceInterface", "1.0.0", "gray", "consumer", "testApp"), new Object());
+        map.put(new MetadataIdentifier("com.ServiceInterface", "1.0.0", "gray", "consumer", "testApp"), new Object());
+        Assertions.assertEquals(map.size(), 1);
     }
 }

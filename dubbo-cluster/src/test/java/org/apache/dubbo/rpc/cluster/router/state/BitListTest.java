@@ -96,10 +96,29 @@ class BitListTest {
 
         aBitList.add("D");
         intersectBitList = aBitList.and(bBitList);
-        Assertions.assertEquals(3, intersectBitList.size());
+        Assertions.assertEquals(2, intersectBitList.size());
         Assertions.assertEquals(totalList.get(0), intersectBitList.get(0));
         Assertions.assertEquals(totalList.get(1), intersectBitList.get(1));
-        Assertions.assertEquals("D", intersectBitList.get(2));
+        Assertions.assertFalse(intersectBitList.contains("D"));
+    }
+
+    @Test
+    void testIntersectTailList() {
+        List<String> list = Arrays.asList("A", "B");
+        BitList<String> bitList = new BitList<>(list);
+        bitList.add("C");
+        bitList.add("D");
+
+        BitList<String> target = new BitList<>(list);
+        target.remove("B");
+        target.add("D");
+
+        BitList<String> intersectBitList = bitList.and(target);
+        Assertions.assertEquals(2, intersectBitList.size());
+        Assertions.assertEquals("A", intersectBitList.get(0));
+        Assertions.assertEquals("D", intersectBitList.get(1));
+        Assertions.assertFalse(intersectBitList.contains("B"));
+        Assertions.assertFalse(intersectBitList.contains("C"));
     }
 
     @Test

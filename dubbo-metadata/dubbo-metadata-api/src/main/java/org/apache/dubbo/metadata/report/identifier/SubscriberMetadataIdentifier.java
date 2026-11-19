@@ -18,6 +18,8 @@ package org.apache.dubbo.metadata.report.identifier;
 
 import org.apache.dubbo.common.URL;
 
+import java.util.Objects;
+
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 
 /**
@@ -61,5 +63,24 @@ public class SubscriberMetadataIdentifier extends BaseApplicationMetadataIdentif
 
     public void setRevision(String revision) {
         this.revision = revision;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof SubscriberMetadataIdentifier)) return false;
+        if (!super.equals(o)) return false;
+        SubscriberMetadataIdentifier that = (SubscriberMetadataIdentifier) o;
+        return Objects.equals(revision, that.revision);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), revision);
+    }
+
+    @Override
+    public String toString() {
+        return "SubscriberMetadataIdentifier{" + "revision='" + revision + '\'' + ", application='" + application + '\''
+                + '}';
     }
 }

@@ -18,11 +18,13 @@ package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class NettyBackedChannelBufferTest {
@@ -59,5 +61,55 @@ class NettyBackedChannelBufferTest {
         buffer.getBytes(0, actual);
         assertEquals(1, actual[0]);
         assertEquals(2, actual[1]);
+    }
+
+    @Test
+    void testBufferTransfer_directToDirect() {
+        ByteBuf srcDirect = Unpooled.directBuffer(4);
+        ByteBuf dstDirect = Unpooled.directBuffer(4);
+
+        try {
+            ChannelBuffer source = new NettyBackedChannelBuffer(srcDirect);
+            ChannelBuffer target = new NettyBackedChannelBuffer(dstDirect);
+
+            byte[] data = {10, 20, 30, 40};
+            source.writeBytes(data);
+
+            target.setBytes(0, source, 0, 4);
+
+            byte[] actual = new byte[4];
+            target.getBytes(0, actual);
+
+            assertArrayEquals(data, actual);
+            assertEquals(0, target.readerIndex(), "setBytes should not move readerIndex");
+        } finally {
+            srcDirect.release();
+            dstDirect.release();
+        }
+    }
+
+    @Test
+    void testReadBytes_directBuffer() {
+        byte[] data = {1, 2, 3, 4};
+        buffer.writeBytes(data);
+
+        byte[] actual = new byte[4];
+        buffer.readBytes(actual);
+
+        assertArrayEquals(data, actual);
+        assertEquals(4, buffer.readerIndex());
+    }
+
+    @Test
+    void testGetBytes_directBuffer_shouldNotMoveIndex() {
+        buffer.writeBytes(new byte[] {5, 6, 7, 8});
+
+        int before = buffer.readerIndex();
+
+        byte[] actual = new byte[2];
+        buffer.getBytes(1, actual);
+
+        assertEquals(before, buffer.readerIndex());
+        assertArrayEquals(new byte[] {6, 7}, actual);
     }
 }

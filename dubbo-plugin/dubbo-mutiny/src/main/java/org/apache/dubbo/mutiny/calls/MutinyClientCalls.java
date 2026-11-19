@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.mutiny.calls;
 
+import org.apache.dubbo.common.stream.CallStreamObserver;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.mutiny.ClientTripleMutinyPublisher;
 import org.apache.dubbo.mutiny.ClientTripleMutinySubscriber;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.StubMethodDescriptor;
-import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
 import org.apache.dubbo.rpc.stub.StubInvocationUtil;
 
 import io.smallrye.mutiny.Multi;

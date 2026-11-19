@@ -30,11 +30,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import com.sun.net.httpserver.HttpServer;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -79,14 +82,9 @@ class PrometheusMetricsReporterTest {
         PrometheusMetricsReporter reporter = new PrometheusMetricsReporter(metricsConfig.toUrl(), applicationModel);
         reporter.init();
 
-        PrometheusMeterRegistry prometheusRegistry = reporter.getPrometheusRegistry();
-        Double d1 = prometheusRegistry.getPrometheusRegistry().getSampleValue("none_exist_metric");
-        Double d2 = prometheusRegistry
-                .getPrometheusRegistry()
-                .getSampleValue(
-                        "jvm_gc_memory_promoted_bytes_total", new String[] {"application_name"}, new String[] {name});
-        Assertions.assertNull(d1);
-        Assertions.assertNull(d2);
+        String response = reporter.getResponse();
+        Assertions.assertNotNull(response);
+        Assertions.assertFalse(response.isEmpty());
     }
 
     @Test
@@ -147,13 +145,57 @@ class PrometheusMetricsReporterTest {
         Assertions.assertTrue(executor.isTerminated() || executor.isShutdown());
     }
 
+    @Test
+    void testPushgatewayUsesBasicAuthWithNewAdapter() throws Exception {
+        CountDownLatch requestReceived = new CountDownLatch(1);
+        AtomicReference<String> requestMethod = new AtomicReference<>();
+        AtomicReference<String> requestPath = new AtomicReference<>();
+        AtomicReference<String> authorization = new AtomicReference<>();
+        AtomicReference<String> requestBody = new AtomicReference<>();
+        String username = "demo";
+        String password = "secret";
+        String job = "auth-job";
+
+        prometheusExporterHttpServer = HttpServer.create(new InetSocketAddress(0), 0);
+        prometheusExporterHttpServer.createContext("/", httpExchange -> {
+            requestMethod.set(httpExchange.getRequestMethod());
+            requestPath.set(httpExchange.getRequestURI().getPath());
+            authorization.set(httpExchange.getRequestHeaders().getFirst("Authorization"));
+            try (InputStream inputStream = httpExchange.getRequestBody()) {
+                requestBody.set(new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+                        .lines()
+                        .collect(Collectors.joining("\n")));
+            }
+            httpExchange.sendResponseHeaders(202, -1);
+            httpExchange.close();
+            requestReceived.countDown();
+        });
+        prometheusExporterHttpServer.start();
+
+        PrometheusMetricsReporter reporter = createPushgatewayReporter(
+                "localhost:" + prometheusExporterHttpServer.getAddress().getPort(), job, username, password);
+        try {
+            Assertions.assertEquals(
+                    "io.micrometer.prometheusmetrics.PrometheusMeterRegistry",
+                    reporter.getPrometheusRegistry().getClass().getName());
+
+            Assertions.assertTrue(requestReceived.await(10, TimeUnit.SECONDS));
+            Assertions.assertEquals("POST", requestMethod.get());
+            Assertions.assertEquals("/metrics/job/" + job, requestPath.get());
+            Assertions.assertEquals(basicAuthHeader(username, password), authorization.get());
+            Assertions.assertTrue(requestBody.get().contains("jvm_memory_used_bytes"));
+        } finally {
+            reporter.destroy();
+        }
+    }
+
     private void exportHttpServer(PrometheusMetricsReporter reporter, int port) {
 
         try {
             prometheusExporterHttpServer = HttpServer.create(new InetSocketAddress(port), 0);
             prometheusExporterHttpServer.createContext("/metrics", httpExchange -> {
                 reporter.resetIfSamplesChanged();
-                String response = reporter.getPrometheusRegistry().scrape();
+                String response = reporter.getResponse();
                 httpExchange.sendResponseHeaders(200, response.getBytes().length);
                 try (OutputStream os = httpExchange.getResponseBody()) {
                     os.write(response.getBytes());
@@ -165,5 +207,31 @@ class PrometheusMetricsReporterTest {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private PrometheusMetricsReporter createPushgatewayReporter(
+            String baseUrl, String job, String username, String password) {
+        metricsConfig.setEnableJvm(true);
+        applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("metrics-test"));
+
+        PrometheusConfig prometheusConfig = new PrometheusConfig();
+        PrometheusConfig.Pushgateway pushgateway = new PrometheusConfig.Pushgateway();
+        pushgateway.setEnabled(true);
+        pushgateway.setBaseUrl(baseUrl);
+        pushgateway.setJob(job);
+        pushgateway.setPushInterval(1);
+        pushgateway.setUsername(username);
+        pushgateway.setPassword(password);
+        prometheusConfig.setPushgateway(pushgateway);
+        metricsConfig.setPrometheus(prometheusConfig);
+
+        PrometheusMetricsReporter reporter = new PrometheusMetricsReporter(metricsConfig.toUrl(), applicationModel);
+        reporter.init();
+        return reporter;
+    }
+
+    private String basicAuthHeader(String username, String password) {
+        String credentials = username + ":" + password;
+        return "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
     }
 }

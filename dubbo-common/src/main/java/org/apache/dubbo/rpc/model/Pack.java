@@ -16,12 +16,17 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import java.io.OutputStream;
+
 public interface Pack {
 
     /**
-     * @param obj instance
-     * @return byte array
-     * @throws Exception when error occurs
+     * @deprecated use {@link #pack(Object, OutputStream)} instead
      */
+    @Deprecated
     byte[] pack(Object obj) throws Exception;
+
+    default void pack(Object obj, OutputStream out) throws Exception {
+        out.write(pack(obj));
+    }
 }

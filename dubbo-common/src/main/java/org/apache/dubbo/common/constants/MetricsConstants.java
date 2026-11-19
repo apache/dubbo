@@ -98,4 +98,6 @@ public interface MetricsConstants {
     String METRIC_FILTER_START_TIME = "metric_filter_start_time";
 
     String TAG_THREAD_NAME = "thread.pool.name";
+
+    String PROTOCOL_OTLP = "otlp";
 }

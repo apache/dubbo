@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.spring.issues.issue9207;
 
 import org.apache.dubbo.config.ConfigCenterConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.ConfigCenterBean;
 import org.apache.dubbo.config.spring.SysProps;
@@ -33,7 +34,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -49,6 +52,20 @@ class ConfigCenterBeanTest {
     private static final String DUBBO_PROPERTIES_FILE =
             "/META-INF/issues/issue9207/dubbo-properties-in-configcenter.properties";
     private static final String DUBBO_EXTERNAL_CONFIG_KEY = "my-dubbo.properties";
+
+    @BeforeEach
+    void setUp() {
+        DubboBootstrap.reset();
+        SysProps.clear();
+        SysProps.setProperty("dubbo.metrics.enabled", "false");
+        SysProps.setProperty("dubbo.metrics.protocol", "disabled");
+    }
+
+    @AfterEach
+    void tearDown() {
+        DubboBootstrap.reset();
+        SysProps.clear();
+    }
 
     @Test
     void testConfigCenterBeanFromProps() throws IOException {

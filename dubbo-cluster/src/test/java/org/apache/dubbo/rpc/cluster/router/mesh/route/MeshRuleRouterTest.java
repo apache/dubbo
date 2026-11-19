@@ -20,9 +20,11 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.Holder;
+import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.DubboRoute;
 import org.apache.dubbo.rpc.cluster.router.mesh.util.TracingContextProvider;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -46,6 +48,8 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -451,5 +455,41 @@ class MeshRuleRouterTest {
         meshRuleRouter.notify(invokers);
         invokers.removeAll(Arrays.asList(isolation, testingTrunk, testing));
         assertEquals(invokers, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null));
+    }
+
+    @Test
+    void routeDetailShouldMatchWhenAnyRequestMatches() throws ReflectiveOperationException {
+        StandardMeshRuleRouter<Object> router = new StandardMeshRuleRouter<>(url.addParameter("trafficLabel", "gray"));
+
+        DubboRoute dubboRoute = createRouteWithAlternativeMatches();
+
+        RpcInvocation invocation =
+                new RpcInvocation(null, "sayHello", "DemoInterface", "", new Class<?>[0], new Object[0]);
+
+        assertNotNull(router.getDubboRouteDestination(dubboRoute, invocation));
+    }
+
+    @Test
+    void routeDetailShouldNotMatchWhenNoRequestMatches() throws ReflectiveOperationException {
+        StandardMeshRuleRouter<Object> router = new StandardMeshRuleRouter<>(url.addParameter("trafficLabel", "green"));
+
+        DubboRoute dubboRoute = createRouteWithAlternativeMatches();
+
+        RpcInvocation invocation =
+                new RpcInvocation(null, "sayHello", "DemoInterface", "", new Class<?>[0], new Object[0]);
+
+        assertNull(router.getDubboRouteDestination(dubboRoute, invocation));
+    }
+
+    private DubboRoute createRouteWithAlternativeMatches() throws ReflectiveOperationException {
+        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
+        Map<String, Object> rule = yaml.load("routedetail:\n"
+                + "  - match:\n"
+                + "      - sourceLabels: {trafficLabel: blue}\n"
+                + "      - sourceLabels: {trafficLabel: gray}\n"
+                + "    route:\n"
+                + "      - destination: {host: demo, subset: gray}\n");
+
+        return PojoUtils.mapToPojo(rule, DubboRoute.class);
     }
 }

@@ -124,7 +124,7 @@ public class PrometheusMetricsThreadPoolTest {
             prometheusExporterHttpServer = HttpServer.create(new InetSocketAddress(port), 0);
             prometheusExporterHttpServer.createContext("/metrics", httpExchange -> {
                 reporter.resetIfSamplesChanged();
-                String response = reporter.getPrometheusRegistry().scrape();
+                String response = reporter.getResponse();
                 httpExchange.sendResponseHeaders(200, response.getBytes().length);
                 try (OutputStream os = httpExchange.getResponseBody()) {
                     os.write(response.getBytes());

@@ -57,12 +57,19 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
         return new ProxyObjectInput(objectInput);
     }
 
-    static class ProxyObjectInput implements ObjectInput {
+    static class ProxyObjectInput implements ObjectInput, Cleanable {
 
         private final ObjectInput target;
 
         public ProxyObjectInput(ObjectInput target) {
             this.target = target;
+        }
+
+        @Override
+        public void cleanup() {
+            if (target instanceof Cleanable) {
+                ((Cleanable) target).cleanup();
+            }
         }
 
         @Override
@@ -204,12 +211,19 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
         }
     }
 
-    static class ProxyObjectOutput implements ObjectOutput {
+    static class ProxyObjectOutput implements ObjectOutput, Cleanable {
 
         private final ObjectOutput target;
 
         public ProxyObjectOutput(ObjectOutput target) {
             this.target = target;
+        }
+
+        @Override
+        public void cleanup() {
+            if (target instanceof Cleanable) {
+                ((Cleanable) target).cleanup();
+            }
         }
 
         @Override
@@ -296,7 +310,7 @@ public class DefaultSerializationExceptionWrapper implements Serialization {
         @Override
         public void writeBytes(byte[] v, int off, int len) throws IOException {
             try {
-                target.writeBytes(v);
+                target.writeBytes(v, off, len);
             } catch (Exception e) {
                 throw handleToIOException(e);
             }

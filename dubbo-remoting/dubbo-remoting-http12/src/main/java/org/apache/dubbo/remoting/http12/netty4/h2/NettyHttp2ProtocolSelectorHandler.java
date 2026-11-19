@@ -36,6 +36,7 @@ import java.util.Set;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http2.Http2Connection;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 
 public class NettyHttp2ProtocolSelectorHandler extends SimpleChannelInboundHandler<HttpMetadata> {
@@ -49,15 +50,27 @@ public class NettyHttp2ProtocolSelectorHandler extends SimpleChannelInboundHandl
 
     private final Http2ServerTransportListenerFactory defaultHttp2ServerTransportListenerFactory;
 
+    private final Http2Connection http2Connection;
+
     public NettyHttp2ProtocolSelectorHandler(
             URL url,
             FrameworkModel frameworkModel,
             TripleConfig tripleConfig,
             Http2ServerTransportListenerFactory defaultHttp2ServerTransportListenerFactory) {
+        this(url, frameworkModel, tripleConfig, defaultHttp2ServerTransportListenerFactory, null);
+    }
+
+    public NettyHttp2ProtocolSelectorHandler(
+            URL url,
+            FrameworkModel frameworkModel,
+            TripleConfig tripleConfig,
+            Http2ServerTransportListenerFactory defaultHttp2ServerTransportListenerFactory,
+            Http2Connection http2Connection) {
         this.url = url;
         this.frameworkModel = frameworkModel;
         this.tripleConfig = tripleConfig;
         this.defaultHttp2ServerTransportListenerFactory = defaultHttp2ServerTransportListenerFactory;
+        this.http2Connection = http2Connection;
     }
 
     @Override
@@ -74,7 +87,8 @@ public class NettyHttp2ProtocolSelectorHandler extends SimpleChannelInboundHandl
             throw new UnsupportedMediaTypeException(contentType);
         }
         Channel channel = ctx.channel();
-        H2StreamChannel h2StreamChannel = new NettyH2StreamChannel((Http2StreamChannel) channel, tripleConfig);
+        H2StreamChannel h2StreamChannel =
+                new NettyH2StreamChannel((Http2StreamChannel) channel, tripleConfig, http2Connection);
         HttpWriteQueueHandler writeQueueHandler = channel.parent().pipeline().get(HttpWriteQueueHandler.class);
         if (writeQueueHandler != null) {
             HttpWriteQueue writeQueue = writeQueueHandler.getWriteQueue();

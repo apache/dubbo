@@ -18,6 +18,8 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.rpc.model.Pack;
 
+import java.io.OutputStream;
+
 import com.google.protobuf.Message;
 
 public class PbArrayPacker implements Pack {
@@ -36,5 +38,13 @@ public class PbArrayPacker implements Pack {
             obj = ((Object[]) obj)[0];
         }
         return PB_PACK.pack(obj);
+    }
+
+    @Override
+    public void pack(Object obj, OutputStream out) throws Exception {
+        if (!singleArgument) {
+            obj = ((Object[]) obj)[0];
+        }
+        ((Message) obj).writeTo(out);
     }
 }

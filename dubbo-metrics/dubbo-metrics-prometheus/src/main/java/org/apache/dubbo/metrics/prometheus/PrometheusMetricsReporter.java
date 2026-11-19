@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metrics.report.AbstractMetricsReporter;
+import org.apache.dubbo.metrics.utils.MetricsSupportUtil;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.IOException;
@@ -29,10 +30,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
-import io.prometheus.client.exporter.BasicAuthHttpConnectionFactory;
-import io.prometheus.client.exporter.PushGateway;
+import io.micrometer.core.instrument.MeterRegistry;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_DEFAULT_JOB_NAME;
@@ -51,21 +49,23 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(PrometheusMetricsReporter.class);
 
-    private final PrometheusMeterRegistry prometheusRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+    private final PrometheusClientAdapter adapter;
     private ScheduledExecutorService pushJobExecutor = null;
 
     public PrometheusMetricsReporter(URL url, ApplicationModel applicationModel) {
         super(url, applicationModel);
+        this.adapter = createAdapter();
     }
 
     @Override
     public void doInit() {
-        addMeterRegistry(prometheusRegistry);
+        addMeterRegistry(adapter.getMeterRegistry());
         schedulePushJob();
     }
 
+    @Override
     public String getResponse() {
-        return prometheusRegistry.scrape();
+        return adapter.scrape();
     }
 
     private void schedulePushJob() {
@@ -80,27 +80,14 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
 
             NamedThreadFactory threadFactory = new NamedThreadFactory("prometheus-push-job", true);
             pushJobExecutor = Executors.newScheduledThreadPool(1, threadFactory);
-            PushGateway pushGateway = new PushGateway(baseUrl);
+
+            Object pushGateway = adapter.createPushGateway(baseUrl);
             if (!StringUtils.isBlank(username)) {
-                pushGateway.setConnectionFactory(new BasicAuthHttpConnectionFactory(username, password));
+                adapter.setBasicAuth(pushGateway, username, password);
             }
 
             pushJobExecutor.scheduleWithFixedDelay(
                     () -> push(pushGateway, job), pushInterval, pushInterval, TimeUnit.SECONDS);
-        }
-    }
-
-    protected void push(PushGateway pushGateway, String job) {
-        try {
-            resetIfSamplesChanged();
-            pushGateway.pushAdd(prometheusRegistry.getPrometheusRegistry(), job);
-        } catch (IOException e) {
-            logger.error(
-                    COMMON_METRICS_COLLECTOR_EXCEPTION,
-                    "",
-                    "",
-                    "Error occurred when pushing metrics to prometheus: ",
-                    e);
         }
     }
 
@@ -120,11 +107,155 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
         return pushJobExecutor;
     }
 
+    protected void push(Object pushGateway, String job) {
+        try {
+            resetIfSamplesChanged();
+            adapter.pushAdd(pushGateway, job);
+        } catch (IOException e) {
+            logger.error(
+                    COMMON_METRICS_COLLECTOR_EXCEPTION,
+                    "",
+                    "",
+                    "Error occurred when pushing metrics to prometheus: ",
+                    e);
+        }
+    }
+
     /**
      * ut only
      */
     @Deprecated
-    public PrometheusMeterRegistry getPrometheusRegistry() {
-        return prometheusRegistry;
+    public MeterRegistry getPrometheusRegistry() {
+        return adapter.getMeterRegistry();
+    }
+
+    private PrometheusClientAdapter createAdapter() {
+        PrometheusClientAdapter adapter = tryCreateNewPrometheusClientAdapter();
+        if (adapter != null) {
+            logger.info("Using new Prometheus client implementation.");
+            return adapter;
+        }
+        adapter = tryCreateLegacyPrometheusClientAdapter();
+        if (adapter != null) {
+            logger.info("Using legacy Prometheus client implementation.");
+            return adapter;
+        }
+        throw new IllegalStateException("No supported Prometheus client implementation found.");
+    }
+
+    private PrometheusClientAdapter tryCreateNewPrometheusClientAdapter() {
+        try {
+            if (NewPrometheusClientAdapter.isAvailable()) {
+                return new NewPrometheusClientAdapter();
+            }
+        } catch (NoClassDefFoundError ignored) {
+            // The new Prometheus stack is only partially present. Treat it as unavailable
+            // so that we can fall back to the legacy implementation or to NOP reporting.
+        }
+        return null;
+    }
+
+    private PrometheusClientAdapter tryCreateLegacyPrometheusClientAdapter() {
+        try {
+            if (LegacyPrometheusClientAdapter.isAvailable()) {
+                return new LegacyPrometheusClientAdapter();
+            }
+        } catch (NoClassDefFoundError ignored) {
+            // The legacy Prometheus stack is only partially present. Treat it as unavailable
+            // so that factory-level fallback can downgrade to a NOP reporter.
+        }
+        return null;
+    }
+
+    private interface PrometheusClientAdapter {
+
+        MeterRegistry getMeterRegistry();
+
+        String scrape();
+
+        Object createPushGateway(String baseUrl);
+
+        void setBasicAuth(Object pushGateway, String username, String password);
+
+        void pushAdd(Object pushGateway, String job) throws IOException;
+    }
+
+    private static class LegacyPrometheusClientAdapter implements PrometheusClientAdapter {
+
+        private final io.micrometer.prometheus.PrometheusMeterRegistry registry =
+                new io.micrometer.prometheus.PrometheusMeterRegistry(io.micrometer.prometheus.PrometheusConfig.DEFAULT);
+
+        static boolean isAvailable() {
+            return MetricsSupportUtil.isSupportLegacyPrometheus();
+        }
+
+        @Override
+        public MeterRegistry getMeterRegistry() {
+            return registry;
+        }
+
+        @Override
+        public String scrape() {
+            return registry.scrape();
+        }
+
+        @Override
+        public Object createPushGateway(String baseUrl) {
+            return new io.prometheus.client.exporter.PushGateway(baseUrl);
+        }
+
+        @Override
+        public void setBasicAuth(Object pushGateway, String username, String password) {
+            ((io.prometheus.client.exporter.PushGateway) pushGateway)
+                    .setConnectionFactory(
+                            new io.prometheus.client.exporter.BasicAuthHttpConnectionFactory(username, password));
+        }
+
+        @Override
+        public void pushAdd(Object pushGateway, String job) throws IOException {
+            ((io.prometheus.client.exporter.PushGateway) pushGateway).pushAdd(registry.getPrometheusRegistry(), job);
+        }
+    }
+
+    private static class NewPrometheusClientAdapter implements PrometheusClientAdapter {
+
+        private final io.micrometer.prometheusmetrics.PrometheusMeterRegistry registry =
+                new io.micrometer.prometheusmetrics.PrometheusMeterRegistry(
+                        io.micrometer.prometheusmetrics.PrometheusConfig.DEFAULT);
+
+        static boolean isAvailable() {
+            return MetricsSupportUtil.isSupportNewPrometheus();
+        }
+
+        @Override
+        public MeterRegistry getMeterRegistry() {
+            return registry;
+        }
+
+        @Override
+        public String scrape() {
+            return registry.scrape();
+        }
+
+        @Override
+        public Object createPushGateway(String baseUrl) {
+            return io.prometheus.metrics.exporter.pushgateway.PushGateway.builder()
+                    .registry(registry.getPrometheusRegistry())
+                    .address(baseUrl);
+        }
+
+        @Override
+        public void setBasicAuth(Object pushGateway, String username, String password) {
+            ((io.prometheus.metrics.exporter.pushgateway.PushGateway.Builder) pushGateway)
+                    .basicAuth(username, password);
+        }
+
+        @Override
+        public void pushAdd(Object pushGateway, String job) throws IOException {
+            ((io.prometheus.metrics.exporter.pushgateway.PushGateway.Builder) pushGateway)
+                    .job(job)
+                    .build()
+                    .pushAdd();
+        }
     }
 }

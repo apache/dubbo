@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -38,6 +40,7 @@ import org.apache.dubbo.rpc.protocol.dubbo.support.RemoteServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.Type;
 import org.apache.dubbo.rpc.service.EchoService;
 
+import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -279,6 +282,21 @@ class DubboProtocolTest {
                             .contains(
                                     "org.apache.dubbo.rpc.protocol.dubbo.support.NonSerialized must implement java.io.Serializable"));
         }
+    }
+
+    @Test
+    void testGetInvokerThrowsOnNullPath() {
+        DubboProtocol dubboProtocol = DubboProtocol.getDubboProtocol();
+        Channel channel = Mockito.mock(Channel.class);
+        InetSocketAddress localAddress = new InetSocketAddress("127.0.0.1", 20880);
+        InetSocketAddress remoteAddress = new InetSocketAddress("127.0.0.1", 12345);
+        Mockito.when(channel.getLocalAddress()).thenReturn(localAddress);
+        Mockito.when(channel.getRemoteAddress()).thenReturn(remoteAddress);
+
+        Invocation inv = Mockito.mock(Invocation.class);
+        Mockito.when(inv.getObjectAttachmentWithoutConvert("path")).thenReturn(null);
+
+        Assertions.assertThrows(RemotingException.class, () -> dubboProtocol.getInvoker(channel, inv));
     }
 
     @Disabled

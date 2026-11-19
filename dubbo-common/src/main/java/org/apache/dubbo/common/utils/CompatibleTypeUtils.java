@@ -184,7 +184,9 @@ public class CompatibleTypeUtils {
                 return number.doubleValue();
             }
             if (type == BigInteger.class) {
-                return BigInteger.valueOf(number.longValue());
+                return number instanceof BigDecimal
+                        ? ((BigDecimal) number).toBigInteger()
+                        : BigInteger.valueOf(number.longValue());
             }
             if (type == BigDecimal.class) {
                 return new BigDecimal(number.toString());

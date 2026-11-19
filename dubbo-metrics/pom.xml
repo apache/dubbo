@@ -37,6 +37,7 @@
     <module>dubbo-metrics-config-center</module>
     <module>dubbo-tracing</module>
     <module>dubbo-metrics-netty</module>
+    <module>dubbo-metrics-otlp</module>
   </modules>
   <properties>
     <skip_maven_deploy>false</skip_maven_deploy>

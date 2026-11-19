@@ -33,7 +33,13 @@ import static java.lang.Thread.State.WAITING;
 public class JVMUtil {
     public static void jstack(OutputStream stream) throws Exception {
         ThreadMXBean threadMxBean = ManagementFactory.getThreadMXBean();
-        for (ThreadInfo threadInfo : threadMxBean.dumpAllThreads(true, true)) {
+        boolean lockedSynchronizers = false;
+        String lockedSynchronizersStr = SystemPropertyConfigUtils.getSystemProperty(
+                CommonConstants.DubboProperty.DUBBO_JSTACK_LOCKED_SYNCHRONIZERS);
+        if (StringUtils.isNotEmpty(lockedSynchronizersStr)) {
+            lockedSynchronizers = Boolean.parseBoolean(lockedSynchronizersStr);
+        }
+        for (ThreadInfo threadInfo : threadMxBean.dumpAllThreads(true, lockedSynchronizers)) {
             stream.write(getThreadDumpString(threadInfo).getBytes(StandardCharsets.UTF_8));
         }
     }

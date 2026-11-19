@@ -45,6 +45,15 @@ public interface RemotingServer extends Endpoint, Resetable, IdleSensible {
     Collection<Channel> getChannels();
 
     /**
+     * Fire a custom event to all connected channels.
+     * <p>
+     * Different protocols can interpret and handle these events in their own way.
+     *
+     * @param event the event to fire
+     */
+    void fireChannelEvent(ChannelEvent event);
+
+    /**
      * get channel.
      *
      * @param remoteAddress

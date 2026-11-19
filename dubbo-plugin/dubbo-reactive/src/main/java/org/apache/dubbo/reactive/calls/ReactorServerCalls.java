@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.reactive.calls;
 
+import org.apache.dubbo.common.stream.CallStreamObserver;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.reactive.ServerTripleReactorPublisher;
 import org.apache.dubbo.reactive.ServerTripleReactorSubscriber;
 import org.apache.dubbo.rpc.StatusRpcException;
 import org.apache.dubbo.rpc.TriRpcStatus;
-import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;

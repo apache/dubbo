@@ -22,8 +22,8 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
-import com.google.common.base.Charsets;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -76,11 +76,11 @@ public class CodecTest {
 
         in = new ByteArrayInputStream(utf8Bytes);
         codec = PlainTextCodec.INSTANCE;
-        res = (String) codec.decode(in, String.class, Charsets.UTF_8);
+        res = (String) codec.decode(in, String.class, StandardCharsets.UTF_8);
         Assertions.assertEquals("你好，世界", res);
 
         in = new ByteArrayInputStream(utf16Bytes);
-        res = (String) codec.decode(in, String.class, Charsets.UTF_16);
+        res = (String) codec.decode(in, String.class, StandardCharsets.UTF_16);
         Assertions.assertEquals("你好，世界", res);
     }
 }

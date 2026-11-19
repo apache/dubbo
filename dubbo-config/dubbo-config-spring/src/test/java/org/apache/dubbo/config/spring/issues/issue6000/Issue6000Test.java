@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.spring.issues.issue6000;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.spring.SysProps;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.issues.issue6000.adubbo.HelloDubbo;
 
@@ -45,11 +46,15 @@ class Issue6000Test {
     @BeforeAll
     public static void beforeAll() {
         DubboBootstrap.reset();
+        SysProps.clear();
+        SysProps.setProperty("dubbo.metrics.enabled", "false");
+        SysProps.setProperty("dubbo.metrics.protocol", "disabled");
     }
 
     @AfterAll
     public static void afterAll() {
         DubboBootstrap.reset();
+        SysProps.clear();
     }
 
     @Test

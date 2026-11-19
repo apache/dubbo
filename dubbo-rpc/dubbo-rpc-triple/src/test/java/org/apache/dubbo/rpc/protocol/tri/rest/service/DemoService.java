@@ -30,6 +30,7 @@ import io.grpc.health.v1.HealthCheckRequest;
 import io.grpc.health.v1.HealthCheckResponse;
 
 import static org.apache.dubbo.remoting.http12.rest.ParamType.Body;
+import static org.apache.dubbo.remoting.http12.rest.ParamType.PathVariable;
 
 @Mapping("/")
 public interface DemoService {
@@ -75,4 +76,7 @@ public interface DemoService {
 
     @Mapping(method = HttpMethods.POST, consumes = "text/plain", produces = "text/plain", params = "name=world")
     String mismatchTest(String name);
+
+    @Mapping("/pathVariableTest/{name}")
+    String pathVariableTest(@Param(value = "name", type = PathVariable) String name);
 }

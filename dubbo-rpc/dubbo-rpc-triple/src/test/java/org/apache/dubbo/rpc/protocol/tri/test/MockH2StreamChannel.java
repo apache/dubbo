@@ -72,6 +72,16 @@ public class MockH2StreamChannel implements H2StreamChannel {
         return new MockHttp2OutputMessage(endStream);
     }
 
+    @Override
+    public void consumeBytes(int numBytes) {
+        // no-op for mock
+    }
+
+    @Override
+    public boolean isReady() {
+        return true;
+    }
+
     public HttpMetadata getHttpMetadata() {
         return httpMetadata;
     }

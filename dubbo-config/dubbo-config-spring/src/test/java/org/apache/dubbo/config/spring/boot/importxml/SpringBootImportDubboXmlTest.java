@@ -30,7 +30,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 
 @SpringBootTest(
-        properties = {"dubbo.registry.protocol=zookeeper", "dubbo.registry.address=localhost:2181"},
+        properties = {
+            "dubbo.registry.protocol=zookeeper",
+            "dubbo.registry.address=localhost:2181",
+            "dubbo.metrics.enabled=false",
+            "dubbo.metrics.protocol=disabled"
+        },
         classes = {SpringBootImportDubboXmlTest.class})
 @Configuration
 @ComponentScan

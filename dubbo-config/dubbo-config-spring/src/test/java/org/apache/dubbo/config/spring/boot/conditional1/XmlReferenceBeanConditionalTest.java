@@ -38,7 +38,7 @@ import org.springframework.core.annotation.Order;
  * issue: https://github.com/apache/dubbo-spring-boot-project/issues/779
  */
 @SpringBootTest(
-        properties = {"dubbo.registry.address=N/A"},
+        properties = {"dubbo.registry.address=N/A", "dubbo.metrics.enabled=false", "dubbo.metrics.protocol=disabled"},
         classes = {XmlReferenceBeanConditionalTest.class})
 @Configuration
 // @ComponentScan

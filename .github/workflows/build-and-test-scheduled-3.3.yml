@@ -44,7 +44,7 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: 21
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         name: "Cache local Maven repository"
         with:
           path: ~/.m2/repository
@@ -53,7 +53,7 @@ jobs:
             ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
             ${{ runner.os }}-maven-
       - name: "Dubbo cache"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.m2/repository/org/apache/dubbo
           key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}-${{ github.run_id }}
@@ -87,7 +87,7 @@ jobs:
     env:
       ZOOKEEPER_VERSION: 3.7.2
     steps:
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         name: "Cache zookeeper binary archive"
         id: "cache-zookeeper"
         with:
@@ -149,7 +149,7 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: ${{ matrix.jdk }}
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         name: "Cache local Maven repository"
         with:
           path: ~/.m2/repository
@@ -157,7 +157,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
             ${{ runner.os }}-maven-
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         name: "Cache zookeeper binary archive"
         id: "cache-zookeeper"
         with:
@@ -200,7 +200,7 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.jdk }}
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         name: "Cache local Maven repository"
         with:
           path: ~/.m2/repository
@@ -208,7 +208,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
             ${{ runner.os }}-maven-
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         name: "Cache zookeeper binary archive"
         id: "cache-zookeeper"
         with:
@@ -272,7 +272,7 @@ jobs:
           repository: 'apache/dubbo-samples'
           ref: master
       - name: "Cache local Maven repository"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ github.run_id }}
@@ -280,7 +280,7 @@ jobs:
             ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
             ${{ runner.os }}-maven-
       - name: "Restore Dubbo cache"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.m2/repository/org/apache/dubbo
           key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}-${{ github.run_id }}
@@ -381,7 +381,7 @@ jobs:
           repository: 'apache/dubbo-integration-cases'
           ref: main
       - name: "Cache local Maven repository"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ github.run_id }}
@@ -389,7 +389,7 @@ jobs:
             ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
             ${{ runner.os }}-maven-
       - name: "Restore Dubbo cache"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.m2/repository/org/apache/dubbo
           key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}-${{ github.run_id }}
@@ -489,59 +489,3 @@ jobs:
         with:
           name: "error-inspection-result"
           path: ${{ github.workspace }}/dubbo-test-tools/dubbo-error-code-inspector/error-inspection-result.txt
-
-  native-image-inspecting:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          path: "./dubbo"
-      - name: "Set up GraalVM environment"
-        uses: graalvm/setup-graalvm@v1
-        with:
-          version: '22.3.0'
-          java-version: '17'
-          components: 'native-image'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          native-image-job-reports: 'true'
-      - name: "Set up Zookeeper environment"
-        run: |
-          wget -t 1 -T 120 https://archive.apache.org/dist/zookeeper/zookeeper-3.8.4/apache-zookeeper-3.8.4-bin.tar.gz
-          tar -zxvf apache-zookeeper-3.8.4-bin.tar.gz
-          mv apache-zookeeper-3.8.4-bin/conf/zoo_sample.cfg apache-zookeeper-3.8.4-bin/conf/zoo.cfg
-          apache-zookeeper-3.8.4-bin/bin/zkServer.sh start
-      - name: "Check environment"
-        run: |
-          java --version
-          native-image --version
-      - name: "Set current date as env variable"
-        run: echo "TODAY=$(date +'%Y%m%d')" >> $GITHUB_ENV
-      - name: "Restore local Maven repository cache"
-        uses: actions/cache/restore@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ env.TODAY }}
-          restore-keys: |
-            ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-            ${{ runner.os }}-maven-
-      - name: "Compile Dubbo (Linux)"
-        run: |
-          cd ${{ github.workspace }}/dubbo
-          ./mvnw ${{ env.MAVEN_ARGS }} -T 2C clean install -P skip-spotless -Dmaven.test.skip=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true
-      - name: "Checkout dubbo-samples repository"
-        uses: actions/checkout@v4
-        with:
-          repository: 'apache/dubbo-samples'
-          ref: master
-          path: "./dubbo-samples"
-      - name: "Compile and run Dubbo native image demo"
-        run: |
-          MVNW="${{ github.workspace }}/dubbo-samples/mvnw ${{ env.MAVEN_ARGS }} -Dmaven.test.skip=true"
-          cd ${{ github.workspace }}/dubbo-samples/2-advanced/dubbo-samples-native-image/dubbo-samples-native-image-provider
-          $MVNW clean package -P native native:compile
-          nohup ./target/dubbo-samples-native-image-provider &
-          sleep 10
-          curl \
-            --header "Content-Type: application/json" \
-            --data '{"name":"Dubbo"}' \
-            http://localhost:50052/org.apache.dubbo.nativeimage.DemoService/sayHello/

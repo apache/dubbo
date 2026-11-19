@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.http12.HttpHeaderNames;
+import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
@@ -30,10 +31,10 @@ import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.EndStreamQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.command.InitOnReadyQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
-import org.apache.dubbo.rpc.protocol.tri.frame.Deframer;
-import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
+import org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcStreamingDecoder;
 import org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcUtils;
 import org.apache.dubbo.rpc.protocol.tri.transport.AbstractH2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
@@ -42,18 +43,21 @@ import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 import javax.net.ssl.SSLSession;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
 import com.google.rpc.ErrorInfo;
 import com.google.rpc.Status;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.handler.codec.http2.Http2Error;
@@ -77,13 +81,24 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
 
     private final ClientStream.Listener listener;
     protected final TripleWriteQueue writeQueue;
-    private Deframer deframer;
+    private StreamingDecoder deframer;
     private final Channel parent;
-    private final TripleStreamChannelFuture streamChannelFuture;
+    private TripleStreamChannelFuture streamChannelFuture;
     private boolean halfClosed;
     private boolean rst;
 
     private boolean isReturnTriException = false;
+
+    /**
+     * Number of bytes currently queued, waiting to be sent.
+     * When this falls below ON_READY_THRESHOLD, onReady will be triggered.
+     */
+    private final AtomicLong numSentBytesQueued = new AtomicLong(0);
+
+    /**
+     * The threshold below which isReady() returns true (32KB).
+     */
+    protected static final long ON_READY_THRESHOLD = 32 * 1024;
 
     protected AbstractTripleClientStream(
             FrameworkModel frameworkModel,
@@ -95,7 +110,6 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         this.parent = http2StreamChannel.parent();
         this.listener = listener;
         this.writeQueue = writeQueue;
-        this.streamChannelFuture = initStreamChannel(http2StreamChannel);
     }
 
     protected AbstractTripleClientStream(
@@ -108,10 +122,36 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         this.parent = parent;
         this.listener = listener;
         this.writeQueue = writeQueue;
-        this.streamChannelFuture = initStreamChannel(parent);
     }
 
-    protected abstract TripleStreamChannelFuture initStreamChannel(Channel parent);
+    @Override
+    public void initStream() {
+        initStreamChannel(this.parent);
+    }
+
+    private TripleStreamChannelFuture initStreamChannel(Channel parent) {
+        TripleStreamChannelFuture tripleStreamChannelFuture = initStreamChannel0(parent);
+        this.streamChannelFuture = tripleStreamChannelFuture;
+        /**
+         * Enqueue InitOnReadyQueueCommand after the stream creation command.
+         * Since WriteQueue executes commands in order within the EventLoop,
+         * this command will run after the stream channel has been created by CreateStreamQueueCommand.
+         *
+         * This is necessary because onReady is only triggered by channelWritabilityChanged,
+         * which won't fire if the channel is always writable from creation.
+         */
+        writeQueue.enqueue(InitOnReadyQueueCommand.create(tripleStreamChannelFuture, this));
+        return tripleStreamChannelFuture;
+    }
+
+    protected abstract TripleStreamChannelFuture initStreamChannel0(Channel parent);
+
+    /**
+     * Get the stream channel future for flow control.
+     */
+    protected TripleStreamChannelFuture getStreamChannelFuture() {
+        return streamChannelFuture;
+    }
 
     public ChannelFuture sendHeader(Http2Headers headers) {
         if (this.writeQueue == null) {
@@ -163,15 +203,62 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         if (!checkResult.isSuccess()) {
             return checkResult;
         }
+
+        final int messageSize = message.length;
+        onSendingBytes(messageSize);
+
         final DataQueueCommand cmd = DataQueueCommand.create(streamChannelFuture, message, false, compressFlag);
         return this.writeQueue.enqueueFuture(cmd, parent.eventLoop()).addListener(future -> {
             if (!future.isSuccess()) {
+                rollbackSendingBytes(messageSize);
                 cancelByLocal(TriRpcStatus.INTERNAL
                         .withDescription("Client write message failed")
                         .withCause(future.cause()));
                 transportException(future.cause());
+            } else {
+                onSentBytes(messageSize);
             }
         });
+    }
+
+    /**
+     * Called before bytes are sent to track pending bytes.
+     *
+     * @param numBytes the number of bytes about to be sent
+     */
+    protected void onSendingBytes(int numBytes) {
+        numSentBytesQueued.addAndGet(numBytes);
+    }
+
+    /**
+     * Called when sending fails to rollback the pending bytes count.
+     *
+     * @param numBytes the number of bytes to rollback
+     */
+    protected void rollbackSendingBytes(int numBytes) {
+        numSentBytesQueued.addAndGet(-numBytes);
+    }
+
+    /**
+     * Called when bytes have been successfully sent to the remote endpoint.
+     *
+     * @param numBytes the number of bytes that were sent
+     */
+    protected void onSentBytes(int numBytes) {
+        long oldValue = numSentBytesQueued.getAndAdd(-numBytes);
+        long newValue = oldValue - numBytes;
+        // Trigger onReady when transitioning from "not ready" to "ready"
+        if (oldValue >= ON_READY_THRESHOLD && newValue < ON_READY_THRESHOLD) {
+            listener.onReady();
+        }
+    }
+
+    /**
+     * Returns the number of bytes currently queued for sending.
+     * Visible for testing.
+     */
+    protected long getNumSentBytesQueued() {
+        return numSentBytesQueued.get();
     }
 
     @Override
@@ -205,6 +292,40 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
      */
     protected H2TransportListener createTransportListener() {
         return new ClientTransportListener();
+    }
+
+    /**
+     * Consume bytes for flow control. This method is called after bytes are read from the stream.
+     * It triggers WINDOW_UPDATE frames to allow more data from the remote peer.
+     * Subclasses can override this method to provide protocol-specific flow control.
+     *
+     * @param numBytes the number of bytes consumed
+     */
+    protected abstract void consumeBytes(int numBytes);
+
+    @Override
+    public boolean isReady() {
+        Channel channel = streamChannelFuture.getNow();
+        if (channel == null) {
+            return false;
+        }
+        return numSentBytesQueued.get() < ON_READY_THRESHOLD;
+    }
+
+    /**
+     * Called when the channel writability changes.
+     */
+    protected void onWritabilityChanged() {
+        if (isReady()) {
+            listener.onReady();
+        }
+    }
+
+    /**
+     * Called by InitOnReadyQueueCommand to trigger the initial onReady notification.
+     */
+    public void triggerInitialOnReady() {
+        listener.onReady();
     }
 
     class ClientTransportListener extends AbstractH2TransportListener implements H2TransportListener {
@@ -291,17 +412,27 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                     }
                 }
             }
-            TriDecoder.Listener listener = new TriDecoder.Listener() {
+            StreamingDecoder.FragmentListener fragmentListener = new StreamingDecoder.FragmentListener() {
+
                 @Override
-                public void onRawMessage(byte[] data) {
-                    AbstractTripleClientStream.this.listener.onMessage(data, isReturnTriException);
+                public void bytesRead(int numBytes) {
+                    consumeBytes(numBytes);
                 }
 
-                public void close() {
+                @Override
+                public void onFragmentMessage(InputStream rawMessage, int messageLength) {
+                    AbstractTripleClientStream.this.listener.onMessage(rawMessage, messageLength, isReturnTriException);
+                }
+
+                @Override
+                public void onClose() {
                     finishProcess(statusFromTrailers(trailers), trailers, isReturnTriException);
                 }
             };
-            deframer = new TriDecoder(decompressor, listener);
+            GrpcStreamingDecoder grpcDecoder = new GrpcStreamingDecoder();
+            grpcDecoder.setDeCompressor(decompressor);
+            grpcDecoder.setFragmentListener(fragmentListener);
+            deframer = grpcDecoder;
             AbstractTripleClientStream.this.listener.onStart();
         }
 
@@ -455,10 +586,13 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                 return;
             }
             if (!headerReceived) {
+                ReferenceCountUtil.release(data);
                 handleH2TransportError(TriRpcStatus.INTERNAL.withDescription("headers not received before payload"));
                 return;
             }
-            deframer.deframe(data);
+            // Use ByteBufInputStream to adapt ByteBuf to InputStream
+            // The second parameter 'true' means release ByteBuf after reading
+            deframer.decode(new ByteBufInputStream(data, true));
         }
 
         @Override
@@ -473,6 +607,11 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
         @Override
         public void onClose() {
             executor.execute(listener::onClose);
+        }
+
+        @Override
+        public void onWritabilityChanged() {
+            AbstractTripleClientStream.this.onWritabilityChanged();
         }
     }
 }

@@ -747,6 +747,7 @@ public class ConfigValidationUtils {
         }
         List<String> ignoreCheckKeys = new ArrayList<>();
         ignoreCheckKeys.add(BACKUP_KEY);
+        ignoreCheckKeys.add(PASSWORD_KEY);
         String ignoreCheckKeysStr = parameters.get(IGNORE_CHECK_KEYS);
         if (!StringUtils.isBlank(ignoreCheckKeysStr)) {
             ignoreCheckKeys.addAll(Arrays.asList(ignoreCheckKeysStr.split(",")));

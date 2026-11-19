@@ -67,4 +67,59 @@ class LRU2CacheTest {
         cache.setMaxCapacity(10);
         assertThat(cache.getMaxCapacity(), equalTo(10));
     }
+
+    @Test
+    void testTrimWhenCapacityReduced() {
+        LRU2Cache<String, Integer> cache = new LRU2Cache<>(5);
+
+        cache.put("1", 1);
+        cache.put("2", 2);
+        cache.put("3", 3);
+        cache.put("4", 4);
+        cache.put("5", 5);
+
+        // trigger LRU2 flow (do not assume size)
+        cache.get("1");
+        cache.get("1");
+        cache.get("2");
+        cache.get("2");
+        cache.get("3");
+        cache.get("3");
+        cache.get("4");
+        cache.get("4");
+        cache.get("5");
+        cache.get("5");
+
+        // Reduce capacity
+        cache.setMaxCapacity(3);
+
+        // Only guarantee we care about:
+        assertTrue(cache.size() <= 3);
+
+        // Old entries should be gone
+        assertFalse(cache.containsKey("1"));
+        assertFalse(cache.containsKey("2"));
+    }
+
+    @Test
+    void testPreCacheTrimWhenCapacityReduced() {
+        LRU2Cache<String, Integer> cache = new LRU2Cache<>(5);
+
+        cache.put("1", 1);
+        cache.put("2", 2);
+        cache.put("3", 3);
+        cache.put("4", 4);
+        cache.put("5", 5);
+
+        cache.setMaxCapacity(2);
+
+        // Access entries to promote them through LRU2 flow
+        cache.get("1");
+        cache.get("2");
+        cache.get("3");
+        cache.get("4");
+        cache.get("5");
+
+        assertTrue(cache.size() <= 2);
+    }
 }

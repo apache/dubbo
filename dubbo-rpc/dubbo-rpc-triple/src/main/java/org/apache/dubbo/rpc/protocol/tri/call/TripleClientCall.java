@@ -18,19 +18,18 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
-import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStreamFactory;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
+import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
@@ -42,6 +41,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAI
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_STREAM_LISTENER;
 
 public class TripleClientCall implements ClientCall, ClientStream.Listener {
+
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(TripleClientCall.class);
     private final AbstractConnectionClient connectionClient;
     private final Executor executor;
@@ -53,7 +53,9 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     private boolean canceled;
     private boolean headerSent;
     private boolean autoRequest = true;
+    private int initialRequest = 1;
     private boolean done;
+    private boolean streamingResponse;
     private StreamException streamException;
 
     public TripleClientCall(
@@ -67,22 +69,36 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         this.writeQueue = writeQueue;
     }
 
+    @Override
+    public boolean isReady() {
+        if (canceled) {
+            return false;
+        }
+        if (done) {
+            return false;
+        }
+        if (stream == null) {
+            return false;
+        }
+        return stream.isReady();
+    }
+
     // stream listener start
     @Override
-    public void onMessage(byte[] message, boolean isReturnTriException) {
+    public void onMessage(InputStream message, int messageLength, boolean isReturnTriException) {
         if (done) {
             LOGGER.warn(
                     PROTOCOL_STREAM_LISTENER,
                     "",
                     "",
                     "Received message from closed stream,connection=" + connectionClient + " service="
-                            + requestMetadata.service + " method="
-                            + requestMetadata.method.getMethodName());
+                            + requestMetadata.service + " method=" + requestMetadata.method.getMethodName());
             return;
         }
         try {
+            // Use the new InputStream-based parseResponse method
             Object unpacked = requestMetadata.packableMethod.parseResponse(message, isReturnTriException);
-            listener.onMessage(unpacked, message.length);
+            listener.onMessage(unpacked, messageLength);
         } catch (Throwable t) {
             TriRpcStatus status = TriRpcStatus.INTERNAL
                     .withDescription("Deserialize response failed")
@@ -135,6 +151,39 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         }
     }
 
+    /**
+     * Called when the stream becomes ready for writing.
+     * This method is invoked synchronously from the transport layer (AbstractTripleClientStream.onWritabilityChanged),
+     * and it asynchronously dispatches the callback to the business executor to avoid blocking the Netty EventLoop.
+     *
+     * <p>The call chain is:
+     * <pre>
+     * Netty channelWritabilityChanged
+     *   → AbstractTripleClientStream.onWritabilityChanged() [sync]
+     *   → TripleClientCall.onReady() [this method, schedules async execution]
+     *   → executor.execute(() → listener.onReady())
+     *   → ObserverToClientCallListenerAdapter.onReady() [triggers onReadyHandler]
+     * </pre>
+     */
+    @Override
+    public void onReady() {
+        if (listener == null) {
+            return;
+        }
+        // ObserverToClientCallListenerAdapter.onReady() triggers the onReadyHandler.
+        // Note: We do NOT check isReady() here because of the async dispatch model.
+        // The handler is always called (following gRPC's "spurious notifications" semantics),
+        // and it should check isReady() internally via while(isReady()) { send(); }.
+        // Subsequent channelWritabilityChanged events will trigger onReady() again if needed.
+        executor.execute(() -> {
+            try {
+                listener.onReady();
+            } catch (Throwable t) {
+                LOGGER.warn(PROTOCOL_STREAM_LISTENER, "", "", "Error executing listener.onReady()", t);
+            }
+        });
+    }
+
     @Override
     public void onClose() {
         if (done) {
@@ -145,6 +194,11 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
 
     @Override
     public void onStart() {
+        if (streamingResponse) {
+            request(initialRequest);
+        } else {
+            request(2);
+        }
         listener.onStart(this);
     }
 
@@ -245,15 +299,23 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     }
 
     @Override
-    public StreamObserver<Object> start(RequestMetadata metadata, ClientCall.Listener responseListener) {
+    public void start(RequestMetadata metadata, ClientCall.Listener responseListener) {
+        // Set listener BEFORE creating stream, so onReady() can access it
+        this.requestMetadata = metadata;
+        this.listener = responseListener;
+        this.streamingResponse = responseListener.streamingResponse();
+
         ClientStream stream;
         for (ClientStreamFactory factory : frameworkModel.getActivateExtensions(ClientStreamFactory.class)) {
             stream = factory.createClientStream(connectionClient, frameworkModel, executor, this, writeQueue);
             if (stream != null) {
-                this.requestMetadata = metadata;
-                this.listener = responseListener;
+                // Set this.stream BEFORE initStream() to avoid race condition:
+                // initStream() triggers onReady callback asynchronously, which may execute
+                // in another thread before this.stream is set if we set it after initStream().
+                // This would cause isReady() to return false because it checks stream == null.
                 this.stream = stream;
-                return new ClientCallToObserverAdapter<>(this);
+                stream.initStream();
+                return;
             }
         }
         throw new IllegalStateException("No available ClientStreamFactory");
@@ -262,6 +324,12 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     @Override
     public boolean isAutoRequest() {
         return autoRequest;
+    }
+
+    @Override
+    public void setAutoRequestWithInitial(int initialRequest) {
+        setAutoRequest(false);
+        this.initialRequest = initialRequest;
     }
 
     @Override

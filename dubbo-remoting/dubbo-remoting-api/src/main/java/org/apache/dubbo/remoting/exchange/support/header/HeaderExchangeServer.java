@@ -26,10 +26,13 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.ChannelEvent;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.RemotingServer;
+import org.apache.dubbo.remoting.event.ReadOnlyEvent;
+import org.apache.dubbo.remoting.event.WriteableEvent;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Request;
@@ -43,6 +46,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.unmodifiableCollection;
 import static org.apache.dubbo.common.constants.CommonConstants.READONLY_EVENT;
+import static org.apache.dubbo.common.constants.CommonConstants.WRITEABLE_EVENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RESPONSE;
@@ -108,7 +112,7 @@ public class HeaderExchangeServer implements ExchangeServer {
         if (timeout > 0) {
             final long start = System.currentTimeMillis();
             if (getUrl().getParameter(Constants.CHANNEL_SEND_READONLYEVENT_KEY, true)) {
-                sendChannelReadOnlyEvent();
+                sendChannelEvent(READONLY_EVENT);
             }
             while (HeaderExchangeServer.this.isRunning() && System.currentTimeMillis() - start < (long) timeout) {
                 try {
@@ -127,9 +131,9 @@ public class HeaderExchangeServer implements ExchangeServer {
         server.startClose();
     }
 
-    private void sendChannelReadOnlyEvent() {
+    private void sendChannelEvent(String event) {
         Request request = new Request();
-        request.setEvent(READONLY_EVENT);
+        request.setEvent(event);
         request.setTwoWay(false);
         request.setVersion(Version.getProtocolVersion());
 
@@ -269,6 +273,18 @@ public class HeaderExchangeServer implements ExchangeServer {
             int closeTimeout = getCloseTimeout(url);
             long closeTimeoutTick = calculateLeastDuration(closeTimeout);
             this.closeTimer = new CloseTimerTask(cp, IDLE_CHECK_TIMER.get(), closeTimeoutTick, closeTimeout);
+        }
+    }
+
+    @Override
+    public void fireChannelEvent(ChannelEvent event) {
+        if (event instanceof ReadOnlyEvent) {
+            sendChannelEvent(READONLY_EVENT);
+        } else if (event instanceof WriteableEvent) {
+            sendChannelEvent(WRITEABLE_EVENT);
+        } else {
+            // For other events, delegate to the underlying server
+            server.fireChannelEvent(event);
         }
     }
 }

@@ -213,13 +213,8 @@ public class ConfigUtils {
         Properties properties = new Properties();
         // add scene judgement in windows environment Fix 2557
         if (checkFileNameExist(fileName)) {
-            try {
-                FileInputStream input = new FileInputStream(fileName);
-                try {
-                    properties.load(input);
-                } finally {
-                    input.close();
-                }
+            try (FileInputStream input = new FileInputStream(fileName)) {
+                properties.load(input);
             } catch (Throwable e) {
                 logger.warn(
                         COMMON_IO_EXCEPTION,
@@ -279,19 +274,11 @@ public class ConfigUtils {
         logger.info("load " + fileName + " properties file from " + set);
 
         for (java.net.URL url : set) {
-            try {
-                Properties p = new Properties();
-                InputStream input = url.openStream();
+            try (InputStream input = url.openStream()) {
                 if (input != null) {
-                    try {
-                        p.load(input);
-                        properties.putAll(p);
-                    } finally {
-                        try {
-                            input.close();
-                        } catch (Throwable t) {
-                        }
-                    }
+                    Properties p = new Properties();
+                    p.load(input);
+                    properties.putAll(p);
                 }
             } catch (Throwable e) {
                 logger.warn(
@@ -331,9 +318,10 @@ public class ConfigUtils {
             for (Set<URL> urls : ClassLoaderResourceLoader.loadResources(fileName, classLoadersToLoad)
                     .values()) {
                 for (URL url : urls) {
-                    InputStream is = url.openStream();
-                    if (is != null) {
-                        return readString(is);
+                    try (InputStream is = url.openStream()) {
+                        if (is != null) {
+                            return readString(is);
+                        }
                     }
                 }
             }

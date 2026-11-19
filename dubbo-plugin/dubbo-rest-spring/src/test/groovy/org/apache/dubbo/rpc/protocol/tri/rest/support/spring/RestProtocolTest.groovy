@@ -151,6 +151,15 @@ class RestProtocolTest extends BaseServiceTest {
             '/spring/argNameTest?name=Sam' | 'Sam'
     }
 
+    def "path variable test"() {
+        expect:
+            runner.get(path) == output
+        where:
+            path                                            | output
+            '/spring/pathVariableTest/a%20b'                | 'a b'
+            '/spring/pathVariableTest/john+tag@example.com' | 'john+tag@example.com'
+    }
+
     def "pb server stream test"() {
         expect:
             runner.posts(path, body).size() == output

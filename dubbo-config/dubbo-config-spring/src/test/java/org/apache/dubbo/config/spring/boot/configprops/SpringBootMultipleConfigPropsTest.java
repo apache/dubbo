@@ -80,6 +80,12 @@ class SpringBootMultipleConfigPropsTest {
 
     @BeforeAll
     public static void beforeAll() {
+        // Clear JVM System properties that other tests in the same JVM may have left set to
+        // disable metrics. Dubbo resolves dubbo.metrics.* from the System properties with the
+        // highest precedence, which would otherwise override the prometheus setting expected
+        // by this test.
+        System.clearProperty("dubbo.metrics.protocol");
+        System.clearProperty("dubbo.metrics.enabled");
         DubboBootstrap.reset();
     }
 

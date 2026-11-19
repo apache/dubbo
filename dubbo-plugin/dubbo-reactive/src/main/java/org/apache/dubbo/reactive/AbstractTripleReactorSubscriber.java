@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.reactive;
 
-import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
+import org.apache.dubbo.common.stream.CallStreamObserver;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -26,7 +26,7 @@ import reactor.core.CoreSubscriber;
 import reactor.util.annotation.NonNull;
 
 /**
- * The middle layer between {@link org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver} and Reactive API. <br>
+ * The middle layer between {@link CallStreamObserver} and Reactive API. <br>
  * Passing the data from Reactive producer to CallStreamObserver.
  */
 public abstract class AbstractTripleReactorSubscriber<T> implements Subscriber<T>, CoreSubscriber<T> {

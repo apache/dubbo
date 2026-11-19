@@ -71,10 +71,15 @@ public class NettyBackedChannelBuffer implements ChannelBuffer {
 
     @Override
     public void getBytes(int index, ChannelBuffer dst, int dstIndex, int length) {
-        // careful
-        byte[] data = new byte[length];
-        buffer.getBytes(index, data, 0, length);
-        dst.setBytes(dstIndex, data, 0, length);
+        // use Netty ByteBuf
+        if (dst instanceof NettyBackedChannelBuffer) {
+            NettyBackedChannelBuffer nettyDst = (NettyBackedChannelBuffer) dst;
+            buffer.getBytes(index, nettyDst.buffer, dstIndex, length);
+        } else {
+            byte[] data = new byte[length];
+            buffer.getBytes(index, data, 0, length);
+            dst.setBytes(dstIndex, data, 0, length);
+        }
     }
 
     @Override
@@ -107,10 +112,15 @@ public class NettyBackedChannelBuffer implements ChannelBuffer {
         if (length > src.readableBytes()) {
             throw new IndexOutOfBoundsException();
         }
-        // careful
-        byte[] data = new byte[length];
-        src.getBytes(srcIndex, data, 0, length);
-        setBytes(index, data, 0, length);
+        // use Netty ByteBuf
+        if (src instanceof NettyBackedChannelBuffer) {
+            NettyBackedChannelBuffer nettySrc = (NettyBackedChannelBuffer) src;
+            buffer.setBytes(index, nettySrc.buffer, srcIndex, length);
+        } else {
+            byte[] data = new byte[length];
+            src.getBytes(srcIndex, data, 0, length);
+            setBytes(index, data, 0, length);
+        }
     }
 
     @Override
@@ -239,13 +249,18 @@ public class NettyBackedChannelBuffer implements ChannelBuffer {
 
     @Override
     public void readBytes(ChannelBuffer dst, int dstIndex, int length) {
-        // careful
         if (readableBytes() < length) {
             throw new IndexOutOfBoundsException();
         }
-        byte[] data = new byte[length];
-        buffer.readBytes(data, 0, length);
-        dst.setBytes(dstIndex, data, 0, length);
+        // use Netty ByteBuf
+        if (dst instanceof NettyBackedChannelBuffer) {
+            NettyBackedChannelBuffer nettyDst = (NettyBackedChannelBuffer) dst;
+            buffer.readBytes(nettyDst.buffer, dstIndex, length);
+        } else {
+            byte[] data = new byte[length];
+            buffer.readBytes(data, 0, length);
+            dst.setBytes(dstIndex, data, 0, length);
+        }
     }
 
     @Override
@@ -362,10 +377,15 @@ public class NettyBackedChannelBuffer implements ChannelBuffer {
 
     @Override
     public void writeBytes(ChannelBuffer src, int srcIndex, int length) {
-        // careful
-        byte[] data = new byte[length];
-        src.getBytes(srcIndex, data, 0, length);
-        writeBytes(data, 0, length);
+        // use Netty ByteBuf
+        if (src instanceof NettyBackedChannelBuffer) {
+            NettyBackedChannelBuffer nettySrc = (NettyBackedChannelBuffer) src;
+            buffer.writeBytes(nettySrc.buffer, srcIndex, length);
+        } else {
+            byte[] data = new byte[length];
+            src.getBytes(srcIndex, data, 0, length);
+            writeBytes(data, 0, length);
+        }
     }
 
     @Override

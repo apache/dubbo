@@ -120,6 +120,16 @@ body:
 
 - type: checkboxes
   attributes:
+    label: Do you have a (mini) reproduction demo?
+    description: >
+      This is not strictly required, but if you have one (a minimal reproduction demo), 
+      it will greatly help us resolve this issue efficiently. 
+      Additionally, the community will prioritize this issue over others.
+    options:
+      - label: Yes, I have a minimal reproduction demo to help resolve this issue more effectively!
+
+- type: checkboxes
+  attributes:
     label: Are you willing to submit a pull request to fix on your own?
     description: >
       This is absolutely not required, but we are happy to guide you in the contribution process

@@ -76,6 +76,9 @@ public final class HttpUtils {
 
     public static List<HttpCookie> decodeCookies(String value) {
         List<HttpCookie> cookies = new ArrayList<>();
+        if (StringUtils.isEmpty(value)) {
+            return cookies;
+        }
         for (Cookie c : ServerCookieDecoder.LAX.decodeAll(value)) {
             cookies.add(new HttpCookie(c.name(), c.value()));
         }

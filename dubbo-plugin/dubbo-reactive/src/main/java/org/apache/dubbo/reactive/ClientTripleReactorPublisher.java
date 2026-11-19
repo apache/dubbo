@@ -16,8 +16,9 @@
  */
 package org.apache.dubbo.reactive;
 
-import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
+import org.apache.dubbo.common.stream.CallStreamObserver;
+import org.apache.dubbo.common.stream.ClientCallStreamObserver;
+import org.apache.dubbo.common.stream.ClientResponseObserver;
 
 import java.util.function.Consumer;
 
@@ -26,8 +27,13 @@ import java.util.function.Consumer;
  * It is a Publisher for user subscriber to subscribe. <br>
  * It is a StreamObserver for responseStream. <br>
  * It is a Subscription for user subscriber to request and pass request to requestStream.
+ * <p>
+ * Implements {@link ClientResponseObserver} following gRPC's pattern where
+ * {@link #beforeStart(ClientCallStreamObserver)} is called before the stream starts,
+ * allowing configuration of flow control before any messages are sent.
  */
-public class ClientTripleReactorPublisher<T> extends AbstractTripleReactorPublisher<T> {
+public class ClientTripleReactorPublisher<T> extends AbstractTripleReactorPublisher<T>
+        implements ClientResponseObserver<Object, T> {
 
     public ClientTripleReactorPublisher() {}
 
@@ -35,8 +41,15 @@ public class ClientTripleReactorPublisher<T> extends AbstractTripleReactorPublis
         super(onSubscribe, shutdownHook);
     }
 
+    /**
+     * Called by the runtime prior to the start of a call to provide a reference to the
+     * {@link ClientCallStreamObserver} for the outbound stream.
+     * <p>
+     * Following gRPC's pattern, this method is called BEFORE {@code call.start()},
+     * allowing configuration of onReadyHandler and flow control settings.
+     */
     @Override
-    public void beforeStart(ClientCallToObserverAdapter<T> clientCallToObserverAdapter) {
-        super.onSubscribe(clientCallToObserverAdapter);
+    public void beforeStart(ClientCallStreamObserver<Object> requestStream) {
+        super.onSubscribe(requestStream);
     }
 }

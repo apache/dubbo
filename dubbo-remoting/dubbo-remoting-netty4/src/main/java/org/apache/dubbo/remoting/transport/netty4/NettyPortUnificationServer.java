@@ -21,6 +21,7 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.ChannelEvent;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
@@ -48,6 +49,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.KEEP_ALIVE_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE;
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_BOSS_POOL_NAME;
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_WORKER_POOL_NAME;
@@ -111,11 +113,13 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
                 getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
                 EVENT_LOOP_WORKER_POOL_NAME);
 
+        boolean keepalive = getUrl().getParameter(KEEP_ALIVE_KEY, Boolean.FALSE);
         bootstrap
                 .group(bossGroup, workerGroup)
                 .channel(NettyEventLoopFactory.serverSocketChannelClass())
                 .option(ChannelOption.SO_REUSEADDR, Boolean.TRUE)
                 .childOption(ChannelOption.TCP_NODELAY, Boolean.TRUE)
+                .childOption(ChannelOption.SO_KEEPALIVE, keepalive)
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
@@ -233,5 +237,44 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
     @Override
     public boolean canHandleIdle() {
         return true;
+    }
+
+    @Override
+    public void fireChannelEvent(ChannelEvent event) {
+        Collection<Channel> channels = getChannels();
+        if (CollectionUtils.isEmpty(channels)) {
+            return;
+        }
+        for (Channel channel : channels) {
+            try {
+                if (channel.isConnected()) {
+                    fireChannelEventToChannel(channel, event);
+                }
+            } catch (Throwable e) {
+                logger.warn(
+                        TRANSPORT_FAILED_CLOSE,
+                        "",
+                        "",
+                        "Failed to fire channel event to channel: " + channel + ", event: " + event,
+                        e);
+            }
+        }
+    }
+
+    /**
+     * Fire ChannelEvent to the channel.
+     * The event will be handled by protocol-specific handlers (e.g., TripleServerConnectionHandler).
+     *
+     * @param channel the Dubbo channel
+     * @param event the channel event to fire
+     */
+    private void fireChannelEventToChannel(Channel channel, ChannelEvent event) {
+        // Get the underlying netty channel and fire the user event
+        if (channel instanceof NettyChannel) {
+            io.netty.channel.Channel nettyChannel = ((NettyChannel) channel).getNioChannel();
+            if (nettyChannel != null && nettyChannel.isActive()) {
+                nettyChannel.pipeline().fireUserEventTriggered(event);
+            }
+        }
     }
 }

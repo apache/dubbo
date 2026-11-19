@@ -18,6 +18,7 @@ package org.apache.dubbo.common.threadpool.support.fixed;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadlocal.InternalThread;
+import org.apache.dubbo.common.threadpool.MemorySafeLinkedBlockingQueue;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
 
@@ -80,5 +81,15 @@ class FixedThreadPoolTest {
         ThreadPool threadPool = new FixedThreadPool();
         ThreadPoolExecutor executor = (ThreadPoolExecutor) threadPool.getExecutor(url);
         assertThat(executor.getQueue(), Matchers.<BlockingQueue<Runnable>>instanceOf(LinkedBlockingQueue.class));
+    }
+
+    @Test
+    void testNegativeQueuesCreateUnboundedQueue() {
+        URL url = URL.valueOf("dubbo://10.20.130.230:20880/context/path?" + QUEUES_KEY + "=-1");
+        ThreadPool threadPool = new FixedThreadPool();
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) threadPool.getExecutor(url);
+        assertThat(
+                executor.getQueue(), Matchers.<BlockingQueue<Runnable>>instanceOf(MemorySafeLinkedBlockingQueue.class));
+        assertThat(executor.getQueue().remainingCapacity(), is(Integer.MAX_VALUE));
     }
 }

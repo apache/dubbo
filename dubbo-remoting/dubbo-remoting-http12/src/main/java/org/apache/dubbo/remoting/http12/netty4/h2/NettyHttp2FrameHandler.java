@@ -78,4 +78,12 @@ public class NettyHttp2FrameHandler extends ChannelDuplexHandler {
         }
         h2StreamChannel.writeResetFrame(statusCode);
     }
+
+    @Override
+    public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
+        // Notify the transport listener when writability changes
+        // This enables application-level backpressure via isReady/onReadyHandler
+        transportListener.onWritabilityChanged();
+        super.channelWritabilityChanged(ctx);
+    }
 }

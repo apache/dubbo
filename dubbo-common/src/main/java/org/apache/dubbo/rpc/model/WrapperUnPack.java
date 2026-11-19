@@ -16,11 +16,34 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+
 public interface WrapperUnPack extends UnPack {
 
+    @Override
     default Object unpack(byte[] data) throws Exception {
         return unpack(data, false);
     }
 
+    /**
+     * @deprecated use {@link #unpack(InputStream, boolean)} instead
+     */
+    @Deprecated
     Object unpack(byte[] data, boolean isReturnTriException) throws Exception;
+
+    @Override
+    default Object unpack(InputStream inputStream) throws Exception {
+        return unpack(inputStream, false);
+    }
+
+    default Object unpack(InputStream inputStream, boolean isReturnTriException) throws Exception {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        byte[] tmp = new byte[4096];
+        int len;
+        while ((len = inputStream.read(tmp)) != -1) {
+            buffer.write(tmp, 0, len);
+        }
+        return unpack(buffer.toByteArray(), isReturnTriException);
+    }
 }

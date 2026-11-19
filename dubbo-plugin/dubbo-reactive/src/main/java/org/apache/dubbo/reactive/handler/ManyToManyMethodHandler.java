@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.reactive.handler;
 
+import org.apache.dubbo.common.stream.CallStreamObserver;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.reactive.calls.ReactorServerCalls;
-import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
 import org.apache.dubbo.rpc.stub.StubMethodHandler;
 
 import java.util.concurrent.CompletableFuture;

@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.transport;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.ChannelEvent;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.RemotingServer;
@@ -117,5 +118,10 @@ public class ServerDelegate implements RemotingServer {
     @Override
     public boolean isClosed() {
         return server.isClosed();
+    }
+
+    @Override
+    public void fireChannelEvent(ChannelEvent event) {
+        server.fireChannelEvent(event);
     }
 }

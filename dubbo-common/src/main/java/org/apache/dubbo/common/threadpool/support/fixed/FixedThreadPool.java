@@ -17,6 +17,8 @@
 package org.apache.dubbo.common.threadpool.support.fixed;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.common.threadpool.MemorySafeLinkedBlockingQueue;
 import org.apache.dubbo.common.threadpool.ThreadPool;
@@ -35,6 +37,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREAD_N
 import static org.apache.dubbo.common.constants.CommonConstants.QUEUES_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 
 /**
  * Creates a thread pool that reuses a fixed number of threads
@@ -42,6 +45,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
  * @see java.util.concurrent.Executors#newFixedThreadPool(int)
  */
 public class FixedThreadPool implements ThreadPool {
+
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(FixedThreadPool.class);
 
     @Override
     public Executor getExecutor(URL url) {
@@ -56,6 +61,13 @@ public class FixedThreadPool implements ThreadPool {
             blockingQueue = new SynchronousQueue<>();
         } else if (queues < 0) {
             blockingQueue = new MemorySafeLinkedBlockingQueue<>();
+            logger.warn(
+                    COMMON_UNEXPECTED_EXCEPTION,
+                    "",
+                    "",
+                    "FixedThreadPool created with an unbounded queue (queues < 0). "
+                            + "This may lead to OutOfMemoryError under high load. "
+                            + "Consider configuring a positive integer for 'queues'.");
         } else {
             blockingQueue = new LinkedBlockingQueue<>(queues);
         }

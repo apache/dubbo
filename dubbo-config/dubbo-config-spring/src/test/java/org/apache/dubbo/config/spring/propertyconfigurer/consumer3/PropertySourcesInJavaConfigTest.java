@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.spring.propertyconfigurer.consumer3;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.spring.SysProps;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.propertyconfigurer.consumer.DemoBeanFactoryPostProcessor;
@@ -49,16 +50,15 @@ class PropertySourcesInJavaConfigTest {
     @BeforeEach
     public void setUp() throws Exception {
         DubboBootstrap.reset();
+        SysProps.clear();
+        SysProps.setProperty("dubbo.metrics.enabled", "false");
+        SysProps.setProperty("dubbo.metrics.protocol", "disabled");
     }
 
     @AfterEach
     public void tearDown() throws IOException {
         DubboBootstrap.reset();
-    }
-
-    @BeforeEach
-    public void beforeTest() {
-        DubboBootstrap.reset();
+        SysProps.clear();
     }
 
     @Test
