@@ -302,7 +302,12 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
 
         addToAllow(clazz);
 
-        if (ClassUtils.isSimpleType(clazz) || clazz.isPrimitive() || clazz.isArray()) {
+        if (clazz.isArray()) {
+            checkClass(clazz.getComponentType());
+            return true;
+        }
+
+        if (ClassUtils.isSimpleType(clazz) || clazz.isPrimitive()) {
             return true;
         }
         String className = clazz.getName();
