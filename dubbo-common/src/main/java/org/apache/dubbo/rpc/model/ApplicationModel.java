@@ -25,11 +25,14 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -53,6 +56,10 @@ import java.util.concurrent.locks.Lock;
 public class ApplicationModel extends ScopeModel {
     protected static final Logger LOGGER = LoggerFactory.getLogger(ApplicationModel.class);
     public static final String NAME = "ApplicationModel";
+
+    // The instance returned by ApplicationModel#defaultModel()
+    private static final Set<ApplicationModel> defaultApplicationModels = new ConcurrentHashSet<>();
+
     private final List<ModuleModel> moduleModels = new CopyOnWriteArrayList<>();
     private final List<ModuleModel> pubModuleModels = new CopyOnWriteArrayList<>();
     private volatile Environment environment;
@@ -88,7 +95,9 @@ public class ApplicationModel extends ScopeModel {
      */
     public static ApplicationModel defaultModel() {
         // should get from default FrameworkModel, avoid out of sync
-        return FrameworkModel.defaultModel().defaultApplication();
+        ApplicationModel applicationModel = FrameworkModel.defaultModel().defaultApplication();
+        defaultApplicationModels.add(applicationModel);
+        return applicationModel;
     }
 
     // ------------- instance methods ---------------//
@@ -190,6 +199,9 @@ public class ApplicationModel extends ScopeModel {
 
             // 8. destroy framework if none application
             frameworkModel.tryDestroy();
+
+            // 9. destroy all default application model
+            destroyDefaultApplicationModel();
         }
     }
 
@@ -275,6 +287,27 @@ public class ApplicationModel extends ScopeModel {
                     || (this.moduleModels.size() == 1 && this.moduleModels.get(0) == internalModule)) {
                 destroy();
             }
+        }
+    }
+
+    /**
+     * Destroy default application instance, such as created instance by {@link PojoUtils#GENERIC_WITH_CLZ}.
+     * Because these default application instance will cause the method of {@link FrameworkModel#notifyProtocolDestroy()}
+     * never invoked, so {@link DubboBootstrap#stop()} not thoroughly destroyed !
+     *
+     * @author kfyty725
+     * @since 3.3
+     * @date 2025-06-13 13:05:06
+     */
+    void destroyDefaultApplicationModel() {
+        // There's no need to copying for iterate.
+        Iterator<ApplicationModel> iterator = defaultApplicationModels.iterator();
+        while (iterator.hasNext()) {
+            ApplicationModel applicationModel = iterator.next();
+            if (!applicationModel.isDestroyed()) {
+                applicationModel.destroy();
+            }
+            iterator.remove();
         }
     }
 
