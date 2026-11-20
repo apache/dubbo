@@ -23,6 +23,7 @@ import org.apache.dubbo.common.extension.SPI;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Type;
 
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface MultipleSerialization {
@@ -31,4 +32,9 @@ public interface MultipleSerialization {
 
     Object deserialize(URL url, String serializeType, Class<?> clz, InputStream os)
             throws IOException, ClassNotFoundException;
+
+    default Object deserialize(URL url, String serializeType, Class<?> clz, Type type, InputStream os)
+            throws IOException, ClassNotFoundException {
+        return deserialize(url, serializeType, clz, os);
+    }
 }

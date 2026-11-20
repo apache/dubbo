@@ -20,7 +20,10 @@ import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.rpc.model.MethodDescriptor.RpcType;
 import org.apache.dubbo.rpc.support.DemoService;
 
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -87,6 +90,47 @@ class ReflectionMethodDescriptorTest {
         String attr = "attr";
         method.addAttribute(attr, attr);
         Assertions.assertEquals(attr, method.getAttribute(attr));
+    }
+
+    @Test
+    void getGenericParameterTypes_nonGeneric() {
+        Type[] types = method.getGenericParameterTypes();
+        Assertions.assertEquals(1, types.length);
+        Assertions.assertEquals(String.class, types[0]);
+    }
+
+    @Test
+    void getGenericParameterTypes_withGenericParam() throws NoSuchMethodException {
+        ReflectionMethodDescriptor md =
+                new ReflectionMethodDescriptor(DemoService.class.getDeclaredMethod("processBytes", List.class));
+        Type[] genericTypes = md.getGenericParameterTypes();
+        Class<?>[] rawTypes = md.getParameterClasses();
+
+        Assertions.assertEquals(1, genericTypes.length);
+        Assertions.assertEquals(List.class, rawTypes[0]);
+        Assertions.assertInstanceOf(ParameterizedType.class, genericTypes[0]);
+
+        ParameterizedType pt = (ParameterizedType) genericTypes[0];
+        Assertions.assertEquals(List.class, pt.getRawType());
+        Assertions.assertEquals(Byte.class, pt.getActualTypeArguments()[0]);
+    }
+
+    @Test
+    void getGenericParameterTypes_mixedParams() throws NoSuchMethodException {
+        ReflectionMethodDescriptor md = new ReflectionMethodDescriptor(
+                DemoService.class.getDeclaredMethod("processMultiple", String.class, List.class, Map.class));
+        Type[] genericTypes = md.getGenericParameterTypes();
+        Class<?>[] rawTypes = md.getParameterClasses();
+
+        Assertions.assertEquals(3, genericTypes.length);
+        // String param: generic type == raw type
+        Assertions.assertSame(rawTypes[0], genericTypes[0]);
+        // List<Short>: generic type is ParameterizedType
+        Assertions.assertInstanceOf(ParameterizedType.class, genericTypes[1]);
+        Assertions.assertEquals(Short.class, ((ParameterizedType) genericTypes[1]).getActualTypeArguments()[0]);
+        // Map<String, Byte>: generic type is ParameterizedType
+        Assertions.assertInstanceOf(ParameterizedType.class, genericTypes[2]);
+        Assertions.assertEquals(Byte.class, ((ParameterizedType) genericTypes[2]).getActualTypeArguments()[1]);
     }
 
     @Test
