@@ -41,4 +41,24 @@ public interface Constants {
      * From FactoryBean.OBJECT_TYPE_ATTRIBUTE of Spring 5.2.
      */
     String OBJECT_TYPE_ATTRIBUTE = "factoryBeanObjectType";
+
+    /**
+     * Environment property that, when set to {@code true}, makes auto-derived reference bean
+     * names (i.e. the ones taken from the annotated field/method property name, when no explicit
+     * {@code id} is given) unable to collide with the name of an unrelated bean registered
+     * elsewhere in the same Spring context, such as one looked up by an independent
+     * {@code @Resource} field with a default name.
+     * <p/>
+     * This is opt-in and defaults to {@code false} to preserve the existing reference bean
+     * naming behavior for applications that already rely on it.
+     *
+     * @see org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor#registerReferenceBean
+     */
+    String QUALIFY_REFERENCE_BEAN_NAME_KEY = "dubbo.application.qualify-reference-bean-name";
+
+    /**
+     * Suffix appended to an auto-derived reference bean name when
+     * {@link #QUALIFY_REFERENCE_BEAN_NAME_KEY} is enabled.
+     */
+    String REFERENCE_BEAN_NAME_QUALIFIER = "#dubbo-reference";
 }
