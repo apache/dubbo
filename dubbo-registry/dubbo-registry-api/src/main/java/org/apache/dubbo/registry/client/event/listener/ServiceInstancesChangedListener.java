@@ -69,7 +69,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 /**
  * TODO, refactor to move revision-metadata mapping to ServiceDiscovery. Instances should have already been mapped with metadata when reached here.
  * <p>
- * The operations of ServiceInstancesChangedListener should be synchronized.
+ * Instance updates and address notifications are synchronized. Metadata retries release the listener monitor during remote retrieval.
  */
 public class ServiceInstancesChangedListener {
 
@@ -90,6 +90,9 @@ public class ServiceInstancesChangedListener {
     private volatile ScheduledFuture<?> retryFuture;
     private final ScheduledExecutorService scheduler;
     private volatile boolean hasEmptyMetadata;
+    // Guarded by this: one refresh drains notifications received while it is fetching metadata.
+    private boolean refreshing;
+    private ServiceInstancesChangedEvent pendingEvent;
     private final Set<ServiceInstanceNotificationCustomizer> serviceInstanceNotificationCustomizers;
     private final ApplicationModel applicationModel;
 
@@ -120,31 +123,66 @@ public class ServiceInstancesChangedListener {
      * @param event {@link ServiceInstancesChangedEvent}
      */
     public void onEvent(ServiceInstancesChangedEvent event) {
-        if (destroyed.get() || !accept(event) || isRetryAndExpired(event)) {
-            return;
+        synchronized (this) {
+            if (destroyed.get() || !accept(event) || isRetryAndExpired(event)) {
+                return;
+            }
+            refreshInstance(event);
+            pendingEvent = event;
+            if (refreshing) {
+                return;
+            }
+            refreshing = true;
         }
-        doOnEvent(event);
+
+        Throwable failure = null;
+        while (true) {
+            try {
+                ServiceInstancesChangedEvent currentEvent;
+                Map<String, List<ServiceInstance>> instances;
+                synchronized (this) {
+                    if (destroyed.get()) {
+                        refreshing = false;
+                        break;
+                    }
+                    currentEvent = pendingEvent;
+                    pendingEvent = null;
+                    instances = new HashMap<>(allInstances);
+                }
+                doOnEvent(currentEvent, instances);
+            } catch (RuntimeException | Error e) {
+                // A failed refresh must not strand an instance notification received during metadata retrieval.
+                if (failure == null) {
+                    failure = e;
+                } else if (failure != e) {
+                    failure.addSuppressed(e);
+                }
+            }
+            synchronized (this) {
+                if (pendingEvent == null || destroyed.get()) {
+                    refreshing = false;
+                    break;
+                }
+            }
+        }
+        if (failure instanceof Error) {
+            throw (Error) failure;
+        }
+        if (failure != null) {
+            throw (RuntimeException) failure;
+        }
     }
 
-    /**
-     * @param event
-     */
-    private synchronized void doOnEvent(ServiceInstancesChangedEvent event) {
-        if (destroyed.get() || !accept(event) || isRetryAndExpired(event)) {
-            return;
-        }
-
-        refreshInstance(event);
-
+    private void doOnEvent(ServiceInstancesChangedEvent event, Map<String, List<ServiceInstance>> instancesByService) {
         if (logger.isDebugEnabled()) {
             logger.debug(event.getServiceInstances().toString());
         }
 
         Map<String, List<ServiceInstance>> revisionToInstances = new HashMap<>();
-        Map<ServiceInfo, Set<String>> localServiceToRevisions = new HashMap<>();
+        Map<String, MetadataInfo> revisionToMetadata = new HashMap<>();
 
         // grouping all instances of this app(service name) by revision
-        for (Map.Entry<String, List<ServiceInstance>> entry : allInstances.entrySet()) {
+        for (Map.Entry<String, List<ServiceInstance>> entry : instancesByService.entrySet()) {
             List<ServiceInstance> instances = entry.getValue();
             for (ServiceInstance instance : instances) {
                 String revision = getExportedServicesRevision(instance);
@@ -162,6 +200,11 @@ public class ServiceInstancesChangedListener {
 
         // get MetadataInfo with revision
         for (Map.Entry<String, List<ServiceInstance>> entry : revisionToInstances.entrySet()) {
+            synchronized (this) {
+                if (destroyed.get() || pendingEvent != null) {
+                    return;
+                }
+            }
             String revision = entry.getKey();
             List<ServiceInstance> subInstances = entry.getValue();
 
@@ -172,6 +215,24 @@ public class ServiceInstancesChangedListener {
                     .findFirst()
                     .orElseGet(() -> serviceDiscovery.getRemoteMetadata(revision, subInstances));
 
+            revisionToMetadata.put(revision, metadata);
+        }
+
+        refreshServiceUrls(event, revisionToInstances, revisionToMetadata);
+    }
+
+    private synchronized void refreshServiceUrls(
+            ServiceInstancesChangedEvent event,
+            Map<String, List<ServiceInstance>> revisionToInstances,
+            Map<String, MetadataInfo> revisionToMetadata) {
+        if (destroyed.get() || pendingEvent != null) {
+            return;
+        }
+        Map<ServiceInfo, Set<String>> localServiceToRevisions = new HashMap<>();
+        for (Map.Entry<String, List<ServiceInstance>> entry : revisionToInstances.entrySet()) {
+            String revision = entry.getKey();
+            List<ServiceInstance> subInstances = entry.getValue();
+            MetadataInfo metadata = revisionToMetadata.get(revision);
             parseMetadata(revision, metadata, localServiceToRevisions);
             // update metadata into each instance, in case new instance created.
             for (ServiceInstance tmpInstance : subInstances) {
@@ -231,6 +292,9 @@ public class ServiceInstancesChangedListener {
     }
 
     private void submitRetryTask(ServiceInstancesChangedEvent event) {
+        if (destroyed.get()) {
+            return;
+        }
         // retry every 10 seconds
         if (retryPermission.tryAcquire()) {
             if (retryFuture != null && !retryFuture.isDone()) {
@@ -506,6 +570,7 @@ public class ServiceInstancesChangedListener {
             logger.info("Destroying instance listener of  " + this.getServiceNames());
             serviceDiscovery.removeServiceInstancesChangedListener(this);
             synchronized (this) {
+                pendingEvent = null;
                 allInstances.clear();
                 serviceUrls.clear();
                 listeners.clear();
