@@ -590,9 +590,27 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                 handleH2TransportError(TriRpcStatus.INTERNAL.withDescription("headers not received before payload"));
                 return;
             }
-            // Use ByteBufInputStream to adapt ByteBuf to InputStream
-            // The second parameter 'true' means release ByteBuf after reading
-            deframer.decode(new ByteBufInputStream(data, true));
+            // Use ByteBufInputStream to adapt ByteBuf to InputStream.
+            // The second parameter 'true' means release ByteBuf when the stream is closed.
+            // NOTE: We must NOT close this stream here because deframer holds a reference
+            // to it via accumulate.addInputStream(). The stream will be closed later (releasing
+            // the underlying ByteBuf) when accumulate.close() is called via deframer.close().
+            // Closing it here would prematurely invalidate data that deframer still needs
+            // for subsequent deserialization, causing "Deserialize response failed".
+            try {
+                deframer.decode(new ByteBufInputStream(data, true));
+            } catch (Throwable t) {
+                // If deframer.decode() throws (e.g. DecodeException from invalid payload),
+                // the ByteBufInputStream has already been added to accumulate. We must close
+                // the deframer so that accumulate.close() releases all accumulated streams,
+                // including this one, avoiding a Netty ByteBuf memory leak.
+                LOGGER.error(PROTOCOL_FAILED_RESPONSE, "", "", "Failed to decode triple response data", t);
+                try {
+                    deframer.close();
+                } catch (Exception ignore) {
+                    // deframer.close() may throw if already closing; safe to ignore
+                }
+            }
         }
 
         @Override
