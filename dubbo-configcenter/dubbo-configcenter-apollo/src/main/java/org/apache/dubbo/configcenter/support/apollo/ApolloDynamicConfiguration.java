@@ -71,7 +71,8 @@ import static org.apache.dubbo.metrics.MetricsConstants.SELF_INCREMENT_SIZE;
  * <dubbo:config-center namespace="governance" group="dubbo" />, 'dubbo=governance' is for governance rules while
  * 'group=dubbo' is for properties files.
  * <p>
- * Please see http://dubbo.apache.org/zh-cn/docs/user/configuration/config-center.html for details.
+ * Please see https://dubbo.apache.org/zh-cn/overview/mannual/java-sdk/reference-manual/config-center/apollo/
+ * for details.
  */
 public class ApolloDynamicConfiguration implements DynamicConfiguration {
     private static final ErrorTypeAwareLogger logger =
