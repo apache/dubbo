@@ -112,7 +112,7 @@ public class AwaitingNonWebApplicationListener implements SmartApplicationListen
 
         final ConfigurableApplicationContext applicationContext = event.getApplicationContext();
 
-        if (!isRootApplicationContext(applicationContext) || isWebApplication(applicationContext)) {
+        if (isRootApplicationContext(applicationContext) || isWebApplication(applicationContext)) {
             return;
         }
 
