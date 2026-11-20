@@ -31,7 +31,13 @@ import static org.apache.dubbo.common.utils.UrlUtils.isMatchGlobPattern;
 public class AddressMatch {
     public static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AddressMatch.class);
     private String wildcard;
+    private String cidr;
+    /**
+     * @deprecated use {@link #getCidr()} and {@link #setCidr(String)} instead.
+     */
+    @Deprecated
     private String cird;
+
     private String exact;
 
     public String getWildcard() {
@@ -42,11 +48,29 @@ public class AddressMatch {
         this.wildcard = wildcard;
     }
 
-    public String getCird() {
-        return cird;
+    public String getCidr() {
+        return cidr != null ? cidr : cird;
     }
 
+    public void setCidr(String cidr) {
+        this.cidr = cidr;
+        this.cird = cidr;
+    }
+
+    /**
+     * @deprecated use {@link #getCidr()} instead.
+     */
+    @Deprecated
+    public String getCird() {
+        return getCidr();
+    }
+
+    /**
+     * @deprecated use {@link #setCidr(String)} instead.
+     */
+    @Deprecated
     public void setCird(String cird) {
+        this.cidr = cird;
         this.cird = cird;
     }
 
@@ -59,17 +83,17 @@ public class AddressMatch {
     }
 
     public boolean isMatch(String input) {
-        if (getCird() != null && input != null) {
+        if (getCidr() != null && input != null) {
             try {
-                return input.equals(getCird()) || matchCird(input);
+                return input.equals(getCidr()) || matchCidr(input);
             } catch (UnknownHostException e) {
                 logger.error(
                         CLUSTER_FAILED_EXEC_CONDITION_ROUTER,
                         "Executing routing rule match expression error.",
                         "",
                         String.format(
-                                "Error trying to match cird formatted address %s with input %s in AddressMatch.",
-                                getCird(), input),
+                                "Error trying to match CIDR formatted address %s with input %s in AddressMatch.",
+                                getCidr(), input),
                         e);
             }
         }
@@ -86,7 +110,7 @@ public class AddressMatch {
         return false;
     }
 
-    private boolean matchCird(String input) throws UnknownHostException {
+    private boolean matchCidr(String input) throws UnknownHostException {
         String host = input;
         int port = 0;
         int colonIndex = input.indexOf(':');
@@ -94,6 +118,6 @@ public class AddressMatch {
             host = input.substring(0, colonIndex);
             port = StringUtils.parseInteger(input.substring(colonIndex + 1));
         }
-        return matchIpExpression(getCird(), host, port);
+        return matchIpExpression(getCidr(), host, port);
     }
 }
