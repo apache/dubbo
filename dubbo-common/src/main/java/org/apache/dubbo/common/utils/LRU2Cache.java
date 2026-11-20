@@ -83,6 +83,9 @@ public class LRU2Cache<K, V> extends LinkedHashMap<K, V> {
     public V put(K key, V value) {
         lock.lock();
         try {
+            if (super.containsKey(key)) {
+                return super.put(key, value);
+            }
             if (preCache.containsKey(key)) {
                 // add it to cache
                 preCache.remove(key);
