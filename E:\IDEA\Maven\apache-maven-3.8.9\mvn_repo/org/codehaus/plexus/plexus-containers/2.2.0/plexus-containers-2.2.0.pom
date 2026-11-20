@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.codehaus.plexus</groupId>
+    <artifactId>plexus</artifactId>
+    <version>16</version>
+  </parent>
+
+  <artifactId>plexus-containers</artifactId>
+  <version>2.2.0</version>
+  <packaging>pom</packaging>
+
+  <name>Plexus Containers (deprecated)</name>
+  <description>Plexus IoC Container core with companion tools.</description>
+  <url>https://codehaus-plexus.github.io/plexus-containers/</url>
+
+  <modules>
+    <module>plexus-component-annotations</module>
+    <module>plexus-component-metadata</module>
+  </modules>
+
+  <scm>
+    <connection>scm:git:https://github.com/codehaus-plexus/plexus-containers.git</connection>
+    <developerConnection>scm:git:https://github.com/codehaus-plexus/plexus-containers.git</developerConnection>
+    <tag>plexus-containers-2.2.0</tag>
+    <url>https://github.com/codehaus-plexus/plexus-containers/tree/${project.scm.tag}/</url>
+  </scm>
+  <issueManagement>
+    <system>github</system>
+    <url>https://github.com/codehaus-plexus/plexus-containers/issues</url>
+  </issueManagement>
+  <distributionManagement>
+    <site>
+      <id>github:gh-pages</id>
+      <url>${scm.url}</url>
+    </site>
+  </distributionManagement>
+
+  <properties>
+    <scm.url>scm:git:git@github.com:codehaus-plexus/plexus-containers.git</scm.url>
+    <plexusUtilsVersion>3.5.1</plexusUtilsVersion>
+    <mavenVersion>3.6.3</mavenVersion>
+  </properties>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <configuration>
+            <autoVersionSubmodules>true</autoVersionSubmodules>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <configuration>
+          <topSiteURL>${scm.url}</topSiteURL>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

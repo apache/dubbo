@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (C) 2009, Google Inc.
+  Copyright (C) 2009, Igor Fedorenko <igor@ifedorenko.com>
+  Copyright (C) 2008, Imran M Yousuf <imyousuf@smartitengineering.com>
+  Copyright (C) 2010, Matthias Sohn <matthias.sohn@sap.com> and others
+
+  This program and the accompanying materials are made available under the
+  terms of the Eclipse Distribution License v. 1.0 which is available at
+  http://www.eclipse.org/org/documents/edl-v10.php.
+
+  SPDX-License-Identifier: BSD-3-Clause
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.eclipse.jgit</groupId>
+    <artifactId>org.eclipse.jgit-parent</artifactId>
+    <version>6.10.1.202505221210-r</version>
+  </parent>
+
+  <artifactId>org.eclipse.jgit</artifactId>
+  <name>JGit - Core</name>
+
+  <description>
+    Repository access and algorithms
+  </description>
+
+  <properties>
+    <translate-qualifier/>
+    <source-bundle-manifest>${project.build.directory}/META-INF/SOURCE-MANIFEST.MF</source-bundle-manifest>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.googlecode.javaewah</groupId>
+      <artifactId>JavaEWAH</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <sourceDirectory>src/</sourceDirectory>
+
+    <resources>
+      <resource>
+        <directory>.</directory>
+        <includes>
+          <include>plugin.properties</include>
+          <include>about.html</include>
+          <include>META-INF/eclipse.inf</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>resources/</directory>
+      </resource>
+    </resources>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>translate-source-qualifier</id>
+            <phase>generate-resources</phase>
+            <configuration>
+              <target>
+                <copy file="META-INF/SOURCE-MANIFEST.MF" tofile="${source-bundle-manifest}" overwrite="true"/>
+                <replace file="${source-bundle-manifest}">
+                  <replacefilter token=".qualifier" value=".${commit.time.version}"/>
+                </replace>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <inherited>true</inherited>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <configuration>
+              <archive>
+                <manifestFile>${source-bundle-manifest}</manifestFile>
+              </archive>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestFile>${bundle-manifest}</manifestFile>
+          </archive>
+        </configuration>
+      </plugin>
+
+      <plugin>
+          <groupId>com.github.siom79.japicmp</groupId>
+          <artifactId>japicmp-maven-plugin</artifactId>
+          <version>${japicmp-version}</version>
+          <configuration>
+              <oldVersion>
+                  <dependency>
+                      <groupId>${project.groupId}</groupId>
+                      <artifactId>${project.artifactId}</artifactId>
+                      <version>${jgit-last-release-version}</version>
+                  </dependency>
+              </oldVersion>
+              <newVersion>
+                  <file>
+                      <path>${project.build.directory}/${project.artifactId}-${project.version}.jar</path>
+                  </file>
+              </newVersion>
+              <parameter>
+                  <onlyModified>true</onlyModified>
+                  <includes>
+                      <include>org.eclipse.jgit.*</include>
+                  </includes>
+                  <accessModifier>public</accessModifier>
+                  <breakBuildOnModifications>false</breakBuildOnModifications>
+                  <breakBuildOnBinaryIncompatibleModifications>false</breakBuildOnBinaryIncompatibleModifications>
+                  <onlyBinaryIncompatible>false</onlyBinaryIncompatible>
+                  <includeSynthetic>false</includeSynthetic>
+                  <ignoreMissingClasses>true</ignoreMissingClasses>
+                  <skipPomModules>true</skipPomModules>
+              </parameter>
+              <skip>false</skip>
+          </configuration>
+          <executions>
+            <execution>
+             <phase>verify</phase>
+             <goals>
+               <goal>cmp</goal>
+             </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>com.github.spotbugs</groupId>
+          <artifactId>spotbugs-maven-plugin</artifactId>
+          <version>${spotbugs-maven-plugin-version}</version>
+          <configuration>
+            <excludeFilterFile>findBugs/FindBugsExcludeFilter.xml</excludeFilterFile>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+          <groupId>com.github.siom79.japicmp</groupId>
+          <artifactId>japicmp-maven-plugin</artifactId>
+          <version>${japicmp-version}</version>
+          <reportSets>
+              <reportSet>
+                  <reports>
+                      <report>cmp-report</report>
+                  </reports>
+              </reportSet>
+          </reportSets>
+          <configuration>
+              <oldVersion>
+                  <dependency>
+                      <groupId>${project.groupId}</groupId>
+                      <artifactId>${project.artifactId}</artifactId>
+                      <version>${jgit-last-release-version}</version>
+                  </dependency>
+              </oldVersion>
+              <newVersion>
+                  <file>
+                      <path>${project.build.directory}/${project.artifactId}-${project.version}.jar</path>
+                  </file>
+              </newVersion>
+              <parameter>
+                  <onlyModified>true</onlyModified>
+                  <includes>
+                      <include>org.eclipse.jgit.*</include>
+                  </includes>
+                  <accessModifier>public</accessModifier>
+                  <breakBuildOnModifications>false</breakBuildOnModifications>
+                  <breakBuildOnBinaryIncompatibleModifications>false</breakBuildOnBinaryIncompatibleModifications>
+                  <onlyBinaryIncompatible>false</onlyBinaryIncompatible>
+                  <includeSynthetic>false</includeSynthetic>
+                  <ignoreMissingClasses>true</ignoreMissingClasses>
+                  <skipPomModules>true</skipPomModules>
+              </parameter>
+              <skip>false</skip>
+          </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
+</project>

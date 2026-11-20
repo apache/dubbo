@@ -1,0 +1,504 @@
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <!--
+    - Note that due to the special requirements of logging unit-tests, most
+    - tests are executed in the "integration-test" phase rather than the
+    - "test" phase. Please run "mvn integration-test" to run the full suite of
+    - available unit tests.
+    -->
+  <parent>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-parent</artifactId>
+    <version>5</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>commons-logging</groupId>
+  <artifactId>commons-logging</artifactId>
+  <name>Commons Logging</name>
+  <version>1.1.1</version>
+  <description>Commons Logging is a thin adapter allowing configurable bridging to other,
+    well known logging systems.</description>
+  <url>http://commons.apache.org/logging</url>
+
+  <issueManagement>
+    <system>JIRA</system>
+    <url>http://issues.apache.org/jira/browse/LOGGING</url>
+  </issueManagement>
+
+  <inceptionYear>2001</inceptionYear>
+
+  <developers>
+    <developer>
+      <id>morgand</id>
+      <name>Morgan Delagrange</name>
+      <email>morgand at apache dot org</email>
+      <organization>Apache</organization>
+      <roles>
+        <role>Java Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>rwaldhoff</id>
+      <name>Rodney Waldhoff</name>
+      <email>rwaldhoff at apache org</email>
+      <organization>Apache Software Foundation</organization>
+    </developer>
+    <developer>
+      <id>craigmcc</id>
+      <name>Craig McClanahan</name>
+      <email>craigmcc at apache org</email>
+      <organization>Apache Software Foundation</organization>
+    </developer>
+    <developer>
+      <id>sanders</id>
+      <name>Scott Sanders</name>
+      <email>sanders at apache dot org</email>
+      <organization>Apache Software Foundation</organization>
+    </developer>
+    <developer>
+      <id>rdonkin</id>
+      <name>Robert Burrell Donkin</name>
+      <email>rdonkin at apache dot org</email>
+      <organization>Apache Software Foundation</organization>
+    </developer>
+    <developer>
+      <id>donaldp</id>
+      <name>Peter Donald</name>
+      <email>donaldp at apache dot org</email>
+    </developer>
+    <developer>
+      <id>costin</id>
+      <name>Costin Manolache</name>
+      <email>costin at apache dot org</email>
+      <organization>Apache Software Foundation</organization>
+    </developer>
+    <developer>
+      <id>rsitze</id>
+      <name>Richard Sitze</name>
+      <email>rsitze at apache dot org</email>
+      <organization>Apache Software Foundation</organization>
+    </developer>
+    <developer>
+      <id>baliuka</id>
+      <name>Juozas Baliuka</name>
+      <email>baliuka@apache.org</email>
+      <roles>
+        <role>Java Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>skitching</id>
+      <name>Simon Kitching</name>
+      <email>skitching@apache.org</email>
+      <organization>Apache Software Foundation</organization>
+    </developer>
+    <developer>
+      <id>dennisl</id>
+      <name>Dennis Lundberg</name>
+      <email>dennisl@apache.org</email>
+      <organization>Apache Software Foundation</organization>
+    </developer>
+    <developer>
+      <id>bstansberry</id>
+      <name>Brian Stansberry</name>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/commons/proper/logging/tags/commons-logging-1.1.1</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/commons/proper/logging/tags/commons-logging-1.1.1</developerConnection>
+    <url>http://svn.apache.org/repos/asf/commons/proper/logging/tags/commons-logging-1.1.1</url>
+  </scm>
+
+  <build>
+    <sourceDirectory>src/java</sourceDirectory>
+    <testSourceDirectory>src/test</testSourceDirectory>
+
+    <testResources>
+      <testResource>
+        <directory>src/test</directory>
+        <filtering>false</filtering>
+        <includes>
+          <include>**/*.properties</include>
+        </includes>
+      </testResource>
+    </testResources>
+
+    <plugins>
+
+      <!--
+        - The custom test framework requires the unit test code to be
+        - in a jarfile so it can control its place in the classpath.
+        -->
+      <plugin>      
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestFile>src/conf/MANIFEST.MF</manifestFile>
+          </archive>
+        </configuration>
+        <executions>
+          <execution>
+            <id>testjar</id>
+            <phase>package</phase>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+            <configuration>
+              <jarName>commons-logging</jarName>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <!--
+          - We want to create four jarfiles from this project: normal, tests, api
+          - and adapters. The first two are handled by the normal jar:jar target.
+          - Alas, the standard jar plugin doesn't have includes/excludes support
+          - in version 2.0, so antrun is used to create the other ones.
+          -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.1</version>
+        <executions>
+          <execution>
+            <id>apijar</id>
+            <phase>package</phase>
+            <configuration>
+              <tasks>
+                <property name="workdir" value="${project.build.directory}/rejar" />
+                <property name="target" value="${project.artifactId}-api-${project.version}" />
+
+                <delete dir="${workdir}" failonerror="false" />
+                <mkdir dir="${workdir}" />
+
+                <unjar src="${project.build.directory}/${project.build.finalName}.jar" dest="${workdir}" />
+                <jar basedir="${workdir}" destfile="${project.build.directory}/${target}.jar" manifest="${basedir}/src/conf/MANIFEST.MF">
+                  <exclude name="org/apache/commons/logging/impl/Log4J*" />
+                  <exclude name="org/apache/commons/logging/impl/Avalon*" />
+                  <exclude name="org/apache/commons/logging/impl/Jdk13*" />
+                  <exclude name="org/apache/commons/logging/impl/LogKit*" />
+                  <exclude name="org/apache/commons/logging/impl/Servlet*" />
+                </jar>
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>adaptersjar</id>
+            <phase>package</phase>
+            <configuration>
+              <tasks>
+                <property name="workdir" value="${project.build.directory}/rejar" />
+                <property name="target" value="${project.artifactId}-adapters-${project.version}" />
+
+                <delete dir="${workdir}" failonerror="false" />
+                <mkdir dir="${workdir}" />
+
+                <unjar src="${project.build.directory}/${project.build.finalName}.jar" dest="${workdir}" />
+                <jar basedir="${workdir}" destfile="${project.build.directory}/${target}.jar" manifest="${basedir}/src/conf/MANIFEST.MF">
+                  <exclude name="org/apache/commons/logging/*" />
+                  <exclude name="org/apache/commons/logging/impl/WeakHashtable*" />
+                  <exclude name="org/apache/commons/logging/impl/LogFactoryImpl*" />
+                </jar>
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>site.resources</id>
+            <phase>site</phase>
+            <configuration>
+              <tasks>
+                <copy todir="${project.reporting.outputDirectory}">
+                  <fileset dir="${basedir}">
+                    <include name="RELEASE-NOTES.txt" />
+                  </fileset>
+                  <!--
+                    - The logo should be moved to
+                    - ${basedir}/src/site/resources/images
+                    - once we can drop support for the Maven 1 site.
+                    - When that is done this section can be removed.
+                    -->
+                  <fileset dir="${basedir}/xdocs">
+                    <include name="images/logo.png" />
+                  </fileset>
+                </copy>
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin> 
+
+      <plugin>
+        <!--
+          - Attach the adapters and api jars to the normal artifact. This way
+          - they will be deployed when the normal artifact is deployed.
+          -->
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>1.0</version>
+        <executions>
+          <execution>
+            <id>attach-artifacts</id>
+            <phase>package</phase>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>${project.build.directory}/${project.artifactId}-adapters-${project.version}.jar</file>
+                  <type>jar</type>
+                  <classifier>adapters</classifier>
+                </artifact>
+                <artifact>
+                  <file>${project.build.directory}/${project.artifactId}-api-${project.version}.jar</file>
+                  <type>jar</type>
+                  <classifier>api</classifier>
+                </artifact>
+              </artifacts>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>2.0-beta-6</version>
+        <configuration>
+          <!--
+            - The site needs to be built prior to deploy,
+            - because it is included in the assembly.
+            -->
+          <goals>site deploy</goals>
+          <!-- Pass these arguments to the deploy plugin. -->
+          <arguments>-Prelease</arguments>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <!--
+          - Many of JCL's tests use tricky techniques to place the generated
+          - JCL jarfiles on the classpath in various configurations. This means
+          - that the tests must be run *after* the "package" build phase. The
+          - normal test phase is therefore disabled here, and the test plugin
+          - rebound to the "integration-test" phase instead.
+          -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <includes>
+            <include>**/AvalonLoggerTestCase.java</include>
+          </includes>
+        </configuration>
+
+        <executions>
+          <execution>
+            <id>integration-test</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <includes>
+                <include>**/*TestCase.java</include>
+              </includes>
+              <systemProperties>
+                <!--
+                <property>
+                  <name>org.apache.commons.logging.diagnostics.dest</name>
+                  <value>STDOUT</value>
+                </property>
+                -->
+                <property>
+                  <name>commons-logging</name>
+                  <value>target/${project.build.finalName}.jar</value>
+                </property>
+                <property>
+                  <name>commons-logging-api</name>
+                  <value>target/${project.artifactId}-api-${project.version}.jar</value>
+                </property>
+                <property>
+                  <name>commons-logging-adapters</name>
+                  <value>target/${project.artifactId}-adapters-${project.version}.jar</value>
+                </property>
+                <property>
+                  <name>testclasses</name>
+                  <value>target/commons-logging-tests.jar</value>
+                </property>
+              </systemProperties>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.2-beta-1</version>
+        <configuration>
+          <appendAssemblyId>false</appendAssemblyId>
+          <!-- Do not deploy the assemblies to the repository. -->
+          <attach>false</attach>
+          <descriptors>
+            <descriptor>src/assembly/assembly.xml</descriptor>
+          </descriptors>
+          <tarLongFileMode>gnu</tarLongFileMode>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <version>2.0-beta-5</version>
+      </plugin>
+
+    </plugins>
+  </build>
+  
+  <profiles>
+    <!-- This profile can be removed when we update to commons-parent-5 -->
+    <profile>
+      <id>ci</id>
+      <distributionManagement>
+        <repository>
+          <id>apache.snapshots</id>
+          <name>Apache Development Snapshot Repository</name>
+          <url>${commons.deployment.protocol}://people.apache.org/www/people.apache.org/repo/m2-snapshot-repository</url>
+        </repository>
+        <snapshotRepository>
+          <id>apache.snapshots</id>
+          <name>Apache Development Snapshot Repository</name>
+          <url>${commons.deployment.protocol}://people.apache.org/www/people.apache.org/repo/m2-snapshot-repository</url>
+        </snapshotRepository>
+      </distributionManagement>
+    </profile>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <!-- Create the assemblies automatically during release. -->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+                <phase>package</phase>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-deploy-plugin</artifactId>
+            <version>2.3</version>
+            <configuration>
+              <!-- Pick up this configuration from settings.xml. -->
+              <altDeploymentRepository>${deploy.altRepository}</altDeploymentRepository>
+              <updateReleaseInfo>true</updateReleaseInfo>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>1.2.12</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>logkit</groupId>
+      <artifactId>logkit</artifactId>
+      <version>1.0.1</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>avalon-framework</groupId>
+      <artifactId>avalon-framework</artifactId>
+      <version>4.1.3</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+      <version>2.3</version>
+      <scope>provided</scope>
+      <optional>true</optional>
+    </dependency>
+  </dependencies>
+
+  <reporting>
+    <plugins>
+      <!--
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <configuration>
+          <configLocation>checkstyle.xml</configLocation>
+        </configuration>
+      </plugin>
+      -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>clirr-maven-plugin</artifactId>
+        <version>2.1.1</version>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>jdepend-maven-plugin</artifactId>
+        <version>2.0-beta-1</version>
+      </plugin>
+    </plugins>
+  </reporting>
+
+  <distributionManagement>
+    <site>
+      <id>apache.website</id>
+      <url>${commons.deployment.protocol}://people.apache.org/www/commons.apache.org/logging/</url>
+    </site>
+  </distributionManagement>
+
+  <properties>
+    <maven.compile.source>1.2</maven.compile.source>
+    <maven.compile.target>1.1</maven.compile.target>
+  </properties>
+</project>

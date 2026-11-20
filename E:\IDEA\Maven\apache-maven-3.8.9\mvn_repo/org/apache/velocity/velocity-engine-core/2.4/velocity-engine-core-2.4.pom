@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.apache.velocity</groupId>
+        <artifactId>velocity-engine-parent</artifactId>
+        <version>2.4</version>
+    </parent>
+
+    <artifactId>velocity-engine-core</artifactId>
+    <name>Apache Velocity - Engine</name>
+
+    <properties>
+        <!-- You should not directly modify those properties which define the behavior of the parser.
+             Instead, you should customize the velocity-custom-parser-example module to fit your own needs.
+        -->
+        <parser.debug>false</parser.debug>
+        <parser.package>org.apache.velocity.runtime.parser</parser.package>
+        <parser.basename>Standard</parser.basename>
+        <parser.char.asterisk>*</parser.char.asterisk>
+        <parser.char.at>@</parser.char.at>
+        <parser.char.dollar>$</parser.char.dollar>
+        <parser.char.hash>#</parser.char.hash>
+
+        <!-- You can modify those properties locally to test
+             the DataSourceResourceLoader against other engines.
+             Please note that you may have to also alter the file
+             src/test/resources/ds/create-db.sql for specific engine SQL grammars.
+        -->
+        <test.jdbc.driver.groupId>org.hsqldb</test.jdbc.driver.groupId>
+        <test.jdbc.driver.artifactId>hsqldb</test.jdbc.driver.artifactId>
+        <test.jdbc.driver.version>2.7.3</test.jdbc.driver.version>
+        <test.jdbc.driver.classifier>jdk8</test.jdbc.driver.classifier>
+        <test.jdbc.driver.className>org.hsqldb.jdbcDriver</test.jdbc.driver.className>
+        <test.jdbc.uri>jdbc:hsqldb:.</test.jdbc.uri>
+        <test.jdbc.login>sa</test.jdbc.login>
+        <test.jdbc.password />
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <!-- prepare parser grammar file -->
+                    <execution>
+                        <id>generate-parser-grammar</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <useDefaultDelimiters>false</useDefaultDelimiters>
+                            <delimiters>
+                                <delimiter>${*}</delimiter>
+                            </delimiters>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/parser</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                            <outputDirectory>${project.build.directory}/parser</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <!-- expose the raw grammar file for the custom parser maven plugin -->
+                    <execution>
+                        <id>expose-parser-grammar</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/parser</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                            <outputDirectory>${project.build.outputDirectory}/org/apache/velocity/runtime/parser</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- parser -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>javacc-maven-plugin</artifactId>
+                <configuration>
+                    <isStatic>false</isStatic>
+                    <buildParser>true</buildParser>
+                    <buildNodeFiles>false</buildNodeFiles>
+                    <multi>true</multi>
+                    <debugParser>${parser.debug}</debugParser>
+                    <debugLookAhead>${parser.debug}</debugLookAhead>
+                    <debugTokenManager>${parser.debug}</debugTokenManager>
+                    <nodeUsesParser>true</nodeUsesParser>
+                    <nodePackage>org.apache.velocity.runtime.parser.node</nodePackage>
+                    <sourceDirectory>${project.build.directory}/parser</sourceDirectory>
+                    <tokenManagerUsesParser>true</tokenManagerUsesParser>
+                </configuration>
+                <executions>
+                    <!-- build the standard parser -->
+                    <execution>
+                        <id>jjtree-javacc</id>
+                        <goals>
+                            <goal>jjtree-javacc</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>Parser.jjt</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+
+            <!-- handle VelocityEngineVersion file -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>templating-maven-plugin</artifactId>
+                <version>1.0.0</version>
+                <executions>
+                    <execution>
+                        <id>filter-src</id>
+                        <goals>
+                            <goal>filter-sources</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- handle OSGi information -->
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <instructions>
+                        <Export-Package>
+                            org.apache.velocity.*
+                        </Export-Package>
+                        <Import-Package>
+                            *
+                        </Import-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+
+            <!-- tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemProperties>
+                        <property>
+                            <name>test</name>
+                            <value>${test}</value>
+                        </property>
+                        <property>
+                            <name>test.compare.dir</name>
+                            <value>${project.build.testOutputDirectory}</value>
+                        </property>
+                        <property>
+                            <name>test.result.dir</name>
+                            <value>${project.build.directory}/results</value>
+                        </property>
+                        <property>
+                            <name>org.slf4j.simpleLogger.defaultLogLevel</name>
+                            <value>warn</value>
+                        </property>
+                        <property>
+                            <name>org.slf4j.simpleLogger.logFile</name>
+                            <value>${project.build.directory}/velocity.log</value>
+                        </property>
+                        <property>
+                            <name>test.jdbc.driver.className</name>
+                            <value>${test.jdbc.driver.className}</value>
+                        </property>
+                        <property>
+                            <name>test.jdbc.uri</name>
+                            <value>${test.jdbc.uri}</value>
+                        </property>
+                        <property>
+                            <name>test.jdbc.login</name>
+                            <value>${test.jdbc.login}</value>
+                        </property>
+                        <property>
+                            <name>test.jdbc.password</name>
+                            <value>${test.jdbc.password}</value>
+                        </property>
+                    </systemProperties>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>integration-test</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <skip>false</skip>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.17.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${test.jdbc.driver.groupId}</groupId>
+            <artifactId>${test.jdbc.driver.artifactId}</artifactId>
+            <version>${test.jdbc.driver.version}</version>
+            <scope>test</scope>
+            <classifier>${test.jdbc.driver.classifier}</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>4.8.6.2</version>
+                <configuration>
+                    <xmlOutput>true</xmlOutput>
+                    <threshold>Low</threshold>
+                    <effort>Max</effort>
+                    <excludeFilterFile>src/etc/build/spotbugs-exclude.xml</excludeFilterFile>
+                    <xmlOutputDirectory>${project.reporting.outputDirectory}</xmlOutputDirectory>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
+</project>

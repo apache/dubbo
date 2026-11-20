@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.apache.velocity</groupId>
+    <artifactId>velocity-master</artifactId>
+    <version>4</version>
+  </parent>
+
+  <groupId>org.apache.velocity.tools</groupId>
+  <artifactId>velocity-tools-parent</artifactId>
+  <version>3.1</version>
+  <packaging>pom</packaging>
+
+  <name>VelocityTools</name>
+  <description>
+    VelocityTools is an integrated collection of Velocity subprojects
+    with the common goal of creating tools and infrastructure to speed and ease
+    development of both web and non-web applications using the Velocity template
+    engine.
+  </description>
+  <url>https://velocity.apache.org/tools/devel/</url>
+  <inceptionYear>2002</inceptionYear>
+
+  <properties>
+    <slf4j.version>1.7.30</slf4j.version>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
+
+  <modules>
+    <module>velocity-tools-generic</module>
+    <module>velocity-tools-view</module>
+    <module>velocity-tools-view-jsp</module>
+    <module>velocity-tools-examples</module>
+  </modules>
+
+  <scm>
+    <connection>scm:git:https://gitbox.apache.org/repos/asf/velocity-tools.git</connection>
+    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/velocity-tools.git</developerConnection>
+    <url>https://gitbox.apache.org/repos/asf?p=velocity-tools.git</url>
+    <tag>3.1-RC1</tag>
+  </scm>
+  <issueManagement>
+    <system>jira</system>
+    <url>https://issues.apache.org/jira/browse/VELTOOLS</url>
+  </issueManagement>
+
+  <!-- This project is an effort by many people. If you feel that your name
+     should be in here and has been omitted in error, please open an issue with
+     the Velocity Tools Issue tracker. -->
+  <contributors>
+    <contributor>
+      <name>Chris Townsen</name>
+    </contributor>
+    <contributor>
+      <name>Craig R. McClanahan</name>
+    </contributor>
+    <contributor>
+      <name>Dave Bryson</name>
+    </contributor>
+    <contributor>
+      <name>David Graham</name>
+    </contributor>
+    <contributor>
+      <name>David Winterfeldt</name>
+    </contributor>
+    <contributor>
+      <name>Denis Bredelet</name>
+    </contributor>
+    <contributor>
+      <name>Dmitri Colebatch</name>
+    </contributor>
+    <contributor>
+      <name>Gabriel Sidler</name>
+    </contributor>
+    <contributor>
+      <name>Kent Johnson</name>
+    </contributor>
+    <contributor>
+      <name>Leon Messerschmidt</name>
+    </contributor>
+    <contributor>
+      <name>Mike Kienenberger</name>
+    </contributor>
+    <contributor>
+      <name>Oliver O'Halloran</name>
+    </contributor>
+    <contributor>
+      <name>S. Brett Sutton</name>
+    </contributor>
+    <contributor>
+      <name>Shinobu Kawai</name>
+    </contributor>
+    <contributor>
+      <name>Spencer Davis</name>
+    </contributor>
+    <contributor>
+      <name>Ted Husted</name>
+    </contributor>
+    <contributor>
+      <name>Tim Colson</name>
+    </contributor>
+  </contributors>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.velocity</groupId>
+        <artifactId>velocity-engine-core</artifactId>
+        <version>2.3</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>3.10</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-digester3</artifactId>
+        <version>3.2</version>
+        <!-- this dependency is unused, old, and easily conflits with others -->
+        <exclusions>
+          <exclusion>
+            <groupId>cglib</groupId>
+            <artifactId>cglib</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>javax.servlet-api</artifactId>
+        <version>3.1.0</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.servlet.jsp</groupId>
+        <artifactId>javax.servlet.jsp-api</artifactId>
+        <version>2.3.3</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.el</groupId>
+        <artifactId>javax.el-api</artifactId>
+        <version>3.0.0</version>
+      </dependency>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.13.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.easymock</groupId>
+        <artifactId>easymock</artifactId>
+        <version>4.2</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <defaultGoal>install</defaultGoal>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemProperties>
+            <property>
+              <name>org.slf4j.simpleLogger.defaultLogLevel</name>
+              <value>trace</value>
+            </property>
+            <property>
+              <name>org.slf4j.simpleLogger.logFile</name>
+              <value>${project.build.directory}/velocity-tools.log</value>
+            </property>
+            <property>
+              <name>test.resources.dir</name>
+              <value>${project.build.testOutputDirectory}</value>
+            </property>
+          </systemProperties>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <showDeprecation>true</showDeprecation>
+          <showWarnings>true</showWarnings>
+          <source>${maven.compiler.source}</source>
+          <target>${maven.compiler.target}</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <excludePackageNames>org.apache.velocity.tools.examples</excludePackageNames>
+          <detectLinks />
+          <!-- full checking is left disabled
+          <doclint>html,missing,reference,syntax</doclint>
+          -->
+          <doclint>none</doclint>
+        </configuration>
+        <executions>
+          <execution>
+            <id>aggregate</id>
+            <goals>
+              <goal>aggregate</goal>
+            </goals>
+            <configuration>
+              <source>1.8</source>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

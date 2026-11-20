@@ -1,0 +1,20 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>javax.inject</groupId>
+  <artifactId>javax.inject</artifactId>
+  <packaging>jar</packaging>
+  <name>javax.inject</name>
+  <version>1</version>
+  <description>The javax.inject API</description>
+  <url>http://code.google.com/p/atinject/</url>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <scm>
+    <url>http://code.google.com/p/atinject/source/checkout</url>
+  </scm>
+</project>
