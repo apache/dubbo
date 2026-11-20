@@ -101,11 +101,30 @@ public class CacheFilter implements Filter {
         if (cache == null) {
             return invoker.invoke(invocation);
         }
-        String key = StringUtils.toArgumentString(invocation.getArguments());
+        String key = toCacheKey(invocation.getArguments());
         Object value = cache.get(key);
         return (value != null)
                 ? onCacheValuePresent(invocation, value)
                 : onCacheValueNotPresent(invoker, invocation, cache, key);
+    }
+
+    /**
+     * Encodes argument types and length-prefixed values, so commas, empty strings and nulls
+     * cannot make distinct argument tuples share the same cache entry.
+     */
+    static String toCacheKey(Object[] arguments) {
+        StringBuilder key = new StringBuilder();
+        for (Object argument : arguments) {
+            if (argument == null) {
+                key.append("N;");
+                continue;
+            }
+            String type = argument.getClass().getName();
+            String value = StringUtils.toArgumentString(new Object[] {argument});
+            key.append('V').append(type.length()).append(':').append(type);
+            key.append(value.length()).append(':').append(value);
+        }
+        return key.toString();
     }
 
     private Result onCacheValuePresent(Invocation invocation, Object value) {
