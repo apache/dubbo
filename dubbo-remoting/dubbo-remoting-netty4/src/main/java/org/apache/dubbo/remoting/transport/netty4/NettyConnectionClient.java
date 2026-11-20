@@ -92,7 +92,7 @@ public final class NettyConnectionClient extends AbstractNettyConnectionClient {
                 NettySslContextOperator nettySslContextOperator = new NettySslContextOperator();
 
                 if (sslContext != null) {
-                    pipeline.addLast("negotiation", new SslClientTlsHandler(sslContext));
+                    pipeline.addLast("negotiation", new SslClientTlsHandler(sslContext, getConnectAddress()));
                 }
 
                 //                pipeline.addLast("logging", new LoggingHandler(LogLevel.INFO)); //for debug
