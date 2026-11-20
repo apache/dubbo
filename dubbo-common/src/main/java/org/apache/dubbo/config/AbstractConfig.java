@@ -672,7 +672,7 @@ public abstract class AbstractConfig implements Serializable {
 
                     Map<String, String> newMap = null;
                     if (newResult instanceof Map) {
-                        newMap = (Map) newResult;
+                        newMap = new HashMap<>((Map) newResult);
                     }
 
                     // if new map is null, skip
