@@ -449,6 +449,16 @@ class ReflectUtilsTest {
         // default upper bound is Object
         Assertions.assertEquals("java.lang.Object", types6[0].getTypeName());
         Assertions.assertEquals("S", types6[1].getTypeName());
+
+        Type[] types7 = ReflectUtils.getReturnTypes(clazz.getMethod("getWildcardFuture"));
+        // the raw type is the upper bound of the wildcard
+        Assertions.assertEquals("java.lang.CharSequence", types7[0].getTypeName());
+        Assertions.assertEquals("? extends java.lang.CharSequence", types7[1].getTypeName());
+
+        Type[] types8 = ReflectUtils.getReturnTypes(clazz.getMethod("getGenericArrayFuture"));
+        // S is unbounded, so the raw type is an array of Object
+        Assertions.assertEquals("java.lang.Object[]", types8[0].getTypeName());
+        Assertions.assertEquals("S[]", types8[1].getTypeName());
     }
 
     public interface TypeClass<T extends String, S> {
@@ -466,6 +476,10 @@ class ReflectUtilsTest {
         CompletableFuture<T> getGenericWithUpperFuture();
 
         CompletableFuture<S> getGenericFuture();
+
+        CompletableFuture<? extends CharSequence> getWildcardFuture();
+
+        CompletableFuture<S[]> getGenericArrayFuture();
     }
 
     public static class EmptyClass {

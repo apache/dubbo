@@ -21,6 +21,7 @@ import org.apache.dubbo.rpc.model.MethodDescriptor.RpcType;
 import org.apache.dubbo.rpc.support.DemoService;
 
 import java.lang.reflect.Type;
+import java.util.concurrent.CompletableFuture;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -70,6 +71,19 @@ class ReflectionMethodDescriptorTest {
     @Test
     void getReturnTypes() {
         Assertions.assertArrayEquals(new Type[] {String.class, String.class}, method.getReturnTypes());
+    }
+
+    @Test
+    void getReturnTypesForWildcardFuture() throws Exception {
+        ReflectionMethodDescriptor descriptor =
+                new ReflectionMethodDescriptor(AsyncService.class.getDeclaredMethod("wildcard"));
+        // the payload type is the wildcard's upper bound, not CompletableFuture itself
+        Assertions.assertEquals(CharSequence.class, descriptor.getReturnTypes()[0]);
+    }
+
+    interface AsyncService {
+
+        CompletableFuture<? extends CharSequence> wildcard();
     }
 
     @Test
