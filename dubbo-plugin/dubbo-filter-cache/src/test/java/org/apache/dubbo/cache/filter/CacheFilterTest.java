@@ -29,7 +29,11 @@ import org.apache.dubbo.rpc.RpcInvocation;
 
 import java.util.stream.Stream;
 
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -52,6 +56,18 @@ class CacheFilterTest {
                 Arguments.of("jcache", new JCacheFactory()),
                 Arguments.of("threadlocal", new ThreadLocalCacheFactory()),
                 Arguments.of("expiring", new ExpiringCacheFactory()));
+    }
+
+    static HazelcastInstance hzInstance;
+
+    @BeforeAll
+    public static void initialize() {
+        hzInstance = Hazelcast.newHazelcastInstance();
+    }
+
+    @AfterAll
+    public static void tearDown() {
+        hzInstance.shutdown();
     }
 
     public void setUp(String cacheType, CacheFactory cacheFactory) {
