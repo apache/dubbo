@@ -16,7 +16,9 @@
  */
 package org.apache.dubbo.common.config;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -60,6 +62,7 @@ public final class ConfigurationUtils {
     private static final Set<String> securityKey;
 
     private static volatile long expectedShutdownTime = Long.MAX_VALUE;
+    private static volatile Set<String> SensitiveParameterNames;
 
     static {
         Set<String> keys = new HashSet<>();
@@ -397,6 +400,34 @@ public final class ConfigurationUtils {
         ExtensionLoader<DynamicConfigurationFactory> loader =
                 extensionAccessor.getExtensionLoader(DynamicConfigurationFactory.class);
         return loader.getOrDefaultExtension(name);
+    }
+    /**
+     * Checks whether a parameter name is considered sensitive.
+     * <p>
+     * The set of sensitive parameter names is lazily initialized from configuration
+     * defined by {@link CommonConstants#SENSITIVE_PARAMETER_NAMES}. Initialization
+     * is thread-safe using double-checked locking.
+     *
+     * @param url  the {@link URL} to get the application model from
+     * @param name the parameter name to check
+     * @return true if the parameter is sensitive, false otherwise
+     */
+    public static boolean isSensitiveParameter(URL url, String name) {
+        if (SensitiveParameterNames == null) {
+            synchronized (ConfigurationUtils.class) {
+                if (SensitiveParameterNames == null) {
+                    Set<String> names = new HashSet<>();
+                    String value = ConfigurationUtils.getProperty(
+                            url.getOrDefaultApplicationModel(), CommonConstants.SENSITIVE_PARAMETER_NAMES);
+                    if (value != null) {
+                        String[] customNames = StringUtils.tokenize(value);
+                        Collections.addAll(names, customNames);
+                    }
+                    SensitiveParameterNames = Collections.unmodifiableSet(names);
+                }
+            }
+        }
+        return SensitiveParameterNames.contains(name);
     }
 
     /**
