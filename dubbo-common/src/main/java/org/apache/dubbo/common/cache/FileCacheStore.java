@@ -23,9 +23,10 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.channels.FileLock;
@@ -63,13 +64,15 @@ public class FileCacheStore {
 
     public synchronized Map<String, String> loadCache(int entrySize) throws IOException {
         Map<String, String> properties = new HashMap<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(cacheFile))) {
+        // refreshCache writes the file as UTF-8, so read it back as UTF-8 rather than with the platform charset
+        try (BufferedReader reader =
+                new BufferedReader(new InputStreamReader(new FileInputStream(cacheFile), StandardCharsets.UTF_8))) {
             int count = 1;
             String line = reader.readLine();
             while (line != null && count <= entrySize) {
-                // content has '=' need to be encoded before write
+                // only the first '=' separates the key, the value may contain '=' as well
                 if (!line.startsWith("#") && line.contains("=")) {
-                    String[] pairs = line.split("=");
+                    String[] pairs = line.split("=", 2);
                     properties.put(pairs[0], pairs[1]);
                     count++;
                 }
