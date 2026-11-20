@@ -229,9 +229,7 @@ class PathExpressionTest extends Specification {
     def "Equals"() {
         expect:
             Objects.equals(path, other) == result
-            if (result) {
-                path.hashCode() == other.hashCode()
-            }
+            !result || path.hashCode() == other.hashCode()
         where:
             path          | other         | result
             parse('/one') | parse('/one') | true
