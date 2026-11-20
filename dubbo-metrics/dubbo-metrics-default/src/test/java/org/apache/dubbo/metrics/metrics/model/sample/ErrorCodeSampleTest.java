@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class ErrorCodeSampleTest {
@@ -68,6 +69,39 @@ public class ErrorCodeSampleTest {
         Assert.assertTrue(samples.size() == 4, "Wrong number of samples.");
         samples.forEach(metricSample -> Assert.assertTrue(
                 ((AtomicLong) ((CounterMetricSample<?>) metricSample).getValue()).get() == 2L, "Sample count error."));
+    }
+
+    @Test
+    void testErrorCodeMetricChangesAfterFirstLateEvent() {
+        FrameworkModel frameworkModel = FrameworkModel.defaultModel();
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+
+        ApplicationConfig applicationConfig = new ApplicationConfig();
+        applicationConfig.setName("MyApplication1");
+
+        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
+
+        DefaultMetricsCollector defaultMetricsCollector = new DefaultMetricsCollector(applicationModel);
+        defaultMetricsCollector.setCollectEnabled(true);
+
+        ErrorCodeSampler sampler =
+                (ErrorCodeSampler) ReflectionUtils.getField(defaultMetricsCollector, "errorCodeSampler");
+
+        ErrorCodeMetricsListenRegister register =
+                (ErrorCodeMetricsListenRegister) ReflectionUtils.getField(sampler, "register");
+
+        Assertions.assertTrue(sampler.calSamplesChanged());
+        Assertions.assertFalse(sampler.calSamplesChanged());
+
+        register.onMessage("0-1", null);
+        Assertions.assertTrue(sampler.calSamplesChanged());
+        Assertions.assertFalse(sampler.calSamplesChanged());
+
+        register.onMessage("0-1", null);
+        Assertions.assertFalse(sampler.calSamplesChanged());
+
+        register.onMessage("0-2", null);
+        Assertions.assertTrue(sampler.calSamplesChanged());
     }
 
     @AfterEach

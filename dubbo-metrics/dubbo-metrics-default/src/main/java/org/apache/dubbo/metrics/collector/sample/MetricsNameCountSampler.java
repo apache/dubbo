@@ -49,9 +49,18 @@ public abstract class MetricsNameCountSampler<S, K, M extends Metric> extends Si
         this.collector.addSampler(this);
     }
 
+    @Override
+    public void inc(S source, K metricName) {
+        metricNames.add(metricName);
+        if (incrementAndGetCreated(source, metricName)) {
+            samplesChanged.set(true);
+        }
+    }
+
     public void addMetricName(K name) {
-        this.metricNames.add(name);
-        this.samplesChanged.set(true);
+        if (metricNames.add(name)) {
+            samplesChanged.set(true);
+        }
     }
 
     @Override

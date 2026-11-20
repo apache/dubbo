@@ -29,6 +29,7 @@ public class MetricThreadPoolExhaustedListener implements ThreadPoolExhaustedLis
     public MetricThreadPoolExhaustedListener(String threadPoolExecutorName, DefaultMetricsCollector collector) {
         this.threadPoolExecutorName = threadPoolExecutorName;
         this.threadRejectMetricsCountSampler = new ThreadRejectMetricsCountSampler(collector);
+        this.threadRejectMetricsCountSampler.addMetricName(threadPoolExecutorName);
     }
 
     public MetricThreadPoolExhaustedListener(String threadPoolExecutorName, ThreadRejectMetricsCountSampler sampler) {
