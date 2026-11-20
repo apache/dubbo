@@ -843,7 +843,9 @@ public class Bytes {
      *
      * @param file file source.
      * @return MD5 byte array.
+     * @deprecated This method will be removed in the next version.
      */
+    @Deprecated
     public static byte[] getMD5(File file) throws IOException {
         InputStream is = new FileInputStream(file);
         try {
@@ -858,7 +860,9 @@ public class Bytes {
      *
      * @param is input stream.
      * @return MD5 byte array.
+     * @deprecated This method will be removed in the next version.
      */
+    @Deprecated
     public static byte[] getMD5(InputStream is) throws IOException {
         return getMD5(is, 1024 * 8);
     }
