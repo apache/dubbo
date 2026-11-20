@@ -144,4 +144,14 @@ class PathUtilsTest extends Specification {
             '/one'      | '/two' | '/one/two'
             '/one//'    | '/two' | '/one/two'
     }
+
+    def "Normalize path patterns preserves question marks but strips fragments"() {
+        expect:
+            PathUtils.normalizePattern(path) == result
+        where:
+            path                  | result
+            '/pages/t?st.html'    | '/pages/t?st.html'
+            '/one#two'            | '/one'
+            '/one?two#three'      | '/one?two'
+    }
 }

@@ -25,6 +25,6 @@ public class TestRestFilterFactory implements RestExtension, Supplier<RestFilter
 
     @Override
     public RestFilter get() {
-        return new TestRestFilter(100, "/filter/*", "/*.filter", "!/filter/one");
+        return new TestRestFilter(100, "/filter/*", "/*.filter", "!/filter/one", "/filter/t?st");
     }
 }

@@ -59,7 +59,7 @@ public final class PathCondition implements Condition<PathCondition, HttpRequest
         if (expressions == null) {
             expressions = new ArrayList<>();
             for (String path : paths) {
-                expressions.add(PathExpression.parse(PathUtils.normalize(contextPath, path)));
+                expressions.add(PathExpression.parse(PathUtils.normalizePattern(contextPath, path)));
             }
             this.expressions = expressions;
         }
