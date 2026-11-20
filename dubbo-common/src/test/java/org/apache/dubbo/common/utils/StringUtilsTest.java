@@ -163,6 +163,55 @@ class StringUtilsTest {
     }
 
     @Test
+    void testHasWildcard() {
+        assertFalse(StringUtils.hasWildcard(null));
+        assertFalse(StringUtils.hasWildcard(""));
+        assertFalse(StringUtils.hasWildcard("createOrder"));
+        assertTrue(StringUtils.hasWildcard("create*"));
+        assertTrue(StringUtils.hasWildcard("get?"));
+        assertTrue(StringUtils.hasWildcard("*"));
+        assertTrue(StringUtils.hasWildcard("find*ById"));
+    }
+
+    @Test
+    void testIsWildcardMatch() {
+        // null / empty safety
+        assertFalse(StringUtils.isWildcardMatch(null, "anything"));
+        assertFalse(StringUtils.isWildcardMatch("abc", null));
+        assertTrue(StringUtils.isWildcardMatch("", ""));
+
+        // literal pattern behaves like an exact, case-sensitive match
+        assertTrue(StringUtils.isWildcardMatch("sayHello", "sayHello"));
+        assertFalse(StringUtils.isWildcardMatch("sayHello", "sayhello"));
+        assertFalse(StringUtils.isWildcardMatch("sayHello", "sayHelloWorld"));
+
+        // '*' matches any (possibly empty) sequence
+        assertTrue(StringUtils.isWildcardMatch("create*", "create"));
+        assertTrue(StringUtils.isWildcardMatch("create*", "createOrder"));
+        assertTrue(StringUtils.isWildcardMatch("create*", "createOrderById"));
+        assertFalse(StringUtils.isWildcardMatch("create*", "deleteOrder"));
+        assertTrue(StringUtils.isWildcardMatch("*Order", "createOrder"));
+        assertTrue(StringUtils.isWildcardMatch("find*ById", "findOrderById"));
+        assertTrue(StringUtils.isWildcardMatch("find*ById", "findById"));
+        assertFalse(StringUtils.isWildcardMatch("find*ById", "findByName"));
+        assertTrue(StringUtils.isWildcardMatch("*", "anything"));
+        assertTrue(StringUtils.isWildcardMatch("*", ""));
+
+        // multiple '*' are equivalent to one
+        assertTrue(StringUtils.isWildcardMatch("a**b", "axxxb"));
+
+        // '?' matches exactly one character
+        assertTrue(StringUtils.isWildcardMatch("get?", "getA"));
+        assertFalse(StringUtils.isWildcardMatch("get?", "get"));
+        assertFalse(StringUtils.isWildcardMatch("get?", "getAB"));
+        assertTrue(StringUtils.isWildcardMatch("?et?", "gets"));
+
+        // backtracking when a '*' segment must yield characters
+        assertTrue(StringUtils.isWildcardMatch("*hello*", "say hello world"));
+        assertFalse(StringUtils.isWildcardMatch("*hello", "hello world"));
+    }
+
+    @Test
     void testIsInteger() throws Exception {
         assertFalse(StringUtils.isNumber(null));
         assertFalse(StringUtils.isNumber(""));

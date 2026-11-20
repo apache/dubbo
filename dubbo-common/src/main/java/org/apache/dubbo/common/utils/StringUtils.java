@@ -529,6 +529,76 @@ public final class StringUtils {
     }
 
     /**
+     * Return whether the given string contains a wildcard character ({@code '*'} or {@code '?'}).
+     *
+     * @param str a string, may be null
+     * @return {@code true} if the string is non-null and contains {@code '*'} or {@code '?'}
+     */
+    public static boolean hasWildcard(String str) {
+        return str != null && (str.indexOf('*') >= 0 || str.indexOf('?') >= 0);
+    }
+
+    /**
+     * Match a string against a wildcard pattern where {@code '*'} matches any (possibly empty)
+     * sequence of characters and {@code '?'} matches exactly one character. The match is
+     * case-sensitive and does not use regular expressions, so other characters are compared
+     * literally.
+     *
+     * @param pattern wildcard pattern, may contain {@code '*'} and {@code '?'}
+     * @param text    string to be matched, must not be null
+     * @return {@code true} if the whole {@code text} matches the {@code pattern}
+     */
+    public static boolean isWildcardMatch(String pattern, String text) {
+        if (pattern == null || text == null) {
+            return false;
+        }
+        int pLen = pattern.length();
+        int tLen = text.length();
+        // indices into pattern and text
+        int p = 0;
+        int t = 0;
+        // position of the last '*' in pattern and the text position it matched up to
+        int starP = -1;
+        int starT = 0;
+        while (t < tLen) {
+            if (p < pLen) {
+                char pc = pattern.charAt(p);
+                if (pc == '?') {
+                    // '?' consumes exactly one character
+                    p++;
+                    t++;
+                    continue;
+                }
+                if (pc == '*') {
+                    // remember the '*' and try to match zero characters first
+                    starP = p;
+                    starT = t;
+                    p++;
+                    continue;
+                }
+                if (pc == text.charAt(t)) {
+                    p++;
+                    t++;
+                    continue;
+                }
+            }
+            if (starP >= 0) {
+                // mismatch: let the last '*' consume one more character and backtrack
+                p = starP + 1;
+                starT++;
+                t = starT;
+            } else {
+                return false;
+            }
+        }
+        // trailing '*' characters match an empty sequence
+        while (p < pLen && pattern.charAt(p) == '*') {
+            p++;
+        }
+        return p == pLen;
+    }
+
+    /**
      * is positive integer or zero string.
      *
      * @param str a string
