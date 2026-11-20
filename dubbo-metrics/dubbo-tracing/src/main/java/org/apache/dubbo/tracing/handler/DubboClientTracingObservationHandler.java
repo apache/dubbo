@@ -21,6 +21,7 @@ import org.apache.dubbo.tracing.context.DubboClientContext;
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationHandler;
 import io.micrometer.tracing.Tracer;
+import org.slf4j.MDC;
 
 public class DubboClientTracingObservationHandler<T extends DubboClientContext> implements ObservationHandler<T> {
     private final Tracer tracer;
@@ -30,7 +31,27 @@ public class DubboClientTracingObservationHandler<T extends DubboClientContext> 
     }
 
     @Override
-    public void onScopeOpened(T context) {}
+    public void onScopeOpened(T context) {
+        io.micrometer.tracing.TraceContext traceContext =
+                tracer.currentTraceContext().context();
+        if (traceContext == null) {
+            return;
+        }
+        try {
+            MDC.put("traceId", traceContext.traceId());
+            MDC.put("spanId", traceContext.spanId());
+        } catch (Throwable ignored) {
+        }
+    }
+
+    @Override
+    public void onScopeClosed(T context) {
+        try {
+            MDC.remove("traceId");
+            MDC.remove("spanId");
+        } catch (Throwable ignored) {
+        }
+    }
 
     @Override
     public boolean supportsContext(Observation.Context context) {
