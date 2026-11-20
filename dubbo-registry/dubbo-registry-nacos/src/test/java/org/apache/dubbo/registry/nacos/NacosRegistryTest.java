@@ -22,9 +22,14 @@ import org.apache.dubbo.registry.NotifyListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.exception.NacosException;
@@ -44,6 +49,8 @@ import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -308,5 +315,68 @@ class NacosRegistryTest {
 
         Assertions.assertEquals(2, registered.size());
         Assertions.assertEquals(1, subscribed.get(serviceUrlWithWildcard).size());
+    }
+
+    @Test
+    void testConcurrentAdminSubscribeCreatesSingleDaemonScheduler() throws Exception {
+        NamingService namingService = mock(NacosNamingService.class);
+        ListView<String> emptyServices = new ListView<>();
+        emptyServices.setData(new ArrayList<>());
+        when(namingService.getServicesOfServer(anyInt(), anyInt(), anyString())).thenReturn(emptyServices);
+
+        NacosNamingServiceWrapper nacosNamingServiceWrapper =
+                new NacosNamingServiceWrapper(new NacosConnectionManager(namingService), 0, 0);
+        NacosRegistry registry = new NacosRegistry(this.registryUrl, nacosNamingServiceWrapper);
+
+        URL adminUrl = URL.valueOf("admin://127.0.0.1:3333?category=providers");
+        int subscribers = 8;
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch doneLatch = new CountDownLatch(subscribers);
+        ExecutorService executor = Executors.newFixedThreadPool(subscribers);
+        for (int i = 0; i < subscribers; i++) {
+            executor.submit(() -> {
+                try {
+                    startLatch.await();
+                    registry.subscribe(adminUrl, mock(NotifyListener.class));
+                } catch (Exception e) {
+                    // covered by the assertions below
+                } finally {
+                    doneLatch.countDown();
+                }
+            });
+        }
+        startLatch.countDown();
+        assertThat(doneLatch.await(30, TimeUnit.SECONDS), is(true));
+        executor.shutdownNow();
+
+        Set<Thread> schedulerThreads = new HashSet<>();
+        for (Thread thread : Thread.getAllStackTraces().keySet()) {
+            if (thread.getName().startsWith("Dubbo-Nacos-Registry-Scheduler")) {
+                schedulerThreads.add(thread);
+            }
+        }
+        Assertions.assertEquals(1, schedulerThreads.size());
+        Thread schedulerThread = schedulerThreads.iterator().next();
+        assertThat(schedulerThread.isDaemon(), is(true));
+
+        registry.unsubscribe(adminUrl, mock(NotifyListener.class));
+
+        boolean terminated = false;
+        long deadline = System.currentTimeMillis() + 10000;
+        while (System.currentTimeMillis() < deadline) {
+            boolean stillAlive = false;
+            for (Thread thread : Thread.getAllStackTraces().keySet()) {
+                if (thread == schedulerThread) {
+                    stillAlive = true;
+                    break;
+                }
+            }
+            if (!stillAlive) {
+                terminated = true;
+                break;
+            }
+            Thread.sleep(100);
+        }
+        assertThat(terminated, is(true));
     }
 }
