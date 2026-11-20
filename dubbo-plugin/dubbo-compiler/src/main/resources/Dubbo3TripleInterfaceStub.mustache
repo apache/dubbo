@@ -51,7 +51,7 @@ public interface {{interfaceClassName}} extends org.apache.dubbo.rpc.model.Dubbo
     {{#hasMapping}}
     @Mapping(method = HttpMethods.{{httpMethod}}, path = "{{path}}")
     {{/hasMapping}}
-    {{outputType}} {{methodName}}({{#needRequestAnnotation}}@GRequest{{#body}}("{{body}}"){{/body}} {{/needRequestAnnotation}}{{inputType}} request);
+    {{returnType}} {{methodName}}({{#needRequestAnnotation}}@GRequest{{#body}}("{{body}}"){{/body}} {{/needRequestAnnotation}}{{inputType}} request);
 
     CompletableFuture<{{outputType}}> {{methodName}}Async({{#needRequestAnnotation}}@GRequest {{/needRequestAnnotation}}{{inputType}} request);
 {{/unaryMethods}}
