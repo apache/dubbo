@@ -99,12 +99,23 @@ public class LRU2Cache<K, V> extends LinkedHashMap<K, V> {
 
     @Override
     public V computeIfAbsent(K key, Function<? super K, ? extends V> fn) {
-        V value = get(key);
-        if (value == null) {
-            value = fn.apply(key);
-            put(key, value);
+        lock.lock();
+        try {
+            V value = super.get(key);
+            if (value == null) {
+                value = fn.apply(key);
+                // Inline the LRU-2 promotion logic from put() to avoid releasing the lock
+                if (preCache.containsKey(key)) {
+                    preCache.remove(key);
+                    super.put(key, value);
+                } else {
+                    preCache.put(key, true);
+                }
+            }
+            return value;
+        } finally {
+            lock.unlock();
         }
-        return value;
     }
 
     @Override
