@@ -87,7 +87,7 @@ public class ExpiringMap<K, V> implements Map<K, V> {
             long timeIdle = System.currentTimeMillis() - object.getLastAccessTime();
             int timeToLive = expireThread.getTimeToLive();
             if (timeToLive > 0 && timeIdle >= timeToLive * 1000L) {
-                delegateMap.remove(object.getKey());
+                delegateMap.computeIfPresent(object.getKey(), (k, current) -> current == object ? null : current);
                 return null;
             }
             object.setLastAccessTime(System.currentTimeMillis());
@@ -294,7 +294,7 @@ public class ExpiringMap<K, V> implements Map<K, V> {
             for (ExpiryObject o : delegateMap.values()) {
                 long timeIdle = timeNow - o.getLastAccessTime();
                 if (timeIdle >= timeToLiveMillis) {
-                    delegateMap.remove(o.getKey());
+                    delegateMap.computeIfPresent(o.getKey(), (k, current) -> current == o ? null : current);
                 }
             }
         }
