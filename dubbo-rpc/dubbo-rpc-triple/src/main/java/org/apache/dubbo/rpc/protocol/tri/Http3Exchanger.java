@@ -84,7 +84,7 @@ public final class Http3Exchanger {
             return ConcurrentHashMapUtils.computeIfAbsent(SERVERS, url.getAddress(), addr -> {
                 try {
                     URL serverUrl = url.putAttribute(PIPELINE_CONFIGURATOR_KEY, configServerPipeline(url));
-                    return new NettyHttp3Server(serverUrl, HANDLER);
+                    return NettyHttp3Server.create(serverUrl, HANDLER);
                 } catch (RemotingException e) {
                     throw new RuntimeException(e);
                 }
