@@ -138,19 +138,11 @@ public class Parameters {
     }
 
     public int getIntParameter(String key) {
-        String value = getParameter(key);
-        if (StringUtils.isEmpty(value)) {
-            return 0;
-        }
-        return Integer.parseInt(value);
+        return parseIntParameter(getParameter(key), 0);
     }
 
     public int getIntParameter(String key, int defaultValue) {
-        String value = getParameter(key);
-        if (StringUtils.isEmpty(value)) {
-            return defaultValue;
-        }
-        return Integer.parseInt(value);
+        return parseIntParameter(getParameter(key), defaultValue);
     }
 
     public int getPositiveIntParameter(String key, int defaultValue) {
@@ -209,19 +201,11 @@ public class Parameters {
     }
 
     public int getMethodIntParameter(String method, String key) {
-        String value = getMethodParameter(method, key);
-        if (StringUtils.isEmpty(value)) {
-            return 0;
-        }
-        return Integer.parseInt(value);
+        return parseIntParameter(getMethodParameter(method, key), 0);
     }
 
     public int getMethodIntParameter(String method, String key, int defaultValue) {
-        String value = getMethodParameter(method, key);
-        if (StringUtils.isEmpty(value)) {
-            return defaultValue;
-        }
-        return Integer.parseInt(value);
+        return parseIntParameter(getMethodParameter(method, key), defaultValue);
     }
 
     public int getMethodPositiveIntParameter(String method, String key, int defaultValue) {
@@ -258,6 +242,13 @@ public class Parameters {
     public boolean hasMethodParameter(String method, String key) {
         String value = getMethodParameter(method, key);
         return value != null && value.length() > 0;
+    }
+
+    private int parseIntParameter(String value, int defaultValue) {
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        return Integer.parseInt(value);
     }
 
     @Override
