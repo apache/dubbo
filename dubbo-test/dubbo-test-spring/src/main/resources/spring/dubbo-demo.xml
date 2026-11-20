@@ -40,4 +40,6 @@
 
     <dubbo:reference  id="restDemoService" version="1.0.0" protocol="tri"
                       interface="org.apache.dubbo.test.common.api.RestDemoService"/>
+
+    <dubbo:reference  id="asyncContextService" version="1.0.0" interface="org.apache.dubbo.test.common.api.AsyncContextService"/>
 </beans>
