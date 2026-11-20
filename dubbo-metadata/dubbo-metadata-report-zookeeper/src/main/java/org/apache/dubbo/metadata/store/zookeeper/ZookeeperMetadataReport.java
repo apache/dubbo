@@ -265,4 +265,9 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
             listeners.forEach(mappingListener -> mappingListener.onEvent(event));
         }
     }
+
+    @Override
+    public boolean isAvailable() {
+        return zkClient != null && zkClient.isConnected();
+    }
 }

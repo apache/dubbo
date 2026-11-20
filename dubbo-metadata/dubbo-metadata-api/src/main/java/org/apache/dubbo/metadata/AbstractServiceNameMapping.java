@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
@@ -24,9 +25,15 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.metadata.report.MetadataReport;
+import org.apache.dubbo.metadata.report.MetadataReportInstance;
+import org.apache.dubbo.metadata.report.MetadataReportRetryTask;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -41,7 +48,10 @@ import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.of;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_LOAD_MAPPING_CACHE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_TYPE_MISMATCH;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_SERVER_DISCONNECTED;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
 import static org.apache.dubbo.common.utils.CollectionUtils.toTreeSet;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
@@ -53,6 +63,10 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
     private final ConcurrentHashMap<String, Set<MappingListener>> mappingListeners = new ConcurrentHashMap<>();
     // mapping lock is shared among registries of the same application.
     private final ConcurrentMap<String, ReentrantLock> mappingLocks = new ConcurrentHashMap<>();
+    protected MetadataReportInstance metadataReportInstance;
+    protected static final List<String> IGNORED_SERVICE_INTERFACES =
+            Collections.singletonList(MetadataService.class.getName());
+    protected final MetadataReportRetryTask metadataReportRetryTask;
 
     public AbstractServiceNameMapping(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -60,7 +74,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
         Optional<ApplicationConfig> application =
                 applicationModel.getApplicationConfigManager().getApplication();
         if (application.isPresent()) {
-            enableFileCache = Boolean.TRUE.equals(application.get().getEnableFileCache()) ? true : false;
+            enableFileCache = Boolean.TRUE.equals(application.get().getEnableFileCache());
         }
         this.mappingCacheManager = new MappingCacheManager(
                 enableFileCache,
@@ -70,6 +84,90 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
                         .getBeanFactory()
                         .getBean(FrameworkExecutorRepository.class)
                         .getCacheRefreshingScheduledExecutor());
+        metadataReportInstance = applicationModel.getBeanFactory().getBean(MetadataReportInstance.class);
+        this.metadataReportRetryTask =
+                applicationModel.getBeanFactory().getOrRegisterBean(MetadataReportRetryTask.class);
+        this.metadataReportRetryTask.setRetryHandler(this::doMap);
+    }
+
+    // only for ut
+    public void setMetadataReportInstance(MetadataReportInstance metadataReportInstance) {
+        this.metadataReportInstance = metadataReportInstance;
+    }
+
+    @Override
+    public boolean map(URL url) {
+        if (CollectionUtils.isEmpty(
+                applicationModel.getApplicationConfigManager().getMetadataConfigs())) {
+            logger.warn(
+                    COMMON_PROPERTY_TYPE_MISMATCH,
+                    "",
+                    "",
+                    "[METADATA_REGISTER] [SERVICE_NAME_MAPPING] No valid metadata config center found for mapping report.");
+            return false;
+        }
+        String serviceInterface = url.getServiceInterface();
+        if (IGNORED_SERVICE_INTERFACES.contains(serviceInterface)) {
+            return true;
+        }
+
+        String appName = applicationModel.getApplicationName();
+        for (Map.Entry<String, MetadataReport> entry :
+                metadataReportInstance.getMetadataReports(true).entrySet()) {
+            MetadataReport metadataReport = entry.getValue();
+            if (metadataReport.registerServiceAppMapping(serviceInterface, appName, url)) {
+                // MetadataReport support directly register service-app mapping
+                continue;
+            }
+
+            boolean succeeded = false;
+            try {
+                succeeded = doMap(metadataReport, url);
+            } catch (Exception e) {
+                logger.warn(
+                        CONFIG_SERVER_DISCONNECTED,
+                        e.getMessage(),
+                        "service: " + serviceInterface + ", metadata-center url: " + metadataReport.getUrl(),
+                        "[METADATA_REGISTER] [SERVICE_NAME_MAPPING] Failed registering mapping to remote."
+                                + metadataReport,
+                        e);
+            }
+            if (!succeeded) {
+                metadataReportRetryTask.addTask(metadataReport, url);
+            }
+        }
+        return !metadataReportRetryTask.start();
+    }
+
+    protected abstract boolean doMap(MetadataReport metadataReport, URL url);
+
+    protected boolean registerServiceAppMapping(MetadataReport metadataReport, URL url) {
+        if (!metadataReport.isAvailable()) {
+            throw new IllegalStateException("metadata reporter is not available");
+        }
+        String appName = applicationModel.getApplicationName(), newConfigContent = appName;
+        String serviceInterface = url.getServiceInterface();
+
+        ConfigItem configItem = metadataReport.getConfigItem(serviceInterface, DEFAULT_MAPPING_GROUP);
+        String oldConfigContent = configItem.getContent();
+        boolean exist = false;
+        if (StringUtils.isNotEmpty(oldConfigContent)) {
+            String[] oldAppNames = oldConfigContent.split(COMMA_SEPARATOR);
+            for (String oldAppName : oldAppNames) {
+                if (StringUtils.trim(oldAppName).equals(appName)) {
+                    exist = true;
+                    break;
+                }
+            }
+            if (!exist) {
+                newConfigContent = oldConfigContent + COMMA_SEPARATOR + appName;
+            }
+        }
+        if (exist) {
+            return true;
+        }
+        return metadataReport.registerServiceAppMapping(
+                serviceInterface, DEFAULT_MAPPING_GROUP, newConfigContent, configItem.getTicket());
     }
 
     // just for test
@@ -218,6 +316,9 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
         mappingCacheManager.destroy();
         mappingListeners.clear();
         mappingLocks.clear();
+        if (metadataReportRetryTask != null) {
+            metadataReportRetryTask.cancel();
+        }
     }
 
     private class AsyncMappingTask implements Callable<Set<String>> {
