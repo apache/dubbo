@@ -185,7 +185,7 @@ public final class BasicOpenAPIDefinitionResolver
         setBoolValue(annoMeta, "deprecated", schema::setDeprecated);
         schema.setExtensions(Helper.toProperties(annoMeta.getStringArray("extensions")));
 
-        return chain.resolve(parameter, context);
+        return schema;
     }
 
     @Override
