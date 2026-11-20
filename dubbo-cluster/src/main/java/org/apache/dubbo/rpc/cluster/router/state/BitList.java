@@ -55,7 +55,6 @@ import java.util.concurrent.ThreadLocalRandom;
 public class BitList<E> extends AbstractList<E> implements Cloneable {
     private final BitSet rootSet;
     private volatile List<E> originList;
-    private static final BitList emptyList = new BitList(Collections.emptyList());
     private volatile List<E> tailList = null;
 
     public BitList(List<E> originList) {
@@ -184,9 +183,12 @@ public class BitList<E> extends AbstractList<E> implements Cloneable {
         return get(ThreadLocalRandom.current().nextInt(cardinality + tailSize));
     }
 
-    @SuppressWarnings("unchecked")
+    /**
+     * Returns a new empty BitList. A new instance is created on each call because BitList is mutable;
+     * a shared singleton would cause cross-caller state contamination (see issue #16131).
+     */
     public static <T> BitList<T> emptyList() {
-        return emptyList;
+        return new BitList<>(Collections.emptyList());
     }
 
     // Provided by JDK List interface
