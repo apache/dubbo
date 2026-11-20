@@ -30,6 +30,7 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public final class JavaBeanSerializeUtil {
@@ -306,7 +307,7 @@ public final class JavaBeanSerializeUtil {
     }
 
     private static Method getSetterMethod(Class<?> cls, String property, Class<?> valueCls) {
-        String name = "set" + property.substring(0, 1).toUpperCase() + property.substring(1);
+        String name = "set" + property.substring(0, 1).toUpperCase(Locale.ROOT) + property.substring(1);
         Method method = null;
         try {
             method = cls.getMethod(name, valueCls);

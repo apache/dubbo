@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.rpc.model.person.BigPerson;
+import org.apache.dubbo.rpc.model.person.PersonInfo;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -24,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -255,6 +259,21 @@ class ReflectUtilsTest {
     void testGetPropertyNameFromBeanWriteMethod() throws Exception {
         Method method = EmptyClass.class.getMethod("setProperty", EmptyProperty.class);
         assertEquals("property", ReflectUtils.getPropertyNameFromBeanWriteMethod(method));
+    }
+
+    // In the Turkish locale "I".toLowerCase() is the dotless "ı".
+    @Test
+    void testGetPropertyNameFromBeanMethodUnderTurkishLocale() throws Exception {
+        Locale defaultLocale = Locale.getDefault();
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+        try {
+            Method getter = BigPerson.class.getMethod("getInfoProfile");
+            assertEquals("infoProfile", ReflectUtils.getPropertyNameFromBeanReadMethod(getter));
+            Method setter = BigPerson.class.getMethod("setInfoProfile", PersonInfo.class);
+            assertEquals("infoProfile", ReflectUtils.getPropertyNameFromBeanWriteMethod(setter));
+        } finally {
+            Locale.setDefault(defaultLocale);
+        }
     }
 
     @Test
