@@ -21,9 +21,11 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -315,5 +317,83 @@ class LoadBalanceBaseTest {
             counter.get(sinvoker).getCount().incrementAndGet();
         }
         return counter;
+    }
+
+    /*---------------------test invokers for BitList index access-----------------------*/
+
+    /**
+     * A BitList that counts how often it is read by index. {@code BitList#get(index)} walks the bitset from
+     * the beginning, so it is O(index); a selection therefore must not read the list by index once per
+     * invoker, otherwise the selection is O(N^2).
+     */
+    protected static class CountingBitList<E> extends BitList<E> {
+        private final AtomicLong indexAccesses = new AtomicLong();
+
+        CountingBitList(List<E> source) {
+            super(source);
+        }
+
+        @Override
+        public synchronized E get(int index) {
+            indexAccesses.incrementAndGet();
+            return super.get(index);
+        }
+
+        long getIndexAccesses() {
+            return indexAccesses.get();
+        }
+
+        void resetIndexAccesses() {
+            indexAccesses.set(0);
+        }
+    }
+
+    private static class SimpleInvoker implements Invoker<LoadBalanceBaseTest> {
+        private final URL url;
+
+        SimpleInvoker(URL url) {
+            this.url = url;
+        }
+
+        @Override
+        public URL getUrl() {
+            return url;
+        }
+
+        @Override
+        public boolean isAvailable() {
+            return true;
+        }
+
+        @Override
+        public void destroy() {}
+
+        @Override
+        public Class<LoadBalanceBaseTest> getInterface() {
+            return LoadBalanceBaseTest.class;
+        }
+
+        @Override
+        public Result invoke(Invocation invocation) {
+            return null;
+        }
+    }
+
+    /**
+     * Build a BitList whose invoker weights repeat 1, 2, 3, so an index that is tracked incorrectly shows up
+     * as a skew in the selection distribution. The URL carries a timestamp as well, which is what real
+     * registry URLs look like and what routes RandomLoadBalance into its weighted branch.
+     */
+    protected CountingBitList<Invoker<LoadBalanceBaseTest>> buildWeightBitList(int size) {
+        List<Invoker<LoadBalanceBaseTest>> list = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            int weight = 1 + i % 3;
+            URL url = URL.valueOf("test" + weight + "://10.0.0." + (i % 250) + ":" + (20000 + i) + "/DemoService"
+                    + "?weight=" + weight + "&rank=" + i + "&timestamp=1700000000000");
+            list.add(new SimpleInvoker(url));
+        }
+        CountingBitList<Invoker<LoadBalanceBaseTest>> bitList = new CountingBitList<>(list);
+        bitList.resetIndexAccesses();
+        return bitList;
     }
 }

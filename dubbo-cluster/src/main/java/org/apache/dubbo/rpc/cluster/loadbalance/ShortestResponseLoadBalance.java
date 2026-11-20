@@ -121,8 +121,11 @@ public class ShortestResponseLoadBalance extends AbstractLoadBalance implements 
         boolean sameWeight = true;
 
         // Filter out all the shortest response invokers
-        for (int i = 0; i < length; i++) {
-            Invoker<T> invoker = invokers.get(i);
+        // The invokers may be a BitList, whose get(index) is O(index) because it walks the bitset from the
+        // beginning on every call. Iterating by index would make this loop O(N^2), so iterate the list
+        // directly, which is O(N) for both BitList and ordinary lists.
+        int index = 0;
+        for (Invoker<T> invoker : invokers) {
             RpcStatus rpcStatus = RpcStatus.getStatus(invoker.getUrl(), RpcUtils.getMethodName(invocation));
             SlideWindowData slideWindowData =
                     ConcurrentHashMapUtils.computeIfAbsent(methodMap, rpcStatus, SlideWindowData::new);
@@ -131,22 +134,23 @@ public class ShortestResponseLoadBalance extends AbstractLoadBalance implements 
             // elapsed time.
             long estimateResponse = slideWindowData.getEstimateResponse();
             int afterWarmup = getWeight(invoker, invocation);
-            weights[i] = afterWarmup;
+            weights[index] = afterWarmup;
             // Same as LeastActiveLoadBalance
             if (estimateResponse < shortestResponse) {
                 shortestResponse = estimateResponse;
                 shortestCount = 1;
-                shortestIndexes[0] = i;
+                shortestIndexes[0] = index;
                 totalWeight = afterWarmup;
                 firstWeight = afterWarmup;
                 sameWeight = true;
             } else if (estimateResponse == shortestResponse) {
-                shortestIndexes[shortestCount++] = i;
+                shortestIndexes[shortestCount++] = index;
                 totalWeight += afterWarmup;
-                if (sameWeight && i > 0 && afterWarmup != firstWeight) {
+                if (sameWeight && index > 0 && afterWarmup != firstWeight) {
                     sameWeight = false;
                 }
             }
+            index++;
         }
 
         if (System.currentTimeMillis() - lastUpdateTime > slidePeriod
