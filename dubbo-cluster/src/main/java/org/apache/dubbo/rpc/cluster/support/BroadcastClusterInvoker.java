@@ -57,7 +57,7 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
         RpcException exception = null;
         Result result = null;
         URL url = getUrl();
-        // The value range of broadcast.fail.threshold must be 0～100.
+        // The value range of broadcast.fail.percent must be 0～100.
         // 100 means that an exception will be thrown last, and 0 means that as long as an exception occurs, it will be
         // thrown.
         // see https://github.com/apache/dubbo/pull/7174
