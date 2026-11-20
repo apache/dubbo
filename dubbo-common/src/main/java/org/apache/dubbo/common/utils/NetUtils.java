@@ -738,7 +738,7 @@ public final class NetUtils {
         String host = address;
         int port = 0;
         // only works for ipv4 address with 'ip:port' format
-        if (address.endsWith(":")) {
+        if (address.contains(":")) {
             String[] hostPort = address.split(":");
             host = hostPort[0];
             port = StringUtils.parseInteger(hostPort[1]);
