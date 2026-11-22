@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
@@ -71,7 +72,38 @@ class TripleInvokerTest {
                 new ReflectionMethodDescriptor(IGreeter.class.getDeclaredMethod("echo", String.class));
         Assertions.assertTrue(invoker.isAvailable());
         invoker.invokeUnary(echoMethod, invocation, call, new ThreadlessExecutor());
+        Assertions.assertEquals(
+                String.valueOf(CommonConstants.DEFAULT_TIMEOUT), invocation.getAttachment(CommonConstants.TIMEOUT_KEY));
         invoker.destroy();
         Assertions.assertFalse(invoker.isAvailable());
+    }
+
+    @Test
+    void testInvokeUnaryPrefersUrlTimeout() throws NoSuchMethodException {
+        URL url = URL.valueOf("tri://127.0.0.1:9103/" + IGreeter.class.getName())
+                .addParameter(CommonConstants.TIMEOUT_KEY, "5000");
+        Channel channel = Mockito.mock(Channel.class);
+        AbstractConnectionClient connectionClient = Mockito.mock(AbstractConnectionClient.class);
+        ConnectionManager connectionManager = Mockito.mock(ConnectionManager.class);
+        when(connectionManager.connect(any(URL.class), any(ChannelHandler.class)))
+                .thenReturn(connectionClient);
+        when(connectionClient.getChannel(true)).thenReturn(channel);
+        when(connectionClient.isConnected()).thenReturn(true);
+
+        ExecutorService executorService = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel())
+                .createExecutorIfAbsent(url);
+        TripleClientCall call = Mockito.mock(TripleClientCall.class);
+        StreamObserver streamObserver = Mockito.mock(StreamObserver.class);
+        doNothing().when(call).start(any(RequestMetadata.class), any(ClientCall.Listener.class));
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setMethodName("test");
+        invocation.setArguments(new Object[] {streamObserver, streamObserver});
+        TripleInvoker<IGreeter> invoker = new TripleInvoker<>(
+                IGreeter.class, url, Identity.MESSAGE_ENCODING, connectionClient, new HashSet<>(), executorService);
+        MethodDescriptor echoMethod =
+                new ReflectionMethodDescriptor(IGreeter.class.getDeclaredMethod("echo", String.class));
+        invoker.invokeUnary(echoMethod, invocation, call, new ThreadlessExecutor());
+        Assertions.assertEquals("5000", invocation.getAttachment(CommonConstants.TIMEOUT_KEY));
+        invoker.destroy();
     }
 }

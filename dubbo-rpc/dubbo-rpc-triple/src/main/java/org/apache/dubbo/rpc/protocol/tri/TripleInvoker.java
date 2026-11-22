@@ -308,7 +308,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             ClientCall call,
             ExecutorService callbackExecutor) {
 
-        int timeout = RpcUtils.calculateTimeout(getUrl(), invocation, RpcUtils.getMethodName(invocation), 3000);
+        int timeout = RpcUtils.calculateTimeout(
+                getUrl(), invocation, RpcUtils.getMethodName(invocation), CommonConstants.DEFAULT_TIMEOUT);
         if (timeout <= 0) {
             return AsyncRpcResult.newDefaultAsyncResult(
                     new RpcException(
