@@ -166,7 +166,9 @@ public class ServletHttpRequestAdapter extends DefaultHttpRequest implements Htt
         String scheme = getScheme();
         int port = getServerPort();
         url.append(scheme).append("://").append(getServerName());
-        if (HttpConstants.HTTP.equals(scheme) && port != 80 || HttpConstants.HTTPS.equals(scheme) && port != 443) {
+        if (port > 0
+                && (HttpConstants.HTTP.equals(scheme) && port != 80
+                        || HttpConstants.HTTPS.equals(scheme) && port != 443)) {
             url.append(':');
             url.append(port);
         }
@@ -353,7 +355,7 @@ public class ServletHttpRequestAdapter extends DefaultHttpRequest implements Htt
 
     @Override
     public String getRemoteHost() {
-        return String.valueOf(remotePort());
+        return remoteHost();
     }
 
     @Override
@@ -462,13 +464,13 @@ public class ServletHttpRequestAdapter extends DefaultHttpRequest implements Htt
         }
 
         @Override
-        public void close() throws IOException {
-            is.close();
+        public int read(byte[] b, int off, int len) throws IOException {
+            return is.read(b, off, len);
         }
 
         @Override
-        public int readLine(byte[] b, int off, int len) throws IOException {
-            return is.read(b, off, len);
+        public void close() throws IOException {
+            is.close();
         }
 
         @Override
