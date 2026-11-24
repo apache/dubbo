@@ -42,6 +42,7 @@ import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
 import java.util.concurrent.Executor;
 
+import com.google.rpc.Status;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -130,5 +131,68 @@ class TripleClientStreamTest {
         final ByteBuf buf = Unpooled.wrappedBuffer(data);
         transportListener.onData(buf, false);
         Assertions.assertEquals(1, listener.message.length);
+    }
+
+    @Test
+    void statusDetailsMessageWithPercentSign() {
+        // grpc-java and grpc-go percent-encode grpc-message, but not the message inside grpc-status-details-bin
+        TriRpcStatus status = receiveErrorTrailers("C++ quota 100%25 used", "C++ quota 100% used");
+        Assertions.assertNotNull(status);
+        Assertions.assertEquals(TriRpcStatus.Code.INVALID_ARGUMENT, status.code);
+        Assertions.assertEquals("C++ quota 100% used", status.description);
+    }
+
+    @Test
+    void statusDetailsMessageWithPercentEscape() {
+        String message = "redirect_uri https%3A%2F%2Fa.example%2Fcb not registered";
+        TriRpcStatus status =
+                receiveErrorTrailers("redirect_uri https%253A%252F%252Fa.example%252Fcb not registered", message);
+        Assertions.assertEquals(message, status.description);
+    }
+
+    @Test
+    void statusDetailsMessageFromDubbo32Provider() {
+        // Dubbo 3.0 to 3.2 providers percent-encode the message in grpc-message and in the status details
+        String encoded = TriRpcStatus.encodeMessage("not found: 中文 a+b");
+        Assertions.assertEquals("not found: 中文 a+b", receiveErrorTrailers(encoded, encoded).description);
+        Assertions.assertEquals("not found: 中文 a+b", receiveErrorTrailers(null, encoded).description);
+    }
+
+    /**
+     * Sends a trailers-only INVALID_ARGUMENT response with grpc-status-details-bin to a client stream.
+     */
+    private static TriRpcStatus receiveErrorTrailers(String grpcMessage, String detailsMessage) {
+        final URL url = URL.valueOf("tri://127.0.0.1:8080/foo.bar.service");
+        MockClientStreamListener listener = new MockClientStreamListener();
+        TripleWriteQueue writeQueue = mock(TripleWriteQueue.class);
+        final EmbeddedChannel channel = new EmbeddedChannel();
+        Http2StreamChannel http2StreamChannel = mock(Http2StreamChannel.class);
+        when(http2StreamChannel.isActive()).thenReturn(true);
+        when(http2StreamChannel.newSucceededFuture()).thenReturn(channel.newSucceededFuture());
+        when(http2StreamChannel.parent()).thenReturn(channel);
+        AbstractTripleClientStream stream = new Http2TripleClientStream(
+                url.getOrDefaultFrameworkModel(),
+                ImmediateEventExecutor.INSTANCE,
+                writeQueue,
+                listener,
+                http2StreamChannel);
+        stream.initStream();
+        // the mocked write queue does not run CreateStreamQueueCommand
+        stream.getStreamChannelFuture().complete(http2StreamChannel);
+
+        Status details = Status.newBuilder()
+                .setCode(TriRpcStatus.Code.INVALID_ARGUMENT.code)
+                .setMessage(detailsMessage)
+                .build();
+        DefaultHttp2Headers trailers = new DefaultHttp2Headers();
+        trailers.status(HttpResponseStatus.OK.codeAsText());
+        trailers.set(HttpHeaderNames.CONTENT_TYPE.getKey(), MediaType.APPLICATION_GRPC_PROTO.getName());
+        trailers.set(TripleHeaderEnum.STATUS_KEY.getKey(), String.valueOf(TriRpcStatus.Code.INVALID_ARGUMENT.code));
+        if (grpcMessage != null) {
+            trailers.set(TripleHeaderEnum.MESSAGE_KEY.getKey(), grpcMessage);
+        }
+        trailers.set(TripleHeaderEnum.STATUS_DETAIL_KEY.getKey(), StreamUtils.encodeBase64ASCII(details.toByteArray()));
+        stream.createTransportListener().onHeader(trailers, true);
+        return listener.status;
     }
 }
