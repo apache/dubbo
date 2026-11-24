@@ -262,8 +262,7 @@ class AbstractInterfaceConfigTest {
         Assertions.assertEquals("tag1,tag2,tag3", interfaceConfig.getBackupTag());
 
         // the getter is wired to the BACKUP_TAG_KEY url parameter via @Parameter
-        Parameter parameter = InterfaceConfig.class.getMethod("getBackupTag")
-                .getAnnotation(Parameter.class);
+        Parameter parameter = InterfaceConfig.class.getMethod("getBackupTag").getAnnotation(Parameter.class);
         Assertions.assertNotNull(parameter);
         Assertions.assertEquals(CommonConstants.BACKUP_TAG_KEY, parameter.key());
     }

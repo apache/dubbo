@@ -220,7 +220,7 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
                 : invocation.getAttachment(TAG_KEY);
         // Tag request
         if (!StringUtils.isEmpty(tag)) {
-            //Start by looking at the dubbo.tags. Start by looking at the dubbo tag.
+            // Start by looking at the dubbo.tags. Start by looking at the dubbo tag.
             result = filterInvoker(
                     invokers,
                     invoker ->
@@ -229,18 +229,17 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
             if (CollectionUtils.isEmpty(result)) {
                 result = filterInvoker(
                         invokers,
-                        invoker -> StringUtils.isContains(
-                                invoker.getUrl().getParameter(BACKUP_TAG_KEY), tag));
+                        invoker -> StringUtils.isContains(invoker.getUrl().getParameter(BACKUP_TAG_KEY), tag));
             }
-            //Obtain the forceUseTag identifier.
+            // Obtain the forceUseTag identifier.
             boolean forceUseTag = isForceUseTag(invocation);
-            //If forced labeling is not enabled, and the nearest route is set to the backup label,
+            // If forced labeling is not enabled, and the nearest route is set to the backup label,
             // swimlane support is supported for this route.
-            if(CollectionUtils.isEmpty(result) && isRecentUserBackupTag(invocation) && !forceUseTag) {
+            if (CollectionUtils.isEmpty(result) && isRecentUserBackupTag(invocation) && !forceUseTag) {
                 result = filterRecentBackupTag(invokers, tag, result);
             }
 
-            //Not mandatory, chosen randomly
+            // Not mandatory, chosen randomly
             if (CollectionUtils.isEmpty(result) && !forceUseTag) {
                 result = filterInvoker(
                         invokers,
@@ -254,18 +253,16 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
     }
 
     private static <T> BitList<Invoker<T>> filterRecentBackupTag(
-            BitList<Invoker<T>> invokers,
-            String tag,
-            BitList<Invoker<T>> result) {
+            BitList<Invoker<T>> invokers, String tag, BitList<Invoker<T>> result) {
         TreeMap<String, ArrayList<Invoker<T>>> sort = new TreeMap<>();
-        invokers.forEach(invoker->{
+        invokers.forEach(invoker -> {
             String backupTags = invoker.getUrl().getParameter(BACKUP_TAG_KEY);
-            if(StringUtils.isBlank(backupTags)){
-               return;
+            if (StringUtils.isBlank(backupTags)) {
+                return;
             }
             String[] backupTagArr = backupTags.split(",");
-            for(String backupTag : backupTagArr){
-                if(StringUtils.isBlank(backupTag)){
+            for (String backupTag : backupTagArr) {
+                if (StringUtils.isBlank(backupTag)) {
                     continue;
                 }
                 ArrayList<Invoker<T>> bitList = sort.computeIfAbsent(backupTag, k -> new ArrayList<>());
@@ -275,8 +272,8 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
 
         Entry<String, ArrayList<Invoker<T>>> ceilingEntries = sort.ceilingEntry(tag);
         ArrayList<Invoker<T>> choseResult = null;
-        //Reassigned local variable
-        if(ceilingEntries != null && CollectionUtils.isNotEmpty(choseResult = ceilingEntries.getValue())){
+        // Reassigned local variable
+        if (ceilingEntries != null && CollectionUtils.isNotEmpty(choseResult = ceilingEntries.getValue())) {
             result = new BitList<>(choseResult);
         }
         return result;
@@ -299,8 +296,8 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
     }
 
     private boolean isRecentUserBackupTag(Invocation invocation) {
-        return Boolean.parseBoolean(
-                invocation.getAttachment(BACKUP_TAG_RECENT_ROUTER, this.getUrl().getParameter(BACKUP_TAG_RECENT_ROUTER, "false")));
+        return Boolean.parseBoolean(invocation.getAttachment(
+                BACKUP_TAG_RECENT_ROUTER, this.getUrl().getParameter(BACKUP_TAG_RECENT_ROUTER, "false")));
     }
 
     private <T> BitList<Invoker<T>> filterInvoker(BitList<Invoker<T>> invokers, Predicate<Invoker<T>> predicate) {

@@ -42,7 +42,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.BACKUP_TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.BACKUP_TAG_RECENT_ROUTER;
 import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.rpc.Constants.FORCE_USE_TAG;
