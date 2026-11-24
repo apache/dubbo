@@ -18,6 +18,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.SystemPropertyConfigUtils;
+import org.apache.dubbo.config.support.Parameter;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -249,6 +250,22 @@ class AbstractInterfaceConfigTest {
 
         boolean verifyResult2 = interfaceConfig2.verifyMethodConfig(methodConfig, clazz, true);
         Assertions.assertFalse(verifyResult2);
+    }
+
+    @Test
+    void testBackupTag() throws Exception {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        Assertions.assertNull(interfaceConfig.getBackupTag());
+        interfaceConfig.setBackupTag("tag2");
+        Assertions.assertEquals("tag2", interfaceConfig.getBackupTag());
+        interfaceConfig.setBackupTag("tag1,tag2,tag3");
+        Assertions.assertEquals("tag1,tag2,tag3", interfaceConfig.getBackupTag());
+
+        // the getter is wired to the BACKUP_TAG_KEY url parameter via @Parameter
+        Parameter parameter = InterfaceConfig.class.getMethod("getBackupTag")
+                .getAnnotation(Parameter.class);
+        Assertions.assertNotNull(parameter);
+        Assertions.assertEquals(CommonConstants.BACKUP_TAG_KEY, parameter.key());
     }
 
     public static class InterfaceConfig2 extends AbstractInterfaceConfig {

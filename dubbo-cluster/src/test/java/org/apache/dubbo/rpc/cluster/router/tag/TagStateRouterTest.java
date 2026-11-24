@@ -42,7 +42,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.BACKUP_TAG_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.BACKUP_TAG_RECENT_ROUTER;
 import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
+import static org.apache.dubbo.rpc.Constants.FORCE_USE_TAG;
 import static org.mockito.Mockito.when;
 
 class TagStateRouterTest {
@@ -86,6 +89,233 @@ class TagStateRouterTest {
                 router.route(invokers.clone(), invokers.get(0).getUrl(), invocation, false, new Holder<>());
         Assertions.assertEquals(1, filteredInvokers.size());
         Assertions.assertEquals(invoker1, filteredInvokers.get(0));
+    }
+
+    /**
+     * When no provider's {@code dubbo.tag} matches the requested tag, the router falls back to
+     * providers whose {@code dubbo.backup.tag} contains the requested tag.
+     */
+    @Test
+    void testTagRouteWithBackupTagFallback() {
+        StateRouter router = new TagStateRouterFactory().getRouter(TagRouterRule.class, url);
+
+        List<Invoker<String>> originInvokers = new ArrayList<>();
+
+        // provider with a backup tag matching the request, but no primary dubbo.tag
+        URL url1 = URL.valueOf("test://127.0.0.1:7777/DemoInterface?dubbo.backup.tag=tag2")
+                .setScopeModel(moduleModel);
+        // provider without any tag
+        URL url2 = URL.valueOf("test://127.0.0.1:7778/DemoInterface").setScopeModel(moduleModel);
+        // provider with a different primary tag (must not be picked)
+        URL url3 = URL.valueOf("test://127.0.0.1:7779/DemoInterface?dubbo.tag=tagX")
+                .setScopeModel(moduleModel);
+        Invoker<String> invoker1 = new MockInvoker<>(url1, true);
+        Invoker<String> invoker2 = new MockInvoker<>(url2, true);
+        Invoker<String> invoker3 = new MockInvoker<>(url3, true);
+        originInvokers.add(invoker1);
+        originInvokers.add(invoker2);
+        originInvokers.add(invoker3);
+        BitList<Invoker<String>> invokers = new BitList<>(originInvokers);
+
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setAttachment(TAG_KEY, "tag2");
+        List<Invoker<String>> filteredInvokers =
+                router.route(invokers.clone(), invokers.get(0).getUrl(), invocation, false, new Holder<>());
+
+        Assertions.assertEquals(1, filteredInvokers.size());
+        Assertions.assertEquals(invoker1, filteredInvokers.get(0));
+    }
+
+    /**
+     * {@code dubbo.backup.tag} accepts a comma-separated list of values; any of them may match.
+     */
+    @Test
+    void testTagRouteWithBackupTagMultipleValues() {
+        StateRouter router = new TagStateRouterFactory().getRouter(TagRouterRule.class, url);
+
+        List<Invoker<String>> originInvokers = new ArrayList<>();
+
+        URL url1 = URL.valueOf("test://127.0.0.1:7777/DemoInterface?dubbo.backup.tag=tag1,tag2,tag3")
+                .setScopeModel(moduleModel);
+        URL url2 = URL.valueOf("test://127.0.0.1:7778/DemoInterface?dubbo.backup.tag=tag1,tag3")
+                .setScopeModel(moduleModel);
+        Invoker<String> invoker1 = new MockInvoker<>(url1, true);
+        Invoker<String> invoker2 = new MockInvoker<>(url2, true);
+        originInvokers.add(invoker1);
+        originInvokers.add(invoker2);
+        BitList<Invoker<String>> invokers = new BitList<>(originInvokers);
+
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setAttachment(TAG_KEY, "tag2");
+        List<Invoker<String>> filteredInvokers =
+                router.route(invokers.clone(), invokers.get(0).getUrl(), invocation, false, new Holder<>());
+
+        // only invoker1 declares tag2 in its backup list
+        Assertions.assertEquals(1, filteredInvokers.size());
+        Assertions.assertEquals(invoker1, filteredInvokers.get(0));
+    }
+
+    /**
+     * When neither the primary tag nor any backup tag matches and the recent-backup router is off,
+     * the router falls back to providers without a primary {@code dubbo.tag}.
+     */
+    @Test
+    void testTagRouteBackupTagFallbackToNoTagProviders() {
+        StateRouter router = new TagStateRouterFactory().getRouter(TagRouterRule.class, url);
+
+        List<Invoker<String>> originInvokers = new ArrayList<>();
+
+        URL url1 = URL.valueOf("test://127.0.0.1:7777/DemoInterface?dubbo.tag=tagX")
+                .setScopeModel(moduleModel);
+        URL url2 = URL.valueOf("test://127.0.0.1:7778/DemoInterface").setScopeModel(moduleModel);
+        // has a backup tag, but it does not match; no primary tag so it is a valid no-tag fallback
+        URL url3 = URL.valueOf("test://127.0.0.1:7779/DemoInterface?dubbo.backup.tag=tagY")
+                .setScopeModel(moduleModel);
+        Invoker<String> invoker1 = new MockInvoker<>(url1, true);
+        Invoker<String> invoker2 = new MockInvoker<>(url2, true);
+        Invoker<String> invoker3 = new MockInvoker<>(url3, true);
+        originInvokers.add(invoker1);
+        originInvokers.add(invoker2);
+        originInvokers.add(invoker3);
+        BitList<Invoker<String>> invokers = new BitList<>(originInvokers);
+
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setAttachment(TAG_KEY, "tag2");
+        List<Invoker<String>> filteredInvokers =
+                router.route(invokers.clone(), invokers.get(0).getUrl(), invocation, false, new Holder<>());
+
+        // invoker2 and invoker3 have no primary dubbo.tag -> fallback candidates
+        Assertions.assertEquals(2, filteredInvokers.size());
+        Assertions.assertTrue(filteredInvokers.contains(invoker2));
+        Assertions.assertTrue(filteredInvokers.contains(invoker3));
+    }
+
+    /**
+     * With {@code dubbo.force.tag=true}, no fallback (neither backup tag nor no-tag providers)
+     * is allowed when the requested tag matches nothing; the result must be empty.
+     */
+    @Test
+    void testTagRouteBackupTagForceUseTagReturnsEmpty() {
+        StateRouter router = new TagStateRouterFactory().getRouter(TagRouterRule.class, url);
+
+        List<Invoker<String>> originInvokers = new ArrayList<>();
+
+        URL url1 = URL.valueOf("test://127.0.0.1:7777/DemoInterface?dubbo.tag=tagX")
+                .setScopeModel(moduleModel);
+        URL url2 = URL.valueOf("test://127.0.0.1:7778/DemoInterface").setScopeModel(moduleModel);
+        Invoker<String> invoker1 = new MockInvoker<>(url1, true);
+        Invoker<String> invoker2 = new MockInvoker<>(url2, true);
+        originInvokers.add(invoker1);
+        originInvokers.add(invoker2);
+        BitList<Invoker<String>> invokers = new BitList<>(originInvokers);
+
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setAttachment(TAG_KEY, "tag2");
+        invocation.setAttachment(FORCE_USE_TAG, "true");
+        List<Invoker<String>> filteredInvokers =
+                router.route(invokers.clone(), invokers.get(0).getUrl(), invocation, false, new Holder<>());
+
+        Assertions.assertTrue(filteredInvokers.isEmpty());
+    }
+
+    /**
+     * With {@code dubbo.recent.backup.tag=true}, when no exact primary/backup tag matches,
+     * the router picks the backup tag that is the nearest ceiling (dictionary order) of the
+     * requested tag — "swimlane" style upward lookup.
+     *
+     * <p>Requesting "tag3" among backup tags {tag1, tag5} resolves to the ceiling "tag5".
+     */
+    @Test
+    void testTagRouteRecentBackupTagCeiling() {
+        StateRouter router = new TagStateRouterFactory().getRouter(TagRouterRule.class, url);
+
+        List<Invoker<String>> originInvokers = new ArrayList<>();
+
+        URL url1 = URL.valueOf("test://127.0.0.1:7777/DemoInterface?dubbo.backup.tag=tag5")
+                .setScopeModel(moduleModel);
+        URL url2 = URL.valueOf("test://127.0.0.1:7778/DemoInterface?dubbo.backup.tag=tag1")
+                .setScopeModel(moduleModel);
+        // primary tag that does not match -> excluded from backup-tag pool
+        URL url3 = URL.valueOf("test://127.0.0.1:7779/DemoInterface?dubbo.tag=tagX")
+                .setScopeModel(moduleModel);
+        Invoker<String> invoker1 = new MockInvoker<>(url1, true);
+        Invoker<String> invoker2 = new MockInvoker<>(url2, true);
+        Invoker<String> invoker3 = new MockInvoker<>(url3, true);
+        originInvokers.add(invoker1);
+        originInvokers.add(invoker2);
+        originInvokers.add(invoker3);
+        BitList<Invoker<String>> invokers = new BitList<>(originInvokers);
+
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setAttachment(TAG_KEY, "tag3");
+        invocation.setAttachment(BACKUP_TAG_RECENT_ROUTER, "true");
+        List<Invoker<String>> filteredInvokers =
+                router.route(invokers.clone(), invokers.get(0).getUrl(), invocation, false, new Holder<>());
+
+        // ceiling("tag3") over {tag1, tag5} is "tag5" -> invoker1
+        Assertions.assertEquals(1, filteredInvokers.size());
+        Assertions.assertEquals(invoker1, filteredInvokers.get(0));
+    }
+
+    /**
+     * When the recent-backup router is on but no ceiling exists (every backup tag sorts below
+     * the requested tag), the result stays empty and the router falls back to no-tag providers.
+     */
+    @Test
+    void testTagRouteRecentBackupTagNoCeilingFallsToNoTag() {
+        StateRouter router = new TagStateRouterFactory().getRouter(TagRouterRule.class, url);
+
+        List<Invoker<String>> originInvokers = new ArrayList<>();
+
+        URL url1 = URL.valueOf("test://127.0.0.1:7777/DemoInterface?dubbo.backup.tag=tag1")
+                .setScopeModel(moduleModel);
+        URL url2 = URL.valueOf("test://127.0.0.1:7778/DemoInterface").setScopeModel(moduleModel);
+        Invoker<String> invoker1 = new MockInvoker<>(url1, true);
+        Invoker<String> invoker2 = new MockInvoker<>(url2, true);
+        originInvokers.add(invoker1);
+        originInvokers.add(invoker2);
+        BitList<Invoker<String>> invokers = new BitList<>(originInvokers);
+
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setAttachment(TAG_KEY, "tag9");
+        invocation.setAttachment(BACKUP_TAG_RECENT_ROUTER, "true");
+        List<Invoker<String>> filteredInvokers =
+                router.route(invokers.clone(), invokers.get(0).getUrl(), invocation, false, new Holder<>());
+
+        // ceiling("tag9") over {tag1} is null -> fallback to providers without a primary tag.
+        // both invoker1 (only has a backup tag, no primary dubbo.tag) and invoker2 qualify.
+        Assertions.assertEquals(2, filteredInvokers.size());
+        Assertions.assertTrue(filteredInvokers.contains(invoker1));
+        Assertions.assertTrue(filteredInvokers.contains(invoker2));
+    }
+
+    /**
+     * {@code dubbo.force.tag} has higher priority than {@code dubbo.recent.backup.tag}:
+     * when force is set, the recent-backup lookup must be skipped and the result stays empty.
+     */
+    @Test
+    void testTagRouteRecentBackupTagSkippedWhenForceUseTag() {
+        StateRouter router = new TagStateRouterFactory().getRouter(TagRouterRule.class, url);
+
+        List<Invoker<String>> originInvokers = new ArrayList<>();
+
+        URL url1 = URL.valueOf("test://127.0.0.1:7777/DemoInterface?dubbo.backup.tag=tag5")
+                .setScopeModel(moduleModel);
+        URL url2 = URL.valueOf("test://127.0.0.1:7778/DemoInterface").setScopeModel(moduleModel);
+        Invoker<String> invoker1 = new MockInvoker<>(url1, true);
+        Invoker<String> invoker2 = new MockInvoker<>(url2, true);
+        originInvokers.add(invoker1);
+        originInvokers.add(invoker2);
+        BitList<Invoker<String>> invokers = new BitList<>(originInvokers);
+
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setAttachment(TAG_KEY, "tag3");
+        invocation.setAttachment(BACKUP_TAG_RECENT_ROUTER, "true");
+        invocation.setAttachment(FORCE_USE_TAG, "true");
+        List<Invoker<String>> filteredInvokers =
+                router.route(invokers.clone(), invokers.get(0).getUrl(), invocation, false, new Holder<>());
+
+        Assertions.assertTrue(filteredInvokers.isEmpty());
     }
 
     @Test

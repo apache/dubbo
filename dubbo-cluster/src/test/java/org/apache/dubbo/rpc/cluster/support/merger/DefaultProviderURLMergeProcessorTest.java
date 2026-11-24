@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ALIVE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.BACKUP_TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CORE_THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
@@ -79,6 +80,7 @@ class DefaultProviderURLMergeProcessorTest {
                 .addParameter(APPLICATION_KEY, "provider")
                 .addParameter(REFERENCE_FILTER_KEY, "filter1,filter2")
                 .addParameter(TAG_KEY, "TTT")
+                .addParameter(BACKUP_TAG_KEY, "b1,b2")
                 .build();
 
         URL consumerURL = new URLBuilder(DUBBO_PROTOCOL, "localhost", 55555)
@@ -87,6 +89,7 @@ class DefaultProviderURLMergeProcessorTest {
                 .addParameter(APPLICATION_KEY, "consumer")
                 .addParameter(REFERENCE_FILTER_KEY, "filter3")
                 .addParameter(TAG_KEY, "UUU")
+                .addParameter(BACKUP_TAG_KEY, "c1")
                 .build();
 
         URL url = providerURLMergeProcessor.mergeUrl(providerURL, consumerURL.getParameters());
@@ -118,6 +121,8 @@ class DefaultProviderURLMergeProcessorTest {
         Assertions.assertEquals("filter1,filter2,filter3", url.getParameter(REFERENCE_FILTER_KEY));
 
         Assertions.assertEquals("TTT", url.getParameter(TAG_KEY));
+        // backup tag is a provider-side attribute; consumer value must not override it
+        Assertions.assertEquals("b1,b2", url.getParameter(BACKUP_TAG_KEY));
     }
 
     @Test
@@ -125,10 +130,10 @@ class DefaultProviderURLMergeProcessorTest {
         // present in both local and remote, but uses remote value.
         URL localURL =
                 URL.valueOf("dubbo://localhost:20880/DemoService?version=local&group=local&dubbo=local&release=local"
-                        + "&methods=local&tag=local&timestamp=local");
+                        + "&methods=local&tag=local&timestamp=local&dubbo.backup.tag=local");
         URL remoteURL = URL.valueOf(
                 "dubbo://localhost:20880/DemoService?version=remote&group=remote&dubbo=remote&release=remote"
-                        + "&methods=remote&tag=remote&timestamp=remote");
+                        + "&methods=remote&tag=remote&timestamp=remote&dubbo.backup.tag=remote");
         URL mergedUrl = providerURLMergeProcessor.mergeUrl(remoteURL, localURL.getParameters());
 
         Assertions.assertEquals(remoteURL.getVersion(), mergedUrl.getVersion());
@@ -138,10 +143,12 @@ class DefaultProviderURLMergeProcessorTest {
         Assertions.assertEquals(remoteURL.getParameter(METHODS_KEY), mergedUrl.getParameter(METHODS_KEY));
         Assertions.assertEquals(remoteURL.getParameter(TIMESTAMP_KEY), mergedUrl.getParameter(TIMESTAMP_KEY));
         Assertions.assertEquals(remoteURL.getParameter(TAG_KEY), mergedUrl.getParameter(TAG_KEY));
+        // backup tag is provider-side -> remote value wins
+        Assertions.assertEquals(remoteURL.getParameter(BACKUP_TAG_KEY), mergedUrl.getParameter(BACKUP_TAG_KEY));
 
         // present in local url but not in remote url, parameters of remote url is empty
         localURL = URL.valueOf("dubbo://localhost:20880/DemoService?version=local&group=local&dubbo=local&release=local"
-                + "&methods=local&tag=local&timestamp=local");
+                + "&methods=local&tag=local&timestamp=local&dubbo.backup.tag=local");
         remoteURL = URL.valueOf("dubbo://localhost:20880/DemoService");
         mergedUrl = providerURLMergeProcessor.mergeUrl(remoteURL, localURL.getParameters());
 
@@ -152,10 +159,12 @@ class DefaultProviderURLMergeProcessorTest {
         Assertions.assertNull(mergedUrl.getParameter(METHODS_KEY));
         Assertions.assertNull(mergedUrl.getParameter(TIMESTAMP_KEY));
         Assertions.assertNull(mergedUrl.getParameter(TAG_KEY));
+        // consumer-side backup tag must not leak onto the merged url
+        Assertions.assertNull(mergedUrl.getParameter(BACKUP_TAG_KEY));
 
         // present in local url but not in remote url
         localURL = URL.valueOf("dubbo://localhost:20880/DemoService?version=local&group=local&dubbo=local&release=local"
-                + "&methods=local&tag=local&timestamp=local");
+                + "&methods=local&tag=local&timestamp=local&dubbo.backup.tag=local");
         remoteURL = URL.valueOf("dubbo://localhost:20880/DemoService?key=value");
         mergedUrl = providerURLMergeProcessor.mergeUrl(remoteURL, localURL.getParameters());
 
@@ -166,6 +175,8 @@ class DefaultProviderURLMergeProcessorTest {
         Assertions.assertNull(mergedUrl.getParameter(METHODS_KEY));
         Assertions.assertNull(mergedUrl.getParameter(TIMESTAMP_KEY));
         Assertions.assertNull(mergedUrl.getParameter(TAG_KEY));
+        // consumer-side backup tag must not leak onto the merged url
+        Assertions.assertNull(mergedUrl.getParameter(BACKUP_TAG_KEY));
 
         // present in both local and remote, uses local url params
         localURL = URL.valueOf("dubbo://localhost:20880/DemoService?loadbalance=local&timeout=1000&cluster=local");
