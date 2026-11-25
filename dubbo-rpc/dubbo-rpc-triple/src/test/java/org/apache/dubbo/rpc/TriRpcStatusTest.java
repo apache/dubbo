@@ -94,6 +94,36 @@ class TriRpcStatusTest {
     }
 
     @Test
+    void decodeMessageKeepsPlusSign() {
+        // grpc-java and grpc-go do not percent-encode '+' in grpc-message
+        Assertions.assertEquals("a+b", TriRpcStatus.decodeMessage("a+b"));
+        Assertions.assertEquals("C++ parser, tz +08:00", TriRpcStatus.decodeMessage("C++ parser, tz +08:00"));
+        Assertions.assertEquals("中文 a+b", TriRpcStatus.decodeMessage("%E4%B8%AD%E6%96%87 a+b"));
+    }
+
+    @Test
+    void decodeMessageKeepsInvalidPercentEncoding() {
+        // gRPC: when decoding invalid values, implementations MUST NOT error or throw away the message
+        Assertions.assertEquals("quota 100% used", TriRpcStatus.decodeMessage("quota 100% used"));
+        Assertions.assertEquals("100%", TriRpcStatus.decodeMessage("100%"));
+        Assertions.assertEquals("%4", TriRpcStatus.decodeMessage("%4"));
+        Assertions.assertEquals("%zz %4g %g4", TriRpcStatus.decodeMessage("%zz %4g %g4"));
+        Assertions.assertEquals("90% 中文", TriRpcStatus.decodeMessage("90% %E4%B8%AD%E6%96%87"));
+        // status details carry the message without percent-encoding
+        Assertions.assertEquals("中文 50% off, café", TriRpcStatus.decodeMessage("中文 50% off, café"));
+    }
+
+    @Test
+    void decodeMessageDecodesPercentEncodedUtf8() {
+        Assertions.assertEquals("中文 message", TriRpcStatus.decodeMessage("%E4%B8%AD%E6%96%87 message"));
+        Assertions.assertEquals("中", TriRpcStatus.decodeMessage("%e4%b8%ad"));
+        Assertions.assertEquals("😯 100%", TriRpcStatus.decodeMessage("%F0%9F%98%AF 100%25"));
+        for (String message : new String[] {"a+b", "a b", "50% off", "%E4%B8%AD", "中文", "line1\nline2"}) {
+            Assertions.assertEquals(message, TriRpcStatus.decodeMessage(TriRpcStatus.encodeMessage(message)));
+        }
+    }
+
+    @Test
     void httpStatusToGrpcCode() {
         Assertions.assertEquals(Code.UNIMPLEMENTED, TriRpcStatus.httpStatusToGrpcCode(404));
         Assertions.assertEquals(

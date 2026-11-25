@@ -21,9 +21,9 @@ import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.QueryStringEncoder;
 
 import static org.apache.dubbo.rpc.RpcException.AUTHORIZATION_EXCEPTION;
@@ -155,11 +155,47 @@ public class TriRpcStatus implements Serializable {
         }
     }
 
+    /**
+     * Percent-decodes a value written by {@link #encodeMessage(String)} or received as grpc-message. As in gRPC,
+     * '+' stays '+', and an invalid percent sequence is kept as is instead of failing the decoding.
+     */
     public static String decodeMessage(String raw) {
         if (StringUtils.isEmpty(raw)) {
             return "";
         }
-        return QueryStringDecoder.decodeComponent(raw);
+        int start = raw.indexOf('%');
+        if (start < 0) {
+            return raw;
+        }
+        int length = raw.length();
+        StringBuilder builder = new StringBuilder(length).append(raw, 0, start);
+        byte[] bytes = new byte[length - start];
+        int size = 0;
+        for (int i = start; i < length; i++) {
+            char c = raw.charAt(i);
+            if (c == '%' && i + 2 < length) {
+                int high = StringUtils.decodeHexNibble(raw.charAt(i + 1));
+                int low = StringUtils.decodeHexNibble(raw.charAt(i + 2));
+                if (high != -1 && low != -1) {
+                    bytes[size++] = (byte) ((high << 4) + low);
+                    i += 2;
+                    continue;
+                }
+            }
+            if (c < 0x80) {
+                bytes[size++] = (byte) c;
+                continue;
+            }
+            if (size > 0) {
+                builder.append(new String(bytes, 0, size, StandardCharsets.UTF_8));
+                size = 0;
+            }
+            builder.append(c);
+        }
+        if (size > 0) {
+            builder.append(new String(bytes, 0, size, StandardCharsets.UTF_8));
+        }
+        return builder.toString();
     }
 
     public static String encodeMessage(String raw) {
