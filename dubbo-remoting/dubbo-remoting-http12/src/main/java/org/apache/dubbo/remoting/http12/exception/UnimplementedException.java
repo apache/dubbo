@@ -23,7 +23,8 @@ public class UnimplementedException extends HttpStatusException {
     private final String unimplemented;
 
     public UnimplementedException(String unimplemented) {
-        super(500, "unimplemented " + unimplemented);
+        // 404 as for an unknown service: gRPC clients get UNIMPLEMENTED, also those that read the code from :status
+        super(404, "unimplemented " + unimplemented);
         this.unimplemented = unimplemented;
     }
 
