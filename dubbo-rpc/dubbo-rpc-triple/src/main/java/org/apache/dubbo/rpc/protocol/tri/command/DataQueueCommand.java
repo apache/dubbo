@@ -16,50 +16,109 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.command;
 
+import org.apache.dubbo.common.io.StreamUtils;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleStreamChannelFuture;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 
 public class DataQueueCommand extends StreamQueueCommand {
 
-    private final byte[] data;
+    private final InputStream dataStream;
 
-    private final int compressFlag;
+    private final Compressor compressor;
 
     private final boolean endStream;
 
     private DataQueueCommand(
-            TripleStreamChannelFuture streamChannelFuture, byte[] data, int compressFlag, boolean endStream) {
+            TripleStreamChannelFuture streamChannelFuture,
+            InputStream dataStream,
+            Compressor compressor,
+            boolean endStream) {
         super(streamChannelFuture);
-        this.data = data;
-        this.compressFlag = compressFlag;
+        this.dataStream = dataStream;
+        this.compressor = compressor;
         this.endStream = endStream;
     }
 
     public static DataQueueCommand create(
-            TripleStreamChannelFuture streamChannelFuture, byte[] data, boolean endStream, int compressFlag) {
-        return new DataQueueCommand(streamChannelFuture, data, compressFlag, endStream);
+            TripleStreamChannelFuture streamChannelFuture,
+            InputStream dataStream,
+            boolean endStream,
+            Compressor compressor) {
+        return new DataQueueCommand(streamChannelFuture, dataStream, compressor, endStream);
     }
 
+    /**
+     * Send data frame to the channel.
+     *
+     * <p>gRPC message frame format:
+     * <pre>
+     * +----------------------+
+     * | Compressed-Flag (1B) |  0 = uncompressed, 1 = compressed
+     * +----------------------+
+     * | Message-Length  (4B) |  big-endian unsigned integer
+     * +----------------------+
+     * | Message Data    (N)  |  compressed or uncompressed payload
+     * +----------------------+
+     * </pre>
+     */
     @Override
     public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {
-        if (data == null) {
+        if (dataStream == null) {
             ctx.write(new DefaultHttp2DataFrame(endStream), promise);
         } else {
             ByteBuf buf = ctx.alloc().buffer();
+            // Write compression flag (1 byte): 0 for identity, 1 for compressed
+            int compressFlag = Identity.MESSAGE_ENCODING.equals(compressor.getMessageEncoding()) ? 0 : 1;
             buf.writeByte(compressFlag);
-            buf.writeInt(data.length);
-            buf.writeBytes(data);
+            // Record position for length field, write placeholder (4 bytes)
+            int lengthIndex = buf.writerIndex();
+            buf.writeInt(0);
+            try {
+                // Compress and write data directly into ByteBuf using decorator pattern
+                // Use try-with-resources to ensure proper resource cleanup
+                try (ByteBufOutputStream bbos = new ByteBufOutputStream(buf);
+                        OutputStream compressedOut = compressor.decorate(bbos)) {
+                    StreamUtils.copy(dataStream, compressedOut);
+                }
+                // Calculate actual message length: total written bytes minus the 4-byte length field itself
+                int written = buf.writerIndex() - lengthIndex - 4;
+                buf.setInt(lengthIndex, written);
+            } catch (Exception e) {
+                buf.release();
+                promise.setFailure(e);
+                return;
+            } finally {
+                // Always close the dataStream to prevent resource leaks
+                closeQuietly(dataStream);
+            }
             ctx.write(new DefaultHttp2DataFrame(buf, endStream), promise);
         }
     }
 
+    private static void closeQuietly(InputStream stream) {
+        if (stream != null) {
+            try {
+                stream.close();
+            } catch (IOException ignored) {
+                // Ignore close exception
+            }
+        }
+    }
+
     // for test
-    public byte[] getData() {
-        return data;
+    public InputStream getDataStream() {
+        return dataStream;
     }
 
     // for test

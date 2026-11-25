@@ -18,6 +18,7 @@ package org.apache.dubbo.common.io;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * UnsafeByteArrayInputStream.
@@ -113,5 +114,16 @@ public class UnsafeByteArrayInputStream extends InputStream {
 
     public int size() {
         return mData == null ? 0 : mData.length;
+    }
+
+    /**
+     * Write remaining data directly to output stream without copying through intermediate buffer.
+     *
+     * @param out the output stream to write to
+     * @throws IOException if an I/O error occurs
+     */
+    public void writeTo(OutputStream out) throws IOException {
+        out.write(mData, mPosition, mLimit - mPosition);
+        mPosition = mLimit;
     }
 }

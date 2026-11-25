@@ -239,6 +239,10 @@ public final class StreamUtils {
     }
 
     public static void copy(InputStream in, OutputStream out) throws IOException {
+        if (in instanceof UnsafeByteArrayInputStream) {
+            ((UnsafeByteArrayInputStream) in).writeTo(out);
+            return;
+        }
         if (in.getClass() == ByteArrayInputStream.class) {
             copy((ByteArrayInputStream) in, out);
             return;
