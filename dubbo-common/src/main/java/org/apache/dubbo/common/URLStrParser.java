@@ -209,7 +209,12 @@ public final class URLStrParser {
      */
     public static URL parseEncodedStr(String encodedURLStr) {
         Map<String, String> parameters = null;
-        int pathEndIdx = encodedURLStr.toUpperCase().indexOf("%3F"); // '?'
+        // Find the first encoded '?' without uppercasing and copying the entire URL.
+        int pathEndIdx = encodedURLStr.indexOf(ENCODED_QUESTION_MARK);
+        int lowerCasePathEndIdx = encodedURLStr.indexOf("%3f");
+        if (pathEndIdx < 0 || lowerCasePathEndIdx >= 0 && lowerCasePathEndIdx < pathEndIdx) {
+            pathEndIdx = lowerCasePathEndIdx;
+        }
         if (pathEndIdx >= 0) {
             parameters = parseEncodedParams(encodedURLStr, pathEndIdx + 3);
         } else {
