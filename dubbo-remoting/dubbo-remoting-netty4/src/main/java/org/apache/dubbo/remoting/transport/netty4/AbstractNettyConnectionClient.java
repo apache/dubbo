@@ -59,7 +59,7 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
 
     public static final AttributeKey<AbstractConnectionClient> CONNECTION = AttributeKey.valueOf("connection");
 
-    public AbstractNettyConnectionClient(URL url, ChannelHandler handler) throws RemotingException {
+    protected AbstractNettyConnectionClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
     }
 

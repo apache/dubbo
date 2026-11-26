@@ -98,7 +98,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         this.registryURL = registryURL;
         this.metadataInfo = new MetadataInfo(serviceName);
         boolean localCacheEnabled = registryURL.getParameter(REGISTRY_LOCAL_FILE_CACHE_ENABLED, true);
-        this.metaCacheManager = new MetaCacheManager(
+        this.metaCacheManager = MetaCacheManager.create(
                 localCacheEnabled,
                 getCacheNameSuffix(),
                 applicationModel
