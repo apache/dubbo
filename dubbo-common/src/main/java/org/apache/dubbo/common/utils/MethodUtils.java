@@ -27,6 +27,7 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Predicate;
 
@@ -429,7 +430,7 @@ public interface MethodUtils {
         }
 
         if (StringUtils.isNotEmpty(fieldName)) {
-            fieldName = fieldName.substring(0, 1).toLowerCase() + fieldName.substring(1);
+            fieldName = fieldName.substring(0, 1).toLowerCase(Locale.ROOT) + fieldName.substring(1);
         }
 
         return fieldName;

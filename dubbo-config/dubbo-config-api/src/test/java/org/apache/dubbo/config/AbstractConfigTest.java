@@ -35,6 +35,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
@@ -569,6 +570,39 @@ class AbstractConfigTest {
 
         } finally {
             frameworkModel.destroy();
+        }
+    }
+
+    // In the Turkish locale "I".toLowerCase() is the dotless "ı", which turned
+    // the property behind getIothreads()/setIothreads() into "ıothreads".
+    @Test
+    void testAppendParametersUnderTurkishLocale() {
+        Locale defaultLocale = Locale.getDefault();
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+        try {
+            ProtocolConfig protocolConfig = new ProtocolConfig();
+            protocolConfig.setIothreads(8);
+
+            Map<String, String> parameters = new HashMap<>();
+            AbstractConfig.appendParameters(parameters, protocolConfig);
+            Assertions.assertEquals("8", parameters.get("iothreads"), parameters.toString());
+        } finally {
+            Locale.setDefault(defaultLocale);
+        }
+    }
+
+    @Test
+    void testRefreshUnderTurkishLocale() {
+        Locale defaultLocale = Locale.getDefault();
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+        try {
+            SysProps.setProperty("dubbo.protocol.iothreads", "16");
+            ProtocolConfig protocolConfig = new ProtocolConfig();
+            protocolConfig.refresh();
+            Assertions.assertEquals(16, protocolConfig.getIothreads());
+        } finally {
+            Locale.setDefault(defaultLocale);
+            ApplicationModel.defaultModel().modelEnvironment().destroy();
         }
     }
 
