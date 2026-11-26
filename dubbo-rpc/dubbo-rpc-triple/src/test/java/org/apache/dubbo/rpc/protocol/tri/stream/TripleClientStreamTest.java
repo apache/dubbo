@@ -153,7 +153,7 @@ class TripleClientStreamTest {
     @Test
     void statusDetailsMessageFromDubbo32Provider() {
         // Dubbo 3.0 to 3.2 providers percent-encode the message in grpc-message and in the status details
-        String encoded = TriRpcStatus.encodeMessage("not found: 中文 a+b");
+        String encoded = "not%20found%3A%20%E4%B8%AD%E6%96%87%20a%2Bb";
         Assertions.assertEquals("not found: 中文 a+b", receiveErrorTrailers(encoded, encoded).description);
         Assertions.assertEquals("not found: 中文 a+b", receiveErrorTrailers(null, encoded).description);
     }
