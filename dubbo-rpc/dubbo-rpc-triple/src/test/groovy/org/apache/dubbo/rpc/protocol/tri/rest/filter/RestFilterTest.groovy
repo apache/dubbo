@@ -43,6 +43,9 @@ class RestFilterTest extends Specification {
             '/filter/one/1' | 1
             '/one.filter'   | 2
             '/filter/two'   | 2
+            '/filter/test'  | 2
+            '/filter/tst'   | 2
     }
+
 
 }

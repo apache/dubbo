@@ -44,6 +44,8 @@ class PathExpressionTest extends Specification {
             '/'                        | [[LITERAL, '/']]
             '/a?*b'                    | [[PATTERN, 'a[^/]*b']]
             '/a*?b'                    | [[PATTERN, 'a[^/]*b']]
+            '/resources/ima?e.png' | ['resources', [PATTERN, 'ima[^/]e\\.png']]
+            '/orders/{id:\\d+(?:-\\d+)?}' | ['orders', [PATTERN, '(?<id>\\d+(?:-\\d+)?)', 'id']]
             '/a**b'                    | [[PATTERN, 'a[^/]*b']]
             '/{param:o?e}'             | [[PATTERN, '(?<param>o?e)']]
             '/{param: \\d+ }/name'     | [[PATTERN, '(?<param>\\d+)', 'param'], [LITERAL, 'name']]

@@ -152,6 +152,36 @@ public final class PathUtils {
         return path1 + '/' + path2;
     }
 
+    /**
+     * Normalizes a mapping pattern while preserving pattern characters.
+     *
+     * @param path the mapping pattern
+     * @return the normalized mapping pattern
+     */
+    public static String normalizePattern(@Nonnull String path) {
+        return normalize(path, true);
+    }
+
+    /**
+     * Normalizes a mapping pattern together with its context path.
+     *
+     * @param contextPath the context path
+     * @param path the mapping pattern
+     * @return the normalized mapping pattern
+     */
+    public static String normalizePattern(String contextPath, String path) {
+        if (StringUtils.isEmpty(contextPath)) {
+            return StringUtils.isEmpty(path) ? RestConstants.SLASH : normalizePattern(path);
+        }
+        if (StringUtils.isEmpty(path)) {
+            return normalizePattern(contextPath);
+        }
+        if (path.charAt(0) != '/') {
+            contextPath += '/';
+        }
+        return normalizePattern(contextPath + path);
+    }
+
     public static String normalize(String contextPath, String path) {
         if (StringUtils.isEmpty(contextPath)) {
             return StringUtils.isEmpty(path) ? RestConstants.SLASH : normalize(path);
@@ -166,6 +196,10 @@ public final class PathUtils {
     }
 
     public static String normalize(@Nonnull String path) {
+        return normalize(path, false);
+    }
+
+    private static String normalize(String path, boolean preservePatternChars) {
         int len = path.length();
         if (len == 0) {
             return RestConstants.SLASH;
@@ -246,6 +280,10 @@ public final class PathUtils {
                     }
                     break;
                 case '?':
+                    if (!preservePatternChars) {
+                        break out;
+                    }
+                    break;
                 case '#':
                     break out;
                 default:
@@ -295,7 +333,6 @@ public final class PathUtils {
     }
 
     private interface State {
-
         int INITIAL = 0;
         int NORMAL = 1;
         int SLASH = 2;
