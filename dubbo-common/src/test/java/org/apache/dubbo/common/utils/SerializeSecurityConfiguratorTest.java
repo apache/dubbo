@@ -28,7 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.stream.Stream;
 
+import com.pojo.ArrayPayload;
+import com.pojo.Demo1;
 import com.service.DemoService1;
 import com.service.DemoService2;
 import com.service.DemoService4;
@@ -39,8 +42,69 @@ import com.service.UserService;
 import com.service.deep1.deep2.deep3.DemoService3;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class SerializeSecurityConfiguratorTest {
+
+    @ParameterizedTest
+    @MethodSource("arrayServices")
+    void testArrayComponentTypes(Class<?> serviceInterface) throws ClassNotFoundException {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        try {
+            ApplicationModel applicationModel = frameworkModel.newApplication();
+            ApplicationConfig applicationConfig = new ApplicationConfig("array-test");
+            applicationConfig.setSerializeCheckStatus(SerializeCheckStatus.STRICT.name());
+            applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
+            ModuleModel moduleModel = applicationModel.newModule();
+            SerializeSecurityConfigurator configurator = new SerializeSecurityConfigurator(moduleModel);
+            DefaultSerializeClassChecker checker =
+                    frameworkModel.getBeanFactory().getBean(DefaultSerializeClassChecker.class);
+            SerializeSecurityManager manager = frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class);
+            ClassLoader classLoader = ArrayPayload.class.getClassLoader();
+
+            Assertions.assertThrows(
+                    IllegalArgumentException.class, () -> checker.loadClass(classLoader, ArrayPayload.class.getName()));
+
+            configurator.registerInterface(serviceInterface);
+
+            Assertions.assertSame(ArrayPayload.class, checker.loadClass(classLoader, ArrayPayload.class.getName()));
+            Assertions.assertTrue(manager.getAllowedPrefix().contains(ArrayPayload.Detail.class.getName()));
+            IllegalArgumentException failure = Assertions.assertThrows(
+                    IllegalArgumentException.class, () -> checker.loadClass(classLoader, Demo1.class.getName()));
+            Assertions.assertTrue(failure.getMessage().contains("is not in allow list"));
+        } finally {
+            frameworkModel.destroy();
+        }
+    }
+
+    static Stream<Class<?>> arrayServices() {
+        return Stream.of(
+                ArrayParameterService.class,
+                ArrayReturnService.class,
+                MultidimensionalArrayService.class,
+                ArrayFieldService.class);
+    }
+
+    interface ArrayParameterService {
+        void accept(ArrayPayload[] values);
+    }
+
+    interface ArrayReturnService {
+        ArrayPayload[] read();
+    }
+
+    interface MultidimensionalArrayService {
+        ArrayPayload[][] read();
+    }
+
+    interface ArrayFieldService {
+        ArrayEnvelope read();
+    }
+
+    static class ArrayEnvelope {
+        private ArrayPayload[] values;
+    }
 
     @Test
     void test() {
