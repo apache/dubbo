@@ -77,6 +77,8 @@ public class MetadataReportBuilder extends AbstractBuilder<MetadataReportConfig,
      */
     private Boolean check;
 
+    private Boolean reportDefinition;
+
     public static MetadataReportBuilder newBuilder() {
         return new MetadataReportBuilder();
     }
@@ -141,6 +143,11 @@ public class MetadataReportBuilder extends AbstractBuilder<MetadataReportConfig,
         return getThis();
     }
 
+    public MetadataReportBuilder reportDefinition(Boolean reportDefinition) {
+        this.reportDefinition = reportDefinition;
+        return getThis();
+    }
+
     @Override
     public MetadataReportConfig build() {
         MetadataReportConfig metadataReport = new MetadataReportConfig();
@@ -157,6 +164,7 @@ public class MetadataReportBuilder extends AbstractBuilder<MetadataReportConfig,
         metadataReport.setCycleReport(cycleReport);
         metadataReport.setSyncReport(syncReport);
         metadataReport.setCheck(check);
+        metadataReport.setReportDefinition(reportDefinition);
 
         return metadataReport;
     }

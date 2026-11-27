@@ -21,6 +21,7 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.function.ThrowableFunction;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
@@ -34,6 +35,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -46,6 +48,7 @@ import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
 
 import static com.alibaba.nacos.api.common.Constants.DEFAULT_GROUP;
+import static com.alibaba.nacos.client.constant.Constants.HealthCheck.UP;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_NACOS_EXCEPTION;
 import static org.apache.dubbo.common.function.ThrowableConsumer.execute;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
@@ -127,12 +130,11 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
         Instance newInstance = toInstance(newServiceInstance);
 
         try {
-            this.serviceInstance = newServiceInstance;
             reportMetadata(newServiceInstance.getServiceMetadata());
             execute(namingService, service -> {
-                Instance instance = toInstance(serviceInstance);
-                service.updateInstance(instance.getServiceName(), group, oldInstance, newInstance);
+                service.updateInstance(newInstance.getServiceName(), group, oldInstance, newInstance);
             });
+            this.serviceInstance = newServiceInstance;
         } catch (Exception e) {
             throw new RpcException(REGISTRY_EXCEPTION, "Failed register instance " + newServiceInstance.toString(), e);
         }
@@ -243,5 +245,17 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
                 .map((i) -> NacosNamingServiceUtils.toServiceInstance(registryURL, i))
                 .collect(Collectors.toList());
         listener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return isConnectionAvailable() && CollectionUtils.isNotEmpty(getServices());
+    }
+
+    @Override
+    public boolean isConnectionAvailable() {
+        Optional<String> status = Optional.ofNullable(namingService).map(NacosNamingServiceWrapper::getServerStatus);
+        boolean isConnected = status.isPresent() && UP.equals(status.get());
+        return !isDestroy() && isConnected;
     }
 }

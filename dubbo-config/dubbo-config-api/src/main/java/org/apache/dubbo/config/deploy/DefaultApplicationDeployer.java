@@ -93,6 +93,7 @@ import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
+import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
@@ -117,6 +118,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private static final ErrorTypeAwareLogger logger =
             LoggerFactory.getErrorTypeAwareLogger(DefaultApplicationDeployer.class);
+
+    private static final String REFRESH_ERR = "Refresh instance and metadata error.";
 
     private final ApplicationModel applicationModel;
 
@@ -488,6 +491,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             cc.setTimeout(registryConfig.getTimeout().longValue());
         }
         cc.setHighestPriority(false);
+        // use registry check option
+        if (Boolean.FALSE == registryConfig.isCheck()
+                || !Boolean.parseBoolean(cc.getParameters().getOrDefault(CHECK_KEY, "true"))) {
+            cc.setCheck(false);
+        }
         return cc;
     }
 
@@ -642,6 +650,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
         if (metadataReportConfig.getTimeout() == null) {
             metadataReportConfig.setTimeout(registryConfig.getTimeout());
+        }
+        // use registry check option
+        if (Boolean.FALSE == registryConfig.isCheck()
+                || !Boolean.parseBoolean(metadataReportConfig.getParameters().getOrDefault(CHECK_KEY, "true"))) {
+            metadataReportConfig.setCheck(false);
         }
         return metadataReportConfig;
     }
@@ -886,7 +899,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             if (!configCenter.checkOrUpdateInitialized(true)) {
                 return null;
             }
-
             DynamicConfiguration dynamicConfiguration;
             try {
                 dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
@@ -903,6 +915,24 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 } else {
                     throw new IllegalStateException(e);
                 }
+            }
+            if (dynamicConfiguration == null || !dynamicConfiguration.isAvailable()) {
+                if (configCenter.isCheck()) {
+                    throw new IllegalStateException("The configuration center is not available");
+                } else if (dynamicConfiguration == null) {
+                    logger.warn(
+                            CONFIG_FAILED_INIT_CONFIG_CENTER,
+                            "",
+                            "",
+                            "The configuration center failed to initialize, dynamicConfiguration is null.");
+                } else {
+                    logger.warn(
+                            CONFIG_FAILED_INIT_CONFIG_CENTER,
+                            "",
+                            "",
+                            "The configuration center initialize successfully, but connection is not available.");
+                }
+                return dynamicConfiguration;
             }
             ApplicationModel applicationModel = getApplicationModel();
 
@@ -1034,12 +1064,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                                     }
                                 } catch (Exception e) {
                                     if (!applicationModel.isDestroyed()) {
-                                        logger.error(
-                                                CONFIG_REFRESH_INSTANCE_ERROR,
-                                                "",
-                                                "",
-                                                "Refresh instance and metadata error.",
-                                                e);
+                                        logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", REFRESH_ERR, e);
                                     }
                                 }
                             },
@@ -1056,7 +1081,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             try {
                 ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel);
             } catch (Exception e) {
-                logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
+                logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", REFRESH_ERR, e);
             }
         }
     }
@@ -1345,7 +1370,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel);
             }
         } catch (Exception e) {
-            logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
+            logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", REFRESH_ERR, e);
         }
     }
 
