@@ -26,6 +26,7 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.api.connection.ConnectionStateProvider;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -87,6 +88,18 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                     "Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress()
                             + " connect to the server " + getRemoteAddress() + ", cause: " + t.getMessage(),
                     t);
+        }
+
+        if (Boolean.TRUE.equals(url.getAttribute(ConnectionStateProvider.ASYNC_CONNECT_ATTRIBUTE))) {
+            connectivityExecutor.execute(() -> {
+                try {
+                    connect();
+                } catch (RemotingException error) {
+                    logger.warn(
+                            TRANSPORT_FAILED_CONNECT_PROVIDER, "", "", "Asynchronous initial connection failed", error);
+                }
+            });
+            return;
         }
 
         try {
@@ -364,7 +377,20 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             return;
         }
 
-        connectLock.lock();
+        boolean asyncConnect =
+                Boolean.TRUE.equals(getUrl().getAttribute(ConnectionStateProvider.ASYNC_CONNECT_ATTRIBUTE));
+        if (asyncConnect && !connectLock.tryLock()) {
+            // A pending native connection must not hold Reference destruction until connect timeout.
+            super.close();
+            try {
+                doClose();
+            } catch (Throwable error) {
+                logger.warn(TRANSPORT_FAILED_CLOSE, "", "", error.getMessage(), error);
+            }
+            return;
+        } else if (!asyncConnect) {
+            connectLock.lock();
+        }
         try {
             if (isClosed()) {
                 logger.warn(

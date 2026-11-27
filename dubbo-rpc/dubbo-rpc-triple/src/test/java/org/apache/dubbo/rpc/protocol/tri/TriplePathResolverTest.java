@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 class TriplePathResolverTest {
+    private boolean originalFallback;
 
     private static final PathResolver PATH_RESOLVER =
             FrameworkModel.defaultModel().getDefaultExtension(PathResolver.class);
@@ -75,6 +76,7 @@ class TriplePathResolverTest {
 
     @BeforeEach
     public void init() {
+        originalFallback = TripleProtocol.RESOLVE_FALLBACK_TO_DEFAULT;
         PATH_RESOLVER.add("/abc", INVOKER);
         PATH_RESOLVER.register(INVOKER);
     }
@@ -82,6 +84,7 @@ class TriplePathResolverTest {
     @AfterEach
     public void destroy() {
         PATH_RESOLVER.destroy();
+        TripleProtocol.RESOLVE_FALLBACK_TO_DEFAULT = originalFallback;
     }
 
     @Test
@@ -130,6 +133,62 @@ class TriplePathResolverTest {
         PATH_RESOLVER.destroy();
         Assertions.assertNull(getInvokerByPath("/abc"));
         Assertions.assertNull(getInvokerByPath("/bcd"));
+    }
+
+    @Test
+    void protoAliasesKeepExactGroupAndVersionAndUnregisterOnlyTheirOwner() {
+        TriplePathResolver resolver = new TriplePathResolver();
+        Invoker<?> first = alias("java.WireEcho", "proto.WireEcho", "proto.WireEcho", "blue", "1.2.0");
+        Invoker<?> nextVersion = alias("java.WireEcho", "proto.WireEcho", "proto.WireEcho", "blue", "2.0.0");
+        Invoker<?> otherGroup = alias("java.WireEcho", "proto.WireEcho", "proto.WireEcho", "green", "2.0.0");
+        resolver.register(first);
+        resolver.register(nextVersion);
+        resolver.register(otherGroup);
+        Assertions.assertSame(first, resolver.resolve("proto.WireEcho", "blue", "1.2.0"));
+        Assertions.assertSame(nextVersion, resolver.resolve("proto.WireEcho", "blue", "2.0.0"));
+        Assertions.assertSame(otherGroup, resolver.resolve("proto.WireEcho", "green", "2.0.0"));
+        Assertions.assertSame(otherGroup, resolver.resolve("java.WireEcho", "green", "2.0.0"));
+        resolver.unregister(otherGroup);
+        Assertions.assertSame(first, resolver.resolve("proto.WireEcho", null, null));
+        TripleProtocol.RESOLVE_FALLBACK_TO_DEFAULT = false;
+        Assertions.assertNull(resolver.resolve("proto.WireEcho", "green", "2.0.0"));
+        Assertions.assertSame(first, resolver.resolve("proto.WireEcho", "blue", "1.2.0"));
+        Assertions.assertSame(nextVersion, resolver.resolve("proto.WireEcho", "blue", "2.0.0"));
+        resolver.unregister(first);
+        Assertions.assertSame(nextVersion, resolver.resolve("proto.WireEcho", "blue", "2.0.0"));
+        resolver.unregister(nextVersion);
+        Assertions.assertNull(resolver.resolve("proto.WireEcho", "blue", "2.0.0"));
+        Assertions.assertNull(resolver.resolve("java.WireEcho", "blue", "2.0.0"));
+    }
+
+    @Test
+    void customWirePathsAndContextFallbacksAreRemovedWhenUnexported() {
+        for (String path : new String[] {"custom.Wire", "ctx/custom.Wire"}) {
+            TriplePathResolver resolver = new TriplePathResolver();
+            Invoker<?> invoker = alias("java.Pojo", "java.Pojo", path, "group", "1.2.0");
+            resolver.register(invoker);
+            Assertions.assertSame(invoker, resolver.resolve(path, "group", "1.2.0"));
+            Assertions.assertSame(invoker, resolver.resolve("java.Pojo", "group", "1.2.0"));
+            resolver.unregister(invoker);
+            Assertions.assertNull(resolver.resolve(path, "group", "1.2.0"));
+            Assertions.assertNull(resolver.resolve("java.Pojo", null, null));
+            Assertions.assertNull(resolver.resolve("ctx/java.Pojo", null, null));
+        }
+    }
+
+    private static Invoker<?> alias(String javaName, String descriptorName, String path, String group, String version) {
+        ServiceDescriptor descriptor = Mockito.mock(ServiceDescriptor.class);
+        Mockito.when(descriptor.getInterfaceName()).thenReturn(descriptorName);
+        ServiceModel model = Mockito.mock(ServiceModel.class);
+        Mockito.when(model.getServiceModel()).thenReturn(descriptor);
+        URL url = URL.valueOf("tri://localhost/" + path)
+                .setServiceInterface(javaName)
+                .addParameter("group", group)
+                .addParameter("version", version)
+                .setServiceModel(model);
+        Invoker<?> invoker = Mockito.mock(Invoker.class);
+        Mockito.when(invoker.getUrl()).thenReturn(url);
+        return invoker;
     }
 
     private Invoker<?> getInvokerByPath(String path) {

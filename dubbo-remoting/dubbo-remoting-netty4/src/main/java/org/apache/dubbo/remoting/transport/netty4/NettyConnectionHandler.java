@@ -106,6 +106,7 @@ public class NettyConnectionHandler extends ChannelInboundHandlerAdapter impleme
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
         Channel ch = ctx.channel();
+        connectionClient.onDisconnected(ch);
         NettyChannel channel = NettyChannel.getOrAddChannel(ch, connectionClient.getUrl(), connectionClient);
         try {
             Attribute<Boolean> goawayAttr = ch.attr(GO_AWAY_KEY);

@@ -22,13 +22,16 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.filter.DemoService;
 import org.apache.dubbo.rpc.cluster.filter.FilterChainBuilder;
+import org.apache.dubbo.rpc.cluster.filter.InvocationInterceptorBuilder;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,10 +41,33 @@ import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class AbstractClusterTest {
+
+    @Test
+    void filterAndInterceptorDestructionReachesTheOwnedCluster() {
+        URL url = URL.valueOf("dubbo://127.0.0.1:20881/" + DemoService.class.getName())
+                .setScopeModel(ApplicationModel.defaultModel().getInternalModule());
+        Directory<DemoService> directory = mock(Directory.class);
+        when(directory.getConsumerUrl()).thenReturn(url);
+        when(directory.getUrl()).thenReturn(url);
+        AbstractClusterInvoker<DemoService> owned = mock(AbstractClusterInvoker.class);
+        when(owned.getUrl()).thenReturn(url);
+        when(owned.getDirectory()).thenReturn(directory);
+        AbstractCluster.ClusterFilterInvoker<DemoService> filtered = new AbstractCluster.ClusterFilterInvoker<>(owned);
+        InvocationInterceptorBuilder builder = mock(InvocationInterceptorBuilder.class);
+        when(builder.buildClusterInterceptorChain(any(), anyString(), anyString()))
+                .thenAnswer(call -> call.getArgument(0));
+        ClusterInvoker<DemoService> chain =
+                new AbstractCluster.InvocationInterceptorInvoker<>(filtered, Collections.singletonList(builder));
+        chain.destroy();
+        verify(owned).destroy();
+    }
 
     @Test
     void testBuildClusterInvokerChain() {

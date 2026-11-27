@@ -28,12 +28,14 @@ import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.TriRpcStatus;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DeadlineFuture extends CompletableFuture<AppResponse> {
 
@@ -43,7 +45,9 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
     private final String address;
     private final int timeout;
     private final long start = System.currentTimeMillis();
-    private final List<Runnable> timeoutListeners = new ArrayList<>();
+    private final List<Runnable> timeoutListeners = new CopyOnWriteArrayList<>();
+    private final AtomicBoolean completionStarted = new AtomicBoolean();
+    private volatile boolean cancelledOrTimedOut;
     private final Timeout timeoutTask;
     private ExecutorService executor;
     private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(
@@ -77,18 +81,32 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
     }
 
     public void received(TriRpcStatus status, AppResponse appResponse) {
-        if (status.code != TriRpcStatus.Code.DEADLINE_EXCEEDED && !timeoutTask.isCancelled()) {
+        if (!timeoutTask.isCancelled()) {
             timeoutTask.cancel();
         }
-        if (getExecutor() != null) {
-            getExecutor().execute(() -> doReceived(status, appResponse));
+        ExecutorService callback = getExecutor();
+        if (callback != null && !callback.isShutdown()) {
+            try {
+                callback.execute(() -> doReceived(status, appResponse));
+            } catch (RejectedExecutionException error) {
+                doReceived(status, appResponse);
+            }
         } else {
             doReceived(status, appResponse);
         }
     }
 
     public void addTimeoutListener(Runnable runnable) {
-        timeoutListeners.add(runnable);
+        AtomicBoolean invoked = new AtomicBoolean();
+        Runnable once = () -> {
+            if (invoked.compareAndSet(false, true)) {
+                runnable.run();
+            }
+        };
+        timeoutListeners.add(once);
+        if (cancelledOrTimedOut) {
+            once.run();
+        }
     }
 
     public List<Runnable> getTimeoutListeners() {
@@ -115,8 +133,19 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
     }
 
     private void doReceived(TriRpcStatus status, AppResponse appResponse) {
-        if (isDone() || isCancelled() || isCompletedExceptionally()) {
+        if (isDone() || !completionStarted.compareAndSet(false, true)) {
             return;
+        }
+        cancelledOrTimedOut =
+                status.code == TriRpcStatus.Code.DEADLINE_EXCEEDED || status.code == TriRpcStatus.Code.CANCELLED;
+        if (cancelledOrTimedOut) {
+            for (Runnable listener : timeoutListeners) {
+                try {
+                    listener.run();
+                } catch (Throwable error) {
+                    LOGGER.warn("Failed to cancel an expired Triple call", error);
+                }
+            }
         }
         // Still needs to be discussed here, but for now, that's it
         // Remove the judgment of status is ok,
@@ -145,12 +174,11 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
 
             ExecutorService executor = getExecutor();
             if (executor != null && !executor.isShutdown()) {
-                executor.execute(() -> {
+                try {
+                    executor.execute(this::notifyTimeout);
+                } catch (RejectedExecutionException error) {
                     notifyTimeout();
-                    for (Runnable timeoutListener : getTimeoutListeners()) {
-                        timeoutListener.run();
-                    }
-                });
+                }
             } else {
                 notifyTimeout();
             }

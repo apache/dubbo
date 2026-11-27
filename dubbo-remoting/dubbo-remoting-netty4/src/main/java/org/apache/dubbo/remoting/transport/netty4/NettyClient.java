@@ -126,7 +126,9 @@ public class NettyClient extends AbstractClient {
                 int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
 
                 if (sslContext != null) {
-                    ch.pipeline().addLast("negotiation", new SslClientTlsHandler(sslContext, getConnectAddress()));
+                    ch.pipeline()
+                            .addLast("negotiation", new SslClientTlsHandler(sslContext, getConnectAddress(), (String)
+                                    getUrl().getAttribute("ssl.server-name")));
                 }
 
                 NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyClient.this);

@@ -117,6 +117,11 @@ public abstract class AbstractCluster implements Cluster {
         }
 
         @Override
+        public void destroy() {
+            filterInvoker.destroy();
+        }
+
+        @Override
         public URL getUrl() {
             return filterInvoker.getUrl();
         }
@@ -167,6 +172,11 @@ public abstract class AbstractCluster implements Cluster {
         @Override
         public boolean isDestroyed() {
             return interceptorInvoker.isDestroyed();
+        }
+
+        @Override
+        public void destroy() {
+            interceptorInvoker.destroy();
         }
 
         @Override

@@ -16,9 +16,11 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.call;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
+import org.apache.dubbo.remoting.api.connection.ConnectionStateProvider;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
@@ -32,6 +34,7 @@ import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.netty.handler.codec.http2.Http2Exception.StreamException;
 
@@ -48,13 +51,17 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     private final FrameworkModel frameworkModel;
     private final TripleWriteQueue writeQueue;
     private RequestMetadata requestMetadata;
-    private ClientStream stream;
+    private volatile ClientStream stream;
+    private final AtomicBoolean transportCancelled = new AtomicBoolean();
+    private final AtomicBoolean connectionReleased = new AtomicBoolean();
+    private volatile boolean connectionRetained;
     private ClientCall.Listener listener;
-    private boolean canceled;
+    private volatile boolean canceled;
+    private Throwable cancellationCause;
     private boolean headerSent;
     private boolean autoRequest = true;
     private int initialRequest = 1;
-    private boolean done;
+    private volatile boolean done;
     private boolean streamingResponse;
     private StreamException streamException;
 
@@ -134,10 +141,13 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
             Map<String, Object> attachments,
             Map<CharSequence, String> excludeHeaders,
             boolean isReturnTriException) {
-        if (done) {
-            return;
+        synchronized (this) {
+            if (done) {
+                return;
+            }
+            done = true;
         }
-        done = true;
+        finishStreamResources(status.isOk() ? null : status.asException());
         try {
             listener.onClose(status, StreamUtils.toAttachments(attachments), isReturnTriException);
         } catch (Throwable t) {
@@ -204,31 +214,55 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
 
     @Override
     public void cancelByLocal(Throwable t) {
-        if (canceled) {
+        synchronized (this) {
+            if (canceled) {
+                return;
+            }
+            cancellationCause = t;
+            canceled = true;
+        }
+        // A stream can exist before its first request header, especially for client streaming.
+        // Cancellation must also close that stream and prevent a later send from reviving the call.
+        cancelAllocatedStream(t);
+    }
+
+    private void cancelAllocatedStream(Throwable t) {
+        ClientStream allocated = stream;
+        if (allocated == null) {
+            finishStreamResources(t);
             return;
         }
-        // did not create stream
-        if (!headerSent) {
+        if (!transportCancelled.compareAndSet(false, true)) {
             return;
         }
-        canceled = true;
-        if (stream == null) {
-            return;
+        try {
+            if (t instanceof StreamException && ((StreamException) t).error().equals(FLOW_CONTROL_ERROR)) {
+                TriRpcStatus status = TriRpcStatus.CANCELLED
+                        .withCause(t)
+                        .withDescription("Due flowcontrol over pendingbytes, Cancelled by client");
+                allocated.cancelByLocal(status);
+                streamException = (StreamException) t;
+            } else {
+                TriRpcStatus status = TriRpcStatus.CANCELLED.withCause(t).withDescription("Cancelled by client");
+                allocated.cancelByLocal(status);
+            }
+            if (requestMetadata.cancellationContext != null) {
+                requestMetadata.cancellationContext.cancel(t);
+            }
+        } finally {
+            finishStreamResources(t);
         }
-        if (t instanceof StreamException && ((StreamException) t).error().equals(FLOW_CONTROL_ERROR)) {
-            TriRpcStatus status = TriRpcStatus.CANCELLED
-                    .withCause(t)
-                    .withDescription("Due flowcontrol over pendingbytes, Cancelled by client");
-            stream.cancelByLocal(status);
-            streamException = (StreamException) t;
-        } else {
-            TriRpcStatus status = TriRpcStatus.CANCELLED.withCause(t).withDescription("Cancelled by client");
-            stream.cancelByLocal(status);
-        }
-        TriRpcStatus status = TriRpcStatus.CANCELLED.withCause(t).withDescription("Cancelled by client");
-        stream.cancelByLocal(status);
-        if (requestMetadata.cancellationContext != null) {
-            requestMetadata.cancellationContext.cancel(t);
+    }
+
+    private void finishStreamResources(Throwable cause) {
+        try {
+            if (requestMetadata != null && requestMetadata.streamCancellation != null) {
+                requestMetadata.streamCancellation.cancel(cause);
+            }
+        } finally {
+            if (connectionRetained && connectionReleased.compareAndSet(false, true)) {
+                connectionClient.release();
+            }
         }
     }
 
@@ -250,7 +284,13 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         }
         final byte[] data;
         try {
-            data = requestMetadata.packableMethod.packRequest(message);
+            byte[] retained = requestMetadata.retryAttempt == null
+                    ? null
+                    : requestMetadata.retryAttempt.getState().getRequest();
+            data = retained == null ? requestMetadata.packableMethod.packRequest(message) : retained;
+            if (retained == null && requestMetadata.retryAttempt != null) {
+                requestMetadata.retryAttempt.getState().remember(data);
+            }
             int compressed = Identity.MESSAGE_ENCODING.equals(requestMetadata.compressor.getMessageEncoding()) ? 0 : 1;
             final byte[] compress = requestMetadata.compressor.compress(data);
             stream.sendMessage(compress, compressed).addListener(f -> {
@@ -305,20 +345,57 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         this.listener = responseListener;
         this.streamingResponse = responseListener.streamingResponse();
 
-        ClientStream stream;
-        for (ClientStreamFactory factory : frameworkModel.getActivateExtensions(ClientStreamFactory.class)) {
-            stream = factory.createClientStream(connectionClient, frameworkModel, executor, this, writeQueue);
-            if (stream != null) {
-                // Set this.stream BEFORE initStream() to avoid race condition:
-                // initStream() triggers onReady callback asynchronously, which may execute
-                // in another thread before this.stream is set if we set it after initStream().
-                // This would cause isReady() to return false because it checks stream == null.
-                this.stream = stream;
-                stream.initStream();
-                return;
+        // Native xDS address withdrawal retires an Invoker, not its already dispatched calls.
+        // Each call keeps the physical connection alive until its own terminal/cancel event.
+        URL connectionUrl = connectionClient.getUrl();
+        synchronized (this) {
+            if (!canceled
+                    && !done
+                    && connectionUrl != null
+                    && Boolean.TRUE.equals(connectionUrl.getAttribute(ConnectionStateProvider.BACKOFF_ATTRIBUTE))) {
+                if (!connectionClient.retain()) {
+                    throw TriRpcStatus.UNAVAILABLE
+                            .withDescription("Native connection has been retired")
+                            .asException();
+                }
+                connectionRetained = true;
             }
         }
-        throw new IllegalStateException("No available ClientStreamFactory");
+        try {
+            ClientStream stream;
+            for (ClientStreamFactory factory : frameworkModel.getActivateExtensions(ClientStreamFactory.class)) {
+                stream = factory.createClientStream(connectionClient, frameworkModel, executor, this, writeQueue);
+                if (stream != null) {
+                    // Set this.stream BEFORE initStream() to avoid race condition:
+                    // initStream() triggers onReady callback asynchronously, which may execute
+                    // in another thread before this.stream is set if we set it after initStream().
+                    // This would cause isReady() to return false because it checks stream == null.
+                    this.stream = stream;
+                    stream.initStream();
+                    if (metadata.streamCancellation != null) {
+                        metadata.streamCancellation.addListener(ignored -> {
+                            Throwable cause = metadata.streamCancellation.getCancellationCause();
+                            if (cause != null && !done) {
+                                cancelByLocal(cause);
+                                TriRpcStatus status = TriRpcStatus.getStatus(cause);
+                                TriRpcStatus terminal = status.code == TriRpcStatus.Code.UNKNOWN
+                                        ? TriRpcStatus.CANCELLED.withCause(cause)
+                                        : status;
+                                executor.execute(() -> onComplete(terminal, null, null, false));
+                            }
+                        });
+                    }
+                    if (canceled && !done) {
+                        cancelAllocatedStream(cancellationCause);
+                    }
+                    return;
+                }
+            }
+            throw new IllegalStateException("No available ClientStreamFactory");
+        } catch (RuntimeException | Error error) {
+            cancelByLocal(error);
+            throw error;
+        }
     }
 
     @Override

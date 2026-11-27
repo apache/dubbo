@@ -25,7 +25,9 @@ import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 import org.apache.dubbo.rpc.protocol.dubbo.FutureAdapter;
 
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -172,6 +174,15 @@ public class AsyncRpcResult implements Result {
                 return responseFuture.get();
             }
         } catch (Exception e) {
+            if (e instanceof ExecutionException && invocation.get(TimeoutCountDown.CALL_ATTRIBUTE) != null) {
+                Throwable cause = e.getCause();
+                while (cause instanceof CompletionException && cause.getCause() != null) {
+                    cause = cause.getCause();
+                }
+                if (cause instanceof RpcException) {
+                    throw (RpcException) cause;
+                }
+            }
             // This should not happen in normal request process;
             logger.error(
                     PROXY_ERROR_ASYNC_RESPONSE,
@@ -247,12 +258,43 @@ public class AsyncRpcResult implements Result {
     }
 
     public Result whenCompleteWithContext(BiConsumer<Result, Throwable> fn) {
-        this.responseFuture = this.responseFuture.whenComplete((v, t) -> {
+        CompletableFuture<AppResponse> original = this.responseFuture;
+        CompletableFuture<AppResponse> observed = original.whenComplete((v, t) -> {
             if (async) {
                 RpcContext.restoreContext(storedContext);
             }
             fn.accept(v, t);
         });
+
+        if (invocation.get(TimeoutCountDown.CALL_ATTRIBUTE) != null) {
+            // CompletionStage dependents do not propagate cancellation to their source.
+            CompletableFuture<AppResponse> cancellable = new CompletableFuture<AppResponse>() {
+                @Override
+                public boolean cancel(boolean mayInterruptIfRunning) {
+                    if (isDone()) {
+                        return false;
+                    }
+                    boolean cancelled = original.cancel(mayInterruptIfRunning);
+                    return super.cancel(mayInterruptIfRunning) || cancelled;
+                }
+            };
+            observed.whenComplete((response, error) -> {
+                if (error == null) {
+                    cancellable.complete(response);
+                } else {
+                    Throwable cause = error;
+                    while (cause instanceof CompletionException && cause.getCause() != null) {
+                        cause = cause.getCause();
+                    }
+                    // Preserve Future cancellation across CompletionStage wrappers. Release the source
+                    // before notifying application callbacks, including callbacks that may block.
+                    cancellable.completeExceptionally(cause instanceof CancellationException ? cause : error);
+                }
+            });
+            this.responseFuture = cancellable;
+        } else {
+            this.responseFuture = observed;
+        }
 
         if (setFutureWhenSync || ((RpcInvocation) invocation).getInvokeMode() != InvokeMode.SYNC) {
             // Necessary! update future in context, see https://github.com/apache/dubbo/issues/9461

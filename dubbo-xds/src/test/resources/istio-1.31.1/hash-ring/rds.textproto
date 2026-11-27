@@ -1,0 +1,77 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements. See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership. The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License. You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+
+name: "outbound|7070||echo-ring.dubbo-xds-test.svc.cluster.local"
+virtual_hosts {
+  name: "echo-ring.dubbo-xds-test.svc.cluster.local:7070"
+  domains: "echo-ring.dubbo-xds-test.svc.cluster.local"
+  domains: "echo-ring.dubbo-xds-test.svc.cluster.local:7070"
+  domains: "echo-ring.dubbo-xds-test.svc.cluster.local."
+  domains: "echo-ring.dubbo-xds-test.svc.cluster.local.:7070"
+  domains: "echo-ring"
+  domains: "echo-ring:7070"
+  domains: "echo-ring.dubbo-xds-test.svc"
+  domains: "echo-ring.dubbo-xds-test.svc:7070"
+  domains: "echo-ring.dubbo-xds-test"
+  domains: "echo-ring.dubbo-xds-test:7070"
+  domains: "10.0.201.164"
+  domains: "10.0.201.164:7070"
+  routes {
+    match {
+      prefix: "/"
+    }
+    route {
+      cluster: "outbound|7070||echo-ring.dubbo-xds-test.svc.cluster.local"
+      timeout {
+      }
+      retry_policy {
+        retry_on: "connect-failure,refused-stream,unavailable,cancelled,retriable-status-codes"
+        num_retries {
+          value: 2
+        }
+        host_selection_retry_max_attempts: 5
+      }
+      hash_policy {
+        header {
+          header_name: "x-user"
+        }
+      }
+      max_stream_duration {
+        max_stream_duration {
+        }
+      }
+    }
+    metadata {
+      filter_metadata {
+        key: "istio"
+        value {
+          fields {
+            key: "config"
+            value {
+              string_value: "/apis/networking.istio.io/v1/namespaces/dubbo-xds-test/virtual-service/echo-ring"
+            }
+          }
+        }
+      }
+    }
+    decorator {
+      operation: "echo-ring.dubbo-xds-test.svc.cluster.local:7070/*"
+    }
+  }
+  include_request_attempt_count: true
+}

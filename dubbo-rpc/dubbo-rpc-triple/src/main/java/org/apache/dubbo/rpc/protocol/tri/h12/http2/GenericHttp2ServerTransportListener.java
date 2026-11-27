@@ -35,8 +35,8 @@ import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder;
 import org.apache.dubbo.remoting.http12.message.StreamingDecoder.FragmentListener;
 import org.apache.dubbo.remoting.http12.message.codec.JsonCodec;
+import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
@@ -86,6 +86,9 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
 
     private final H2StreamChannel h2StreamChannel;
     private final StreamingDecoder streamingDecoder;
+    // Multiple HTTP/2 streams are initialized on one event-loop thread. Cancellation belongs
+    // to the request, including when its response observer changes from unary to streaming.
+    private final CancellationContext cancellationContext = new CancellationContext();
     private Http2ServerChannelObserver responseObserver;
     private ServerCallListener serverCallListener;
 
@@ -120,7 +123,7 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
         responseObserver.setExceptionCustomizer(getExceptionCustomizer());
         RpcInvocationBuildContext context = getContext();
         responseObserver.setResponseEncoder(context == null ? JsonCodec.INSTANCE : context.getHttpMessageEncoder());
-        responseObserver.setCancellationContext(RpcContext.getCancellationContext());
+        responseObserver.setCancellationContext(cancellationContext);
         responseObserver.setStreamingDecoder(streamingDecoder);
         return responseObserver;
     }

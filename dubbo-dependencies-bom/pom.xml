@@ -875,6 +875,11 @@
       <!-- grpc related dependencies -->
       <dependency>
         <groupId>io.grpc</groupId>
+        <artifactId>grpc-xds</artifactId>
+        <version>${grpc.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.grpc</groupId>
         <artifactId>grpc-core</artifactId>
         <version>${grpc.version}</version>
       </dependency>

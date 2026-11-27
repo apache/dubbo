@@ -25,10 +25,11 @@ import org.apache.dubbo.remoting.transport.AbstractClient;
 import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
+import java.util.function.Consumer;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 
-public abstract class AbstractConnectionClient extends AbstractClient {
+public abstract class AbstractConnectionClient extends AbstractClient implements ConnectionStateProvider {
 
     protected WireProtocol protocol;
 
@@ -48,6 +49,21 @@ public abstract class AbstractConnectionClient extends AbstractClient {
     }
 
     protected AbstractConnectionClient() {}
+
+    @Override
+    public State getConnectivityState() {
+        return isClosed() ? State.SHUTDOWN : isConnected() ? State.READY : State.TRANSIENT_FAILURE;
+    }
+
+    @Override
+    public AutoCloseable addConnectivityListener(Consumer<State> listener) {
+        // Compatibility fallback for transports that do not expose repeated state notifications.
+        listener.accept(getConnectivityState());
+        return () -> {};
+    }
+
+    /** Called for channel loss; stale channels must not invalidate a replacement connection. */
+    public void onDisconnected(Object channel) {}
 
     public final void increase() {
         COUNTER_UPDATER.set(this, 1L);

@@ -25,6 +25,7 @@ import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.command.HttpWriteQueue;
 import org.apache.dubbo.remoting.http12.exception.UnsupportedMediaTypeException;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
+import org.apache.dubbo.remoting.http12.h2.Http2ServerTransportListenerDecorator;
 import org.apache.dubbo.remoting.http12.h2.Http2ServerTransportListenerFactory;
 import org.apache.dubbo.remoting.http12.h2.Http2TransportListener;
 import org.apache.dubbo.remoting.http12.h2.command.Http2WriteQueueChannel;
@@ -95,7 +96,13 @@ public class NettyHttp2ProtocolSelectorHandler extends SimpleChannelInboundHandl
             h2StreamChannel = new Http2WriteQueueChannel(h2StreamChannel, writeQueue);
         }
         Http2TransportListener http2TransportListener = factory.newInstance(h2StreamChannel, url, frameworkModel);
-        channel.closeFuture().addListener(future -> http2TransportListener.close());
+        for (Http2ServerTransportListenerDecorator decorator : frameworkModel
+                .getExtensionLoader(Http2ServerTransportListenerDecorator.class)
+                .getActivateExtensions()) {
+            http2TransportListener = decorator.decorate(http2TransportListener, h2StreamChannel, url, frameworkModel);
+        }
+        Http2TransportListener selectedListener = http2TransportListener;
+        channel.closeFuture().addListener(future -> selectedListener.close());
         ctx.pipeline()
                 .addLast(new NettyHttp2FrameHandler(h2StreamChannel, http2TransportListener))
                 .remove(this);

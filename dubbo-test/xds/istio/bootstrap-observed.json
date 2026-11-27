@@ -1,0 +1,104 @@
+[
+  {
+    "pod": "echo-client-7dcb7c855f-bc66p",
+    "ready": true,
+    "agent_only": true,
+    "bootstrap_path": "/etc/istio/proxy/grpc-bootstrap.json",
+    "xds_servers": [
+      {
+        "server_uri": "unix:///etc/istio/proxy/XDS",
+        "channel_creds": [
+          {
+            "type": "insecure"
+          }
+        ],
+        "server_features": [
+          "xds_v3"
+        ]
+      }
+    ],
+    "node_id": "sidecar~172.20.158.100~echo-client-7dcb7c855f-bc66p.dubbo-xds-test~dubbo-xds-test.svc.cluster.local",
+    "generator": "grpc",
+    "certificate_providers": {
+      "default": {
+        "plugin_name": "file_watcher",
+        "config": {
+          "certificate_file": "/var/lib/istio/data/cert-chain.pem",
+          "private_key_file": "/var/lib/istio/data/key.pem",
+          "ca_certificate_file": "/var/lib/istio/data/root-cert.pem",
+          "refresh_interval": "900s"
+        }
+      }
+    },
+    "server_listener_resource_name_template": "xds.istio.io/grpc/lds/inbound/%s",
+    "certificate_files_readable_from_app": true
+  },
+  {
+    "pod": "echo-v1-c6865c7c8-gvprw",
+    "ready": true,
+    "agent_only": true,
+    "bootstrap_path": "/etc/istio/proxy/grpc-bootstrap.json",
+    "xds_servers": [
+      {
+        "server_uri": "unix:///etc/istio/proxy/XDS",
+        "channel_creds": [
+          {
+            "type": "insecure"
+          }
+        ],
+        "server_features": [
+          "xds_v3"
+        ]
+      }
+    ],
+    "node_id": "sidecar~172.20.158.98~echo-v1-c6865c7c8-gvprw.dubbo-xds-test~dubbo-xds-test.svc.cluster.local",
+    "generator": "grpc",
+    "certificate_providers": {
+      "default": {
+        "plugin_name": "file_watcher",
+        "config": {
+          "certificate_file": "/var/lib/istio/data/cert-chain.pem",
+          "private_key_file": "/var/lib/istio/data/key.pem",
+          "ca_certificate_file": "/var/lib/istio/data/root-cert.pem",
+          "refresh_interval": "900s"
+        }
+      }
+    },
+    "server_listener_resource_name_template": "xds.istio.io/grpc/lds/inbound/%s",
+    "certificate_files_readable_from_app": true
+  },
+  {
+    "pod": "echo-v2-f89c586b8-lnxpk",
+    "ready": true,
+    "agent_only": true,
+    "bootstrap_path": "/etc/istio/proxy/grpc-bootstrap.json",
+    "xds_servers": [
+      {
+        "server_uri": "unix:///etc/istio/proxy/XDS",
+        "channel_creds": [
+          {
+            "type": "insecure"
+          }
+        ],
+        "server_features": [
+          "xds_v3"
+        ]
+      }
+    ],
+    "node_id": "sidecar~172.20.158.99~echo-v2-f89c586b8-lnxpk.dubbo-xds-test~dubbo-xds-test.svc.cluster.local",
+    "generator": "grpc",
+    "certificate_providers": {
+      "default": {
+        "plugin_name": "file_watcher",
+        "config": {
+          "certificate_file": "/var/lib/istio/data/cert-chain.pem",
+          "private_key_file": "/var/lib/istio/data/key.pem",
+          "ca_certificate_file": "/var/lib/istio/data/root-cert.pem",
+          "refresh_interval": "900s"
+        }
+      }
+    },
+    "server_listener_resource_name_template": "xds.istio.io/grpc/lds/inbound/%s",
+    "certificate_files_readable_from_app": true
+  }
+]

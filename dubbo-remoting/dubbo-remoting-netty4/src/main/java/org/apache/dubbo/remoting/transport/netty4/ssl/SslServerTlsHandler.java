@@ -115,6 +115,15 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
             return;
         }
 
+        if (!providerConnectionConfig.isTlsEnabled()) {
+            if (isSsl(byteBuf)) {
+                channelHandlerContext.close();
+            } else {
+                channelHandlerContext.pipeline().remove(this);
+            }
+            return;
+        }
+
         if (isSsl(byteBuf)) {
             SslContext sslContext = SslContexts.buildServerSslContext(providerConnectionConfig);
             enableSsl(channelHandlerContext, sslContext);

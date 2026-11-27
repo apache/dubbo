@@ -26,6 +26,7 @@ import org.apache.dubbo.common.ssl.ProviderCert;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.api.ProtocolDetector;
+import org.apache.dubbo.remoting.api.ServerProtocolGuard;
 import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import org.apache.dubbo.remoting.transport.netty4.ssl.SslContexts;
@@ -86,6 +87,7 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
                 "",
                 "Unexpected exception from downstream before protocol detected.",
                 cause);
+        ctx.close();
     }
 
     @Override
@@ -125,6 +127,15 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
                 certManager.getProviderConnectionConfig(url, ctx.channel().remoteAddress());
 
         if (providerConnectionConfig != null && canDetectSsl(in)) {
+            if (!providerConnectionConfig.isTlsEnabled()) {
+                if (isSsl(in)) {
+                    in.clear();
+                    ctx.close();
+                    return;
+                }
+                detectProtocol(ctx, url, channel, in);
+                return;
+            }
             if (isSsl(in)) {
                 enableSsl(ctx, providerConnectionConfig);
                 return;
@@ -200,6 +211,11 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
                 case UNRECOGNIZED:
                     continue;
                 case RECOGNIZED:
+                    for (ServerProtocolGuard guard : url.getOrDefaultFrameworkModel()
+                            .getExtensionLoader(ServerProtocolGuard.class)
+                            .getActivateExtensions()) {
+                        guard.check(url, result);
+                    }
                     ChannelHandler localHandler = this.handlerMapper.getOrDefault(name, handler);
                     URL localURL = this.urlMapper.getOrDefault(name, url);
                     channel.setUrl(localURL);

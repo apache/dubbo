@@ -33,6 +33,12 @@
 
   <dependencyManagement>
     <dependencies>
+      <!-- optional native Istio xDS integration -->
+      <dependency>
+        <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-xds</artifactId>
+        <version>${project.version}</version>
+      </dependency>
       <!-- cluster -->
       <dependency>
         <groupId>org.apache.dubbo</groupId>

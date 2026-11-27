@@ -40,6 +40,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.protocol.dubbo.FutureAdapter;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
@@ -290,7 +291,13 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
             Object timeoutKey = invocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY);
             long timeout = RpcUtils.convertToNumber(timeoutKey, Integer.MAX_VALUE);
 
-            asyncResult.get(timeout, TimeUnit.MILLISECONDS);
+            if (invocation.get(TimeoutCountDown.CALL_ATTRIBUTE) != null) {
+                // The transport/cluster owns this call's deadline and cancellation.
+                // A second waiter timeout can otherwise win and hide DEADLINE_EXCEEDED.
+                asyncResult.get();
+            } else {
+                asyncResult.get(timeout, TimeUnit.MILLISECONDS);
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RpcException(

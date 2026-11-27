@@ -1,0 +1,55 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements. See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership. The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License. You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: native-xds-policy-probe
+  namespace: dubbo-xds-test
+  annotations:
+    inject.istio.io/templates: grpc-agent
+    proxy.istio.io/config: '{"holdApplicationUntilProxyStarts": true}'
+  labels:
+    app: native-xds-policy-probe
+spec:
+  serviceAccountName: xds-echo
+  restartPolicy: Never
+  containers:
+    - name: app
+      image: eclipse-temurin@sha256:e0c60c487345d1dc9d0fc7b6f0496f3cc941e5132e09296cc17a6decc71b902b
+      command: ["sh", "-c"]
+      args:
+        - >-
+          while [ ! -f /probe/ready ]; do sleep 1; done;
+          java -Xmx256m -cp '/probe/*' org.apache.dubbo.xds.tools.XdsResourceCapture
+          echo-policy.dubbo-xds-test.svc.cluster.local 7070 /probe/capture;
+          echo $? > /probe/exit-code;
+          touch /probe/done;
+          sleep 3600
+      volumeMounts:
+        - name: probe
+          mountPath: /probe
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: "1"
+          memory: 512Mi
+  volumes:
+    - name: probe
+      emptyDir: {}

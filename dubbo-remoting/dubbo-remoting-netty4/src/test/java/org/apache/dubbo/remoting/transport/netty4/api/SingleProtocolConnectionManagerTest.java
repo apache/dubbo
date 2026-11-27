@@ -33,6 +33,7 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import org.junit.jupiter.api.AfterAll;
@@ -116,5 +117,38 @@ public class SingleProtocolConnectionManagerTest {
             connectionManager.forEachConnection(consumer2);
         }
         connectionClient.close();
+    }
+
+    @Test
+    public void sameAddressReusesOnlyTheSameConnectionIdentity() throws Exception {
+        URL firstUrl = URL.valueOf(url.toFullString()).setScopeModel(url.getScopeModel());
+        firstUrl = firstUrl.putAttribute("connection.identity", "policy-first");
+        URL otherUrl = URL.valueOf(url.toFullString()).setScopeModel(url.getScopeModel());
+        otherUrl = otherUrl.putAttribute("connection.identity", "policy-other");
+        NettyConnectionClient first =
+                (NettyConnectionClient) connectionManager.connect(firstUrl, new DefaultPuHandler());
+        AbstractConnectionClient reused = connectionManager.connect(firstUrl, new DefaultPuHandler());
+        AbstractConnectionClient other = connectionManager.connect(otherUrl, new DefaultPuHandler());
+        boolean releasedFirst = false;
+        try {
+            Assertions.assertSame(first, reused);
+            Assertions.assertNotSame(first, other);
+            first.close();
+            reused.close();
+            releasedFirst = true;
+            Assertions.assertTrue(first.getClosePromise().await(5, TimeUnit.SECONDS));
+            AbstractConnectionClient retainedOther = connectionManager.connect(otherUrl, new DefaultPuHandler());
+            try {
+                Assertions.assertSame(other, retainedOther);
+            } finally {
+                retainedOther.close();
+            }
+        } finally {
+            if (!releasedFirst) {
+                first.close();
+                reused.close();
+            }
+            other.close();
+        }
     }
 }

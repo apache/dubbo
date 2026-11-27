@@ -1,0 +1,270 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements. See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership. The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License. You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Native SDK business smoke/acceptance environment; independent of the Go baseline.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dubbo-xds-native
+  labels:
+    istio-injection: enabled
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: native-xds
+  namespace: dubbo-xds-native
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: echo
+  namespace: dubbo-xds-native
+spec:
+  selector:
+    app: native-xds-echo
+  ports:
+  - name: grpc-triple
+    port: 7070
+    targetPort: 17070
+  - name: tcp-dubbo
+    port: 7071
+    targetPort: 20880
+---
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: echo
+  namespace: dubbo-xds-native
+spec:
+  selector:
+    matchLabels:
+      app: native-xds-echo
+  mtls:
+    mode: STRICT
+  portLevelMtls:
+    '20880':
+      mode: DISABLE
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: echo
+  namespace: dubbo-xds-native
+spec:
+  selector:
+    matchLabels:
+      app: native-xds-echo
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals:
+        - cluster.local/ns/dubbo-xds-native/sa/native-xds
+    to:
+    - operation:
+        ports:
+        - '17070'
+---
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: echo
+  namespace: dubbo-xds-native
+spec:
+  host: echo.dubbo-xds-native.svc.cluster.local
+  trafficPolicy:
+    portLevelSettings:
+    - port:
+        number: 7070
+      tls:
+        mode: ISTIO_MUTUAL
+    - port:
+        number: 7071
+      tls:
+        mode: DISABLE
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  - name: v2
+    labels:
+      version: v2
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: echo
+  namespace: dubbo-xds-native
+spec:
+  hosts:
+  - echo.dubbo-xds-native.svc.cluster.local
+  http:
+  - route:
+    - destination:
+        host: echo.dubbo-xds-native.svc.cluster.local
+        port:
+          number: 7070
+        subset: v1
+      weight: 50
+    - destination:
+        host: echo.dubbo-xds-native.svc.cluster.local
+        port:
+          number: 7070
+        subset: v2
+      weight: 50
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: echo-v1
+  namespace: dubbo-xds-native
+  labels:
+    app: native-xds-echo
+    version: v1
+  annotations:
+    inject.istio.io/templates: grpc-agent
+    proxy.istio.io/config: '{"holdApplicationUntilProxyStarts": true}'
+spec:
+  serviceAccountName: native-xds
+  restartPolicy: Never
+  containers:
+  - name: app
+    image: eclipse-temurin@sha256:e0c60c487345d1dc9d0fc7b6f0496f3cc941e5132e09296cc17a6decc71b902b
+    command:
+    - sh
+    - -c
+    - while [ ! -f /runtime/bundle-ready ]; do sleep 1; done; exec java -jar /runtime/dubbo-xds-native-test-app-3.3.7-SNAPSHOT.jar
+      provider v1 /runtime
+    env:
+    - name: JAVA_TOOL_OPTIONS
+      value: -XX:ActiveProcessorCount=2
+    volumeMounts:
+    - name: runtime
+      mountPath: /runtime
+    readinessProbe:
+      exec:
+        command:
+        - sh
+        - -c
+        - test -f /runtime/provider-ready
+      initialDelaySeconds: 1
+      periodSeconds: 2
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: '1'
+        memory: 768Mi
+  volumes:
+  - name: runtime
+    emptyDir: {}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: echo-v2
+  namespace: dubbo-xds-native
+  labels:
+    app: native-xds-echo
+    version: v2
+  annotations:
+    inject.istio.io/templates: grpc-agent
+    proxy.istio.io/config: '{"holdApplicationUntilProxyStarts": true}'
+spec:
+  serviceAccountName: native-xds
+  restartPolicy: Never
+  containers:
+  - name: app
+    image: eclipse-temurin@sha256:e0c60c487345d1dc9d0fc7b6f0496f3cc941e5132e09296cc17a6decc71b902b
+    command:
+    - sh
+    - -c
+    - while [ ! -f /runtime/bundle-ready ]; do sleep 1; done; exec java -jar /runtime/dubbo-xds-native-test-app-3.3.7-SNAPSHOT.jar
+      provider v2 /runtime
+    env:
+    - name: JAVA_TOOL_OPTIONS
+      value: -XX:ActiveProcessorCount=2
+    volumeMounts:
+    - name: runtime
+      mountPath: /runtime
+    readinessProbe:
+      exec:
+        command:
+        - sh
+        - -c
+        - test -f /runtime/provider-ready
+      initialDelaySeconds: 1
+      periodSeconds: 2
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: '1'
+        memory: 768Mi
+  volumes:
+  - name: runtime
+    emptyDir: {}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: echo-client
+  namespace: dubbo-xds-native
+  labels:
+    app: native-xds-client
+    version: client
+  annotations:
+    inject.istio.io/templates: grpc-agent
+    proxy.istio.io/config: '{"holdApplicationUntilProxyStarts": true}'
+spec:
+  serviceAccountName: native-xds
+  restartPolicy: Never
+  containers:
+  - name: app
+    image: eclipse-temurin@sha256:e0c60c487345d1dc9d0fc7b6f0496f3cc941e5132e09296cc17a6decc71b902b
+    command:
+    - sh
+    - -c
+    - while [ ! -f /runtime/bundle-ready ]; do sleep 1; done; exec java -jar /runtime/dubbo-xds-native-test-app-3.3.7-SNAPSHOT.jar
+      consumer echo.dubbo-xds-native.svc.cluster.local /runtime
+    env:
+    - name: JAVA_TOOL_OPTIONS
+      value: -XX:ActiveProcessorCount=2
+    volumeMounts:
+    - name: runtime
+      mountPath: /runtime
+    readinessProbe:
+      exec:
+        command:
+        - sh
+        - -c
+        - test -f /runtime/consumer-ready
+      initialDelaySeconds: 1
+      periodSeconds: 2
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: '1'
+        memory: 768Mi
+  volumes:
+  - name: runtime
+    emptyDir: {}
