@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.TriRpcStatus.Code;
 import java.io.Serializable;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.QueryStringDecoder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -195,6 +196,8 @@ class TriRpcStatusTest {
                 .toEncodedMessage();
         Assertions.assertTrue(message.contains("desc"));
         Assertions.assertTrue(message.contains("test"));
+        Assertions.assertTrue(message.chars().allMatch(c -> c > ' ' && c <= '~'));
+        Assertions.assertTrue(message.contains("IllegalStateException:%20test"));
     }
 
     @Test
@@ -221,6 +224,34 @@ class TriRpcStatusTest {
     void encodeMessage() {
         Assertions.assertTrue(TriRpcStatus.encodeMessage(null).isEmpty());
         Assertions.assertTrue(TriRpcStatus.encodeMessage("").isEmpty());
+    }
+
+    @Test
+    void encodeMessageKeepsPrintableAscii() {
+        // grpc-js decodes grpc-message with decodeURI, which leaves escapes such as %3A and %2F undecoded
+        Assertions.assertEquals("order%2042:%20not%20found", TriRpcStatus.encodeMessage("order 42: not found"));
+        for (char c = '!'; c <= '~'; c++) {
+            if (c != '%' && c != '+') {
+                Assertions.assertEquals(String.valueOf(c), TriRpcStatus.encodeMessage(String.valueOf(c)));
+            }
+        }
+    }
+
+    @Test
+    void encodeMessageEscapesWhitespacePercentPlusAndNonAscii() {
+        Assertions.assertEquals("%20a%09b%0A%20", TriRpcStatus.encodeMessage(" a\tb\n "));
+        Assertions.assertEquals("done%20", TriRpcStatus.encodeMessage("done "));
+        Assertions.assertEquals("100%25", TriRpcStatus.encodeMessage("100%"));
+        // '+' stays escaped: Dubbo 3.0 to 3.3.7 consumers decode it as a space
+        Assertions.assertEquals("50%25%2B1", TriRpcStatus.encodeMessage("50%+1"));
+        Assertions.assertEquals("%E4%B8%AD%F0%9F%98%AF%7F", TriRpcStatus.encodeMessage("中😯\u007f"));
+        for (String message :
+                new String[] {"order 42: not found", "C++ a+b 50% done", " 中文 café 😯 ", "%E4%B8%AD", "a\r\nb"}) {
+            String encoded = TriRpcStatus.encodeMessage(message);
+            Assertions.assertEquals(message, TriRpcStatus.decodeMessage(encoded));
+            // what Dubbo 3.0 to 3.3.7 consumers use
+            Assertions.assertEquals(message, QueryStringDecoder.decodeComponent(encoded));
+        }
     }
 
     @Test
