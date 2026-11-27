@@ -59,7 +59,9 @@ import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.OVERRIDE_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.CLEAN_CHECK_TIMEOUT_KEY;
 import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.DEFAULT_CLEAN_CHECK_TIMEOUT;
 import static org.apache.dubbo.registry.Constants.DEFAULT_SESSION_TIMEOUT;
 import static org.apache.dubbo.registry.Constants.REGISTER;
 import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
@@ -94,7 +96,8 @@ public class MulticastRegistry extends FailbackRegistry {
      * Timeout in milliseconds for the liveness probe performed while cleaning expired providers.
      * A provider host that is unreachable (for example a host that dropped off the network without
      * closing its TCP stack) would otherwise block the clean thread until the OS-level TCP timeout,
-     * which is minutes and stalls expiry detection for every other provider.
+     * which is minutes and stalls expiry detection for every other provider. A provider that is
+     * merely slow to accept a connection within this budget is treated as expired.
      */
     private final int cleanCheckTimeout;
 
@@ -143,7 +146,7 @@ public class MulticastRegistry extends FailbackRegistry {
             throw new IllegalStateException(e.getMessage(), e);
         }
         this.cleanPeriod = url.getParameter(SESSION_TIMEOUT_KEY, DEFAULT_SESSION_TIMEOUT);
-        this.cleanCheckTimeout = url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
+        this.cleanCheckTimeout = url.getParameter(CLEAN_CHECK_TIMEOUT_KEY, DEFAULT_CLEAN_CHECK_TIMEOUT);
         if (url.getParameter("clean", true)) {
             this.cleanFuture = cleanExecutor.scheduleWithFixedDelay(
                     () -> {
