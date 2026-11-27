@@ -37,15 +37,18 @@ public final class StreamUtils {
         return new InputStream() {
             private int mPosition = 0;
             private int mMark = 0;
-            private final int mLimit = Math.min(limit, is.available());
+            private final int mLimit = limit;
 
             @Override
             public int read() throws IOException {
-                if (mPosition < mLimit) {
-                    mPosition++;
-                    return is.read();
+                if (mPosition >= mLimit) {
+                    return -1;
                 }
-                return -1;
+                int read = is.read();
+                if (read != -1) {
+                    mPosition++;
+                }
+                return read;
             }
 
             @Override
@@ -58,41 +61,34 @@ public final class StreamUtils {
                     throw new IndexOutOfBoundsException();
                 }
 
+                if (len == 0) {
+                    return 0;
+                }
                 if (mPosition >= mLimit) {
                     return -1;
                 }
 
-                if (mPosition + len > mLimit) {
-                    len = mLimit - mPosition;
+                int read = is.read(b, off, Math.min(len, mLimit - mPosition));
+                if (read > 0) {
+                    mPosition += read;
                 }
-
-                if (len <= 0) {
-                    return 0;
-                }
-
-                is.read(b, off, len);
-                mPosition += len;
-                return len;
+                return read;
             }
 
             @Override
             public long skip(long len) throws IOException {
-                if (mPosition + len > mLimit) {
-                    len = mLimit - mPosition;
-                }
-
-                if (len <= 0) {
+                if (len <= 0 || mPosition >= mLimit) {
                     return 0;
                 }
 
-                is.skip(len);
-                mPosition += len;
-                return len;
+                long skipped = is.skip(Math.min(len, mLimit - mPosition));
+                mPosition += skipped;
+                return skipped;
             }
 
             @Override
-            public int available() {
-                return mLimit - mPosition;
+            public int available() throws IOException {
+                return Math.min(is.available(), Math.max(0, mLimit - mPosition));
             }
 
             @Override
@@ -232,9 +228,20 @@ public final class StreamUtils {
         return markSupportedInputStream(is, 1024);
     }
 
+    /**
+     * Skip the bytes currently available without waiting for additional data.
+     */
     public static void skipUnusedStream(InputStream is) throws IOException {
-        if (is.available() > 0) {
-            is.skip(is.available());
+        long remaining = is.available();
+        while (remaining > 0) {
+            long skipped = is.skip(remaining);
+            if (skipped > 0) {
+                remaining -= skipped;
+            } else if (is.read() == -1) {
+                break;
+            } else {
+                remaining--;
+            }
         }
     }
 
