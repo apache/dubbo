@@ -209,7 +209,8 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
             return;
         }
 
-        // Close the existing channel before setting a new channel
+        // Close the existing channel before setting a new channel.
+        // With the closeFuture CAS fix, closing the old channel won't wipe the new one.
         io.netty.channel.Channel current = getNettyChannel();
         if (current != null) {
             current.close();
@@ -229,10 +230,16 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
         connectedPromise.trySuccess(null);
 
         if (logger.isDebugEnabled()) {
-            logger.debug("Connection:{} connected", this);
+            logger.debug("Connection:{} connected, graceful migration complete", this);
         }
     }
 
+    /**
+     * Fallback onGoaway: CAS-null the channel and close it.
+     * In the graceful migration flow (see {@link NettyConnectionHandler#onGoAway}),
+     * this is only called when doConnect() fails after GOAWAY, as a last resort
+     * to let the connectivity-scheduler handle recovery.
+     */
     @Override
     public void onGoaway(Object channel) {
         if (!(channel instanceof io.netty.channel.Channel)) {
@@ -247,7 +254,7 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
             }
             NettyChannel.removeChannelIfDisconnected(nettyChannel);
             if (logger.isDebugEnabled()) {
-                logger.debug("Connection:{} goaway", this);
+                logger.debug("Connection:{} goaway fallback: channel nulled, awaiting scheduler recovery", this);
             }
         }
     }
@@ -267,6 +274,14 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
 
     protected void clearNettyChannel() {
         channelRef.set(null);
+    }
+
+    /**
+     * CAS-clear the channel reference: only clears if the current reference equals the expected channel.
+     * Used by closeFuture listeners to prevent wiping a newly-swapped channel during graceful migration.
+     */
+    protected boolean compareAndClearNettyChannel(io.netty.channel.Channel expected) {
+        return channelRef.compareAndSet(expected, null);
     }
 
     @Override
@@ -314,6 +329,24 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
 
     public static AbstractConnectionClient getConnectionClientFromChannel(io.netty.channel.Channel channel) {
         return channel.attr(CONNECTION).get();
+    }
+
+    /**
+     * Package-private accessor for {@link NettyConnectionHandler} to schedule
+     * graceful-migration tasks on the connectivity executor (instead of the
+     * Netty I/O EventLoop, which would block the I/O thread during doConnect).
+     */
+    java.util.concurrent.ScheduledExecutorService getConnectivityExecutor() {
+        return connectivityExecutor;
+    }
+
+    /**
+     * Package-private accessor for the configured reconnect interval, used by
+     * {@link NettyConnectionHandler} when scheduling the retry that follows a
+     * failed graceful migration attempt.
+     */
+    long getReconnectDuration() {
+        return reconnectDuration;
     }
 
     public ChannelFuture write(Object request) throws RemotingException {
