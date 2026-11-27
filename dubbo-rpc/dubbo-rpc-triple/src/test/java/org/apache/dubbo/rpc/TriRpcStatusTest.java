@@ -17,6 +17,8 @@
 package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.remoting.TimeoutException;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
+import org.apache.dubbo.remoting.http12.exception.UnimplementedException;
 import org.apache.dubbo.rpc.TriRpcStatus.Code;
 
 import java.io.Serializable;
@@ -68,6 +70,14 @@ class TriRpcStatusTest {
         Assertions.assertEquals(
                 TriRpcStatus.DEADLINE_EXCEEDED.code,
                 TriRpcStatus.getStatus(new TimeoutException(true, null, null), null).code);
+    }
+
+    @Test
+    void getStatusOfUnimplementedException() {
+        // gRPC: an unknown method or an unsupported grpc-encoding is UNIMPLEMENTED
+        Assertions.assertEquals(
+                Code.UNIMPLEMENTED, TriRpcStatus.getStatus(new UnimplementedException("method:sayHello")).code);
+        Assertions.assertEquals(Code.UNKNOWN, TriRpcStatus.getStatus(new HttpStatusException(500)).code);
     }
 
     @Test
