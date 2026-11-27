@@ -30,6 +30,7 @@ import static org.apache.dubbo.common.utils.Utf8Utils.decodeUtf8;
 
 public final class URLStrParser {
     public static final String ENCODED_QUESTION_MARK = "%3F";
+    private static final String ENCODED_QUESTION_MARK_LOWER_CASE = "%3f";
     public static final String ENCODED_TIMESTAMP_KEY = "timestamp%3D";
     public static final String ENCODED_PID_KEY = "pid%3D";
     public static final String ENCODED_AND_MARK = "%26";
@@ -211,8 +212,8 @@ public final class URLStrParser {
         Map<String, String> parameters = null;
         // Find the first encoded '?' without uppercasing and copying the entire URL.
         int pathEndIdx = encodedURLStr.indexOf(ENCODED_QUESTION_MARK);
-        int lowerCasePathEndIdx = encodedURLStr.indexOf("%3f");
-        if (pathEndIdx < 0 || lowerCasePathEndIdx >= 0 && lowerCasePathEndIdx < pathEndIdx) {
+        int lowerCasePathEndIdx = encodedURLStr.indexOf(ENCODED_QUESTION_MARK_LOWER_CASE);
+        if (pathEndIdx < 0 || (lowerCasePathEndIdx >= 0 && lowerCasePathEndIdx < pathEndIdx)) {
             pathEndIdx = lowerCasePathEndIdx;
         }
         if (pathEndIdx >= 0) {
