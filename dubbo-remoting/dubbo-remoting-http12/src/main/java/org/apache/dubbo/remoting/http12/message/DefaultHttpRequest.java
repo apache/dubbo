@@ -278,7 +278,7 @@ public class DefaultHttpRequest implements HttpRequest {
     public List<Locale> locales() {
         List<Locale> locales = this.locales;
         if (locales == null) {
-            locales = HttpUtils.parseAcceptLanguage(headers.getFirst(HttpHeaderNames.CONTENT_LANGUAGE.getKey()));
+            locales = HttpUtils.parseAcceptLanguage(headers.getFirst(HttpHeaderNames.ACCEPT_LANGUAGE.getKey()));
             if (locales.isEmpty()) {
                 locales = Collections.singletonList(Locale.getDefault());
             }
