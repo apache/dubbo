@@ -226,7 +226,33 @@ class MockClusterInvokerTest {
      * Test if mock policy works fine: fail-mock
      */
     @Test
-    void testMockInvokerFromOverride_Invoke_Fock_WithOutDefault() {
+    void testMockInvokerFromOverride_Invoke_Fock_WithOutDefault_getSomething() {
+        Invoker<IHelloService> cluster = getFailMockClusterInvokerWithoutDefault();
+
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setMethodName("getSomething");
+        Result ret = cluster.invoke(invocation);
+        Assertions.assertEquals("x", ret.getValue());
+
+        invocation = new RpcInvocation();
+        invocation.setMethodName("getSomething2");
+        ret = cluster.invoke(invocation);
+        Assertions.assertEquals("y", ret.getValue());
+    }
+
+    /**
+     * Test if mock policy works fine: fail-mock
+     */
+    @Test
+    void testMockInvokerFromOverride_Invoke_Fock_WithOutDefault_notConfigure() {
+        Invoker<IHelloService> cluster = getFailMockClusterInvokerWithoutDefault();
+
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setMethodName("getSomething3");
+        Assertions.assertThrows(RpcException.class, () -> cluster.invoke(invocation));
+    }
+
+    private Invoker<IHelloService> getFailMockClusterInvokerWithoutDefault() {
         URL url = URL.valueOf("remote://1.2.3.4/" + IHelloService.class.getName())
                 .addParameter(
                         REFER_KEY,
@@ -234,28 +260,7 @@ class MockClusterInvokerTest {
                                 + "&" + "getSomething.mock=fail:return x"
                                 + "&" + "getSomething2.mock=fail:return y"))
                 .addParameter("invoke_return_error", "true");
-        Invoker<IHelloService> cluster = getClusterInvoker(url);
-        // Configured with mock
-        RpcInvocation invocation = new RpcInvocation();
-        invocation.setMethodName("getSomething");
-        Result ret = cluster.invoke(invocation);
-        Assertions.assertEquals("x", ret.getValue());
-
-        // If no mock was configured, return null directly
-        invocation = new RpcInvocation();
-        invocation.setMethodName("getSomething2");
-        ret = cluster.invoke(invocation);
-        Assertions.assertEquals("y", ret.getValue());
-
-        // If no mock was configured, return null directly
-        invocation = new RpcInvocation();
-        invocation.setMethodName("getSomething3");
-        try {
-            ret = cluster.invoke(invocation);
-            Assertions.fail();
-        } catch (RpcException e) {
-
-        }
+        return getClusterInvoker(url);
     }
 
     /**
