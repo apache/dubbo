@@ -67,20 +67,22 @@ class ServletHttpRequestAdapterTest {
 
     @ParameterizedTest
     @CsvSource({
-        "http, example.com, http://example.com/orders/1",
-        "https, example.com, https://example.com/orders/1",
-        "http, example.com:80, http://example.com/orders/1",
-        "http, example.com:8080, http://example.com:8080/orders/1",
-        "https, example.com:443, https://example.com/orders/1",
-        "https, example.com:8443, https://example.com:8443/orders/1"
+        "http, example.com, 80, http://example.com/orders/1",
+        "https, example.com, 443, https://example.com/orders/1",
+        "http, example.com:80, 80, http://example.com/orders/1",
+        "http, example.com:8080, 8080, http://example.com:8080/orders/1",
+        "https, example.com:443, 443, https://example.com/orders/1",
+        "https, example.com:8443, 8443, https://example.com:8443/orders/1"
     })
-    void requestUrlOmitsUnspecifiedAndDefaultPorts(String scheme, String host, String expectedUrl) {
+    void requestUrlAndServerPortNormalizeDefaultPorts(
+            String scheme, String host, int expectedPort, String expectedUrl) {
         HttpHeaders headers = HttpHeaders.create();
         headers.set(HttpHeaderNames.HOST.getKey(), host);
         headers.set(HttpConstants.X_FORWARDED_PROTO, scheme);
         ServletHttpRequestAdapter request =
                 new ServletHttpRequestAdapter(new Http1RequestMetadata(headers, "GET", "/orders/1"), null, null, null);
 
+        assertEquals(expectedPort, request.getServerPort());
         assertEquals(expectedUrl, request.getRequestURL().toString());
     }
 

@@ -166,9 +166,7 @@ public class ServletHttpRequestAdapter extends DefaultHttpRequest implements Htt
         String scheme = getScheme();
         int port = getServerPort();
         url.append(scheme).append("://").append(getServerName());
-        if (port > 0
-                && (HttpConstants.HTTP.equals(scheme) && port != 80
-                        || HttpConstants.HTTPS.equals(scheme) && port != 443)) {
+        if (HttpConstants.HTTP.equals(scheme) && port != 80 || HttpConstants.HTTPS.equals(scheme) && port != 443) {
             url.append(':');
             url.append(port);
         }
@@ -337,7 +335,17 @@ public class ServletHttpRequestAdapter extends DefaultHttpRequest implements Htt
 
     @Override
     public int getServerPort() {
-        return serverPort();
+        int port = serverPort();
+        if (port < 0) {
+            String scheme = getScheme();
+            if (HttpConstants.HTTP.equals(scheme)) {
+                return 80;
+            }
+            if (HttpConstants.HTTPS.equals(scheme)) {
+                return 443;
+            }
+        }
+        return port;
     }
 
     @Override
