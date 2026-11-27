@@ -237,7 +237,7 @@ public interface MethodUtils {
     //    }
 
     /**
-     * Find the {@link Method} by the the specified type and method name without the parameter types
+     * Find the {@link Method} by the specified type and method name without the parameter types
      *
      * @param type       the target type
      * @param methodName the specified method name
@@ -249,7 +249,7 @@ public interface MethodUtils {
     }
 
     /**
-     * Find the {@link Method} by the the specified type, method name and parameter types
+     * Find the {@link Method} by the specified type, method name and parameter types
      *
      * @param type           the target type
      * @param methodName     the method name
