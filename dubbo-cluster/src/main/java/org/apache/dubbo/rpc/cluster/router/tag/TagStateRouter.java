@@ -235,8 +235,8 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
             boolean forceUseTag = isForceUseTag(invocation);
             // If forced labeling is not enabled, and the nearest route is set to the backup label,
             // swimlane support is supported for this route.
-            if (CollectionUtils.isEmpty(result) && isRecentUserBackupTag(invocation) && !forceUseTag) {
-                result = filterRecentBackupTag(invokers, tag, result);
+            if (CollectionUtils.isEmpty(result) && isRecentUseBackupTag(invocation) && !forceUseTag) {
+                result = filterRecentBackupTag(invokers, tag);
             }
 
             // Not mandatory, chosen randomly
@@ -253,7 +253,8 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
     }
 
     private static <T> BitList<Invoker<T>> filterRecentBackupTag(
-            BitList<Invoker<T>> invokers, String tag, BitList<Invoker<T>> result) {
+            BitList<Invoker<T>> invokers, String tag) {
+        BitList<Invoker<T>> result = null;
         TreeMap<String, ArrayList<Invoker<T>>> sort = new TreeMap<>();
         invokers.forEach(invoker -> {
             String backupTags = invoker.getUrl().getParameter(BACKUP_TAG_KEY);
@@ -271,10 +272,10 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
         });
 
         Entry<String, ArrayList<Invoker<T>>> ceilingEntries = sort.ceilingEntry(tag);
-        ArrayList<Invoker<T>> choseResult = null;
+
         // Reassigned local variable
-        if (ceilingEntries != null && CollectionUtils.isNotEmpty(choseResult = ceilingEntries.getValue())) {
-            result = new BitList<>(choseResult);
+        if (ceilingEntries != null && CollectionUtils.isNotEmpty(ceilingEntries.getValue())) {
+            result = new BitList<>(ceilingEntries.getValue());
         }
         return result;
     }
@@ -295,7 +296,7 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
                 invocation.getAttachment(FORCE_USE_TAG, this.getUrl().getParameter(FORCE_USE_TAG, "false")));
     }
 
-    private boolean isRecentUserBackupTag(Invocation invocation) {
+    private boolean isRecentUseBackupTag(Invocation invocation) {
         return Boolean.parseBoolean(invocation.getAttachment(
                 BACKUP_TAG_RECENT_ROUTER, this.getUrl().getParameter(BACKUP_TAG_RECENT_ROUTER, "false")));
     }
