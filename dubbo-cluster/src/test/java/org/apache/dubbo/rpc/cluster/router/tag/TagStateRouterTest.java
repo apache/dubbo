@@ -317,6 +317,55 @@ class TagStateRouterTest {
         Assertions.assertTrue(filteredInvokers.isEmpty());
     }
 
+    /**
+     * {@code dubbo.recent.backup.tag} can be set on the consumer URL (reference config) instead of per-invocation
+     * attachment. This verifies that path, plus two behaviors of the ceiling lookup:
+     * <ul>
+     *   <li>the ceiling backup tag's bucket may contain multiple invokers, all of which are returned;</li>
+     *   <li>a provider declaring several backup tags is placed in each corresponding bucket, but only the
+     *       ceiling bucket is chosen.</li>
+     * </ul>
+     *
+     * <p>Requesting "tag4" among backup tags {tag2, tag5, tag8} resolves to the ceiling "tag5", whose bucket
+     * holds invoker1 and invoker2 (invoker2 also belongs to the tag8 bucket, which is not selected).
+     */
+    @Test
+    void testTagRouteRecentBackupTagViaUrlParameter() {
+        // consumer enables recent-backup routing via URL parameter (reference config), not attachment
+        URL routerUrl = URL.valueOf("test://localhost/DemoInterface?" + BACKUP_TAG_RECENT_ROUTER + "=true")
+                .setScopeModel(moduleModel);
+        StateRouter router = new TagStateRouterFactory().getRouter(TagRouterRule.class, routerUrl);
+
+        List<Invoker<String>> originInvokers = new ArrayList<>();
+
+        URL url1 = URL.valueOf("test://127.0.0.1:7777/DemoInterface?dubbo.backup.tag=tag5")
+                .setScopeModel(moduleModel);
+        // multi-value backup tag: lands in both the tag5 and tag8 buckets
+        URL url2 = URL.valueOf("test://127.0.0.1:7778/DemoInterface?dubbo.backup.tag=tag5,tag8")
+                .setScopeModel(moduleModel);
+        URL url3 = URL.valueOf("test://127.0.0.1:7779/DemoInterface?dubbo.backup.tag=tag2")
+                .setScopeModel(moduleModel);
+        Invoker<String> invoker1 = new MockInvoker<>(url1, true);
+        Invoker<String> invoker2 = new MockInvoker<>(url2, true);
+        Invoker<String> invoker3 = new MockInvoker<>(url3, true);
+        originInvokers.add(invoker1);
+        originInvokers.add(invoker2);
+        originInvokers.add(invoker3);
+        BitList<Invoker<String>> invokers = new BitList<>(originInvokers);
+
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setAttachment(TAG_KEY, "tag4");
+        // NOTE: no BACKUP_TAG_RECENT_ROUTER attachment here -- the flag comes from the router URL
+        List<Invoker<String>> filteredInvokers =
+                router.route(invokers.clone(), invokers.get(0).getUrl(), invocation, false, new Holder<>());
+
+        // ceiling("tag4") over {tag2, tag5, tag8} is "tag5" -> invoker1 + invoker2
+        Assertions.assertEquals(2, filteredInvokers.size());
+        Assertions.assertTrue(filteredInvokers.contains(invoker1));
+        Assertions.assertTrue(filteredInvokers.contains(invoker2));
+        Assertions.assertFalse(filteredInvokers.contains(invoker3));
+    }
+
     @Test
     void testTagRouteWithDynamicRuleV3() {
         TagStateRouter router = (TagStateRouter) new TagStateRouterFactory().getRouter(TagRouterRule.class, url);

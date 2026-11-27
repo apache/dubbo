@@ -252,8 +252,7 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
         return result;
     }
 
-    private static <T> BitList<Invoker<T>> filterRecentBackupTag(
-            BitList<Invoker<T>> invokers, String tag) {
+    private static <T> BitList<Invoker<T>> filterRecentBackupTag(BitList<Invoker<T>> invokers, String tag) {
         BitList<Invoker<T>> result = null;
         TreeMap<String, ArrayList<Invoker<T>>> sort = new TreeMap<>();
         invokers.forEach(invoker -> {

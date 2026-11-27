@@ -359,7 +359,7 @@ public interface CommonConstants {
     /**
      * Turn on the backup tab, sort according to the dictionary, and look upwards for the nearest one.
      * TIP : This flag has lower priority than the "force use" flag. If the "force use" flag is set, this flag will not take effect.
-     * dubbo.force.tag
+     * This function is similar to dubbo.force.tag. It's used for recent searches.
      */
     String BACKUP_TAG_RECENT_ROUTER = "dubbo.recent.backup.tag";
 
