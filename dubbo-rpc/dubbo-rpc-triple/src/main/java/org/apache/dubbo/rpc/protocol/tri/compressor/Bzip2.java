@@ -47,7 +47,7 @@ public class Bzip2 implements Compressor, DeCompressor {
     }
 
     public Bzip2() {
-        Configuration conf = ConfigurationUtils.getEnvConfiguration(ApplicationModel.defaultModel());
+        Configuration conf = ConfigurationUtils.getGlobalConfiguration(ApplicationModel.defaultModel());
         this.maxMessageSize = conf.getInteger(Constants.H2_SETTINGS_MAX_MESSAGE_SIZE, 50 * 1024 * 1024);
     }
 
