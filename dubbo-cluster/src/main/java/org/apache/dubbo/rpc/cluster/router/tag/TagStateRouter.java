@@ -234,7 +234,7 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
             // Obtain the forceUseTag identifier.
             boolean forceUseTag = isForceUseTag(invocation);
             // If forced labeling is not enabled, and the nearest route is set to the backup label,
-            // swimlane support is supported for this route.
+            // This function is similar to dubbo.force.tag. It's used for recent searches.
             if (CollectionUtils.isEmpty(result) && isRecentUseBackupTag(invocation) && !forceUseTag) {
                 result = filterRecentBackupTag(invokers, tag);
             }
