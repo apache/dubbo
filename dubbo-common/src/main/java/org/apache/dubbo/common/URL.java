@@ -17,6 +17,7 @@
 package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.RemotingConstants;
@@ -1204,7 +1205,10 @@ public /*final**/ class URL implements Serializable {
             List<String> includes = (ArrayUtils.isEmpty(parameters) ? null : Arrays.asList(parameters));
             boolean first = true;
             for (Map.Entry<String, String> entry : new TreeMap<>(getParameters()).entrySet()) {
-                if (StringUtils.isNotEmpty(entry.getKey()) && (includes == null || includes.contains(entry.getKey()))) {
+                String key = entry.getKey();
+                if (StringUtils.isNotEmpty(key)
+                        && (includes == null || includes.contains(entry.getKey()))
+                        && !ConfigurationUtils.isSensitiveParameter(this, key)) {
                     if (first) {
                         if (concat) {
                             buf.append('?');
