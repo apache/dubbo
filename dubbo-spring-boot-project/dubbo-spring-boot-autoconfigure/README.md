@@ -10,8 +10,8 @@
 2. [Integrate with Maven](#integrate-with-maven)
 3. [Auto Configuration](#auto-configuration)
 4. [Externalized Configuration](#externalized-configuration)
-5. [Dubbo Annotation-Driven (Chinese)](http://dubbo.apache.org/zh-cn/blog/dubbo-annotation-driven.html)
-6. [Dubbo Externalized Configuration (Chinese)](http://dubbo.apache.org/zh-cn/blog/dubbo-externalized-configuration.html)
+5. [Dubbo Annotation-Driven (Chinese)](https://dubbo.apache.org/zh-cn/blog/2018/08/07/dubbo-%E6%B3%A8%E8%A7%A3%E9%A9%B1%E5%8A%A8/)
+6. [Dubbo Externalized Configuration (Chinese)](https://dubbo.apache.org/zh-cn/blog/2018/05/21/dubbo-%E5%A4%96%E9%83%A8%E5%8C%96%E9%85%8D%E7%BD%AE/)
 
 
 
@@ -50,7 +50,7 @@ If your project failed to resolve the dependency, try to add the following repos
 
 Since  `2.5.7`  , Dubbo totally supports Annotation-Driven , core Dubbo's components that are registered and initialized in  Spring application context , including externalized configuration features. However , those features need to trigger in manual configuration , e.g `@DubboComponentScan` , `@EnableDubboConfig` or `@EnableDubbo`.
 
-> If you'd like to learn more , please read [Dubbo Annotation-Driven (Chinese)](http://dubbo.apache.org/zh-cn/blog/dubbo-annotation-driven.html)
+> If you'd like to learn more , please read [Dubbo Annotation-Driven (Chinese)](https://dubbo.apache.org/zh-cn/blog/2018/08/07/dubbo-%E6%B3%A8%E8%A7%A3%E9%A9%B1%E5%8A%A8/)
 
 
 
@@ -62,7 +62,7 @@ Since  `2.5.7`  , Dubbo totally supports Annotation-Driven , core Dubbo's compon
 
 Externalized Configuration is a core feature of Spring Boot , Dubbo Spring Boot not only supports it definitely , but also inherits Dubbo's Externalized Configuration, thus it provides single and multiple Dubbo's `*Config` Bindings from `PropertySources` , and `"dubbo."` is a common prefix of property name.
 
-> If you'd like to learn more , please read [Dubbo Externalized Configuration](http://dubbo.apache.org/zh-cn/blog/dubbo-externalized-configuration.html)(Chinese).
+> If you'd like to learn more , please read [Dubbo Externalized Configuration](https://dubbo.apache.org/zh-cn/blog/2018/05/21/dubbo-%E5%A4%96%E9%83%A8%E5%8C%96%E9%85%8D%E7%BD%AE/)(Chinese).
 
 
 

@@ -56,7 +56,7 @@ import static org.apache.dubbo.rpc.RpcException.REGISTRY_EXCEPTION;
 
 /**
  * Zookeeper {@link ServiceDiscovery} implementation based on
- * <a href="https://curator.apache.org/curator-x-discovery/index.html">Apache Curator X Discovery</a>
+ * <a href="https://curator.apache.org/docs/service-discovery/">Apache Curator X Discovery</a>
  * <p>
  * TODO, replace curator CuratorFramework with dubbo ZookeeperClient
  */
