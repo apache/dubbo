@@ -69,11 +69,13 @@ public class SpringBootConfigMetricsTest {
         System.clearProperty("dubbo.metrics.protocol");
         System.clearProperty("dubbo.metrics.enabled");
         DubboBootstrap.reset();
+        System.clearProperty("dubbo.metrics.protocol");
     }
 
     @AfterAll
     public static void afterAll() {
         DubboBootstrap.reset();
+        System.clearProperty("dubbo.metrics.protocol");
     }
 
     @Autowired

@@ -25,6 +25,16 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 /**
  * Zookeeper Dubbo Spring Provider XML Bootstrap
  *
+ * NOTE: For production/business usage, this sample should be converted to a normal Spring Boot application
+ * instead of directly loading the application context in the main method. For business applications:
+ * <ol>
+ *   <li>Create a proper Spring Boot application with @SpringBootApplication annotation</li>
+ *   <li>Use application.properties or application.yml for configuration</li>
+ *   <li>Deploy as a standalone JAR or WAR file</li>
+ *   <li>Use proper application lifecycle management</li>
+ * </ol>
+ * This bootstrap is primarily intended for testing and demonstration purposes.
+ *
  * @since 2.7.8
  */
 public class ZookeeperDubboSpringConsumerXmlBootstrap {
