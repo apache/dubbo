@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2017-2021 the original author or authors.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      https://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>io.r2dbc</groupId>
+  <artifactId>r2dbc-bom</artifactId>
+  <version>Borca-SR2</version>
+  <packaging>pom</packaging>
+  <name>Reactive Relational Database Connectivity - Bill of Materials</name>
+  <description>Dependency Management for R2DBC Drivers</description>
+  <url>https://github.com/r2dbc/r2dbc-bom</url>
+  <licenses>
+    <license>
+      <name>Apache License 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <name>R2DBC Working Group</name>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:https://github.com/r2dbc/r2dbc-bom</connection>
+    <url>https://github.com/r2dbc/r2dbc-bom</url>
+  </scm>
+  <properties>
+    <r2dbc-pool.version>0.9.2.RELEASE</r2dbc-pool.version>
+    <r2dbc-proxy.version>0.9.1.RELEASE</r2dbc-proxy.version>
+    <r2dbc-mssql.version>0.9.0.RELEASE</r2dbc-mssql.version>
+    <r2dbc-oracle.version>0.4.0</r2dbc-oracle.version>
+    <r2dbc-postgresql.version>0.9.2.RELEASE</r2dbc-postgresql.version>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <r2dbc-h2.version>0.9.1.RELEASE</r2dbc-h2.version>
+    <r2dbc-spi.version>0.9.1.RELEASE</r2dbc-spi.version>
+    <r2dbc-mariadb.version>1.1.2</r2dbc-mariadb.version>
+  </properties>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.oracle.database.r2dbc</groupId>
+        <artifactId>oracle-r2dbc</artifactId>
+        <version>${r2dbc-oracle.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.r2dbc</groupId>
+        <artifactId>r2dbc-h2</artifactId>
+        <version>${r2dbc-h2.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.mariadb</groupId>
+        <artifactId>r2dbc-mariadb</artifactId>
+        <version>${r2dbc-mariadb.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.r2dbc</groupId>
+        <artifactId>r2dbc-mssql</artifactId>
+        <version>${r2dbc-mssql.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>r2dbc-postgresql</artifactId>
+        <version>${r2dbc-postgresql.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.r2dbc</groupId>
+        <artifactId>r2dbc-pool</artifactId>
+        <version>${r2dbc-pool.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.r2dbc</groupId>
+        <artifactId>r2dbc-proxy</artifactId>
+        <version>${r2dbc-proxy.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.r2dbc</groupId>
+        <artifactId>r2dbc-spi</artifactId>
+        <version>${r2dbc-spi.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+</project>

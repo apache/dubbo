@@ -1,0 +1,92 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion> 
+  <parent>
+    <groupId>com.fasterxml.jackson</groupId>
+    <artifactId>jackson-base</artifactId>
+    <version>2.15.2</version>
+  </parent>
+  <groupId>com.fasterxml.jackson.module</groupId>
+  <artifactId>jackson-modules-java8</artifactId>
+  <name>Jackson modules: Java 8</name>
+  <version>2.15.2</version>
+  <packaging>pom</packaging>
+  <description>Parent pom for Jackson modules needed to support Java 8 features and types
+  </description>
+
+  <modules>
+    <module>parameter-names</module>
+    <module>datatypes</module>
+    <module>datetime</module>
+  </modules>
+
+  <url>https://github.com/FasterXML/jackson-modules-java8</url>
+  <scm>
+    <connection>scm:git:git@github.com:FasterXML/jackson-modules-java8.git</connection>
+    <developerConnection>scm:git:git@github.com:FasterXML/jackson-modules-java8.git</developerConnection>
+    <url>http://github.com/FasterXML/jackson-modules-java8</url>    
+    <tag>jackson-modules-java8-2.15.2</tag>
+  </scm>
+  <issueManagement>
+    <url>https://github.com/FasterXML/jackson-modules-java8/issues</url>
+  </issueManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+  </dependencies>
+
+  <!-- Alas, need to include snapshot reference since otherwise can not find
+       snapshot of parent... -->
+  <repositories>
+    <repository>
+      <id>sonatype-nexus-snapshots</id>
+      <name>Sonatype Nexus Snapshots</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <releases><enabled>false</enabled></releases>
+      <snapshots><enabled>true</enabled></snapshots>
+    </repository>
+  </repositories>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+	<plugin>
+	  <!-- Inherited from oss-base. Generate PackageVersion.java.-->
+          <groupId>com.google.code.maven-replacer-plugin</groupId>
+          <artifactId>replacer</artifactId>
+	  <executions>
+            <execution>
+              <id>process-packageVersion</id>
+              <phase>generate-sources</phase>
+            </execution>
+          </executions>
+	</plugin>
+
+	<plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <excludes>
+              <exclude>com/fasterxml/jackson/**/failing/*.java</exclude>
+            </excludes>
+          </configuration>
+	</plugin>
+      </plugins>
+    </pluginManagement>
+
+    <!-- 05-Jul-2020, tatu: Add generation of Gradle Module Metadata -->
+    <plugins>
+      <plugin>
+        <groupId>de.jjohannes</groupId>
+        <artifactId>gradle-module-metadata-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

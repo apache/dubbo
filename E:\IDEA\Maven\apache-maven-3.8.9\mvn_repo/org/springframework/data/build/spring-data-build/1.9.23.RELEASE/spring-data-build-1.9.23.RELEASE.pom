@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.springframework.data.build</groupId>
+	<artifactId>spring-data-build</artifactId>
+	<version>1.9.23.RELEASE</version>
+	<packaging>pom</packaging>
+
+	<name>Spring Data Build</name>
+	<description>Modules to centralize common resources and configuration for Spring Data Maven builds.</description>
+	<url>https://github.com/spring-projects/spring-data-build</url>
+
+	<organization>
+		<name>Pivotal Software, Inc.</name>
+		<url>https://www.spring.io</url>
+	</organization>
+
+	<modules>
+		<module>resources</module>
+		<module>parent</module>
+		<module>bom</module>
+	</modules>
+
+	<developers>
+		<developer>
+			<id>ogierke</id>
+			<name>Oliver Gierke</name>
+			<email>ogierke at gopivotal.com</email>
+			<organization>Pivotal Software, Inc.</organization>
+			<organizationUrl>https://www.spring.io</organizationUrl>
+			<roles>
+				<role>Project lead</role>
+			</roles>
+			<timezone>+1</timezone>
+		</developer>
+	</developers>
+
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>https://www.apache.org/licenses/LICENSE-2.0</url>
+			<comments>
+			Copyright 2010 the original author or authors.
+
+			Licensed under the Apache License, Version 2.0 (the "License");
+			you may not use this file except in compliance with the License.
+			You may obtain a copy of the License at
+
+				 https://www.apache.org/licenses/LICENSE-2.0
+
+			Unless required by applicable law or agreed to in writing, software
+			distributed under the License is distributed on an "AS IS" BASIS,
+			WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+			implied.
+			See the License for the specific language governing permissions and
+			limitations under the License.
+			</comments>
+		</license>
+	</licenses>
+
+	<profiles>
+
+		<!-- Common release setup -->
+
+		<profile>
+			<id>release</id>
+			<build>
+				<plugins>
+
+					<!-- Make sure we build on Java 8 with only release dependencies -->
+
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-enforcer-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>enforce-release-rules</id>
+								<goals>
+									<goal>enforce</goal>
+								</goals>
+								<configuration>
+									<rules>
+										<requireJavaVersion>
+											<version>[1.8,1.9)</version>
+										</requireJavaVersion>
+										<requireReleaseDeps />
+										<requireReleaseVersion />
+									</rules>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>bom-verify</id>
+			<modules>
+				<module>bom-client</module>
+			</modules>
+		</profile>
+
+		<!-- Build profile for the build run deploying to Artifactory -->
+
+		<profile>
+			<id>artifactory</id>
+
+			<build>
+
+				<pluginManagement>
+					<plugins>
+
+						<!-- Deploy to Artifactory -->
+
+						<plugin>
+							<groupId>org.jfrog.buildinfo</groupId>
+							<artifactId>artifactory-maven-plugin</artifactId>
+							<version>2.6.1</version>
+							<executions>
+								<execution>
+									<id>build-info</id>
+									<goals>
+										<goal>publish</goal>
+									</goals>
+									<configuration>
+										<artifactory>
+											<includeEnvVars>false</includeEnvVars>
+										</artifactory>
+										<publisher>
+											<contextUrl>{{artifactory.server}}</contextUrl>
+											<username>{{artifactory.username}}</username>
+											<password>{{artifactory.password}}</password>
+											<repoKey>{{artifactory.staging-repository}}</repoKey>
+											<snapshotRepoKey>{{artifactory.staging-repository}}</snapshotRepoKey>
+										</publisher>
+										<buildInfo>
+											<buildName>{{artifactory.build-name}}</buildName>
+											<buildNumber>{{artifactory.build-number}}</buildNumber>
+											<buildUrl>{{BUILD_URL}}</buildUrl>
+										</buildInfo>
+									</configuration>
+								</execution>
+							</executions>
+						</plugin>
+
+					</plugins>
+				</pluginManagement>
+
+				<plugins>
+
+					<plugin>
+						<groupId>org.jfrog.buildinfo</groupId>
+						<artifactId>artifactory-maven-plugin</artifactId>
+					</plugin>
+
+				</plugins>
+
+			</build>
+		</profile>
+
+		<profile>
+			<id>with-bom-client</id>
+
+			<modules>
+				<module>bom-client</module>
+			</modules>
+		</profile>
+
+		<!-- Build profile for the build run to deploy to Maven Central -->
+
+		<profile>
+			<id>central</id>
+			<build>
+				<pluginManagement>
+					<plugins>
+
+						<!-- Sign JARs -->
+
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-gpg-plugin</artifactId>
+							<version>1.5</version>
+							<executions>
+								<execution>
+									<id>sign-artifacts</id>
+									<phase>verify</phase>
+									<goals>
+										<goal>sign</goal>
+									</goals>
+								</execution>
+							</executions>
+						</plugin>
+
+						<!-- Deploy to Sonatype OSS Nexus -->
+
+						<plugin>
+							<groupId>org.sonatype.plugins</groupId>
+							<artifactId>nexus-staging-maven-plugin</artifactId>
+							<version>1.6.7</version>
+							<extensions>true</extensions>
+							<configuration>
+								<serverId>sonatype</serverId>
+								<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+								<autoReleaseAfterClose>false</autoReleaseAfterClose>
+								<keepStagingRepositoryOnFailure>true</keepStagingRepositoryOnFailure>
+							</configuration>
+						</plugin>
+					</plugins>
+
+				</pluginManagement>
+
+				<plugins>
+
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+					</plugin>
+
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nexus-staging-maven-plugin</artifactId>
+					</plugin>
+
+				</plugins>
+
+			</build>
+
+			<distributionManagement>
+				<repository>
+					<id>sonatype</id>
+					<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+				</repository>
+			</distributionManagement>
+
+		</profile>
+	</profiles>
+
+	<scm>
+		<url>https://github.com/spring-projects/spring-data-build</url>
+		<connection>scm:git:git://github.com/spring-projects/spring-data-build.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com:spring-projects/spring-data-build.git</developerConnection>
+	</scm>
+
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/spring-projects/spring-data-build/issues</url>
+	</issueManagement>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>spring-libs-release</id>
+			<url>https://repo.spring.io/libs-release</url>
+		</pluginRepository>
+	</pluginRepositories>
+
+</project>

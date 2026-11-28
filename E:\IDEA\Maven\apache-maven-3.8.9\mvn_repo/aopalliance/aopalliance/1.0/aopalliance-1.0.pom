@@ -1,0 +1,15 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>aopalliance</groupId>
+  <artifactId>aopalliance</artifactId>
+  <name>AOP alliance</name>
+  <version>1.0</version>
+  <description>AOP Alliance</description>
+  <url>http://aopalliance.sourceforge.net</url> 
+
+  <licenses>
+    <license>
+      <name>Public Domain</name>
+    </license>
+  </licenses>
+</project>

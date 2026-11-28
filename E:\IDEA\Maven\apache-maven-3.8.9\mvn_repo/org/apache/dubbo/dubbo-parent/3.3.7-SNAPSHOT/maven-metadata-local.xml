@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata modelVersion="1.1.0">
+  <groupId>org.apache.dubbo</groupId>
+  <artifactId>dubbo-parent</artifactId>
+  <versioning>
+    <lastUpdated>20260517023140</lastUpdated>
+    <snapshot>
+      <localCopy>true</localCopy>
+    </snapshot>
+    <snapshotVersions>
+      <snapshotVersion>
+        <extension>pom</extension>
+        <value>3.3.7-SNAPSHOT</value>
+        <updated>20260517023140</updated>
+      </snapshotVersion>
+    </snapshotVersions>
+  </versioning>
+  <version>3.3.7-SNAPSHOT</version>
+</metadata>

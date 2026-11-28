@@ -1,0 +1,94 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>commons-collections</groupId>
+  <artifactId>commons-collections</artifactId>
+  <name>Collections</name>
+  <version>2.1</version>
+  <description>Commons Collections</description>
+  <inceptionYear>2002</inceptionYear>
+  <developers>
+    <developer>
+      <id></id>
+      <name>Morgan Delagrange</name>
+      <email></email>
+      <organization></organization>
+    </developer>
+    <developer>
+      <id></id>
+      <name>Geir Magnusson</name>
+      <email></email>
+      <organization></organization>
+    </developer>
+    <developer>
+      <id></id>
+      <name>Craig McClanahan</name>
+      <email></email>
+      <organization></organization>
+    </developer>
+    <developer>
+      <id>rwaldof</id>
+      <name>Rodney Waldoff</name>
+      <email></email>
+      <organization></organization>
+    </developer>
+    <developer>
+      <id></id>
+      <name>David Weinrich</name>
+      <email></email>
+      <organization></organization>
+    </developer>
+  </developers>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>**/TestAll.java</exclude>
+            <exclude>**/BulkTest.java</exclude>
+            <exclude>**/TestComparableComparator.java</exclude>
+            <exclude>**/TestComparatorChain.java</exclude>
+            <exclude>**/TestComparator.java</exclude>
+            <exclude>**/TestCursorableLinkedList.java</exclude>
+            <exclude>**/TestNullComparator.java</exclude>
+            <exclude>**/TestReverseComparator.java</exclude>
+            <exclude>**/LocalTestNode.java</exclude>
+            <exclude>**/TestAbstractIntArrayList.java</exclude>
+            <exclude>**/TestAbstractLongArrayList.java</exclude>
+            <exclude>**/TestAbstractShortArrayList.java</exclude>
+            <exclude>**/TestArrayList.java</exclude>
+            <exclude>**/TestArrayStack.java</exclude>
+            <exclude>**/TestBag.java</exclude>
+            <exclude>**/TestCollection.java</exclude>
+            <exclude>**/TestFastArrayList1.java</exclude>
+            <exclude>**/TestFastArrayList.java</exclude>
+            <exclude>**/TestFastHashMap1.java</exclude>
+            <exclude>**/TestFastHashMap.java</exclude>
+            <exclude>**/TestFastTreeMap1.java</exclude>
+            <exclude>**/TestFastTreeMap.java</exclude>
+            <exclude>**/TestIterator.java</exclude>
+            <exclude>**/TestList.java</exclude>
+            <exclude>**/TestLRUMap.java</exclude>
+            <exclude>**/TestMap.java</exclude>
+            <exclude>**/TestMultiHashMap.java</exclude>
+            <exclude>**/TestObject.java</exclude>
+            <exclude>**/TestProxyMap.java</exclude>
+            <exclude>**/TestSequencedHashMap.java</exclude>
+            <exclude>**/TestSoftRefHashMap.java</exclude>
+            <exclude>**/TestSet.java</exclude>
+            <exclude>**/TestTreeMap.java</exclude>
+            <exclude>**/TestPredicatedCollection.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.7</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>

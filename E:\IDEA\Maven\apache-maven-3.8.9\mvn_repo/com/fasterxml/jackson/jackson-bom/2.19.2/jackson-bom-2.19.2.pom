@@ -1,0 +1,495 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.fasterxml.jackson</groupId>
+    <artifactId>jackson-parent</artifactId>
+    <!-- note: does NOT change for every version of bom -->
+    <version>2.19.3</version>
+  </parent>
+
+  <artifactId>jackson-bom</artifactId>
+  <name>Jackson BOM</name>
+  <description>Bill of Materials pom for getting full, complete set of compatible versions
+of Jackson components maintained by FasterXML.com
+  </description>
+  <version>2.19.2</version>
+  <packaging>pom</packaging>
+
+  <modules>
+   <module>base</module> <!-- "It's all about that base 'bout that base..." -->
+  </modules>
+
+  <organization>
+    <name>FasterXML</name>
+    <url>http://fasterxml.com/</url>
+  </organization>
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>cowtowncoder</id>
+      <name>Tatu Saloranta</name>
+      <email>tatu@fasterxml.com</email>
+    </developer>
+  </developers>
+
+  <url>https://github.com/FasterXML/jackson-bom</url>
+  <scm>
+    <connection>scm:git:git@github.com:FasterXML/jackson-bom.git</connection>
+    <developerConnection>scm:git:git@github.com:FasterXML/jackson-bom.git</developerConnection>
+    <url>https://github.com/FasterXML/jackson-bom</url>
+    <tag>jackson-bom-2.19.2</tag>
+  </scm>
+
+  <properties>
+    <jackson.version>2.19.2</jackson.version>
+
+    <!-- 25-Sep-2019, tatu: With Jackson 2.x we will release full patch-level versions
+           of annotations BUT they are all identical, content-wise.
+           Given this, annotations could EITHER be `2.11.0` OR `${jackson.version}`.
+           Based on dev feedback, with 2.10 we will do latter. It apparently is less
+           confusing than alternative.
+      -->
+    <jackson.version.annotations>${jackson.version}</jackson.version.annotations>
+    <jackson.version.core>${jackson.version}</jackson.version.core>
+    <jackson.version.databind>${jackson.version}</jackson.version.databind>
+    <jackson.version.dataformat>${jackson.version}</jackson.version.dataformat>
+    <jackson.version.datatype>${jackson.version}</jackson.version.datatype>
+    <jackson.version.jaxrs>${jackson.version}</jackson.version.jaxrs>
+    <jackson.version.jakarta.rs>${jackson.version}</jackson.version.jakarta.rs>
+    <jackson.version.jacksonjr>${jackson.version}</jackson.version.jacksonjr>
+
+    <jackson.version.module>${jackson.version}</jackson.version.module>
+    <jackson.version.module.kotlin>${jackson.version.module}</jackson.version.module.kotlin>
+    <jackson.version.module.scala>${jackson.version.module}</jackson.version.module.scala>
+    <!-- JPMS Library Updates-->
+    <javax.activation.version>1.2.0</javax.activation.version>
+
+    <!-- 3rd party dependency versions -->
+    <woodstox.version>7.1.1</woodstox.version>
+    <stax2.version>4.2.2</stax2.version>
+
+    <!-- for Reproducible Builds -->
+    <project.build.outputTimestamp>2025-07-18T17:31:22Z</project.build.outputTimestamp>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+
+      <!-- Core -->
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-annotations</artifactId>
+        <version>${jackson.version.annotations}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+        <version>${jackson.version.core}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${jackson.version.databind}</version>
+      </dependency>
+
+      <!-- Data Formats -->
+      <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId>
+        <artifactId>jackson-dataformat-avro</artifactId>
+        <version>${jackson.version.dataformat}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId>
+        <artifactId>jackson-dataformat-cbor</artifactId>
+        <version>${jackson.version.dataformat}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId>
+        <artifactId>jackson-dataformat-csv</artifactId>
+        <version>${jackson.version.dataformat}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId>
+        <artifactId>jackson-dataformat-ion</artifactId>
+        <version>${jackson.version.dataformat}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId>
+        <artifactId>jackson-dataformat-properties</artifactId>
+        <version>${jackson.version.dataformat}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId>
+        <artifactId>jackson-dataformat-protobuf</artifactId>
+        <version>${jackson.version.dataformat}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId>
+        <artifactId>jackson-dataformat-smile</artifactId>
+        <version>${jackson.version.dataformat}</version>
+      </dependency>
+      <dependency> <!-- Officially added in 2.13.0, beta in 2.12.3 -->
+        <groupId>com.fasterxml.jackson.dataformat</groupId>
+        <artifactId>jackson-dataformat-toml</artifactId>
+        <version>${jackson.version.dataformat}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId>
+        <artifactId>jackson-dataformat-xml</artifactId>
+        <version>${jackson.version.dataformat}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId>
+        <artifactId>jackson-dataformat-yaml</artifactId>
+        <version>${jackson.version.dataformat}</version>
+      </dependency>
+
+      <!-- Data Types -->
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-eclipse-collections</artifactId>
+        <version>${jackson.version.datatype}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-guava</artifactId>
+        <version>${jackson.version.datatype}</version>
+      </dependency>
+
+      <!-- 25-Feb-2021, tatu: as per [datatype-hibernate#139], h3 dropped from 2.13 -->
+      <!--
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-hibernate3</artifactId>
+        <version>${jackson.version.datatype}</version>
+      </dependency>
+      -->
+
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-hibernate4</artifactId>
+        <version>${jackson.version.datatype}</version>
+      </dependency> 
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-hibernate5</artifactId>
+        <version>${jackson.version.datatype}</version>
+      </dependency>
+      <dependency> <!-- Added in 2.13 -->
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-hibernate5-jakarta</artifactId>
+        <version>${jackson.version.datatype}</version>
+      </dependency>
+      <dependency> <!-- Added in 2.15 -->
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-hibernate6</artifactId>
+        <version>${jackson.version.datatype}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-hppc</artifactId>
+        <version>${jackson.version.datatype}</version>
+      </dependency>
+      <dependency> <!-- since 2.12.2 -->
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-jakarta-jsonp</artifactId>
+        <version>${jackson.version.datatype}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-jaxrs</artifactId>
+        <!-- Should this follow datatype or JAX-RS version info?
+          -->
+        <version>${jackson.version.datatype}</version>
+      </dependency>
+      <dependency> <!-- since 2.19 -->
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-javax-money</artifactId>
+        <version>${jackson.version.datatype}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-jdk8</artifactId>
+        <version>${jackson.version.datatype}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-joda</artifactId>
+        <version>${jackson.version.datatype}</version>
+      </dependency>
+      <dependency> <!-- since 2.11 -->
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-joda-money</artifactId>
+        <version>${jackson.version.datatype}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-json-org</artifactId>
+        <version>${jackson.version.datatype}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-jsr310</artifactId>
+        <version>${jackson.version.datatype}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-jsr353</artifactId>
+        <version>${jackson.version.datatype}</version>
+      </dependency>
+      <dependency> <!-- since 2.19 -->
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-moneta</artifactId>
+        <version>${jackson.version.datatype}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-pcollections</artifactId>
+        <version>${jackson.version.datatype}</version>
+      </dependency>
+
+      <!-- JAX-RS -->
+      <dependency>
+        <groupId>com.fasterxml.jackson.jaxrs</groupId>
+        <artifactId>jackson-jaxrs-base</artifactId>
+        <version>${jackson.version.jaxrs}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.jaxrs</groupId>
+        <artifactId>jackson-jaxrs-cbor-provider</artifactId>
+        <version>${jackson.version.jaxrs}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.jaxrs</groupId>
+        <artifactId>jackson-jaxrs-json-provider</artifactId>
+        <version>${jackson.version.jaxrs}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.jaxrs</groupId>
+        <artifactId>jackson-jaxrs-smile-provider</artifactId>
+        <version>${jackson.version.jaxrs}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.jaxrs</groupId>
+        <artifactId>jackson-jaxrs-xml-provider</artifactId>
+        <version>${jackson.version.jaxrs}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.jaxrs</groupId>
+        <artifactId>jackson-jaxrs-yaml-provider</artifactId>
+        <version>${jackson.version.jaxrs}</version>
+      </dependency>
+
+      <!-- Jakarta-RS (2.13+) -->
+      <dependency>
+        <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+        <artifactId>jackson-jakarta-rs-base</artifactId>
+        <version>${jackson.version.jakarta.rs}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+        <artifactId>jackson-jakarta-rs-cbor-provider</artifactId>
+        <version>${jackson.version.jakarta.rs}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+        <artifactId>jackson-jakarta-rs-json-provider</artifactId>
+        <version>${jackson.version.jakarta.rs}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+        <artifactId>jackson-jakarta-rs-smile-provider</artifactId>
+        <version>${jackson.version.jakarta.rs}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+        <artifactId>jackson-jakarta-rs-xml-provider</artifactId>
+        <version>${jackson.version.jakarta.rs}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+        <artifactId>jackson-jakarta-rs-yaml-provider</artifactId>
+        <version>${jackson.version.jakarta.rs}</version>
+      </dependency>
+
+      <!-- Jackson Jr. -->
+      <dependency>
+        <groupId>com.fasterxml.jackson.jr</groupId>
+        <artifactId>jackson-jr-all</artifactId>
+        <version>${jackson.version.jacksonjr}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.jr</groupId>
+        <artifactId>jackson-jr-annotation-support</artifactId>
+        <version>${jackson.version.jacksonjr}</version>
+      </dependency>
+      <dependency> <!-- added in 2.17 -->
+        <groupId>com.fasterxml.jackson.jr</groupId>
+        <artifactId>jackson-jr-extension-javatime</artifactId>
+        <version>${jackson.version.jacksonjr}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.jr</groupId>
+        <artifactId>jackson-jr-objects</artifactId>
+        <version>${jackson.version.jacksonjr}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.jr</groupId>
+        <artifactId>jackson-jr-retrofit2</artifactId>
+        <version>${jackson.version.jacksonjr}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.jr</groupId>
+        <artifactId>jackson-jr-stree</artifactId>
+        <version>${jackson.version.jacksonjr}</version>
+      </dependency>
+
+      <!-- Modules, basic -->
+      <dependency>
+        <groupId>com.fasterxml.jackson.module</groupId>
+        <artifactId>jackson-module-afterburner</artifactId>
+        <version>${jackson.version.module}</version>
+      </dependency>
+      <dependency> <!-- Added in 2.16 -->
+        <groupId>com.fasterxml.jackson.module</groupId>
+        <artifactId>jackson-module-android-record</artifactId>
+        <version>${jackson.version.module}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.module</groupId>
+        <artifactId>jackson-module-blackbird</artifactId>
+        <version>${jackson.version.module}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.module</groupId>
+        <artifactId>jackson-module-guice</artifactId>
+        <version>${jackson.version.module}</version>
+      </dependency>
+      <dependency><!-- 2.16+ Guice7 variant -->
+        <groupId>com.fasterxml.jackson.module</groupId>
+        <artifactId>jackson-module-guice7</artifactId>
+        <version>${jackson.version.module}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.module</groupId>
+        <artifactId>jackson-module-jaxb-annotations</artifactId>
+        <version>${jackson.version.module}</version>
+      </dependency>
+      <dependency> <!-- 2.13+: Jakarta-bind too [modules-base#130] -->
+        <groupId>com.fasterxml.jackson.module</groupId>
+        <artifactId>jackson-module-jakarta-xmlbind-annotations</artifactId>
+        <version>${jackson.version.module}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.module</groupId>
+        <artifactId>jackson-module-jsonSchema</artifactId>
+        <version>${jackson.version.module}</version>
+      </dependency>
+      <dependency> <!-- 2.15+ Jakarta variant as well [jsonSchema#151] -->
+        <groupId>com.fasterxml.jackson.module</groupId>
+        <artifactId>jackson-module-jsonSchema-jakarta</artifactId>
+        <version>${jackson.version.module}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.module</groupId>
+        <artifactId>jackson-module-kotlin</artifactId>
+        <version>${jackson.version.module.kotlin}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.module</groupId>
+        <artifactId>jackson-module-mrbean</artifactId>
+        <version>${jackson.version.module}</version>
+      </dependency>
+      <dependency> <!-- Added in 2.13.0 -->
+        <groupId>com.fasterxml.jackson.module</groupId>
+        <artifactId>jackson-module-no-ctor-deser</artifactId>
+        <version>${jackson.version.module}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.module</groupId>
+        <artifactId>jackson-module-osgi</artifactId>
+        <version>${jackson.version.module}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.module</groupId>
+        <artifactId>jackson-module-parameter-names</artifactId>
+        <version>${jackson.version.module}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.module</groupId>
+        <artifactId>jackson-module-paranamer</artifactId>
+        <version>${jackson.version.module}</version>
+      </dependency>
+
+      <!-- Language Modules -->
+
+      <!-- 21-Nov-2020, tatu: Scala 2.10 support dropped in Jackson 2.12 -->
+      <dependency>
+        <groupId>com.fasterxml.jackson.module</groupId>
+        <artifactId>jackson-module-scala_2.11</artifactId>
+        <version>${jackson.version.module.scala}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.module</groupId>
+        <artifactId>jackson-module-scala_2.12</artifactId>
+        <version>${jackson.version.module.scala}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.module</groupId>
+        <artifactId>jackson-module-scala_2.13</artifactId>
+        <version>${jackson.version.module.scala}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.module</groupId>
+        <artifactId>jackson-module-scala_3</artifactId>
+        <version>${jackson.version.module.scala}</version>
+      </dependency>
+
+      <!-- 3rd-party dependencies from primary Jackson components (2.19.0) -->
+      <!-- 15-May-2025, tatu: Removed from 2.19.1 -->
+      <!--
+      <dependency>
+        <groupId>org.codehaus.woodstox</groupId>
+        <artifactId>stax2-api</artifactId>
+        <version>${stax2.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.woodstox</groupId>
+        <artifactId>woodstox-core</artifactId>
+	<version>${woodstox.version}</version>
+      </dependency>
+      -->
+
+    </dependencies>
+  </dependencyManagement>
+
+  <!-- Alas, need to include snapshot reference since otherwise can not find
+       snapshot of parent... -->
+  <repositories>
+    <!-- 26-May-2025, tatu: No longer needed after move to Central Portal:
+    <repository>
+      <id>sonatype-nexus-snapshots</id>
+      <name>Sonatype Nexus Snapshots</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <releases><enabled>false</enabled></releases>
+      <snapshots><enabled>true</enabled></snapshots>
+    </repository>
+    -->
+    <!-- 26-May-2025, tatu: Moved to Sonatype Central Portal -->
+    <repository>
+      <id>central-snapshots</id>
+      <name>Sonatype Central Portal (snapshots)</name>
+      <url>https://central.sonatype.com/repository/maven-snapshots</url>
+      <releases><enabled>false</enabled></releases>
+      <snapshots><enabled>true</enabled></snapshots>
+    </repository>
+  </repositories>
+</project>
