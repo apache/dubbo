@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc;
 import org.apache.dubbo.common.Experimental;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
+import javax.annotation.Nullable;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -72,6 +74,7 @@ public class RpcContextAttachment extends RpcContext {
      * @param key
      * @return attachment
      */
+    @Nullable
     @Override
     public String getAttachment(String key) {
         Object value = attachments.get(key);
