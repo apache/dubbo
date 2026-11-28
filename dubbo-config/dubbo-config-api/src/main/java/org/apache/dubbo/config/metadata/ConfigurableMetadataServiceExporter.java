@@ -116,9 +116,14 @@ public class ConfigurableMetadataServiceExporter {
                 .getBeanFactory()
                 .getBean(FrameworkExecutorRepository.class)
                 .getInternalServiceExecutor();
+        // Both metadata versions must be reachable at the endpoint advertised to consumers.
         this.serviceConfig = InternalServiceConfigBuilder.<MetadataService>newBuilder(applicationModel)
                 .interfaceClass(MetadataService.class)
-                .protocol(getApplicationConfig().getMetadataServiceProtocol(), METADATA_SERVICE_PROTOCOL_KEY)
+                .protocol(
+                        MetadataServiceVersionUtils.needExportV2(applicationModel)
+                                ? TRIPLE
+                                : getApplicationConfig().getMetadataServiceProtocol(),
+                        METADATA_SERVICE_PROTOCOL_KEY)
                 .port(getApplicationConfig().getMetadataServicePort(), METADATA_SERVICE_PORT_KEY)
                 .registryId(INTERNAL_METADATA_REGISTRY_ID)
                 .executor(internalServiceExecutor)
