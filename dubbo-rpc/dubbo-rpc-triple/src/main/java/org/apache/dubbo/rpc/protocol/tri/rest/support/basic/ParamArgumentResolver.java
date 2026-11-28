@@ -202,7 +202,7 @@ public class ParamArgumentResolver extends AbstractAnnotationBaseArgumentResolve
             return null;
         }
         int index = value.indexOf(';');
-        return RequestUtils.decodeURL(index == -1 ? value : value.substring(0, index));
+        return RequestUtils.decodePath(index == -1 ? value : value.substring(0, index));
     }
 
     private static List<String> resolveMatrixVariable(NamedValueMeta meta, HttpRequest request) {

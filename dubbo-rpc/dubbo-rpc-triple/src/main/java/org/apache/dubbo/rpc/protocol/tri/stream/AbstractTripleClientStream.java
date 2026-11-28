@@ -503,9 +503,15 @@ public abstract class AbstractTripleClientStream extends AbstractStream implemen
                 List<Any> detailList = statusDetail.getDetailsList();
                 Map<Class<?>, Object> classObjectMap = tranFromStatusDetails(detailList);
 
+                // google.rpc.Status carries the message unencoded, so prefer the percent-encoded grpc-message.
+                // Dubbo 3.0 to 3.2 providers wrote the same percent-encoded text into both.
+                String message = metadata.get(TripleHeaderEnum.MESSAGE_KEY.getKey());
+                if (message == null) {
+                    message = statusDetail.getMessage();
+                }
                 // get common exception from DebugInfo
                 TriRpcStatus status = TriRpcStatus.fromCode(statusDetail.getCode())
-                        .withDescription(TriRpcStatus.decodeMessage(statusDetail.getMessage()));
+                        .withDescription(TriRpcStatus.decodeMessage(message));
                 DebugInfo debugInfo = (DebugInfo) classObjectMap.get(DebugInfo.class);
                 if (debugInfo != null) {
                     String msg = ExceptionUtils.getStackFrameString(debugInfo.getStackEntriesList());

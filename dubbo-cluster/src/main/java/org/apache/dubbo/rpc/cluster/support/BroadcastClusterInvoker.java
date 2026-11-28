@@ -101,7 +101,7 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
                                 exception.getMessage(),
                                 exception);
                         failIndex++;
-                        if (failIndex == failThresholdIndex) {
+                        if (failIndex >= failThresholdIndex) {
                             break;
                         }
                     }
@@ -115,7 +115,7 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
                         exception.getMessage(),
                         exception);
                 failIndex++;
-                if (failIndex == failThresholdIndex) {
+                if (failIndex >= failThresholdIndex) {
                     break;
                 }
             } finally {
@@ -126,7 +126,7 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
         }
 
         if (exception != null) {
-            if (failIndex == failThresholdIndex) {
+            if (failIndex >= failThresholdIndex) {
                 if (logger.isDebugEnabled()) {
                     logger.debug(String.format(
                             "The number of BroadcastCluster call failures has reached the threshold %s",

@@ -41,6 +41,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
@@ -52,8 +53,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -233,8 +236,8 @@ class ServiceDiscoveryRegistryTest {
                 multiAppsInstanceListener,
                 serviceDiscoveryRegistry.getServiceListeners().get(toStringKeys(multiApps)));
         verify(multiAppsInstanceListener, times(1)).addListenerAndNotify(any(), eq(testServiceListener));
-        // still called once, not executed this time
-        verify(serviceDiscovery, times(2)).addServiceInstancesChangedListener(multiAppsInstanceListener);
+        // registered only once when the listener was first created; subsequent subscribes reuse it
+        verify(serviceDiscovery, times(1)).addServiceInstancesChangedListener(multiAppsInstanceListener);
         // check different protocol
         Map<String, Set<ServiceInstancesChangedListener.NotifyListenerWithKey>> serviceListeners =
                 multiAppsInstanceListener.getServiceListeners();
@@ -255,6 +258,60 @@ class ServiceDiscoveryRegistryTest {
     @Test
     void testConcurrencySubscribe() {
         // TODO
+    }
+
+    /**
+     * The push callback must be registered on the underlying service discovery BEFORE the
+     * initial getInstances() pull. Otherwise, any push arriving while the initialization is
+     * still running (which can take seconds because of metadata fetching) is absorbed by the
+     * discovery SDK's local cache and never delivered to Dubbo, leaving allInstances stale
+     * for the entire process lifetime.
+     */
+    @Test
+    void testSubscribeURLsRegistersPushCallbackBeforePull() {
+        Set<String> singleApp = new TreeSet<>();
+        singleApp.add(APP_NAME1);
+        when(serviceDiscovery.getInstances(APP_NAME1)).thenReturn(instanceList1);
+
+        serviceDiscoveryRegistry.subscribeURLs(url, testServiceListener, singleApp);
+
+        InOrder ordered = inOrder(serviceDiscovery);
+        ordered.verify(serviceDiscovery).addServiceInstancesChangedListener(instanceListener);
+        ordered.verify(serviceDiscovery).getInstances(APP_NAME1);
+    }
+
+    /**
+     * If a push callback fires between "register" and the initial pull and has already
+     * populated allInstances for a given serviceName, the pull for that serviceName must be
+     * skipped. Otherwise a slower pull (reading a stale SDK cache) could overwrite the fresher
+     * push snapshot, leaving a ghost instance in the invoker table.
+     */
+    @Test
+    void testSubscribeURLsSkipsPullWhenPushAlreadyPopulated() {
+        Set<String> singleApp = new TreeSet<>();
+        singleApp.add(APP_NAME1);
+
+        // Simulate a push callback that fires the moment we register on the discovery SDK:
+        // it populates allInstances with the authoritative snapshot before the pull loop runs.
+        doAnswer(invocation -> {
+                    ServiceInstancesChangedListener registered = invocation.getArgument(0);
+                    registered.getAllInstances().put(APP_NAME1, instanceList2);
+                    return null;
+                })
+                .when(serviceDiscovery)
+                .addServiceInstancesChangedListener(instanceListener);
+
+        // A stale pull would return a different (larger) snapshot; it must not be applied.
+        when(serviceDiscovery.getInstances(APP_NAME1)).thenReturn(instanceList1);
+
+        serviceDiscoveryRegistry.subscribeURLs(url, testServiceListener, singleApp);
+
+        // Pull was skipped because push already populated this app.
+        verify(serviceDiscovery, never()).getInstances(APP_NAME1);
+        // No stale onEvent was pushed into the listener from the initialization path.
+        verify(instanceListener, never()).onEvent(any());
+        // The push snapshot survives.
+        assertEquals(instanceList2, instanceListener.getAllInstances().get(APP_NAME1));
     }
 
     @Test

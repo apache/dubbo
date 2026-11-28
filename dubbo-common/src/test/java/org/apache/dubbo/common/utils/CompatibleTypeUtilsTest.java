@@ -28,6 +28,8 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -35,6 +37,39 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CompatibleTypeUtilsTest {
+
+    @ParameterizedTest
+    @CsvSource({
+        "9223372036854775808, 9223372036854775808",
+        "-9223372036854775809, -9223372036854775809",
+        "123456789012345678901234567890.987, 123456789012345678901234567890",
+        "-123456789012345678901234567890.987, -123456789012345678901234567890",
+        "1.9, 1",
+        "-1.9, -1",
+        "0.9, 0"
+    })
+    void testBigDecimalToBigIntegerPreservesIntegralValue(String decimal, String integer) {
+        assertEquals(
+                new BigInteger(integer),
+                CompatibleTypeUtils.compatibleTypeConvert(new BigDecimal(decimal), BigInteger.class));
+    }
+
+    @Test
+    void testBigDecimalToBigIntegerThroughPojoRealization() {
+        assertEquals(
+                new BigInteger("9223372036854775808"),
+                PojoUtils.realize(new BigDecimal("9223372036854775808.75"), BigInteger.class));
+    }
+
+    @Test
+    void testIntegralConversionsToBigIntegerStayCompatible() {
+        assertEquals(BigInteger.valueOf(42), CompatibleTypeUtils.compatibleTypeConvert(42, BigInteger.class));
+        assertEquals(
+                BigInteger.valueOf(Long.MIN_VALUE),
+                CompatibleTypeUtils.compatibleTypeConvert(Long.MIN_VALUE, BigInteger.class));
+        BigInteger integer = new BigInteger("123456789012345678901234567890");
+        assertSame(integer, CompatibleTypeUtils.compatibleTypeConvert(integer, BigInteger.class));
+    }
 
     @SuppressWarnings("unchecked")
     @Test

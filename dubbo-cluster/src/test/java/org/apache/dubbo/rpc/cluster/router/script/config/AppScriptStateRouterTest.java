@@ -17,6 +17,8 @@
 package org.apache.dubbo.rpc.cluster.router.script.config;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
+import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.rpc.Invoker;
@@ -80,6 +82,36 @@ public class AppScriptStateRouterTest {
         invocation.setMethodName("sayHello");
         List<Invoker<String>> result = router.route(invokers.clone(), url, invocation, false, new Holder<>());
         Assertions.assertEquals(1, result.size());
+    }
+
+    @Test
+    void deletingRulePassesThroughAndRepublishingRestoresRouting() {
+        AppScriptStateRouter<String> router = new AppScriptStateRouter<>(url);
+        BitList<Invoker<String>> invokers = getInvokers();
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setMethodName("sayHello");
+        String ruleKey = "demo-provider" + RULE_SUFFIX;
+
+        router.process(
+                new ConfigChangedEvent(ruleKey, DynamicConfiguration.DEFAULT_GROUP, rawRule, ConfigChangeType.ADDED));
+        Assertions.assertEquals(
+                1,
+                router.route(invokers.clone(), url, invocation, false, new Holder<>())
+                        .size());
+
+        router.process(
+                new ConfigChangedEvent(ruleKey, DynamicConfiguration.DEFAULT_GROUP, "", ConfigChangeType.DELETED));
+        Assertions.assertEquals(
+                invokers.size(),
+                router.route(invokers.clone(), url, invocation, false, new Holder<>())
+                        .size());
+
+        router.process(
+                new ConfigChangedEvent(ruleKey, DynamicConfiguration.DEFAULT_GROUP, rawRule, ConfigChangeType.ADDED));
+        Assertions.assertEquals(
+                1,
+                router.route(invokers.clone(), url, invocation, false, new Holder<>())
+                        .size());
     }
 
     private BitList<Invoker<String>> getInvokers() {

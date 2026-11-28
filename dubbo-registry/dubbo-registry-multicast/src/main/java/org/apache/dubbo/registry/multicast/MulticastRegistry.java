@@ -90,6 +90,14 @@ public class MulticastRegistry extends FailbackRegistry {
 
     private final int cleanPeriod;
 
+    /**
+     * Timeout in milliseconds for the liveness probe performed while cleaning expired providers.
+     * A provider host that is unreachable (for example a host that dropped off the network without
+     * closing its TCP stack) would otherwise block the clean thread until the OS-level TCP timeout,
+     * which is minutes and stalls expiry detection for every other provider.
+     */
+    private final int cleanCheckTimeout;
+
     private final ApplicationModel applicationModel;
 
     private volatile boolean admin = false;
@@ -135,6 +143,7 @@ public class MulticastRegistry extends FailbackRegistry {
             throw new IllegalStateException(e.getMessage(), e);
         }
         this.cleanPeriod = url.getParameter(SESSION_TIMEOUT_KEY, DEFAULT_SESSION_TIMEOUT);
+        this.cleanCheckTimeout = url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
         if (url.getParameter("clean", true)) {
             this.cleanFuture = cleanExecutor.scheduleWithFixedDelay(
                     () -> {
@@ -192,7 +201,7 @@ public class MulticastRegistry extends FailbackRegistry {
         }
     }
 
-    private boolean isExpired(URL url) {
+    boolean isExpired(URL url) {
         if (!url.getParameter(DYNAMIC_KEY, true)
                 || url.getPort() <= 0
                 || CONSUMER_PROTOCOL.equals(url.getProtocol())
@@ -200,18 +209,24 @@ public class MulticastRegistry extends FailbackRegistry {
                 || OVERRIDE_PROTOCOL.equals(url.getProtocol())) {
             return false;
         }
-        try (Socket socket = new Socket(url.getHost(), url.getPort())) {
-        } catch (Throwable e) {
-            try {
-                Thread.sleep(100);
-            } catch (Throwable e2) {
-            }
-            try (Socket socket2 = new Socket(url.getHost(), url.getPort())) {
-            } catch (Throwable e2) {
-                return true;
-            }
+        if (isPortReachable(url.getHost(), url.getPort())) {
+            return false;
         }
-        return false;
+        try {
+            Thread.sleep(100);
+        } catch (Throwable e) {
+            Thread.currentThread().interrupt();
+        }
+        return !isPortReachable(url.getHost(), url.getPort());
+    }
+
+    private boolean isPortReachable(String host, int port) {
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress(host, port), cleanCheckTimeout);
+            return true;
+        } catch (Throwable e) {
+            return false;
+        }
     }
 
     private void receive(String msg, InetSocketAddress remoteAddress) {

@@ -116,6 +116,22 @@ class BroadCastClusterInvokerTest {
         assertTrue(invoker3.isInvoked());
         assertFalse(invoker4.isInvoked());
     }
+
+    @Test
+    void testZeroFailPercent() {
+        given(dic.list(invocation)).willReturn(Arrays.asList(invoker1, invoker2, invoker3, invoker4));
+        // A failure percentage of 0 means that the exception is thrown as soon as the first call fails.
+        url = url.addParameter("broadcast.fail.percent", 0);
+        given(dic.getConsumerUrl()).willReturn(url);
+        invoker1.invokeThrowEx();
+        assertThrows(RpcException.class, () -> {
+            clusterInvoker.invoke(invocation);
+        });
+        assertTrue(invoker1.isInvoked());
+        assertFalse(invoker2.isInvoked());
+        assertFalse(invoker3.isInvoked());
+        assertFalse(invoker4.isInvoked());
+    }
 }
 
 class MockInvoker implements Invoker<DemoService> {

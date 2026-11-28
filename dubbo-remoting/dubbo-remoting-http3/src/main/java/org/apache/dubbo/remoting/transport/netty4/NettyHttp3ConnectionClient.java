@@ -17,11 +17,13 @@
 package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.http3.Http3SslContexts;
 
+import java.net.InetSocketAddress;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -38,6 +40,7 @@ import io.netty.handler.codec.http3.Http3;
 import io.netty.handler.codec.http3.Http3ClientConnectionHandler;
 import io.netty.handler.codec.quic.QuicChannel;
 import io.netty.handler.codec.quic.QuicChannelBootstrap;
+import io.netty.handler.codec.quic.QuicSslContext;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 
@@ -64,8 +67,10 @@ public final class NettyHttp3ConnectionClient extends AbstractNettyConnectionCli
 
     @Override
     protected void initBootstrap() throws Exception {
+        URL url = getUrl();
+        QuicSslContext quicSslContext = Http3SslContexts.buildClientSslContext(url);
         io.netty.channel.ChannelHandler codec = Http3Helper.configCodec(Http3.newQuicClientCodecBuilder(), getUrl())
-                .sslContext(Http3SslContexts.buildClientSslContext(getUrl()))
+                .sslEngineProvider(q -> quicSslContext.newEngine(q.alloc(), url.getHost(), url.getPort()))
                 .build();
         io.netty.channel.Channel nettyDatagramChannel = new Bootstrap()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getConnectTimeout())
@@ -114,6 +119,22 @@ public final class NettyHttp3ConnectionClient extends AbstractNettyConnectionCli
         };
         bootstrap.connect().addListener(listener);
         return promise;
+    }
+
+    /**
+     * Override this method to preserve the configured loopback address.
+     * The superclass implementation may rewrite it to a non-loopback local IP,
+     * potentially causing a peer-address mismatch on multi-homed hosts.
+     * QUIC requires the peer's IP address to remain stable until the handshake
+     * is confirmed.
+     */
+    @Override
+    public InetSocketAddress getConnectAddress() {
+        String host = getUrl().getHost();
+        if (NetUtils.isLocalHost(host)) {
+            return getUrl().toInetSocketAddress();
+        }
+        return super.getConnectAddress();
     }
 
     @Override

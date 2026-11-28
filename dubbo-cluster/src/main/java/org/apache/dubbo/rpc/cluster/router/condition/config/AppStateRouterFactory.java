@@ -18,35 +18,19 @@ package org.apache.dubbo.rpc.cluster.router.condition.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.cluster.router.state.CacheableStateRouterFactory;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
-import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 
 /**
  * Application level router factory
  * AppRouter should after ServiceRouter
  */
 @Activate(order = 150)
-public class AppStateRouterFactory implements StateRouterFactory {
+public class AppStateRouterFactory extends CacheableStateRouterFactory {
     public static final String NAME = "app";
 
-    @SuppressWarnings("rawtypes")
-    private volatile StateRouter router;
-
-    @SuppressWarnings("unchecked")
     @Override
-    public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url) {
-        if (router != null) {
-            return router;
-        }
-        synchronized (this) {
-            if (router == null) {
-                router = createRouter(url);
-            }
-        }
-        return router;
-    }
-
-    private <T> StateRouter<T> createRouter(URL url) {
+    protected <T> StateRouter<T> createRouter(Class<T> interfaceClass, URL url) {
         return new AppStateRouter<>(url);
     }
 }

@@ -21,10 +21,9 @@ import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.QueryStringDecoder;
-import io.netty.handler.codec.http.QueryStringEncoder;
 
 import static org.apache.dubbo.rpc.RpcException.AUTHORIZATION_EXCEPTION;
 import static org.apache.dubbo.rpc.RpcException.FORBIDDEN_EXCEPTION;
@@ -42,6 +41,8 @@ import static org.apache.dubbo.rpc.RpcException.UNKNOWN_EXCEPTION;
 public class TriRpcStatus implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    private static final char[] HEX_DIGITS = "0123456789ABCDEF".toCharArray();
 
     public static final TriRpcStatus OK = fromCode(Code.OK);
     public static final TriRpcStatus UNKNOWN = fromCode(Code.UNKNOWN);
@@ -155,25 +156,82 @@ public class TriRpcStatus implements Serializable {
         }
     }
 
+    /**
+     * Percent-decodes a value written by {@link #encodeMessage(String)} or received as grpc-message. As in gRPC,
+     * '+' stays '+', and an invalid percent sequence is kept as is instead of failing the decoding.
+     */
     public static String decodeMessage(String raw) {
         if (StringUtils.isEmpty(raw)) {
             return "";
         }
-        return QueryStringDecoder.decodeComponent(raw);
+        int start = raw.indexOf('%');
+        if (start < 0) {
+            return raw;
+        }
+        int length = raw.length();
+        StringBuilder builder = new StringBuilder(length).append(raw, 0, start);
+        byte[] bytes = new byte[length - start];
+        int size = 0;
+        for (int i = start; i < length; i++) {
+            char c = raw.charAt(i);
+            if (c == '%' && i + 2 < length) {
+                int high = StringUtils.decodeHexNibble(raw.charAt(i + 1));
+                int low = StringUtils.decodeHexNibble(raw.charAt(i + 2));
+                if (high != -1 && low != -1) {
+                    bytes[size++] = (byte) ((high << 4) + low);
+                    i += 2;
+                    continue;
+                }
+            }
+            if (c < 0x80) {
+                bytes[size++] = (byte) c;
+                continue;
+            }
+            if (size > 0) {
+                builder.append(new String(bytes, 0, size, StandardCharsets.UTF_8));
+                size = 0;
+            }
+            builder.append(c);
+        }
+        if (size > 0) {
+            builder.append(new String(bytes, 0, size, StandardCharsets.UTF_8));
+        }
+        return builder.toString();
     }
 
+    /**
+     * Percent-encodes a value for grpc-message or tri-header-convert: the UTF-8 bytes outside printable ASCII, '%',
+     * the space, so that the value never starts or ends with whitespace, and '+', which Dubbo 3.0 to 3.3.7 decode as
+     * a space. Other printable ASCII stays as is, because grpc-js decodes grpc-message with decodeURI, which leaves
+     * escapes such as %3A and %2F in place.
+     */
     public static String encodeMessage(String raw) {
         if (StringUtils.isEmpty(raw)) {
             return "";
         }
-        return encodeComponent(raw);
+        int length = raw.length();
+        int i = 0;
+        while (i < length && !isEscapedInMessage(raw.charAt(i))) {
+            i++;
+        }
+        if (i == length) {
+            return raw;
+        }
+        byte[] bytes = raw.getBytes(StandardCharsets.UTF_8);
+        StringBuilder builder = new StringBuilder(bytes.length + 16);
+        for (byte b : bytes) {
+            int c = b & 0xFF;
+            if (isEscapedInMessage(c)) {
+                builder.append('%').append(HEX_DIGITS[c >> 4]).append(HEX_DIGITS[c & 0xF]);
+            } else {
+                builder.append((char) c);
+            }
+        }
+        return builder.toString();
     }
 
-    private static String encodeComponent(String raw) {
-        QueryStringEncoder encoder = new QueryStringEncoder("");
-        encoder.addParam("", raw);
-        // ?=
-        return encoder.toString().substring(2);
+    private static boolean isEscapedInMessage(int c) {
+        return c <= ' ' || c > '~' || c == '%' || c == '+';
     }
 
     public static Code httpStatusToGrpcCode(int httpStatusCode) {
@@ -262,7 +320,7 @@ public class TriRpcStatus implements Serializable {
 
     public String toEncodedMessage() {
         String output = limitSizeTo1KB(toMessage());
-        return encodeComponent(output);
+        return encodeMessage(output);
     }
 
     public String toMessageWithoutCause() {

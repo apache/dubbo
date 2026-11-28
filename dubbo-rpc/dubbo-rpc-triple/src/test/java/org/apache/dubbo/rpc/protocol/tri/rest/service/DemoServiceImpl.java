@@ -153,4 +153,9 @@ public class DemoServiceImpl implements DemoService {
     public String mismatchTest(String name) {
         return name;
     }
+
+    @Override
+    public String pathVariableTest(String name) {
+        return name;
+    }
 }
