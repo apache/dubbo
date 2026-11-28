@@ -335,7 +335,17 @@ public class ServletHttpRequestAdapter extends DefaultHttpRequest implements Htt
 
     @Override
     public int getServerPort() {
-        return serverPort();
+        int port = serverPort();
+        if (port < 0) {
+            String scheme = getScheme();
+            if (HttpConstants.HTTP.equals(scheme)) {
+                return 80;
+            }
+            if (HttpConstants.HTTPS.equals(scheme)) {
+                return 443;
+            }
+        }
+        return port;
     }
 
     @Override
@@ -353,7 +363,7 @@ public class ServletHttpRequestAdapter extends DefaultHttpRequest implements Htt
 
     @Override
     public String getRemoteHost() {
-        return String.valueOf(remotePort());
+        return remoteHost();
     }
 
     @Override
@@ -462,13 +472,13 @@ public class ServletHttpRequestAdapter extends DefaultHttpRequest implements Htt
         }
 
         @Override
-        public void close() throws IOException {
-            is.close();
+        public int read(byte[] b, int off, int len) throws IOException {
+            return is.read(b, off, len);
         }
 
         @Override
-        public int readLine(byte[] b, int off, int len) throws IOException {
-            return is.read(b, off, len);
+        public void close() throws IOException {
+            is.close();
         }
 
         @Override
