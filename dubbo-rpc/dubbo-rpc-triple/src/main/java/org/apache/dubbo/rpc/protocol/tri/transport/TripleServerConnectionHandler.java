@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -33,6 +35,7 @@ import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2GoAwayFrame;
 import io.netty.handler.codec.http2.Http2PingFrame;
 import io.netty.util.ReferenceCountUtil;
+import io.netty.util.concurrent.ScheduledFuture;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_RESPONSE;
 import static org.apache.dubbo.rpc.protocol.tri.transport.GracefulShutdown.GRACEFUL_SHUTDOWN_PING;
@@ -51,6 +54,70 @@ public class TripleServerConnectionHandler extends Http2ChannelDuplexHandler {
     }
 
     private GracefulShutdown gracefulShutdown;
+
+    private final long maxConnectionAge;
+
+    private final long maxConnectionAgeGrace;
+
+    private ScheduledFuture<?> maxConnectionAgeFuture;
+
+    private ScheduledFuture<?> maxConnectionAgeGraceFuture;
+
+    public TripleServerConnectionHandler() {
+        this(-1L, 10_000L);
+    }
+
+    public TripleServerConnectionHandler(long maxConnectionAge, long maxConnectionAgeGrace) {
+        this.maxConnectionAge = maxConnectionAge;
+        this.maxConnectionAgeGrace = maxConnectionAgeGrace;
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        super.channelActive(ctx);
+        if (maxConnectionAge > 0) {
+            // Apply +/-10% jitter (same as gRPC-java) to avoid mass simultaneous
+            // reconnections when many connections are established at the same time.
+            long jitteredAge = maxConnectionAge
+                    + ThreadLocalRandom.current().nextLong(-maxConnectionAge / 10, maxConnectionAge / 10 + 1);
+            maxConnectionAgeFuture =
+                    ctx.executor().schedule(() -> onMaxConnectionAgeReached(ctx), jitteredAge, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    private void onMaxConnectionAgeReached(ChannelHandlerContext ctx) {
+        if (!ctx.channel().isActive()) {
+            return;
+        }
+        if (logger.isInfoEnabled()) {
+            logger.info(
+                    "Connection {} reached max connection age {}ms, sending GOAWAY to trigger client migration",
+                    ctx.channel(),
+                    maxConnectionAge);
+        }
+        // Advisory GOAWAY (last-stream-id = MAX_INT): no new streams on this connection,
+        // in-flight streams keep running. Clients will migrate to a new connection.
+        GracefulShutdown.sendGoAwayFrame(ctx);
+        maxConnectionAgeGraceFuture = ctx.executor()
+                .schedule(
+                        () -> {
+                            if (!ctx.channel().isActive()) {
+                                return;
+                            }
+                            if (logger.isDebugEnabled()) {
+                                logger.debug(
+                                        "Connection age grace period ({}ms) elapsed, closing connection {}",
+                                        maxConnectionAgeGrace,
+                                        ctx.channel());
+                            }
+                            // Close via the channel (not ctx) so the close request traverses
+                            // this handler's close() override and performs a graceful shutdown
+                            // (final GOAWAY + PING) instead of an abrupt close.
+                            ctx.channel().close();
+                        },
+                        maxConnectionAgeGrace,
+                        TimeUnit.MILLISECONDS);
+    }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -76,6 +143,7 @@ public class TripleServerConnectionHandler extends Http2ChannelDuplexHandler {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        cancelMaxConnectionAgeTasks();
         super.channelInactive(ctx);
         // reset all active stream on connection close
         forEachActiveStream(stream -> {
@@ -87,6 +155,15 @@ public class TripleServerConnectionHandler extends Http2ChannelDuplexHandler {
             ctx.fireChannelRead(resetFrame);
             return true;
         });
+    }
+
+    private void cancelMaxConnectionAgeTasks() {
+        if (maxConnectionAgeFuture != null) {
+            maxConnectionAgeFuture.cancel(false);
+        }
+        if (maxConnectionAgeGraceFuture != null) {
+            maxConnectionAgeGraceFuture.cancel(false);
+        }
     }
 
     private boolean isQuiteException(Throwable t) {
