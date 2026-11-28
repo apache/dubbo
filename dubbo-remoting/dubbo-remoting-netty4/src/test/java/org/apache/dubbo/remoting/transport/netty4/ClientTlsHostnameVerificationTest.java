@@ -59,6 +59,7 @@ import io.netty.util.concurrent.GlobalEventExecutor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -123,6 +124,26 @@ class ClientTlsHostnameVerificationTest {
             assertNotNull(sslHandler);
             assertNull(sslHandler.engine().getPeerHost());
             assertEquals(-1, sslHandler.engine().getPeerPort());
+        } finally {
+            channel.finishAndReleaseAll();
+        }
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"", "orders.shop.svc.cluster.local"})
+    void explicitServerNameRetainsPeerPortAndDefaultsToSocketHost(String serverName) throws Exception {
+        SslContext context =
+                SslContextBuilder.forClient().sslProvider(SslProvider.JDK).build();
+        InetSocketAddress peer = InetSocketAddress.createUnresolved("127.0.0.1", 20880);
+        EmbeddedChannel channel = new EmbeddedChannel(new SslClientTlsHandler(context, peer, serverName));
+        try {
+            SslHandler handler = channel.pipeline().get(SslHandler.class);
+            assertNotNull(handler);
+            assertEquals(
+                    serverName == null || serverName.isEmpty() ? peer.getHostString() : serverName,
+                    handler.engine().getPeerHost());
+            assertEquals(peer.getPort(), handler.engine().getPeerPort());
         } finally {
             channel.finishAndReleaseAll();
         }

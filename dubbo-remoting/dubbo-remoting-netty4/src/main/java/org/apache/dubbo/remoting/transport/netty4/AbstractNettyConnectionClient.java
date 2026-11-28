@@ -23,23 +23,31 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
+import org.apache.dubbo.remoting.api.connection.ConnectionStateProvider;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.DefaultPromise;
-import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import io.netty.util.concurrent.Promise;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_CLIENT_CONNECT_TIMEOUT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CONNECT_PROVIDER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RECONNECT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION;
 
 public abstract class AbstractNettyConnectionClient extends AbstractConnectionClient {
 
@@ -56,6 +64,11 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
     private AtomicBoolean isReconnecting;
 
     private ConnectionListener connectionListener;
+
+    private StateTracker states;
+    private AtomicInteger failedAttempts;
+    private AtomicBoolean reconnectScheduled;
+    private AtomicReference<ChannelFuture> connectAttempt;
 
     public static final AttributeKey<AbstractConnectionClient> CONNECTION = AttributeKey.valueOf("connection");
 
@@ -80,6 +93,10 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
         closePromise = new DefaultPromise<>(GlobalEventExecutor.INSTANCE);
         isReconnecting = new AtomicBoolean(false);
         connectionListener = new ConnectionListener();
+        states = new StateTracker();
+        failedAttempts = new AtomicInteger();
+        reconnectScheduled = new AtomicBoolean();
+        connectAttempt = new AtomicReference<>();
         increase();
     }
 
@@ -93,11 +110,19 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
                 logger.debug("Connection:{} freed", this);
             }
             performClose();
-            closePromise.setSuccess(null);
+            closePromise.trySuccess(null);
         }
     }
 
     protected void performClose() {
+        if (states != null) states.update(State.SHUTDOWN);
+        ChannelFuture attempt = connectAttempt == null ? null : connectAttempt.getAndSet(null);
+        if (attempt != null) {
+            attempt.cancel(false);
+            attempt.channel().close();
+        }
+        Promise<Object> connecting = connectingPromiseRef == null ? null : connectingPromiseRef.get();
+        if (connecting != null) connecting.tryFailure(new IllegalStateException("Connection closed"));
         io.netty.channel.Channel current = getNettyChannel();
         if (current != null) {
             current.close();
@@ -112,11 +137,14 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
         }
 
         if (isClosed()) {
+            isReconnecting.set(false);
             if (logger.isDebugEnabled()) {
                 logger.debug("Connection:{} aborted to reconnect cause connection closed", this);
             }
             return;
         }
+
+        states.update(State.CONNECTING);
 
         if (logger.isDebugEnabled()) {
             logger.debug("Connection:{} attempting to reconnect to server {}", this, getConnectAddress());
@@ -126,7 +154,13 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
         long start = System.currentTimeMillis();
 
         Promise<Object> connectingPromise = getOrCreateConnectingPromise();
-        Future<Void> connectPromise = performConnect();
+        ChannelFuture connectPromise = performConnect();
+        connectAttempt.set(connectPromise);
+        if (isClosed()) {
+            connectPromise.cancel(false);
+            connectPromise.channel().close();
+            connectingPromise.tryFailure(new IllegalStateException("Connection closed"));
+        }
         connectPromise.addListener(connectionListener);
 
         boolean ret = connectingPromise.awaitUninterruptibly(getConnectTimeout(), TimeUnit.MILLISECONDS);
@@ -154,6 +188,7 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
 
             throw remotingException;
         } else if (!ret || !connectPromise.isSuccess()) {
+            states.update(State.TRANSIENT_FAILURE);
             // 6-2 Client-side timeout
             RemotingException remotingException = new RemotingException(
                     this,
@@ -178,8 +213,15 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
     }
 
     protected void scheduleReconnect(long reconnectDuration, TimeUnit unit) {
+        boolean exponential = Boolean.TRUE.equals(getUrl().getAttribute(ConnectionStateProvider.BACKOFF_ATTRIBUTE));
+        if (isClosed() || (exponential && !reconnectScheduled.compareAndSet(false, true))) return;
+        long delayMillis = exponential
+                ? reconnectDelayMillis(
+                        failedAttempts.get(), ThreadLocalRandom.current().nextDouble())
+                : unit.toMillis(reconnectDuration);
         connectivityExecutor.schedule(
                 () -> {
+                    if (exponential) reconnectScheduled.set(false);
                     try {
                         doConnect();
                     } catch (RemotingException e) {
@@ -190,8 +232,42 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
                                 "Failed to connect to server: " + getConnectAddress());
                     }
                 },
-                reconnectDuration,
-                unit);
+                delayMillis,
+                TimeUnit.MILLISECONDS);
+    }
+
+    // gRPC-style bounded exponential delay with +/-20% jitter; explicit native opt-in only.
+    static long reconnectDelayMillis(int failures, double jitter) {
+        double base = Math.min(120_000, 1_000 * Math.pow(1.6, Math.min(32, Math.max(0, failures))));
+        return (long) (base * (0.8 + 0.4 * jitter));
+    }
+
+    protected final void connectionReady() {
+        if (!isConnected()) {
+            states.update(isClosed() ? State.SHUTDOWN : State.TRANSIENT_FAILURE);
+            return;
+        }
+        failedAttempts.set(0);
+        states.update(State.READY);
+    }
+
+    protected boolean readyOnConnected() {
+        return true;
+    }
+
+    protected final void connectionFailed() {
+        failedAttempts.updateAndGet(value -> Math.min(32, value + 1));
+        states.update(State.TRANSIENT_FAILURE);
+    }
+
+    @Override
+    public State getConnectivityState() {
+        return states.state;
+    }
+
+    @Override
+    public AutoCloseable addConnectivityListener(Consumer<State> listener) {
+        return states.subscribe(listener);
     }
 
     @Override
@@ -227,6 +303,7 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
 
         // Notify the connection is available.
         connectedPromise.trySuccess(null);
+        if (readyOnConnected()) connectionReady();
 
         if (logger.isDebugEnabled()) {
             logger.debug("Connection:{} connected", this);
@@ -241,6 +318,7 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
 
         io.netty.channel.Channel nettyChannel = (io.netty.channel.Channel) channel;
         if (channelRef.compareAndSet(nettyChannel, null)) {
+            states.update(State.TRANSIENT_FAILURE);
             // Ensure the channel is closed
             if (nettyChannel.isOpen()) {
                 nettyChannel.close();
@@ -249,6 +327,14 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
             if (logger.isDebugEnabled()) {
                 logger.debug("Connection:{} goaway", this);
             }
+        }
+    }
+
+    @Override
+    public void onDisconnected(Object channel) {
+        if (channel instanceof io.netty.channel.Channel
+                && channelRef.compareAndSet((io.netty.channel.Channel) channel, null)) {
+            states.update(State.TRANSIENT_FAILURE);
         }
     }
 
@@ -364,6 +450,7 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
             if (future.isSuccess()) {
                 return;
             }
+            connectionFailed();
             AbstractNettyConnectionClient connectionClient = AbstractNettyConnectionClient.this;
             if (connectionClient.isClosed() || connectionClient.getCounter() == 0) {
                 if (logger.isDebugEnabled()) {
@@ -385,6 +472,40 @@ public abstract class AbstractNettyConnectionClient extends AbstractConnectionCl
             disconnectedPromise.trySuccess(null);
 
             scheduleReconnect(reconnectDuration, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    private final class StateTracker {
+        private volatile State state = State.IDLE;
+        private final Set<Consumer<State>> listeners = new LinkedHashSet<>();
+
+        synchronized AutoCloseable subscribe(Consumer<State> listener) {
+            Objects.requireNonNull(listener, "listener");
+            Consumer<State> registration = listener::accept;
+            if (state != State.SHUTDOWN) listeners.add(registration);
+            notifyListener(registration);
+            return () -> {
+                synchronized (StateTracker.this) {
+                    listeners.remove(registration);
+                }
+            };
+        }
+
+        synchronized void update(State next) {
+            if (state == State.SHUTDOWN || state == next) return;
+            state = next;
+            for (Consumer<State> listener : new ArrayList<>(listeners)) {
+                if (listeners.contains(listener)) notifyListener(listener);
+            }
+            if (next == State.SHUTDOWN) listeners.clear();
+        }
+
+        private void notifyListener(Consumer<State> listener) {
+            try {
+                listener.accept(state);
+            } catch (RuntimeException error) {
+                logger.warn(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", "Connection state listener failed", error);
+            }
         }
     }
 }

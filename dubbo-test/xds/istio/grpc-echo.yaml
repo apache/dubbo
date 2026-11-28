@@ -1,0 +1,203 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements. See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership. The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License. You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dubbo-xds-test
+  labels:
+    istio-injection: enabled
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: xds-echo
+  namespace: dubbo-xds-test
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: echo
+  namespace: dubbo-xds-test
+spec:
+  selector:
+    app: xds-echo
+  ports:
+    - name: grpc
+      port: 7070
+      targetPort: 17070
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-v1
+  namespace: dubbo-xds-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: xds-echo
+      version: v1
+  template:
+    metadata:
+      annotations:
+        inject.istio.io/templates: grpc-agent
+        proxy.istio.io/config: '{"holdApplicationUntilProxyStarts": true}'
+      labels:
+        app: xds-echo
+        version: v1
+    spec:
+      serviceAccountName: xds-echo
+      containers:
+        - name: app
+          image: registry.istio.io/testing/app@sha256:4aa8031954c610230f17b70a2369007678efae912f9dc732edd9831f3244175c
+          args:
+            - --xds-grpc-server=17070
+            - --grpc=17070
+            - --grpc=17171
+            - --port=8080
+            - --version=v1
+          env:
+            - name: INSTANCE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          ports:
+            - name: grpc
+              containerPort: 17070
+            - name: grpc-control
+              containerPort: 17171
+            - name: http-health
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http-health
+            periodSeconds: 2
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: "1"
+              memory: 256Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-v2
+  namespace: dubbo-xds-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: xds-echo
+      version: v2
+  template:
+    metadata:
+      annotations:
+        inject.istio.io/templates: grpc-agent
+        proxy.istio.io/config: '{"holdApplicationUntilProxyStarts": true}'
+      labels:
+        app: xds-echo
+        version: v2
+    spec:
+      serviceAccountName: xds-echo
+      containers:
+        - name: app
+          image: registry.istio.io/testing/app@sha256:4aa8031954c610230f17b70a2369007678efae912f9dc732edd9831f3244175c
+          args:
+            - --xds-grpc-server=17070
+            - --grpc=17070
+            - --grpc=17171
+            - --port=8080
+            - --version=v2
+          env:
+            - name: INSTANCE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          ports:
+            - name: grpc
+              containerPort: 17070
+            - name: grpc-control
+              containerPort: 17171
+            - name: http-health
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http-health
+            periodSeconds: 2
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: "1"
+              memory: 256Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-client
+  namespace: dubbo-xds-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: xds-echo-client
+      version: client
+  template:
+    metadata:
+      annotations:
+        inject.istio.io/templates: grpc-agent
+        proxy.istio.io/config: '{"holdApplicationUntilProxyStarts": true}'
+      labels:
+        app: xds-echo-client
+        version: client
+    spec:
+      serviceAccountName: xds-echo
+      containers:
+        - name: app
+          image: registry.istio.io/testing/app@sha256:4aa8031954c610230f17b70a2369007678efae912f9dc732edd9831f3244175c
+          args:
+            - --grpc=17171
+            - --port=8080
+            - --version=client
+          env:
+            - name: INSTANCE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          ports:
+            - name: grpc-control
+              containerPort: 17171
+            - name: http-health
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http-health
+            periodSeconds: 2
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: "1"
+              memory: 256Mi

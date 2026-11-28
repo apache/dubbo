@@ -20,27 +20,40 @@ import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.DeadlineFuture;
+import org.apache.dubbo.rpc.protocol.tri.UnaryRetryState;
 
 import java.util.Map;
 
 public class UnaryClientCallListener implements ClientCall.Listener {
 
     private final DeadlineFuture future;
+    private final UnaryRetryState.Attempt retryAttempt;
     private Object appResponse;
     private int actualContentLength;
 
     public UnaryClientCallListener(DeadlineFuture deadlineFuture) {
+        this(deadlineFuture, null);
+    }
+
+    public UnaryClientCallListener(DeadlineFuture deadlineFuture, UnaryRetryState.Attempt retryAttempt) {
         this.future = deadlineFuture;
+        this.retryAttempt = retryAttempt;
     }
 
     @Override
     public void onMessage(Object message, int actualContentLength) {
+        if (retryAttempt != null) {
+            retryAttempt.commit();
+        }
         this.appResponse = message;
         this.actualContentLength = actualContentLength;
     }
 
     @Override
     public void onClose(TriRpcStatus status, Map<String, Object> trailers, boolean isReturnTriException) {
+        if (retryAttempt != null) {
+            retryAttempt.setPushback(trailers == null ? null : trailers.get("grpc-retry-pushback-ms"));
+        }
         AppResponse result = new AppResponse();
         result.setObjectAttachments(trailers);
         if (status.isOk()) {
@@ -63,6 +76,9 @@ public class UnaryClientCallListener implements ClientCall.Listener {
 
     @Override
     public void onStart(ClientCall call) {
-        future.addTimeoutListener(() -> call.cancelByLocal(new IllegalStateException("client timeout")));
+        if (retryAttempt != null) {
+            retryAttempt.commit();
+        }
+        // Cancellation is armed by TripleInvoker before dispatch, independently of response headers.
     }
 }

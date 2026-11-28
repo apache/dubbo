@@ -46,7 +46,9 @@ public class SingleProtocolConnectionManager implements ConnectionManager {
         if (url == null) {
             throw new IllegalArgumentException("url == null");
         }
-        return connections.compute(url.getAddress(), (address, conn) -> {
+        String identity = (String) url.getAttribute("connection.identity");
+        String key = identity == null ? url.getAddress() : url.getAddress() + "/" + identity;
+        return connections.compute(key, (address, conn) -> {
             String transport = url.getParameter(Constants.TRANSPORTER_KEY, "netty4");
             if (conn == null) {
                 return createAbstractConnectionClient(url, handler, address, transport);

@@ -20,6 +20,9 @@ import java.util.concurrent.TimeUnit;
 
 public final class TimeoutCountDown implements Comparable<TimeoutCountDown> {
 
+    /** Local invocation attribute; never serialized as an attachment or reset between attempts. */
+    public static final String CALL_ATTRIBUTE = "dubbo.rpc.call-deadline";
+
     public static TimeoutCountDown newCountDown(long timeout, TimeUnit unit) {
         return new TimeoutCountDown(timeout, unit);
     }

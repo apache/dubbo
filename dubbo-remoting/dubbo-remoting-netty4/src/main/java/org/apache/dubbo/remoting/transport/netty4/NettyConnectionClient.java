@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
@@ -92,7 +93,8 @@ public final class NettyConnectionClient extends AbstractNettyConnectionClient {
                 NettySslContextOperator nettySslContextOperator = new NettySslContextOperator();
 
                 if (sslContext != null) {
-                    pipeline.addLast("negotiation", new SslClientTlsHandler(sslContext, getConnectAddress()));
+                    pipeline.addLast("negotiation", new SslClientTlsHandler(sslContext, getConnectAddress(), (String)
+                            getUrl().getAttribute("ssl.server-name")));
                 }
 
                 //                pipeline.addLast("logging", new LoggingHandler(LogLevel.INFO)); //for debug
@@ -123,7 +125,7 @@ public final class NettyConnectionClient extends AbstractNettyConnectionClient {
                 }
 
                 // set null but do not close this client, it will be reconnecting in the future
-                ch.closeFuture().addListener(channelFuture -> clearNettyChannel());
+                ch.closeFuture().addListener(channelFuture -> onDisconnected(ch));
                 // TODO support Socks5
 
                 // set channel initialized promise to success if necessary.
@@ -147,8 +149,34 @@ public final class NettyConnectionClient extends AbstractNettyConnectionClient {
         long start = System.currentTimeMillis();
         // re-create channel initialized promise if necessary.
         channelInitializedPromiseRef.compareAndSet(null, new DefaultPromise<>(GlobalEventExecutor.INSTANCE));
-        super.doConnect();
-        waitConnectionPreface(start);
+        try {
+            super.doConnect();
+            waitConnectionPreface(start);
+            connectionReady();
+        } catch (RemotingException error) {
+            // TCP success is insufficient for HTTP/2 readiness. Retry failed protocol negotiation too.
+            if (isConnected()) {
+                connectionFailed();
+                Channel channel = getChannel(true);
+                if (channel != null) channel.close();
+            }
+            throw error;
+        }
+    }
+
+    @Override
+    protected boolean readyOnConnected() {
+        return false;
+    }
+
+    @Override
+    protected void performClose() {
+        super.performClose();
+        Promise<Void> initialized = channelInitializedPromiseRef == null ? null : channelInitializedPromiseRef.get();
+        Promise<Void> preface =
+                connectionPrefaceReceivedPromiseRef == null ? null : connectionPrefaceReceivedPromiseRef.get();
+        if (initialized != null) initialized.tryFailure(new IllegalStateException("Connection closed"));
+        if (preface != null) preface.tryFailure(new IllegalStateException("Connection closed"));
     }
 
     /**

@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting.http12.netty4.h2;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.nested.TripleConfig;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 import org.apache.dubbo.remoting.http12.LimitedByteBufOutputStream;
@@ -27,6 +28,8 @@ import org.apache.dubbo.remoting.http12.h2.Http2OutputMessage;
 import org.apache.dubbo.remoting.http12.h2.Http2OutputMessageFrame;
 import org.apache.dubbo.remoting.http12.netty4.NettyHttpChannelFutureListener;
 
+import javax.net.ssl.SSLSession;
+
 import java.net.SocketAddress;
 import java.util.concurrent.CompletableFuture;
 
@@ -34,9 +37,9 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
 import io.netty.handler.codec.http2.Http2Connection;
-import io.netty.handler.codec.http2.Http2LocalFlowController;
 import io.netty.handler.codec.http2.Http2Stream;
 import io.netty.handler.codec.http2.Http2StreamChannel;
+import io.netty.util.AttributeKey;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_RESPONSE;
 
@@ -92,6 +95,14 @@ public class NettyH2StreamChannel implements H2StreamChannel {
     }
 
     @Override
+    public SSLSession sslSession() {
+        return http2StreamChannel
+                .parent()
+                .attr(AttributeKey.<SSLSession>valueOf(Constants.SSL_SESSION_KEY))
+                .get();
+    }
+
+    @Override
     public void flush() {
         this.http2StreamChannel.flush();
     }
@@ -115,29 +126,28 @@ public class NettyH2StreamChannel implements H2StreamChannel {
             return;
         }
 
-        Http2LocalFlowController localFlowController = http2Connection.local().flowController();
+        // Stream lookup must run on the event loop too: the connection map is not thread safe.
+        if (http2StreamChannel.eventLoop().inEventLoop()) {
+            consumeBytesInEventLoop(numBytes);
+        } else {
+            http2StreamChannel.eventLoop().execute(() -> {
+                try {
+                    consumeBytesInEventLoop(numBytes);
+                } catch (Exception e) {
+                    LOGGER.warn(PROTOCOL_FAILED_RESPONSE, "", "", "Failed to consumeBytes", e);
+                }
+            });
+        }
+    }
 
-        // Get the stream from connection using stream id
+    private void consumeBytesInEventLoop(int numBytes) throws Exception {
         int streamId = http2StreamChannel.stream().id();
         Http2Stream stream = http2Connection.stream(streamId);
         if (stream == null) {
             LOGGER.debug("Stream {} not found in connection, skip consumeBytes", streamId);
             return;
         }
-
-        // Consume bytes to trigger WINDOW_UPDATE frame
-        // This must be executed in the event loop thread
-        if (http2StreamChannel.eventLoop().inEventLoop()) {
-            localFlowController.consumeBytes(stream, numBytes);
-        } else {
-            http2StreamChannel.eventLoop().execute(() -> {
-                try {
-                    localFlowController.consumeBytes(stream, numBytes);
-                } catch (Exception e) {
-                    LOGGER.warn(PROTOCOL_FAILED_RESPONSE, "", "", "Failed to consumeBytes for stream " + streamId, e);
-                }
-            });
-        }
+        http2Connection.local().flowController().consumeBytes(stream, numBytes);
     }
 
     @Override

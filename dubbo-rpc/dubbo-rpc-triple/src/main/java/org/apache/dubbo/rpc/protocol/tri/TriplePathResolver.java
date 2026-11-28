@@ -44,11 +44,14 @@ public class TriplePathResolver implements PathResolver {
         // Path pattern: '{interfaceName}' or '{contextPath}/{interfaceName}'
         String path = url.getPath();
         int index = path.lastIndexOf('/');
-        if (index == -1) {
-            return;
+        String fallbackPath = index == -1 ? path : path.substring(0, index + 1) + serviceInterface;
+        String wireKey = URL.buildKey(path, url.getGroup(), url.getVersion());
+        if (!wireKey.equals(serviceKey)) {
+            // IDL proto names and custom POJO paths may differ from the Java service interface.
+            register0(wireKey, fallbackPath, invoker, url);
+        } else if (!fallbackPath.equals(serviceInterface)) {
+            registerFallback(fallbackPath, invoker, url);
         }
-        String fallbackPath = path.substring(0, index + 1) + serviceInterface;
-        register0(URL.buildKey(path, url.getGroup(), url.getVersion()), fallbackPath, invoker, url);
     }
 
     private void register0(String path, String fallbackPath, Invoker<?> invoker, URL url) {
@@ -76,8 +79,14 @@ public class TriplePathResolver implements PathResolver {
 
         // register fallback mapping
         if (TripleProtocol.RESOLVE_FALLBACK_TO_DEFAULT && !path.equals(fallbackPath)) {
-            previous = mapping.putIfAbsent(fallbackPath, invoker);
-            if (previous != null) {
+            registerFallback(fallbackPath, invoker, url);
+        }
+    }
+
+    private void registerFallback(String fallbackPath, Invoker<?> invoker, URL url) {
+        if (TripleProtocol.RESOLVE_FALLBACK_TO_DEFAULT) {
+            Invoker<?> previous = mapping.putIfAbsent(fallbackPath, invoker);
+            if (previous != null && previous != invoker) {
                 LOGGER.info(
                         "Already exists an invoker[{}] on path[{}], dubbo will skip override with invoker[{}]",
                         previous.getUrl(),
@@ -96,10 +105,14 @@ public class TriplePathResolver implements PathResolver {
     @Override
     public void unregister(Invoker<?> invoker) {
         URL url = invoker.getUrl();
-        mapping.remove(url.getServiceKey());
-        if (TripleProtocol.RESOLVE_FALLBACK_TO_DEFAULT) {
-            mapping.remove(url.getServiceModel().getServiceModel().getInterfaceName());
-        }
+        mapping.remove(url.getServiceKey(), invoker);
+        mapping.remove(URL.buildKey(url.getPath(), url.getGroup(), url.getVersion()), invoker);
+        String serviceInterface = url.getServiceModel().getServiceModel().getInterfaceName();
+        mapping.remove(serviceInterface, invoker);
+        String path = url.getPath();
+        int index = path.lastIndexOf('/');
+        String fallbackPath = index == -1 ? path : path.substring(0, index + 1) + serviceInterface;
+        mapping.remove(fallbackPath, invoker);
     }
 
     @Override

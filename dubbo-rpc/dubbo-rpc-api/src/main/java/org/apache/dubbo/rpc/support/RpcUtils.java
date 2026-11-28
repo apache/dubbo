@@ -279,25 +279,33 @@ public class RpcUtils {
 
     public static int calculateTimeout(URL url, Invocation invocation, String methodName, long defaultTimeout) {
         Object countdown = RpcContext.getClientAttachment().getObjectAttachment(TIME_COUNTDOWN_KEY);
-        int timeout = (int) defaultTimeout;
+        long timeout = defaultTimeout;
         if (countdown == null) {
             if (url != null) {
-                timeout = (int) RpcUtils.getTimeout(
+                timeout = RpcUtils.getTimeout(
                         url, methodName, RpcContext.getClientAttachment(), invocation, defaultTimeout);
                 if (url.getMethodParameter(methodName, ENABLE_TIMEOUT_COUNTDOWN_KEY, false)) {
                     // pass timeout to remote server
-                    invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY, timeout);
+                    invocation.setObjectAttachment(
+                            TIMEOUT_ATTACHMENT_KEY, (int) Math.max(0, Math.min(timeout, Integer.MAX_VALUE)));
                 }
             }
         } else {
             TimeoutCountDown timeoutCountDown = (TimeoutCountDown) countdown;
-            timeout = (int) timeoutCountDown.timeRemaining(TimeUnit.MILLISECONDS);
+            timeout = timeoutCountDown.timeRemaining(TimeUnit.MILLISECONDS);
             // pass timeout to remote server
-            invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY, timeout);
+            invocation.setObjectAttachment(
+                    TIMEOUT_ATTACHMENT_KEY, (int) Math.max(0, Math.min(timeout, Integer.MAX_VALUE)));
         }
 
+        TimeoutCountDown callDeadline = (TimeoutCountDown) invocation.get(TimeoutCountDown.CALL_ATTRIBUTE);
+        if (callDeadline != null) {
+            timeout = Math.min(timeout, callDeadline.timeRemaining(TimeUnit.MILLISECONDS));
+            invocation.setObjectAttachment(
+                    TIMEOUT_ATTACHMENT_KEY, (int) Math.max(0, Math.min(timeout, Integer.MAX_VALUE)));
+        }
         invocation.getObjectAttachments().remove(TIME_COUNTDOWN_KEY);
-        return timeout;
+        return (int) Math.max(0, Math.min(timeout, Integer.MAX_VALUE));
     }
 
     public static Long convertToNumber(Object obj, long defaultTimeout) {

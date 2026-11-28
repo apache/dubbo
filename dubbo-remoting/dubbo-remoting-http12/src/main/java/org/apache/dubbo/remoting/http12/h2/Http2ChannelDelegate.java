@@ -19,6 +19,8 @@ package org.apache.dubbo.remoting.http12.h2;
 import org.apache.dubbo.remoting.http12.HttpMetadata;
 import org.apache.dubbo.remoting.http12.HttpOutputMessage;
 
+import javax.net.ssl.SSLSession;
+
 import java.net.SocketAddress;
 import java.util.concurrent.CompletableFuture;
 
@@ -52,6 +54,11 @@ public class Http2ChannelDelegate implements H2StreamChannel {
     @Override
     public SocketAddress localAddress() {
         return h2StreamChannel.localAddress();
+    }
+
+    @Override
+    public SSLSession sslSession() {
+        return h2StreamChannel.sslSession();
     }
 
     @Override

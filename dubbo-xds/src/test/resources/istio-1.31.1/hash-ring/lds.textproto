@@ -1,0 +1,31 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements. See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership. The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License. You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+
+name: "echo-ring.dubbo-xds-test.svc.cluster.local:7070"
+address {
+  socket_address {
+    address: "10.0.201.164"
+    port_value: 7070
+  }
+}
+api_listener {
+  api_listener {
+    type_url: "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
+    value: "\032?\n\002\032\000\0229outbound|7070||echo-ring.dubbo-xds-test.svc.cluster.local*b\n\030envoy.filters.http.fault\"F\nDtype.googleapis.com/envoy.extensions.filters.http.fault.v3.HTTPFault*a\n\031envoy.filters.http.router\"D\nBtype.googleapis.com/envoy.extensions.filters.http.router.v3.Router"
+  }
+}

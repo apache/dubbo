@@ -12,6 +12,11 @@
 
 **Version binding.** This threat model is versioned alongside the project. A vulnerability report against Dubbo *N* is triaged against this model as it stood at *N*, not at HEAD.
 
+**Native xDS supplement (2026-10-12).** The optional Istio integration below is
+documented from the current 3.3 implementation and recorded light checks. It is
+an implementation supplement to the maintainer-reviewed baseline, not a claim
+that its concentrated acceptance or an additional maintainer review has finished.
+
 **Reporting cross-reference.**
 
 - Findings that violate §8 (claimed properties) should be reported to [security@dubbo.apache.org](mailto:security@dubbo.apache.org) per `SECURITY.md`.
@@ -62,6 +67,8 @@
 | **RPC Client (network)** | **Untrusted** | Any network client reaching the provider's RPC port |
 | **Registry** | **Trusted** | Dubbo "can only fully trust the data [registries] push" *(documented: official security docs)*. Confirmed: compromised registry = total cluster compromise *(maintainer)*. |
 | **Config Center** | **Trusted** | Pushes configuration that may contain credentials |
+| **Istiod / xDS control plane** | **Trusted, when native xDS is enabled** | Supplies destinations, TLS constraints and ALLOW/DENY policy; compromised control-plane policy is outside the untrusted RPC-client boundary |
+| **pilot-agent and shared bootstrap/certificate files** | **Trusted, when native xDS is enabled** | Agent authenticates to Istiod and supplies workload identity and roots; operators must protect local socket, files and volume access |
 
 ### Component-family table
 
@@ -77,6 +84,7 @@
 | **QoS (Management)** | `QosProtocolWrapper` — port 22222 | Yes (TCP/HTTP) | Yes |
 | **Authentication** | `dubbo-auth` plugin: `ConsumerSignFilter`, `ProviderAuthFilter` | No (filter chain) | Yes |
 | **TLS / Certificate** | `SslConfig`, `DubboCertManager` | Yes (CA connection) | Yes |
+| **Native Istio xDS** | Optional `dubbo-xds`: `XdsServiceDiscovery`, `NativeServerTransportDecorator`, `NativeCertificate` | Yes (ADS and Triple RPC) | Yes, with the explicit opt-in conditions in P9 |
 | **Spring Security** | `dubbo-spring-security` / `dubbo-spring6-security` plugins | No (context propagation) | Yes |
 | **dubbo-demo** | `dubbo-demo-api/`, `dubbo-demo-spring-boot/` | Varies | **No** — demo/test only |
 | **dubbo-test** | `dubbo-test/` | Varies | **No** — test infrastructure |
@@ -407,6 +415,44 @@ This actor is **in scope** but Dubbo provides **no defense** against it by defau
 
 ---
 
+### P9: Native Istio Triple authentication and authorization (conditional)
+
+**Property:** With the optional native xDS module enabled and accepted Istio TLS
+and ALLOW/DENY resources configured for a Triple listener, the SDK authenticates
+peers using the configured roots and destination SAN constraints and applies the
+accepted inbound RBAC policy before business or MetadataService dispatch. A
+cluster requiring xDS TLS does not fall back to plaintext when credentials fail.
+
+**Conditions:** Requires the trusted Istiod/pilot-agent deployment contract,
+protected bootstrap/certificate files, matching listener and Service ports,
+explicit metadata configuration and policies covering every protected workload
+port. This does not enable security on unrelated listeners or binary Dubbo
+traffic. Binary native xDS support is discovery-only and rejects a TLS-required
+cluster. JWT/CUSTOM integration is not provided by this implementation; current
+Istio grpcgen does not supply the needed equivalent filters.
+JWT/CUSTOM is deferred to the next implementation round; the current security
+scope covers mTLS/SAN and ALLOW/DENY RBAC.
+
+**Update semantics:** Partial certificate writes retain only a still-valid
+coherent snapshot; expired/unavailable credentials fail new TLS setup. Accepted
+policy updates govern new admissions; previously authorized streams are not
+replayed or retroactively canceled. Unsupported updates NACK and retain the last
+accepted policy. Operators must verify acceptance rather than treating a NACKed
+update as deployed. A failed metadata refresh can retain previous same-instance
+metadata until its configured TTL expires.
+
+**Violation symptom:** Untrusted or SAN-mismatched peers accepted on a protected
+path, rejected inbound requests reaching service dispatch, TLS-required traffic
+sent in plaintext, or private-key/token/payload contents returned by the bounded
+metadata failure-cause diagnostics.
+
+**Severity tier:** Security-critical.
+
+**Provenance:** Current `dubbo-xds` security/discovery implementation and targeted
+local/native light evidence in the [implementation plan](../dubbo-test/xds/IMPLEMENTATION-PLAN.md).
+See the [operations guide](../dubbo-xds/OPERATIONS.md) and support matrix for
+configuration, diagnostic scope and pending concentrated acceptance.
+
 ## §9 Security properties the project does *not* provide
 
 ### NP1: Authentication by default
@@ -428,6 +474,10 @@ Dubbo does not cryptographically verify the integrity of RPC responses. A provid
 ### NP5: Built-in authorization
 
 Dubbo has no standalone authorization engine. Service-level access control requires Istio integration. *(documented: official security docs — "equivalent to Istio documentation")*
+
+The optional native xDS module executes the accepted Istio ALLOW/DENY resources
+under P9's explicit conditions; it does not enable authorization by default or
+provide a standalone policy authority or complete JWT/CUSTOM support.
 
 ### NP6: Timestamp validation / replay protection for HMAC auth
 
@@ -679,6 +729,11 @@ properties_provided:
     name: qos-invoke-permission-controlled
     conditional: true
     requires: ["qos.enable=true"]
+  - id: P9
+    name: native-istio-triple-authentication-authorization
+    conditional: true
+    requires: ["dubbo-xds", "trusted-grpc-agent-bootstrap", "accepted-tls-policy", "accepted-inbound-rbac-policy"]
+    note: "Opt-in Triple paths only; binary discovery-only; JWT/CUSTOM not implemented"
 
 properties_not_provided:
   - id: NP1

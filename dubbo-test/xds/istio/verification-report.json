@@ -1,0 +1,116 @@
+{
+  "verified_at": "2026-10-11",
+  "kubernetes": "v1.36.2-aliyun.1",
+  "istio": "1.31.1",
+  "namespace": "dubbo-xds-test",
+  "application": "Istio gRPC-Go echo (not Dubbo native xDS)",
+  "bootstrap": {
+    "agent_only": true,
+    "application_can_read_bootstrap": true,
+    "certificate_paths_readable": true
+  },
+  "checks": [
+    {
+      "name": "initial_xds_discovery",
+      "calls": 30,
+      "successful": 30
+    },
+    {
+      "name": "weighted_route_20_80",
+      "calls": 200,
+      "service_versions": {
+        "v1": 48,
+        "v2": 152
+      }
+    },
+    {
+      "name": "route_update_to_v2",
+      "calls": 30,
+      "service_versions": {
+        "v2": 30
+      }
+    },
+    {
+      "name": "strict_mtls_and_principal_allow",
+      "calls": 50,
+      "service_versions": {
+        "v1": 12,
+        "v2": 38
+      }
+    },
+    {
+      "name": "plaintext_rejected",
+      "calls": 1,
+      "rejected": 1,
+      "error_contains": "error reading server preface: EOF"
+    },
+    {
+      "name": "authorization_deny",
+      "calls": 5,
+      "rejected": 5,
+      "status": "PermissionDenied",
+      "policy": "dubbo-xds-test-echo-deny-test-0"
+    },
+    {
+      "name": "after_temporary_deny_removed",
+      "calls": 30,
+      "service_versions": {
+        "v1": 7,
+        "v2": 23
+      }
+    },
+    {
+      "name": "istio_analyze",
+      "namespace": "dubbo-xds-test",
+      "result": "No validation issues"
+    },
+    {
+      "name": "ready_deployments",
+      "names": [
+        "istiod",
+        "echo-client",
+        "echo-v1",
+        "echo-v2"
+      ],
+      "ready": true
+    },
+    {
+      "name": "server_admission_dry_run",
+      "result": "passed",
+      "client_openapi_validation": false,
+      "note": "The client OpenAPI download timed out; retried with --validate=false and all server-side dry-run requests succeeded."
+    }
+  ],
+  "remaining_validation": [
+    "Dubbo native xDS implementation",
+    "certificate rotation",
+    "ADS reconnect resilience",
+    "complete Istio traffic/security compatibility"
+  ],
+  "final_state": {
+    "route_weights": {
+      "v1": 20,
+      "v2": 80
+    },
+    "peer_authentication": "STRICT",
+    "destination_tls": "ISTIO_MUTUAL",
+    "authorization": "ALLOW test service account; temporary DENY removed"
+  },
+  "native_java_runtime": {
+    "verified_at": "2026-10-11",
+    "istio": "1.31.1",
+    "java": "21",
+    "application": "org.apache.dubbo.xds.tools.XdsProbe",
+    "agent_only": true,
+    "bootstrap": "Istio-injected GRPC_XDS_BOOTSTRAP",
+    "ads_transport": "unix:///etc/istio/proxy/XDS",
+    "outbound_clusters": 2,
+    "endpoint_resources": 2,
+    "inbound_listener": true,
+    "shared_runtimes": 1,
+    "exit_code": 0,
+    "business_rpc_verified": false,
+    "tls_rbac_execution_verified": false,
+    "probe_resources_removed": true
+  }
+}

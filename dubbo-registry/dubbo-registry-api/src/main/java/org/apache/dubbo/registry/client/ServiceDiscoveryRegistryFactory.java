@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.client;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
@@ -36,6 +37,18 @@ public class ServiceDiscoveryRegistryFactory extends AbstractRegistryFactory {
         if (UrlUtils.hasServiceDiscoveryRegistryProtocol(url)) {
             String protocol = url.getParameter(REGISTRY_KEY, DEFAULT_REGISTRY);
             url = url.setProtocol(protocol).removeParameter(REGISTRY_KEY);
+            // A discovery integration may specialize Registry subscription while reusing RegistryProtocol.
+            // Load without wrappers: this dispatcher already has the normal RegistryFactory wrappers.
+            if (url.getOrDefaultApplicationModel()
+                    .getExtensionLoader(RegistryFactory.class)
+                    .hasExtension(protocol)) {
+                RegistryFactory factory = url.getOrDefaultApplicationModel()
+                        .getExtensionLoader(RegistryFactory.class)
+                        .getExtension(protocol, false);
+                if (factory != this && factory instanceof ServiceDiscoveryRegistryFactory) {
+                    return ((ServiceDiscoveryRegistryFactory) factory).createRegistry(url);
+                }
+            }
         }
         return new ServiceDiscoveryRegistry(url, applicationModel);
     }

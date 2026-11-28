@@ -49,6 +49,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcServiceContext;
 import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.RouterChain;
+import org.apache.dubbo.rpc.cluster.SingleRouterChain;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -138,6 +139,30 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 consumerUrl.getVersion(),
                 consumerUrl.getGroup(),
                 !CommonConstants.CONSUMER.equals(protocol) ? protocol : null);
+    }
+
+    @Override
+    public List<Invoker<T>> doList(
+            SingleRouterChain<T> singleRouterChain, BitList<Invoker<T>> invokers, Invocation invocation) {
+        try {
+            return super.doList(singleRouterChain, invokers, invocation);
+        } catch (RpcException error) {
+            URL registryUrl = getUrl();
+            URL reference = getConsumerUrl();
+            boolean nativeRegistry =
+                    "xds".equals(registryUrl.getProtocol()) || "xds".equals(registryUrl.getParameter(REGISTRY_KEY));
+            if (nativeRegistry
+                    && "dubbo".equals(reference.getParameter(PROTOCOL_KEY, reference.getProtocol()))
+                    && error.isForbidden()
+                    && forbidden
+                    && isEmpty()) {
+                // Binary discovery keeps its ordinary Cluster policy. Classify only the directory
+                // failure before dispatch; a provider authorization failure is never caught here.
+                throw new RpcException(
+                        RpcException.NETWORK_EXCEPTION, "Native xDS has no discovered binary providers", error);
+            }
+            throw error;
+        }
     }
 
     @Override
@@ -473,8 +498,9 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                     || !consumerProtocolServiceKey.isSameWith(matchedProtocolServiceKeys.get(0));
 
             for (ProtocolServiceKey matchedProtocolServiceKey : matchedProtocolServiceKeys) {
-                ProtocolServiceKeyWithAddress protocolServiceKeyWithAddress =
-                        new ProtocolServiceKeyWithAddress(matchedProtocolServiceKey, instanceAddressURL.getAddress());
+                ProtocolServiceKeyWithAddress protocolServiceKeyWithAddress = new ProtocolServiceKeyWithAddress(
+                        matchedProtocolServiceKey,
+                        instanceAddressURL.getInstance().getAddressIdentity());
                 Invoker<T> invoker =
                         oldUrlInvokerMap == null ? null : oldUrlInvokerMap.get(protocolServiceKeyWithAddress);
                 if (invoker == null

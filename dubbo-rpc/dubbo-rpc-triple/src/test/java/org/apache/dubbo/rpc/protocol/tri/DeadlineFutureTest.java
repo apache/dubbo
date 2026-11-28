@@ -16,18 +16,58 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.StatusRpcException;
 import org.apache.dubbo.rpc.TriRpcStatus;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.netty.util.concurrent.ImmediateEventExecutor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class DeadlineFutureTest {
+
+    @Test
+    void responseAfterSynchronousWaiterExitDoesNotLoseCompletion() {
+        ThreadlessExecutor executor = new ThreadlessExecutor();
+        DeadlineFuture future = DeadlineFuture.newFuture("service", "method", "address", 1000, executor);
+        executor.shutdown();
+        AppResponse response = new AppResponse("late");
+        future.received(TriRpcStatus.OK, response);
+        Assertions.assertEquals(response, future.join());
+    }
+
+    @Test
+    void timeoutStillCancelsTransportAfterSynchronousWaiterHasExited() throws Exception {
+        ThreadlessExecutor executor = new ThreadlessExecutor();
+        DeadlineFuture future = DeadlineFuture.newFuture("service", "method", "address", 30, executor);
+        CountDownLatch cancelled = new CountDownLatch(1);
+        future.addTimeoutListener(cancelled::countDown);
+        executor.shutdown();
+        Assertions.assertTrue(cancelled.await(1, TimeUnit.SECONDS));
+        Assertions.assertEquals(
+                TriRpcStatus.Code.DEADLINE_EXCEEDED,
+                TriRpcStatus.getStatus(future.get(1, TimeUnit.SECONDS).getException()).code);
+    }
+
+    @Test
+    void explicitCancellationAndLateStartCancelEachListenerOnce() {
+        DeadlineFuture future = DeadlineFuture.newFuture("service", "method", "address", 1000, null);
+        AtomicInteger calls = new AtomicInteger();
+        future.addTimeoutListener(calls::incrementAndGet);
+        future.cancel(true);
+        future.cancel(true);
+        future.addTimeoutListener(calls::incrementAndGet);
+        Assertions.assertEquals(2, calls.get());
+        Assertions.assertEquals(
+                TriRpcStatus.Code.CANCELLED,
+                TriRpcStatus.getStatus(future.join().getException()).code);
+    }
 
     @Test
     void test() throws InterruptedException, ExecutionException {

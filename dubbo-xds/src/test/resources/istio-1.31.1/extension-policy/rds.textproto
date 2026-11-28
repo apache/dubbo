@@ -1,0 +1,84 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Captured from the agent-only Istio 1.31.1 test environment. No credentials.
+name: "outbound|7070||echo-policy.dubbo-xds-test.svc.cluster.local"
+virtual_hosts {
+  name: "echo-policy.dubbo-xds-test.svc.cluster.local:7070"
+  domains: "echo-policy.dubbo-xds-test.svc.cluster.local"
+  domains: "echo-policy.dubbo-xds-test.svc.cluster.local:7070"
+  domains: "echo-policy.dubbo-xds-test.svc.cluster.local."
+  domains: "echo-policy.dubbo-xds-test.svc.cluster.local.:7070"
+  domains: "echo-policy"
+  domains: "echo-policy:7070"
+  domains: "echo-policy.dubbo-xds-test.svc"
+  domains: "echo-policy.dubbo-xds-test.svc:7070"
+  domains: "echo-policy.dubbo-xds-test"
+  domains: "echo-policy.dubbo-xds-test:7070"
+  domains: "10.0.32.60"
+  domains: "10.0.32.60:7070"
+  routes {
+    match {
+      prefix: "/"
+    }
+    route {
+      cluster: "outbound|7070||echo-policy.dubbo-xds-test.svc.cluster.local"
+      timeout {
+      }
+      retry_policy {
+        retry_on: "connect-failure,refused-stream,unavailable,cancelled,retriable-status-codes"
+        num_retries {
+          value: 2
+        }
+        retry_host_predicate {
+          name: "envoy.retry_host_predicates.previous_hosts"
+          typed_config {
+            type_url: "type.googleapis.com/envoy.extensions.retry.host.previous_hosts.v3.PreviousHostsPredicate"
+          }
+        }
+        host_selection_retry_max_attempts: 5
+      }
+      max_stream_duration {
+        max_stream_duration {
+        }
+      }
+    }
+    metadata {
+      filter_metadata {
+        key: "istio"
+        value {
+          fields {
+            key: "config"
+            value {
+              string_value: "/apis/networking.istio.io/v1/namespaces/dubbo-xds-test/virtual-service/echo-policy"
+            }
+          }
+        }
+      }
+    }
+    decorator {
+      operation: "echo-policy.dubbo-xds-test.svc.cluster.local:7070/*"
+    }
+    typed_per_filter_config {
+      key: "envoy.filters.http.fault"
+      value {
+        type_url: "type.googleapis.com/envoy.extensions.filters.http.fault.v3.HTTPFault"
+        value: "\n\017\032\005\020\200\332\304\t\"\006\b\240\215\006\020\002\022\n\032\006\b\240\215\006\020\002(\016"
+      }
+    }
+  }
+  include_request_attempt_count: true
+}

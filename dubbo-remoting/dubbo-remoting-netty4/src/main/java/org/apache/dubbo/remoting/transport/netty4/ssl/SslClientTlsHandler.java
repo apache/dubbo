@@ -41,9 +41,11 @@ public class SslClientTlsHandler extends ChannelInboundHandlerAdapter {
     private static final AttributeKey<SSLSession> SSL_SESSION_KEY = AttributeKey.valueOf(Constants.SSL_SESSION_KEY);
     private final SslContext sslContext;
     private final InetSocketAddress peerAddress;
+    private final String serverName;
 
     public SslClientTlsHandler(URL url) {
-        this(SslContexts.buildClientSslContext(url), url.toInetSocketAddress());
+        this(SslContexts.buildClientSslContext(url), url.toInetSocketAddress(), (String)
+                url.getAttribute("ssl.server-name"));
     }
 
     public SslClientTlsHandler(SslContext sslContext) {
@@ -51,15 +53,24 @@ public class SslClientTlsHandler extends ChannelInboundHandlerAdapter {
     }
 
     public SslClientTlsHandler(SslContext sslContext, InetSocketAddress peerAddress) {
+        this(sslContext, peerAddress, null);
+    }
+
+    public SslClientTlsHandler(SslContext sslContext, InetSocketAddress peerAddress, String serverName) {
         this.sslContext = sslContext;
         this.peerAddress = peerAddress;
+        this.serverName = serverName;
     }
 
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) {
-        SSLEngine sslEngine = peerAddress == null
+        String peerHost = serverName;
+        if (peerHost == null || peerHost.isEmpty()) {
+            peerHost = peerAddress == null ? null : peerAddress.getHostString();
+        }
+        SSLEngine sslEngine = peerHost == null
                 ? sslContext.newEngine(ctx.alloc())
-                : sslContext.newEngine(ctx.alloc(), peerAddress.getHostString(), peerAddress.getPort());
+                : sslContext.newEngine(ctx.alloc(), peerHost, peerAddress == null ? -1 : peerAddress.getPort());
         ctx.pipeline().addAfter(ctx.name(), null, new SslHandler(sslEngine, false));
     }
 

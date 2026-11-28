@@ -20,7 +20,9 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 
@@ -29,6 +31,7 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -45,6 +48,32 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
 class RpcUtilsTest {
+
+    @Test
+    void localCallDeadlineSurvivesAttachmentCleanupAndThreadContextRemoval() {
+        RpcInvocation invocation = new RpcInvocation();
+        TimeoutCountDown deadline = TimeoutCountDown.newCountDown(250, TimeUnit.MILLISECONDS);
+        invocation.put(TimeoutCountDown.CALL_ATTRIBUTE, deadline);
+        RpcContext.removeClientAttachment();
+        int first = RpcUtils.calculateTimeout(URL.valueOf("tri://localhost?timeout=5000"), invocation, "hello", 3000);
+        assertTrue(first > 0 && first <= 250);
+        invocation.getObjectAttachments().clear();
+        int second = RpcUtils.calculateTimeout(URL.valueOf("tri://localhost?timeout=10000"), invocation, "hello", 3000);
+        assertTrue(second > 0 && second <= first);
+        assertEquals(deadline, invocation.get(TimeoutCountDown.CALL_ATTRIBUTE));
+    }
+
+    @Test
+    void expiredBudgetAndLargeMethodTimeoutNeverWrapToNegative() {
+        RpcInvocation invocation = new RpcInvocation();
+        assertEquals(
+                Integer.MAX_VALUE,
+                RpcUtils.calculateTimeout(
+                        URL.valueOf("tri://localhost?timeout=9999999999"), invocation, "hello", 3000));
+        invocation.put(TimeoutCountDown.CALL_ATTRIBUTE, TimeoutCountDown.newCountDown(0, TimeUnit.MILLISECONDS));
+        assertEquals(
+                0, RpcUtils.calculateTimeout(URL.valueOf("tri://localhost?timeout=5000"), invocation, "hello", 3000));
+    }
 
     /**
      * regular scenario: async invocation in URL

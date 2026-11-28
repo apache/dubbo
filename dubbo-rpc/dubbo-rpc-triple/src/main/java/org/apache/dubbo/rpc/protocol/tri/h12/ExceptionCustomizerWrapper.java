@@ -22,10 +22,12 @@ import org.apache.dubbo.remoting.http12.HttpResult;
 import org.apache.dubbo.remoting.http12.RequestMetadata;
 import org.apache.dubbo.remoting.http12.message.DefaultHttpResult.Builder;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.StatusRpcException;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.TriRpcStatus.Code;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcHeaderNames;
 
@@ -73,6 +75,14 @@ public final class ExceptionCustomizerWrapper {
     public Object customizeGrpc(Throwable throwable) {
         Object result = exceptionHandler.handleGrpc(throwable, metadata, methodDescriptor);
         if (needWrap) {
+            Throwable transportStatus = result instanceof Throwable
+                    ? ExceptionUtils.unwrap((Throwable) result)
+                    : result == null ? ExceptionUtils.unwrap(throwable) : null;
+            // Explicit gRPC statuses belong in trailers, including for POJO methods.
+            // Serializing them as a business response commits the call and loses retry semantics.
+            if (transportStatus instanceof StatusRpcException) {
+                return transportStatus;
+            }
             Builder<Object> builder = null;
             if (result == null) {
                 builder = HttpResult.builder().body(throwable);

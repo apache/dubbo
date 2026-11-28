@@ -1,0 +1,1 @@
+wire-recorder=org.apache.dubbo.xds.registry.WireHeaderRecorder

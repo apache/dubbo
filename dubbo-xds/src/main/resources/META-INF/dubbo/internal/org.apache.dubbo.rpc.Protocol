@@ -1,0 +1,1 @@
+xds-security=org.apache.dubbo.xds.security.NativeSecurityProtocol

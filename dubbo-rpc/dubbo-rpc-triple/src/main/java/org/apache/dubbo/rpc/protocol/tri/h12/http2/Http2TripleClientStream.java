@@ -34,7 +34,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http2.Http2Connection;
 import io.netty.handler.codec.http2.Http2FrameCodec;
-import io.netty.handler.codec.http2.Http2LocalFlowController;
 import io.netty.handler.codec.http2.Http2Stream;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
@@ -106,37 +105,30 @@ public final class Http2TripleClientStream extends AbstractTripleClientStream {
 
         Http2StreamChannel http2StreamChannel = (Http2StreamChannel) streamChannel;
 
-        // Get Http2Connection from parent channel pipeline
-        Http2Connection http2Connection = getHttp2Connection();
-        if (http2Connection == null) {
+        // The stream map, as well as the flow controller, belongs to the parent event loop.
+        if (parent.eventLoop().inEventLoop()) {
+            consumeBytesInEventLoop(http2StreamChannel, numBytes);
+        } else {
+            parent.eventLoop().execute(() -> consumeBytesInEventLoop(http2StreamChannel, numBytes));
+        }
+    }
+
+    private void consumeBytesInEventLoop(Http2StreamChannel channel, int numBytes) {
+        Http2Connection connection = getHttp2Connection();
+        if (connection == null) {
             LOGGER.debug("Http2Connection not available for flow control");
             return;
         }
-
-        Http2LocalFlowController localFlowController = http2Connection.local().flowController();
-        int streamId = http2StreamChannel.stream().id();
-        Http2Stream stream = http2Connection.stream(streamId);
+        int streamId = channel.stream().id();
+        Http2Stream stream = connection.stream(streamId);
         if (stream == null) {
             LOGGER.debug("Stream {} not found in connection, skip consumeBytes", streamId);
             return;
         }
-
-        // Consume bytes to trigger WINDOW_UPDATE frame
-        // This must be executed in the event loop thread
-        if (http2StreamChannel.eventLoop().inEventLoop()) {
-            try {
-                localFlowController.consumeBytes(stream, numBytes);
-            } catch (Exception e) {
-                LOGGER.warn(PROTOCOL_FAILED_RESPONSE, "", "", "Failed to consumeBytes for stream " + streamId, e);
-            }
-        } else {
-            http2StreamChannel.eventLoop().execute(() -> {
-                try {
-                    localFlowController.consumeBytes(stream, numBytes);
-                } catch (Exception e) {
-                    LOGGER.warn(PROTOCOL_FAILED_RESPONSE, "", "", "Failed to consumeBytes for stream " + streamId, e);
-                }
-            });
+        try {
+            connection.local().flowController().consumeBytes(stream, numBytes);
+        } catch (Exception e) {
+            LOGGER.warn(PROTOCOL_FAILED_RESPONSE, "", "", "Failed to consumeBytes for stream " + streamId, e);
         }
     }
 

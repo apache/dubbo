@@ -1,0 +1,2 @@
+xds=org.apache.dubbo.xds.traffic.XdsCluster
+xds-native=org.apache.dubbo.xds.traffic.XdsClusterWrapper

@@ -85,6 +85,7 @@
     <module>dubbo-compatible</module>
     <module>dubbo-dependencies-bom</module>
     <module>dubbo-metadata</module>
+    <module>dubbo-xds</module>
     <module>dubbo-metrics</module>
     <module>dubbo-test</module>
     <module>dubbo-maven-plugin</module>
@@ -170,7 +171,7 @@
 
     <!-- protobuf-java_version should be same as protobuf-java_version at dubbo-dependencies-bom -->
     <protobuf-java_version>4.33.4</protobuf-java_version>
-    <!-- grpc_version should be same as grpc.version at dubbo-dependencies-bom -->
+    <!-- gRPC code generator version; runtime versions are managed by dubbo-dependencies-bom. -->
     <grpc_version>1.78.0</grpc_version>
     <spotless-maven-plugin.version>2.46.1</spotless-maven-plugin.version>
     <dubbo-shared-resources.version>1.0.0</dubbo-shared-resources.version>
@@ -1210,6 +1211,12 @@
           </dependency>
         </dependencies>
       </dependencyManagement>
+    </profile>
+    <profile>
+      <id>xds-native-test</id>
+      <modules>
+        <module>dubbo-test/xds</module>
+      </modules>
     </profile>
   </profiles>
 </project>

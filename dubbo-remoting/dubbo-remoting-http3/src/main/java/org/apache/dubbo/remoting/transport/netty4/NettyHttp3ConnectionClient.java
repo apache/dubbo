@@ -97,7 +97,7 @@ public final class NettyHttp3ConnectionClient extends AbstractNettyConnectionCli
                         pipeline.addLast(new Http3ClientConnectionHandler());
                         pipeline.addLast(Constants.CONNECTION_HANDLER_NAME, connectionHandler);
                         pipelineConfigurator.accept(pipeline);
-                        ch.closeFuture().addListener(channelFuture -> clearNettyChannel());
+                        ch.closeFuture().addListener(channelFuture -> onDisconnected(ch));
                     }
                 })
                 .remoteAddress(getConnectAddress());

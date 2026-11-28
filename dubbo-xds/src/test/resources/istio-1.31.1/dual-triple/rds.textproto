@@ -1,0 +1,64 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements. See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership. The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License. You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+
+name: "outbound|7070||echo-dual.dubbo-xds-test.svc.cluster.local"
+virtual_hosts {
+  name: "echo-dual.dubbo-xds-test.svc.cluster.local:7070"
+  domains: "echo-dual.dubbo-xds-test.svc.cluster.local"
+  domains: "echo-dual.dubbo-xds-test.svc.cluster.local:7070"
+  domains: "echo-dual.dubbo-xds-test.svc.cluster.local."
+  domains: "echo-dual.dubbo-xds-test.svc.cluster.local.:7070"
+  domains: "echo-dual"
+  domains: "echo-dual:7070"
+  domains: "echo-dual.dubbo-xds-test.svc"
+  domains: "echo-dual.dubbo-xds-test.svc:7070"
+  domains: "echo-dual.dubbo-xds-test"
+  domains: "echo-dual.dubbo-xds-test:7070"
+  domains: "10.0.7.36"
+  domains: "10.0.7.36:7070"
+  routes {
+    match {
+      prefix: "/"
+    }
+    route {
+      cluster: "outbound|7070||echo-dual.dubbo-xds-test.svc.cluster.local"
+      timeout {
+      }
+      retry_policy {
+        retry_on: "connect-failure,refused-stream,unavailable,cancelled,retriable-status-codes"
+        num_retries {
+          value: 2
+        }
+        retry_host_predicate {
+          name: "envoy.retry_host_predicates.previous_hosts"
+          typed_config {
+            type_url: "type.googleapis.com/envoy.extensions.retry.host.previous_hosts.v3.PreviousHostsPredicate"
+          }
+        }
+        host_selection_retry_max_attempts: 5
+      }
+      max_grpc_timeout {
+      }
+    }
+    decorator {
+      operation: "echo-dual.dubbo-xds-test.svc.cluster.local:7070/*"
+    }
+    name: "default"
+  }
+  include_request_attempt_count: true
+}

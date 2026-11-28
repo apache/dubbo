@@ -56,6 +56,11 @@ public interface ServiceInstance extends Serializable {
 
     String getAddress();
 
+    /** Logical identity for discovery adapters that distinguish cluster/security contexts at one socket. */
+    default String getAddressIdentity() {
+        return getAddress();
+    }
+
     /**
      * The enabled status of the registered service instance.
      *

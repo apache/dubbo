@@ -73,6 +73,9 @@ public class SslContexts {
                     sslClientContextBuilder.clientAuth(ClientAuth.OPTIONAL);
                 }
             }
+            if (providerConnectionConfig.getTrustManagerFactory() != null) {
+                sslClientContextBuilder.trustManager(providerConnectionConfig.getTrustManagerFactory());
+            }
         } catch (Exception e) {
             throw new IllegalArgumentException("Could not find certificate file or the certificate is invalid.", e);
         } finally {
@@ -81,6 +84,10 @@ public class SslContexts {
             safeCloseStream(serverPrivateKeyPathStream);
         }
         try {
+            String[] protocols = providerConnectionConfig.getApplicationProtocols();
+            if (protocols.length == 0) {
+                protocols = new String[] {ApplicationProtocolNames.HTTP_2, ApplicationProtocolNames.HTTP_1_1};
+            }
             return sslClientContextBuilder
                     .sslProvider(findSslProvider())
                     .ciphers(Http2SecurityUtil.CIPHERS, SupportedCipherSuiteFilter.INSTANCE)
@@ -88,8 +95,7 @@ public class SslContexts {
                             ApplicationProtocolConfig.Protocol.ALPN,
                             ApplicationProtocolConfig.SelectorFailureBehavior.NO_ADVERTISE,
                             ApplicationProtocolConfig.SelectedListenerFailureBehavior.ACCEPT,
-                            ApplicationProtocolNames.HTTP_2,
-                            ApplicationProtocolNames.HTTP_1_1))
+                            protocols))
                     .build();
         } catch (SSLException e) {
             throw new IllegalStateException("Build SslSession failed.", e);
@@ -100,7 +106,7 @@ public class SslContexts {
         CertManager certManager =
                 url.getOrDefaultFrameworkModel().getBeanFactory().getBean(CertManager.class);
         Cert consumerConnectionConfig = certManager.getConsumerConnectionConfig(url);
-        if (consumerConnectionConfig == null) {
+        if (consumerConnectionConfig == null || !consumerConnectionConfig.isTlsEnabled()) {
             return null;
         }
 
@@ -112,6 +118,17 @@ public class SslContexts {
             clientTrustCertCollectionPath = consumerConnectionConfig.getTrustCertInputStream();
             if (clientTrustCertCollectionPath != null) {
                 builder.trustManager(clientTrustCertCollectionPath);
+            }
+            if (consumerConnectionConfig.getTrustManagerFactory() != null) {
+                builder.trustManager(consumerConnectionConfig.getTrustManagerFactory());
+            }
+            String[] protocols = consumerConnectionConfig.getApplicationProtocols();
+            if (protocols.length > 0) {
+                builder.applicationProtocolConfig(new ApplicationProtocolConfig(
+                        ApplicationProtocolConfig.Protocol.ALPN,
+                        ApplicationProtocolConfig.SelectorFailureBehavior.NO_ADVERTISE,
+                        ApplicationProtocolConfig.SelectedListenerFailureBehavior.ACCEPT,
+                        protocols));
             }
 
             clientCertChainFilePath = consumerConnectionConfig.getKeyCertChainInputStream();

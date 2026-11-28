@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.remoting.http12;
 
+import javax.net.ssl.SSLSession;
+
 import java.net.SocketAddress;
 import java.util.concurrent.CompletableFuture;
 
@@ -30,6 +32,11 @@ public interface HttpChannel {
     SocketAddress remoteAddress();
 
     SocketAddress localAddress();
+
+    /** Authenticated transport session, when available; implementations must never populate it from request headers. */
+    default SSLSession sslSession() {
+        return null;
+    }
 
     void flush();
 }

@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.ssl;
 
+import javax.net.ssl.TrustManagerFactory;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
@@ -63,5 +65,23 @@ public class Cert {
 
     public String getPassword() {
         return password;
+    }
+
+    /** Allows a certificate provider to explicitly select plaintext for its managed addresses. */
+    public boolean isTlsEnabled() {
+        return true;
+    }
+
+    /** A provider can add peer identity checks on top of normal certificate-chain validation. */
+    public TrustManagerFactory getTrustManagerFactory() {
+        return null;
+    }
+
+    public String[] getApplicationProtocols() {
+        return new String[0];
+    }
+
+    public String getServerName() {
+        return null;
     }
 }

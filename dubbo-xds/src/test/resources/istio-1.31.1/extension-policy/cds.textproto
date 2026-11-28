@@ -1,0 +1,42 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Captured from the agent-only Istio 1.31.1 test environment. No credentials.
+name: "outbound|7070||echo-policy.dubbo-xds-test.svc.cluster.local"
+type: EDS
+eds_cluster_config {
+  eds_config {
+    ads {
+    }
+  }
+  service_name: "outbound|7070||echo-policy.dubbo-xds-test.svc.cluster.local"
+}
+lb_policy: LEAST_REQUEST
+circuit_breakers {
+  thresholds {
+    max_requests {
+      value: 2
+    }
+  }
+}
+transport_socket {
+  name: "envoy.transport_sockets.tls"
+  typed_config {
+    type_url: "type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext"
+    value: "\n\212\001B`\nKJ6\n4spiffe://cluster.local/ns/dubbo-xds-test/sa/xds-echoj\021\n\adefault\022\006ROOTCA\"\021\n\adefault\022\006ROOTCAZ\022\n\adefault\022\adefaultr\022\n\adefault\022\adefault"
+  }
+}
+alt_stat_name: "outbound|7070||echo-policy.dubbo-xds-test.svc.cluster.local;"
