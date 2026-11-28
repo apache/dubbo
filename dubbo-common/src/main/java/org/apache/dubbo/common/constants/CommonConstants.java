@@ -350,6 +350,20 @@ public interface CommonConstants {
     String TAG_KEY = "dubbo.tag";
 
     /**
+     * Backup tag of a provider, comma-separated multiple values allowed.
+     * Used by {@code TagStateRouter} as a fallback when no provider's
+     * {@link #TAG_KEY} matches the requested tag.
+     */
+    String BACKUP_TAG_KEY = "dubbo.backup.tag";
+
+    /**
+     * Turn on the backup tab, sort according to the dictionary, and look upwards for the nearest one.
+     * TIP : This flag has lower priority than the "force use" flag. If the "force use" flag is set, this flag will not take effect.
+     * This function is similar to dubbo.force.tag. It's used for recent searches.
+     */
+    String BACKUP_TAG_RECENT_ROUTER = "dubbo.recent.backup.tag";
+
+    /**
      * To decide whether to make connection when the client is created
      */
     String LAZY_CONNECT_KEY = "lazy";

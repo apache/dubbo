@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.CommonConstants.BACKUP_TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER_KEY;
@@ -200,6 +201,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      * Custom tag for the service configuration.
      */
     protected String tag;
+
+    /**
+     * Backup tag for the service configuration.
+     */
+    protected String backupTag;
 
     /**
      * Enable service authentication.
@@ -901,6 +907,15 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     public void setTag(String tag) {
         this.tag = tag;
+    }
+
+    @Parameter(key = BACKUP_TAG_KEY)
+    public String getBackupTag() {
+        return backupTag;
+    }
+
+    public void setBackupTag(String backupTag) {
+        this.backupTag = backupTag;
     }
 
     public Boolean getAuth() {
