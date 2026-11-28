@@ -422,6 +422,17 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
             renameable = false;
         } else {
             referenceBeanName = propertyName;
+            if (isQualifyReferenceBeanNameEnabled()) {
+                // An auto-derived name is just the bare field/property name, which can silently
+                // collide with an unrelated bean registered elsewhere in the same Spring context
+                // (e.g. a @Resource field with a default name pointing at a different type).
+                // Spring's CommonAnnotationBeanPostProcessor#autowireResource only falls back to
+                // by-type resolution when no bean of that name exists yet, so once this reference
+                // bean claims the bare name first, such a collision surfaces as a confusing
+                // BeanNotOfRequiredTypeException instead of a successful by-type lookup.
+                // See: https://github.com/apache/dubbo/issues/12637
+                referenceBeanName = referenceBeanName + Constants.REFERENCE_BEAN_NAME_QUALIFIER;
+            }
         }
 
         String checkLocation = "Please check " + member.toString();
@@ -565,6 +576,12 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         referenceBeanManager.registerReferenceKeyAndBeanName(referenceKey, referenceBeanName);
         logger.info("Register dubbo reference bean: " + referenceBeanName + " = " + referenceKey + " at " + member);
         return referenceBeanName;
+    }
+
+    private boolean isQualifyReferenceBeanNameEnabled() {
+        return applicationContext
+                .getEnvironment()
+                .getProperty(Constants.QUALIFY_REFERENCE_BEAN_NAME_KEY, Boolean.class, Boolean.FALSE);
     }
 
     @Override
