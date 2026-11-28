@@ -28,6 +28,7 @@ import org.apache.dubbo.common.ssl.ProviderCert;
 import org.apache.dubbo.common.utils.IOUtils;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Objects;
 
 @Activate(order = Integer.MAX_VALUE - 10000)
@@ -53,10 +54,10 @@ public class SSLConfigCertProvider implements CertProvider {
                 .map(sslConfig -> {
                     try {
                         return new ProviderCert(
-                                IOUtils.toByteArray(sslConfig.getServerKeyCertChainPathStream()),
-                                IOUtils.toByteArray(sslConfig.getServerPrivateKeyPathStream()),
+                                readAll(sslConfig.getServerKeyCertChainPathStream()),
+                                readAll(sslConfig.getServerPrivateKeyPathStream()),
                                 sslConfig.getServerTrustCertCollectionPath() != null
-                                        ? IOUtils.toByteArray(sslConfig.getServerTrustCertCollectionPathStream())
+                                        ? readAll(sslConfig.getServerTrustCertCollectionPathStream())
                                         : null,
                                 sslConfig.getServerKeyPassword(),
                                 AuthPolicy.CLIENT_AUTH);
@@ -84,10 +85,10 @@ public class SSLConfigCertProvider implements CertProvider {
                 .map(sslConfig -> {
                     try {
                         return new Cert(
-                                IOUtils.toByteArray(sslConfig.getClientKeyCertChainPathStream()),
-                                IOUtils.toByteArray(sslConfig.getClientPrivateKeyPathStream()),
+                                readAll(sslConfig.getClientKeyCertChainPathStream()),
+                                readAll(sslConfig.getClientPrivateKeyPathStream()),
                                 sslConfig.getClientTrustCertCollectionPath() != null
-                                        ? IOUtils.toByteArray(sslConfig.getClientTrustCertCollectionPathStream())
+                                        ? readAll(sslConfig.getClientTrustCertCollectionPathStream())
                                         : null,
                                 sslConfig.getClientKeyPassword());
                     } catch (IOException e) {
@@ -101,5 +102,16 @@ public class SSLConfigCertProvider implements CertProvider {
                     }
                 })
                 .orElse(null);
+    }
+
+    /**
+     * Reads the stream into memory and closes it. The streams returned by {@code SslConfig} are
+     * file-backed; leaving them open keeps the underlying files locked on Windows and blocks
+     * deletion of the containing directory.
+     */
+    private byte[] readAll(InputStream inputStream) throws IOException {
+        try (InputStream stream = inputStream) {
+            return IOUtils.toByteArray(stream);
+        }
     }
 }
