@@ -159,6 +159,11 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     private String getClassDesc(Class clazz) {
         ClassLoader classLoader = clazz.getClassLoader();
+        // Bootstrap-loaded classes — every JDK type — report a null loader, so this must not
+        // dereference it: checkRef would throw NullPointerException instead of its own message.
+        if (classLoader == null) {
+            return clazz.getName() + "[classloader=bootstrap]";
+        }
         return clazz.getName() + "[classloader=" + classLoader.getClass().getName() + "@" + classLoader.hashCode()
                 + "]";
     }
