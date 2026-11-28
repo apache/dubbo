@@ -87,6 +87,34 @@ class URLStrParserTest {
     }
 
     @Test
+    void testEncodedQuerySeparatorCaseAndFirstOccurrence() {
+        String prefix = "dubbo%3A%2F%2Fuser%3Apassword%40127.0.0.1%3A20880%2Fservice";
+        URL expected = URL.valueOf("dubbo://user:password@127.0.0.1:20880/service?key=value?tail");
+        assertThat(URLStrParser.parseEncodedStr(prefix + "%3Fkey%3Dvalue%3ftail"), equalTo(expected));
+        assertThat(URLStrParser.parseEncodedStr(prefix + "%3fkey%3Dvalue%3Ftail"), equalTo(expected));
+    }
+
+    @Test
+    void testEncodedQuerySeparatorInsideEscapedText() {
+        String text = "dubbo://127.0.0.1:20880/service%3Fpart?key=%3fvalue";
+        assertThat(URLStrParser.parseEncodedStr(URL.encode(text)), equalTo(URL.valueOf(text)));
+        String noQuery = "dubbo://127.0.0.1:20880/service%3Fpart";
+        assertThat(URLStrParser.parseEncodedStr(URL.encode(noQuery)), equalTo(URL.valueOf(noQuery)));
+        assertThat(
+                URLStrParser.parseEncodedStr("dubbo%3A%2F%2F127.0.0.1%3f"), equalTo(URL.valueOf("dubbo://127.0.0.1?")));
+    }
+
+    @Test
+    void testEncodedQuerySeparatorWithTruncatedEscape() {
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> URLStrParser.parseEncodedStr("dubbo%3A%2F%2F127.0.0.1%2Fservice%3"));
+        Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> URLStrParser.parseEncodedStr("dubbo%3A%2F%2F127.0.0.1%3fkey%3Dvalue%3"));
+    }
+
+    @Test
     void testDefault() {
         URL url1 = URLStrParser.parseEncodedStr(URL.encode("dubbo://127.0.0.1?timeout=1234&default.timeout=5678"));
         assertThat(url1.getParameter("timeout"), equalTo("1234"));

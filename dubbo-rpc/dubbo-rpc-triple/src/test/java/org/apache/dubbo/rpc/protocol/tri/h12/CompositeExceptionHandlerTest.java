@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.h12;
 import org.apache.dubbo.remoting.http12.ExceptionHandler;
 import org.apache.dubbo.remoting.http12.HttpHeaders;
 import org.apache.dubbo.remoting.http12.RequestMetadata;
+import org.apache.dubbo.remoting.http12.exception.UnimplementedException;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
@@ -69,6 +70,16 @@ class CompositeExceptionHandlerTest {
                 .resolveGrpcStatus(new IllegalArgumentException("ignored"), headers, null, null);
         assertEquals("%E4%B8%AD", headers.getFirst("grpc-message"));
         assertEquals("3", headers.getFirst("grpc-status"));
+    }
+
+    @Test
+    void resolvesUnimplementedExceptionAsUnimplemented() {
+        FrameworkModel framework = mock(FrameworkModel.class);
+        when(framework.getActivateExtensions(ExceptionHandler.class)).thenReturn(Collections.emptyList());
+        HttpHeaders headers = HttpHeaders.create();
+        new CompositeExceptionHandler(framework)
+                .resolveGrpcStatus(new UnimplementedException("method:sayHello"), headers, null, null);
+        assertEquals("12", headers.getFirst("grpc-status"));
     }
 
     @Test

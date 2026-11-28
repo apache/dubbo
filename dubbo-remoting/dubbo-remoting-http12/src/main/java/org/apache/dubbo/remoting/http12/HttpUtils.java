@@ -135,10 +135,12 @@ public final class HttpUtils {
             int qStart = expr.indexOf("q=", index + 1);
             if (qStart != -1) {
                 qStart += 2;
-                int qEnd = expr.indexOf(',', qStart);
-                String qString = qEnd == -1
-                        ? expr.substring(qStart)
-                        : expr.substring(qStart, qEnd).trim();
+                int qEnd = expr.indexOf(';', qStart);
+                int commaIndex = expr.indexOf(',', qStart);
+                if (commaIndex != -1 && (qEnd == -1 || commaIndex < qEnd)) {
+                    qEnd = commaIndex;
+                }
+                String qString = (qEnd == -1 ? expr.substring(qStart) : expr.substring(qStart, qEnd)).trim();
                 try {
                     quality = Float.parseFloat(qString);
                 } catch (NumberFormatException ignored) {
@@ -154,8 +156,11 @@ public final class HttpUtils {
         }
         List<Item<Locale>> locales = new ArrayList<>();
         for (String item : StringUtils.tokenize(header, ',')) {
-            String[] pair = StringUtils.tokenize(item, ';');
-            locales.add(new Item<>(parseLocale(pair[0]), pair.length > 1 ? Float.parseFloat(pair[1]) : 1.0F));
+            int index = item.indexOf(';');
+            String locale = StringUtils.substring(item, 0, index).trim();
+            if (!locale.isEmpty()) {
+                locales.add(new Item<>(parseLocale(locale), parseQuality(item, index)));
+            }
         }
         return Item.sortAndGet(locales);
     }

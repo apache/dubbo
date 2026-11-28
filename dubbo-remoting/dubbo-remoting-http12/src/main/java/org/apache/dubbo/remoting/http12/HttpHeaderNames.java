@@ -28,6 +28,8 @@ public enum HttpHeaderNames {
 
     ACCEPT(io.netty.handler.codec.http.HttpHeaderNames.ACCEPT),
 
+    ACCEPT_LANGUAGE(io.netty.handler.codec.http.HttpHeaderNames.ACCEPT_LANGUAGE),
+
     CONTENT_TYPE(io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE),
 
     CONTENT_LENGTH(io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH),

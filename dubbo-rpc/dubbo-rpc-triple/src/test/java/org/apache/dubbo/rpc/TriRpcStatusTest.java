@@ -17,11 +17,14 @@
 package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.remoting.TimeoutException;
+import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
+import org.apache.dubbo.remoting.http12.exception.UnimplementedException;
 import org.apache.dubbo.rpc.TriRpcStatus.Code;
 
 import java.io.Serializable;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.QueryStringDecoder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -70,6 +73,14 @@ class TriRpcStatusTest {
     }
 
     @Test
+    void getStatusOfUnimplementedException() {
+        // gRPC: an unknown method or an unsupported grpc-encoding is UNIMPLEMENTED
+        Assertions.assertEquals(
+                Code.UNIMPLEMENTED, TriRpcStatus.getStatus(new UnimplementedException("method:sayHello")).code);
+        Assertions.assertEquals(Code.UNKNOWN, TriRpcStatus.getStatus(new HttpStatusException(500)).code);
+    }
+
+    @Test
     void rpcExceptionCodeToGrpcCode() {
         Assertions.assertEquals(Code.DEADLINE_EXCEEDED, TriRpcStatus.dubboCodeToTriCode(2));
     }
@@ -91,6 +102,36 @@ class TriRpcStatusTest {
 
         Assertions.assertTrue(TriRpcStatus.decodeMessage("").isEmpty());
         Assertions.assertTrue(TriRpcStatus.decodeMessage(null).isEmpty());
+    }
+
+    @Test
+    void decodeMessageKeepsPlusSign() {
+        // grpc-java and grpc-go do not percent-encode '+' in grpc-message
+        Assertions.assertEquals("a+b", TriRpcStatus.decodeMessage("a+b"));
+        Assertions.assertEquals("C++ parser, tz +08:00", TriRpcStatus.decodeMessage("C++ parser, tz +08:00"));
+        Assertions.assertEquals("中文 a+b", TriRpcStatus.decodeMessage("%E4%B8%AD%E6%96%87 a+b"));
+    }
+
+    @Test
+    void decodeMessageKeepsInvalidPercentEncoding() {
+        // gRPC: when decoding invalid values, implementations MUST NOT error or throw away the message
+        Assertions.assertEquals("quota 100% used", TriRpcStatus.decodeMessage("quota 100% used"));
+        Assertions.assertEquals("100%", TriRpcStatus.decodeMessage("100%"));
+        Assertions.assertEquals("%4", TriRpcStatus.decodeMessage("%4"));
+        Assertions.assertEquals("%zz %4g %g4", TriRpcStatus.decodeMessage("%zz %4g %g4"));
+        Assertions.assertEquals("90% 中文", TriRpcStatus.decodeMessage("90% %E4%B8%AD%E6%96%87"));
+        // status details carry the message without percent-encoding
+        Assertions.assertEquals("中文 50% off, café", TriRpcStatus.decodeMessage("中文 50% off, café"));
+    }
+
+    @Test
+    void decodeMessageDecodesPercentEncodedUtf8() {
+        Assertions.assertEquals("中文 message", TriRpcStatus.decodeMessage("%E4%B8%AD%E6%96%87 message"));
+        Assertions.assertEquals("中", TriRpcStatus.decodeMessage("%e4%b8%ad"));
+        Assertions.assertEquals("😯 100%", TriRpcStatus.decodeMessage("%F0%9F%98%AF 100%25"));
+        for (String message : new String[] {"a+b", "a b", "50% off", "%E4%B8%AD", "中文", "line1\nline2"}) {
+            Assertions.assertEquals(message, TriRpcStatus.decodeMessage(TriRpcStatus.encodeMessage(message)));
+        }
     }
 
     @Test
@@ -165,6 +206,8 @@ class TriRpcStatusTest {
                 .toEncodedMessage();
         Assertions.assertTrue(message.contains("desc"));
         Assertions.assertTrue(message.contains("test"));
+        Assertions.assertTrue(message.chars().allMatch(c -> c > ' ' && c <= '~'));
+        Assertions.assertTrue(message.contains("IllegalStateException:%20test"));
     }
 
     @Test
@@ -191,6 +234,34 @@ class TriRpcStatusTest {
     void encodeMessage() {
         Assertions.assertTrue(TriRpcStatus.encodeMessage(null).isEmpty());
         Assertions.assertTrue(TriRpcStatus.encodeMessage("").isEmpty());
+    }
+
+    @Test
+    void encodeMessageKeepsPrintableAscii() {
+        // grpc-js decodes grpc-message with decodeURI, which leaves escapes such as %3A and %2F undecoded
+        Assertions.assertEquals("order%2042:%20not%20found", TriRpcStatus.encodeMessage("order 42: not found"));
+        for (char c = '!'; c <= '~'; c++) {
+            if (c != '%' && c != '+') {
+                Assertions.assertEquals(String.valueOf(c), TriRpcStatus.encodeMessage(String.valueOf(c)));
+            }
+        }
+    }
+
+    @Test
+    void encodeMessageEscapesWhitespacePercentPlusAndNonAscii() {
+        Assertions.assertEquals("%20a%09b%0A%20", TriRpcStatus.encodeMessage(" a\tb\n "));
+        Assertions.assertEquals("done%20", TriRpcStatus.encodeMessage("done "));
+        Assertions.assertEquals("100%25", TriRpcStatus.encodeMessage("100%"));
+        // '+' stays escaped: Dubbo 3.0 to 3.3.7 consumers decode it as a space
+        Assertions.assertEquals("50%25%2B1", TriRpcStatus.encodeMessage("50%+1"));
+        Assertions.assertEquals("%E4%B8%AD%F0%9F%98%AF%7F", TriRpcStatus.encodeMessage("中😯\u007f"));
+        for (String message :
+                new String[] {"order 42: not found", "C++ a+b 50% done", " 中文 café 😯 ", "%E4%B8%AD", "a\r\nb"}) {
+            String encoded = TriRpcStatus.encodeMessage(message);
+            Assertions.assertEquals(message, TriRpcStatus.decodeMessage(encoded));
+            // what Dubbo 3.0 to 3.3.7 consumers use
+            Assertions.assertEquals(message, QueryStringDecoder.decodeComponent(encoded));
+        }
     }
 
     @Test

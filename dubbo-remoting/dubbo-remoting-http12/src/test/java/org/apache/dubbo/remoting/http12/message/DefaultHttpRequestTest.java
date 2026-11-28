@@ -24,6 +24,8 @@ import org.apache.dubbo.remoting.http12.h1.Http1RequestMetadata;
 import org.apache.dubbo.remoting.http12.h2.Http2MetadataFrame;
 
 import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.Locale;
 
 import io.netty.handler.codec.http2.Http2Headers.PseudoHeaderName;
 import org.junit.jupiter.api.Test;
@@ -86,5 +88,16 @@ class DefaultHttpRequestTest {
                 new DefaultHttpRequest(new Http1RequestMetadata(HttpHeaders.create(), "GET", "/"), channel);
 
         assertEquals(8013, request.serverPort());
+    }
+
+    @Test
+    void parsesLocalesFromAcceptLanguageHeader() {
+        HttpHeaders headers = HttpHeaders.create();
+        headers.set(HttpHeaderNames.ACCEPT_LANGUAGE.getKey(), "en;q=0.5, zh-CN;q=0.9");
+        headers.set(HttpHeaderNames.CONTENT_LANGUAGE.getKey(), "de-DE");
+        DefaultHttpRequest request = new DefaultHttpRequest(new Http1RequestMetadata(headers, "GET", "/"), null);
+
+        assertEquals(Arrays.asList(Locale.SIMPLIFIED_CHINESE, Locale.ENGLISH), request.locales());
+        assertEquals(Locale.SIMPLIFIED_CHINESE, request.locale());
     }
 }

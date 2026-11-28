@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.compressor;
 
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -25,6 +26,9 @@ public interface DeCompressor extends MessageEncoding {
 
     DeCompressor NONE = Identity.IDENTITY;
 
+    /**
+     * @return the decompressor for the given grpc-encoding, or {@code null} if it is not supported
+     */
     static DeCompressor getCompressor(FrameworkModel frameworkModel, String compressorStr) {
         if (null == compressorStr) {
             return null;
@@ -32,7 +36,11 @@ public interface DeCompressor extends MessageEncoding {
         if (compressorStr.equals(Identity.MESSAGE_ENCODING)) {
             return NONE;
         }
-        return frameworkModel.getExtensionLoader(DeCompressor.class).getExtension(compressorStr);
+        ExtensionLoader<DeCompressor> loader = frameworkModel.getExtensionLoader(DeCompressor.class);
+        if (compressorStr.isEmpty() || !loader.hasExtension(compressorStr)) {
+            return null;
+        }
+        return loader.getExtension(compressorStr);
     }
 
     /**
