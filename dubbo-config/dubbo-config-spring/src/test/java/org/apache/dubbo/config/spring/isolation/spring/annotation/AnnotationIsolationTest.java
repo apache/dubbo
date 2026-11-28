@@ -30,6 +30,7 @@ import org.apache.dubbo.config.spring.isolation.spring.support.HelloServiceExecu
 import java.util.Map;
 import java.util.concurrent.Executor;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -39,6 +40,13 @@ import org.springframework.context.annotation.Configuration;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_ISOLATION;
 
 public class AnnotationIsolationTest extends BaseTest {
+
+    // SysProps set inside the test would otherwise leak into other test classes running in the
+    // same JVM: Dubbo resolves dubbo.metrics.* from System properties with the highest precedence.
+    @AfterEach
+    public void afterEach() {
+        SysProps.clear();
+    }
 
     @Test
     public void test() throws Exception {
