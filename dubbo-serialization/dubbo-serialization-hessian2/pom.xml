@@ -45,6 +45,14 @@ limitations under the License.
       <artifactId>log4j-slf4j-impl</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- Test only: supplies the kotlin.Metadata annotation so a Kotlin `object` can be
+         represented by a Java fixture without adding a Kotlin compiler to the build. -->
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-stdlib</artifactId>
+      <version>2.4.20</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.apache.dubbo</groupId>
       <artifactId>dubbo-native</artifactId>
