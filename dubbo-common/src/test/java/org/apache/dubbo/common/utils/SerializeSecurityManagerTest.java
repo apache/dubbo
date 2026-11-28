@@ -65,6 +65,43 @@ class SerializeSecurityManagerTest {
     }
 
     @Test
+    void testBlockedPrefixCaseInsensitiveMatch() {
+        // blocked first, then automatically allowed
+        SerializeSecurityManager blockedFirst = new SerializeSecurityManager();
+        blockedFirst.addToDisAllowed("java.net.url");
+        blockedFirst.addToAllowed("java.net.URL");
+        Assertions.assertFalse(blockedFirst.getAllowedPrefix().contains("java.net.URL"));
+
+        // automatically allowed first, then blocked
+        SerializeSecurityManager allowedFirst = new SerializeSecurityManager();
+        allowedFirst.addToAllowed("java.net.URL");
+        allowedFirst.addToDisAllowed("java.net.url");
+        Assertions.assertFalse(allowedFirst.getAllowedPrefix().contains("java.net.URL"));
+    }
+
+    @Test
+    void testBlockedPrefixNestedClassMatch() {
+        // blocked rule uses the source name while the scanned type uses the binary name
+        SerializeSecurityManager blockedFirst = new SerializeSecurityManager();
+        blockedFirst.addToDisAllowed("com.example.Outer.Nested");
+        blockedFirst.addToAllowed("com.example.Outer$Nested");
+        Assertions.assertFalse(blockedFirst.getAllowedPrefix().contains("com.example.Outer$Nested"));
+
+        SerializeSecurityManager allowedFirst = new SerializeSecurityManager();
+        allowedFirst.addToAllowed("com.example.Outer$Nested");
+        allowedFirst.addToDisAllowed("com.example.Outer.Nested");
+        Assertions.assertFalse(allowedFirst.getAllowedPrefix().contains("com.example.Outer$Nested"));
+    }
+
+    @Test
+    void testAlwaysAllowedOverridesBlockedPrefix() {
+        SerializeSecurityManager ssm = new SerializeSecurityManager();
+        ssm.addToDisAllowed("java.net.url");
+        ssm.addToAlwaysAllowed("java.net.URL");
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("java.net.URL"));
+    }
+
+    @Test
     void testStatus1() {
         SerializeSecurityManager ssm = new SerializeSecurityManager();
         ssm.registerListener(new TestAllowClassNotifyListener());

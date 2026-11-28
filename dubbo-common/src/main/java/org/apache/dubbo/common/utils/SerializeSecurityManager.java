@@ -52,7 +52,8 @@ public class SerializeSecurityManager {
     }
 
     public void addToAllowed(String className) {
-        if (disAllowedPrefix.stream().anyMatch(className::startsWith)) {
+        String normalized = normalizePrefix(className);
+        if (disAllowedPrefix.stream().anyMatch(blocked -> normalized.startsWith(normalizePrefix(blocked)))) {
             return;
         }
 
@@ -65,7 +66,8 @@ public class SerializeSecurityManager {
 
     public void addToDisAllowed(String className) {
         boolean modified = disAllowedPrefix.add(className);
-        modified = allowedPrefix.removeIf(allow -> allow.startsWith(className)) || modified;
+        String normalized = normalizePrefix(className);
+        modified = allowedPrefix.removeIf(allow -> normalizePrefix(allow).startsWith(normalized)) || modified;
 
         if (modified) {
             notifyPrefix();
@@ -75,6 +77,10 @@ public class SerializeSecurityManager {
         if (!Objects.equals(lowerCase, className)) {
             addToDisAllowed(lowerCase);
         }
+    }
+
+    private static String normalizePrefix(String className) {
+        return className.replace('$', '.').toLowerCase(Locale.ROOT);
     }
 
     public void setCheckStatus(SerializeCheckStatus checkStatus) {
