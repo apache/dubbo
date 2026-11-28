@@ -16,6 +16,10 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.h12.grpc;
 
+import org.apache.dubbo.remoting.http12.HttpHeaderNames;
+import org.apache.dubbo.remoting.http12.HttpHeaders;
+import org.apache.dubbo.remoting.http12.HttpStatus;
+import org.apache.dubbo.remoting.http12.HttpUtils;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
 import org.apache.dubbo.remoting.http12.message.MediaType;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -29,6 +33,15 @@ public class GrpcStreamServerChannelObserver extends Http2StreamServerChannelObs
 
     @Override
     protected void doOnError(Throwable throwable) {}
+
+    @Override
+    protected void customizeTrailers(HttpHeaders headers, Throwable throwable) {
+        if (!isHeaderSent()) {
+            // A trailers-only gRPC response carries the error in grpc-status, not in :status.
+            headers.set(HttpHeaderNames.STATUS.getKey(), HttpUtils.toStatusString(HttpStatus.OK.getCode()));
+        }
+        super.customizeTrailers(headers, throwable);
+    }
 
     @Override
     protected String getContentType() {
